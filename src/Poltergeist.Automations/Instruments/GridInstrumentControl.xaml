@@ -1,0 +1,81 @@
+﻿<UserControl
+    x:Class="Poltergeist.Automations.Instruments.GridInstrumentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="clr-namespace:Poltergeist.Common.Converters;assembly=Poltergeist.Common"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:instruments="clr-namespace:Poltergeist.Automations.Instruments"
+    xmlns:sys="clr-namespace:System;assembly=netstandard"
+    d:DataContext="{d:DesignInstance instruments:GridInstrumentViewModel}"
+    d:Background="White"
+    d:Width="400"
+    d:Height="100"
+    mc:Ignorable="d"
+    >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <sys:Int32 x:Key="Columns">1234</sys:Int32>
+            <converters:EnumToStringConverter x:Key="EnumToStringConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter"/>
+            <converters:StringToSolidColorBrushConverter x:Key="StringToSolidColorBrushConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <ItemsControl
+        ItemsSource="{Binding Items}"
+        >
+        <ItemsControl.Resources>
+            <ItemsPanelTemplate x:Key="GridTemplate">
+                <UniformGrid
+                    Columns="{Binding Columns}"
+                    >
+                </UniformGrid>
+            </ItemsPanelTemplate>
+            <ItemsPanelTemplate x:Key="WrapTemplate">
+                <WrapPanel>
+                </WrapPanel>
+            </ItemsPanelTemplate>
+        </ItemsControl.Resources>
+        <ItemsControl.Style>
+            <Style TargetType="ItemsControl">
+                <Setter Property="ItemsPanel" Value="{DynamicResource GridTemplate}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Columns}" Value="0">
+                        <Setter Property="ItemsPanel" Value="{DynamicResource WrapTemplate}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ItemsControl.Style>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border
+                    BorderBrush="{Binding Foreground}"
+                    BorderThickness="0"
+                    Background="{Binding Background}"
+                    Margin="4"
+                    CornerRadius="4"
+                    Height="{Binding ActualWidth, RelativeSource={RelativeSource Self}}"
+                    ToolTip="{Binding Tooltip}"
+                    Width="{Binding Size}"
+                    >
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Size}" Value="0">
+                                    <Setter Property="Width" Value="auto" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock
+                        Foreground="{Binding Foreground}"
+                        Text="{Binding Text}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        />
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>
