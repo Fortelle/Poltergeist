@@ -1,14 +1,26 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Poltergeist.Automations.Macros;
+using Microsoft.Win32;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Common.Converters;
 
 namespace Poltergeist.Views;
 
 public sealed partial class MacroConfigControl : UserControl
 {
+    //public bool AutoSave { get; set; }
+    //public static readonly DependencyProperty AutoSaveProperty =
+    //    DependencyProperty.Register(
+    //        "AutoSave",
+    //        typeof(bool),
+    //        typeof(MacroConfigControl), 
+    //        new FrameworkPropertyMetadata(false)
+    //        );
+    public event EventHandler ItemUpdated;
+
     public MacroConfigControl()
     {
         InitializeComponent();
@@ -17,7 +29,7 @@ public sealed partial class MacroConfigControl : UserControl
     private void ContentControl_Loaded(object sender, RoutedEventArgs e)
     {
         var control = (ContentControl)sender;
-        var item = (OptionItem)control.DataContext;
+        var item = (IOptionItem)control.DataContext;
 
         var grid = new Grid();
         grid.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
@@ -33,12 +45,13 @@ public sealed partial class MacroConfigControl : UserControl
         };
         grid.Children.Add(label);
 
-        var width = 128;
+        var width = 160;
         var binding = new Binding()
         {
             Path = new PropertyPath("Value"),
             Mode = BindingMode.TwoWay,
-            NotifyOnTargetUpdated = true,
+            NotifyOnSourceUpdated = true,
+            UpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
         };
         var isBlock = false;
         FrameworkElement element;
@@ -46,25 +59,31 @@ public sealed partial class MacroConfigControl : UserControl
         {
             element = new TextBlock()
             {
-                Text = item.Value.ToString(),
+                Text = item.ToString(),
             };
         }
         else
         {
-            switch (item.Value)
+            switch (item)
             {
-                case int:
+                case FileOptionItem foi:
                     {
-                        element = new ModernWpf.Controls.NumberBox()
-                        {
-                            SpinButtonPlacementMode = ModernWpf.Controls.NumberBoxSpinButtonPlacementMode.Compact,
-                            Width = width,
-                        };
-                        binding.Converter = new IntToDoubleconverter();
-                        BindingOperations.SetBinding(element, ModernWpf.Controls.NumberBox.ValueProperty, binding);
+                        element = CreatePathControl();
+                        element.Width = width;
+                        BindingOperations.SetBinding(element, DataContextProperty, binding);
                     }
                     break;
-                case string:
+                case IChoiceOptionItem coi:
+                    {
+                        element = new ComboBox()
+                        {
+                            ItemsSource = coi.Choices,
+                            Width = width,
+                        };
+                        BindingOperations.SetBinding(element, ComboBox.SelectedItemProperty, binding);
+                    }
+                    break;
+                case OptionItem<string>:
                     {
                         element = new TextBox()
                         {
@@ -76,7 +95,7 @@ public sealed partial class MacroConfigControl : UserControl
                         BindingOperations.SetBinding(element, TextBox.TextProperty, binding);
                     }
                     break;
-                case bool:
+                case OptionItem<bool>:
                     {
                         element = new ModernWpf.Controls.ToggleSwitch()
                         {
@@ -88,9 +107,20 @@ public sealed partial class MacroConfigControl : UserControl
                         BindingOperations.SetBinding(element, ModernWpf.Controls.ToggleSwitch.IsOnProperty, binding);
                     }
                     break;
-                case Enum x:
+                case OptionItem<int>:
+                case OptionItem<double>:
                     {
-                        var source = Enum.GetValues(x.GetType());
+                        element = new ModernWpf.Controls.NumberBox()
+                        {
+                            SpinButtonPlacementMode = ModernWpf.Controls.NumberBoxSpinButtonPlacementMode.Compact,
+                            Width = width,
+                        };
+                        BindingOperations.SetBinding(element, ModernWpf.Controls.NumberBox.ValueProperty, binding);
+                    }
+                    break;
+                case IOptionItem x when x.Type.IsEnum:
+                    {
+                        var source = Enum.GetValues(x.Type);
                         element = new ComboBox()
                         {
                             ItemsSource = source,
@@ -103,7 +133,7 @@ public sealed partial class MacroConfigControl : UserControl
                     {
                         element = new TextBlock()
                         {
-                            Text = item.Value.ToString(),
+                            Text = item.ToString(),
                         };
                     }
                     break;
@@ -111,9 +141,10 @@ public sealed partial class MacroConfigControl : UserControl
 
         }
 
-        element.TargetUpdated += (s, args) =>
+        element.SourceUpdated += (s, args) =>
         {
             item.HasChanged = true;
+            ItemUpdated?.Invoke(this, new());
         };
 
         grid.Children.Add(element);
@@ -136,4 +167,58 @@ public sealed partial class MacroConfigControl : UserControl
         control.Content = grid;
 
     }
+    
+    private static FrameworkElement CreatePathControl()
+    {
+        var txtbox = new TextBox()
+        {
+            IsReadOnly = true,
+        };
+        var button = new Button()
+        {
+            Content = new TextBlock()
+            {
+                Text = "...",
+            },
+            Margin = new Thickness(4, 0, 0, 0),
+        };
+        var grid = new Grid()
+        {
+            ColumnDefinitions =
+            {
+                new() { Width = new GridLength(1, GridUnitType.Star) },
+                new() { Width = new GridLength(0, GridUnitType.Auto) },
+            },
+            RowDefinitions =
+            {
+                new()
+            },
+            Children =
+            {
+                txtbox,
+                button,
+            },
+        };
+        Grid.SetColumn(txtbox, 0);
+        Grid.SetColumn(button, 1);
+        button.Click += (_, _) =>
+        {
+            var ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() == true)
+            {
+                var path = ofd.FileName;
+                grid.DataContext = path;
+            }
+        };
+        grid.DataContextChanged += (_, e) =>
+        {
+            var path = (string)e.NewValue;
+            if (File.Exists(path))
+            {
+                txtbox.Text = Path.GetFileName(path);
+            }
+        };
+        return grid;
+    }
+
 }

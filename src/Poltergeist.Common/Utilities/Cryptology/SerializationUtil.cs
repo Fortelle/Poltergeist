@@ -128,7 +128,7 @@ public static class SerializationUtil
 
         using var sr = new StreamReader(path);
         using var reader = new JsonTextReader(sr);
-        serializer.Populate(reader, obj);
+            serializer.Populate(reader, obj);
     }
 
     public static T JsonClone<T>(T obj)

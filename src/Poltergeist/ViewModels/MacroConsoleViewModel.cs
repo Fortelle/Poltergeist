@@ -12,6 +12,8 @@ using Poltergeist.Automations.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Services;
+using Poltergeist.Automations.Configs;
+using System.Collections.Generic;
 
 namespace Poltergeist.ViewModels;
 
@@ -56,7 +58,9 @@ public class MacroConsoleViewModel : ObservableRecipient
 
         App.GetService<NavigationService>().Navigate("console");
 
-        Processor = new MacroProcessor(Macro, LaunchReason.ByUser)
+        var options = GetOptions(Macro);
+
+        Processor = new MacroProcessor(Macro, LaunchReason.ByUser, options)
         {
             WaitUiReady = true,
         };
@@ -109,6 +113,36 @@ public class MacroConsoleViewModel : ObservableRecipient
         }
 
         Macro.SaveOptions();
+    }
+
+    private Dictionary<string, object> GetOptions(MacroBase macro)
+    {
+        var macroManager = App.GetService<MacroManager>();
+
+        var globalOptions = macroManager.GlobalOptions.ToDictionary();
+        var groupOptions = Macro.Group?.Options.ToDictionary();
+        var macroOptions = Macro.UserOptions.ToDictionary();
+
+        if (groupOptions != null)
+        {
+            foreach(var (key, value) in groupOptions)
+            {
+                if (!macroOptions.ContainsKey(key))
+                {
+                    macroOptions.Add(key, value);
+                }
+            }
+        }
+
+        foreach (var (key, value) in globalOptions)
+        {
+            if (!macroOptions.ContainsKey(key))
+            {
+                macroOptions.Add(key, value);
+            }
+        }
+
+        return macroOptions;
     }
 
     private void Processor_Completed(object? sender, MacroCompletedEventArgs e)

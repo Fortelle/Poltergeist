@@ -58,7 +58,7 @@ public class NavigationService
 
         var manager = App.GetService<MacroManager>();
         var page = App.GetService<MacroGroupPage>();
-        var group = manager.Groups.First(x => x.Key == key);
+        var group = manager.Groups.First(x => x.Name.ToLower() == groupName);
         page.DataContext = group;
 
         return page;

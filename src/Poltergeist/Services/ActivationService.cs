@@ -33,8 +33,11 @@ public class ActivationService
         await plugin.Load();
 
         var macroManager = App.GetService<MacroManager>();
+
         var hotkey = App.GetService<HotKeyService>();
         hotkey.Register(new (VirtualKey.F8), macroManager.Toggle);
+
+        macroManager.LoadGlobalOptions();
 
         await Task.CompletedTask;
     }

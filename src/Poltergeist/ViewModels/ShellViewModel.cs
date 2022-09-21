@@ -3,9 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Poltergeist.Models;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Services;
-using Poltergeist.Views;
 
 namespace Poltergeist.ViewModels;
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Poltergeist.Automations.Configs;
 
 namespace Poltergeist.Automations.Macros;
 

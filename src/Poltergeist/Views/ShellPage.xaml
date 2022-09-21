@@ -19,7 +19,12 @@
         <converters:NotConverter x:Key="NotConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
-    <ui:NavigationView
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ui:NavigationView
         x:Name="NavigationViewControl"
         Canvas.ZIndex="0"
         IsBackButtonVisible="Collapsed"
@@ -28,6 +33,7 @@
         OpenPaneLength="180"
         IsEnabled="{Binding IsReady, Mode=OneWay}"
         IsSettingsVisible="True" 
+            Grid.Row="1"
         >
         <ui:NavigationView.MenuItems>
 
@@ -78,11 +84,15 @@
                 </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
         </ui:NavigationView.FooterMenuItems>
-        <Frame
-            x:Name="NavigationFrame"
-            Margin="{StaticResource MainPageMargin}"
-            Content="{Binding CurrentPage}"
-            NavigationUIVisibility="Hidden"
-            />
-    </ui:NavigationView>
+            <Frame
+                x:Name="NavigationFrame"
+                Margin="{StaticResource MainPageMargin}"
+                Content="{Binding CurrentPage}"
+                NavigationUIVisibility="Hidden"
+                HorizontalAlignment="Stretch"
+                />
+        </ui:NavigationView>
+        <Border x:Name="FlyoutParent" Grid.Row="0" Height="0" />
+    </Grid>
+
 </Page>

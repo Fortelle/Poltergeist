@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Macros;
@@ -18,4 +19,8 @@ public abstract class MacroModule
     {
     }
 
+    public virtual void SetGlobalOptions(MacroOptions options)
+    {
+
+    }
 }

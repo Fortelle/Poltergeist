@@ -51,7 +51,7 @@ public sealed class MacroProcessor : IDisposable
 
     public LaunchReason Reason;
 
-    private SynchronizationContext originalContext = SynchronizationContext.Current;
+    private readonly SynchronizationContext originalContext = SynchronizationContext.Current;
 
     private MacroProcessor()
     {
@@ -64,13 +64,44 @@ public sealed class MacroProcessor : IDisposable
         Macro = data;
         Reason = reason;
 
-        Initialize();
-    }
-
-    private void Initialize()
-    {
         InitializeMacroData();
 
+        Options = Macro.UserOptions.ToDictionary();
+
+        InitializeProcessor();
+    }
+
+    public MacroProcessor(MacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
+    {
+        Macro = data;
+        Reason = reason;
+
+        InitializeMacroData();
+
+        Options = options;
+
+        InitializeProcessor();
+    }
+
+    private void InitializeMacroData()
+    {
+        try
+        {
+            Macro.Initialize();
+
+            if (Macro.RequireAdmin)
+            {
+                CheckAdmin();
+            }
+        }
+        catch (Exception e)
+        {
+            InitializationException = e;
+        }
+    }
+
+    private void InitializeProcessor()
+    {
         var services = new MacroServiceCollection();
         InitializeBasicServices(services);
         InitializeExtraServices(services);
@@ -87,25 +118,6 @@ public sealed class MacroProcessor : IDisposable
         Workflow = GetService<WorkingService>();
         Workflow.WaitUI = true;
         Workflow.Ending += OnEnd;
-    }
-
-    private void InitializeMacroData()
-    {
-        try
-        {
-            Macro.Initialize();
-
-            if (Macro.RequireAdmin)
-            {
-                CheckAdmin();
-            }
-
-            Options = Macro.UserOptions.ToDictionary();
-        }
-        catch (Exception e)
-        {
-            InitializationException = e;
-        }
     }
 
     private void InitializeBasicServices(MacroServiceCollection services)

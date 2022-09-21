@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Cryptology;
@@ -30,6 +31,7 @@ public abstract class MacroBase : IMacroInitializer
 
     public Action<MacroServiceCollection> Configure { get; set; }
     public Action<MacroProcessor> Ready { get; set; }
+    public MacroGroup Group { get; set; }
 
     public string PrivateFolder { get; set; }
     public string SharedFolder { get; set; }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Poltergeist.Automations.Macros;
+namespace Poltergeist.Automations.Configs;
 
 public class VariableItem
 {

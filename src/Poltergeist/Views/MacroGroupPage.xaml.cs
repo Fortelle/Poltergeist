@@ -12,7 +12,6 @@ public sealed partial class MacroGroupPage : Page
 {
     public MacroGroupPage()
     {
-        //ViewModel = new (name);
         InitializeComponent();
     }
 
@@ -25,4 +24,11 @@ public sealed partial class MacroGroupPage : Page
         }
     }
 
+    private void MacroConfigControl_ItemUpdated(object sender, System.EventArgs e)
+    {
+        var group = (MacroGroup)DataContext;
+        group.SaveOptions();
+
+        App.ShowFlyout("Options saved");
+    }
 }

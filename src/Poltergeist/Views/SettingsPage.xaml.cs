@@ -1,19 +1,26 @@
 ﻿using System.Windows.Controls;
-
+using Poltergeist.Services;
 using Poltergeist.ViewModels;
 
 namespace Poltergeist.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    public SettingsViewModel ViewModel
+    public SettingsViewModel ViewModel { get; set; }
+
+    public SettingsPage(SettingsViewModel vm)
     {
-        get;
+        ViewModel = vm;
+        DataContext = vm;
+
+        InitializeComponent();
     }
 
-    public SettingsPage()
+    private void MacroConfigControl_ItemUpdated(object sender, System.EventArgs e)
     {
-        ViewModel = App.GetService<SettingsViewModel>();
-        InitializeComponent();
+        var manager = App.GetService<MacroManager>();
+        manager.SaveGlobalOptions();
+
+        App.ShowFlyout("Global options saved");
     }
 }

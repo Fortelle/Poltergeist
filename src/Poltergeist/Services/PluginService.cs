@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using Poltergeist.Plugins;
+using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Services;
 
@@ -19,22 +17,20 @@ public class PluginService
     public async Task Load()
     {
         var manager = App.GetService<MacroManager>();
+        var path = App.GetService<PathService>();
         var assemblies = GetAssemblies();
         var groups = assemblies.SelectMany(GetGroups);
 
         foreach (var group in groups)
         {
-            var macros = group.GetMacros().ToList();
+            group.GroupFolder = path.GetGroupFolder(group);
+            group.LoadOptions();
 
-            manager.Groups.Add(new()
+            manager.Groups.Add(group);
+
+            foreach(var macro in group.Macros)
             {
-                Key = "group_" + group.Name.ToLower(),
-                Name = group.Name,
-                Description = group.Description,
-                Macros = macros,
-            });
-            foreach(var macro in macros)
-            {
+                macro.Group = group;
                 manager.AddMacro(macro);
             }
         }
@@ -72,14 +68,14 @@ public class PluginService
     }
 
 
-    private static IEnumerable<IMacroGroup> GetGroups(Assembly assembly)
+    private static IEnumerable<MacroGroup> GetGroups(Assembly assembly)
     {
-        var groupType = typeof(IMacroGroup);
+        var groupType = typeof(MacroGroup);
         foreach (var type in assembly.GetTypes())
         {
             if (groupType.IsAssignableFrom(type))
             {
-                if (Activator.CreateInstance(type) is IMacroGroup result)
+                if (Activator.CreateInstance(type) is MacroGroup result)
                 {
                     yield return result;
                 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Models;
 using Poltergeist.Services;
 
 namespace Poltergeist.ViewModels;

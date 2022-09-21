@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Poltergeist.Automations.Macros;
-using Poltergeist.Models;
-using Poltergeist.Services;
 
 namespace Poltergeist.ViewModels;
 

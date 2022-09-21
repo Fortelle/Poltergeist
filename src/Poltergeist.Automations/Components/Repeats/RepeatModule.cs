@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Services;
 
@@ -14,7 +15,7 @@ public class RepeatModule : MacroModule
     {
         macro.Environments.Add(new("TotalRepeatCount", 0));
 
-        macro.UserOptions.Add(new(RepeatService.ConfigEnableKey, true)
+        macro.UserOptions.Add(new OptionItem<bool>(RepeatService.ConfigEnableKey, true)
         {
             DisplayLabel = "Enable",
             Category = "Repeat",
@@ -22,7 +23,7 @@ public class RepeatModule : MacroModule
 
         if (Options.UseCount)
         {
-            macro.UserOptions.Add(new(RepeatService.ConfigTimesKey, 1)
+            macro.UserOptions.Add(new OptionItem<int>(RepeatService.ConfigTimesKey, 1)
             {
                 DisplayLabel = "Times",
                 Category = "Repeat",
@@ -31,12 +32,13 @@ public class RepeatModule : MacroModule
 
         if (Options.UsePersistence)
         {
-            macro.UserOptions.Add(new(RepeatService.ConfigPersistenceKey, TimeSpan.Zero)
+            macro.UserOptions.Add(new OptionItem<TimeSpan>(RepeatService.ConfigPersistenceKey)
             {
                 DisplayLabel = "Persistence",
                 Category = "Repeat",
             });
         }
+
     }
 
     public override void OnServiceConfiguring(MacroServiceCollection services)

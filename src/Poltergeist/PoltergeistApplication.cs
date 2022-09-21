@@ -2,11 +2,9 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ModernWpf.Controls;
-using Poltergeist.Models;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Services;
 using Poltergeist.ViewModels;
 using Poltergeist.Views;
@@ -116,18 +114,17 @@ public abstract class PoltergeistApplication : Application
         settingsService.SaveSetting<T>(key, value);
     }
 
+    //public void AddMacro(MacroBase macro)
+    //{
+    //    var macroManager = GetService<MacroManager>();
+    //    macroManager.AddMacro(macro);
+    //}
+
     public static void ShowFlyout(string message)
     {
-        var flyout = new Flyout
-        {
-            Content = new TextBlock()
-            {
-                Text = message
-            },
-            ShowMode = ModernWpf.Controls.Primitives.FlyoutShowMode.Transient,
-            Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Top,
-        };
+        var shell = GetService<ShellPage>();
+        shell.ShowFlyout(message);
 
-        flyout.ShowAt(Application.Current.MainWindow.Content as FrameworkElement);
     }
+
 }

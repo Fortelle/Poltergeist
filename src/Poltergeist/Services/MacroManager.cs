@@ -1,29 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Models;
 using Poltergeist.ViewModels;
 
 namespace Poltergeist.Services;
 
 public class MacroManager
 {
-    //public readonly List<Type> MacroTypes = new();
-    public readonly List<MacroBase> Macros = new();
-    public readonly List<MacroGroup> Groups = new();
-
-    private readonly string MacroFolder;
-    private readonly string SharedFolder;
+    public List<MacroBase> Macros { get; } = new();
+    public List<MacroGroup> Groups { get; } = new();
+    public MacroOptions GlobalOptions { get; set; } = new();
 
     public MacroBase CurrentMacro { get; set; }
     public bool IsRunning { get; set; }
 
+    private PathService PathService;
+
+
     public MacroManager(PathService path)
     {
-        MacroFolder = Path.Combine(path.DocumentFolder, "Macros");
-        SharedFolder = Path.Combine(path.DocumentFolder, "Shared");
+        PathService = path;
     }
 
     public MacroBase GetMacro(string name)
@@ -33,8 +30,8 @@ public class MacroManager
 
     public void AddMacro(MacroBase macro)
     {
-        macro.PrivateFolder = Path.Combine(MacroFolder, macro.Name);
-        macro.SharedFolder = SharedFolder;
+        macro.PrivateFolder = PathService.GetMacroFolder(macro);
+        macro.SharedFolder = PathService.SharedFolder;
         Macros.Add(macro);
     }
 
@@ -77,6 +74,36 @@ public class MacroManager
         {
             exe.Stop();
         }
+    }
+
+
+
+
+    public void AddGlobalOption(IOptionItem option)
+    {
+        GlobalOptions.Add(option);
+    }
+
+    public void LoadGlobalOptions()
+    {
+        foreach(var group in Groups)
+        {
+            group.SetGlobalOptions(GlobalOptions);
+        }
+
+        foreach (var module in Macros.SelectMany(x=>x.Modules))
+        {
+            module.SetGlobalOptions(GlobalOptions);
+        }
+
+        var filepath = PathService.GlobalMacroOptionsFile;
+        GlobalOptions.Load(filepath);
+    }
+
+    public void SaveGlobalOptions()
+    {
+        var filepath = PathService.GlobalMacroOptionsFile;
+        GlobalOptions.Save(filepath);
     }
 
 }

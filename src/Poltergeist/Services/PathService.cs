@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Services;
 
@@ -11,7 +12,12 @@ public class PathService
     public string DocumentFolder;
     public string LocalDataFolder;
     public string LocalSettingsFile;
+    public string GlobalMacroOptionsFile;
     public string SchedulerFile;
+
+    public string SharedFolder;
+    public string MacroFolder;
+    public string GroupFolder;
 
     public PathService()
     {
@@ -22,7 +28,25 @@ public class PathService
 
         LocalDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
+
+        MacroFolder = Path.Combine(DocumentFolder, "Macros");
+        SharedFolder = Path.Combine(DocumentFolder, "Shared");
+        GroupFolder = Path.Combine(DocumentFolder, "Groups");
+
         LocalSettingsFile = Path.Combine(DocumentFolder, "LocalSettings.json");
+        GlobalMacroOptionsFile = Path.Combine(DocumentFolder, "GlobalOptions.json");
         SchedulerFile = Path.Combine(DocumentFolder, "Scheduler.json");
+
     }
+
+    public string GetMacroFolder(MacroBase macro)
+    {
+        return Path.Combine(MacroFolder, macro.Name);
+    }
+
+    public string GetGroupFolder(MacroGroup group)
+    {
+        return Path.Combine(GroupFolder, group.Name);
+    }
+
 }

@@ -48,10 +48,10 @@ public partial class ShellPage : Page
 
         foreach (var group in macroManager.Groups)
         {
-            NavigationViewControl.MenuItems.Add( new ModernWpf.Controls.NavigationViewItem()
+            NavigationViewControl.MenuItems.Add(new ModernWpf.Controls.NavigationViewItem()
             {
                 Content = group.Name,
-                Tag = "group_" + group.Name.ToLower(),
+                Tag = "group_" + group.Name,
                 Icon = new ModernWpf.Controls.SymbolIcon(ModernWpf.Controls.Symbol.Folder)
             });
         }
@@ -78,5 +78,20 @@ public partial class ShellPage : Page
     private ModernWpf.Controls.NavigationViewItem ConvertTemp()
     {
         return HomeMenu;
+    }
+
+    public void ShowFlyout(string message)
+    {
+        var flyout = new ModernWpf.Controls.Flyout
+        {
+            Content = new TextBlock()
+            {
+                Text = message
+            },
+            ShowMode = ModernWpf.Controls.Primitives.FlyoutShowMode.Transient,
+            Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Bottom,
+        };
+
+        flyout.ShowAt(FlyoutParent);
     }
 }

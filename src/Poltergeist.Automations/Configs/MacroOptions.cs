@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Poltergeist.Common.Utilities.Cryptology;
 
-namespace Poltergeist.Automations.Macros;
+namespace Poltergeist.Automations.Configs;
 
 [JsonConverter(typeof(MacroOptionsConverter))]
-public class MacroOptions : IEnumerable<OptionItem>
+public class MacroOptions : IEnumerable<IOptionItem>
 {
-    private List<OptionItem> Items { get; } = new();
+    private List<IOptionItem> Items { get; } = new();
     public bool HasChanged => Items.Count > 0 && Items.Any(x => x.HasChanged);
 
-    public IEnumerator<OptionItem> GetEnumerator() => Items.GetEnumerator();
+    public IEnumerator<IOptionItem> GetEnumerator() => Items.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 
     public Dictionary<string, object> ToDictionary() => Items.ToDictionary(x => x.Key, x => x.Value);
@@ -21,8 +23,8 @@ public class MacroOptions : IEnumerable<OptionItem>
     public MacroOptions()
     {
     }
-
-    public void Add(OptionItem item)
+    
+    public void Add(IOptionItem item)
     {
         var i = Items.FindIndex(x => x.Key == item.Key);
         if (i > -1)
@@ -35,14 +37,35 @@ public class MacroOptions : IEnumerable<OptionItem>
         }
     }
 
-    public void Add(string key, object value)
+    public void Add<T>(string key, T value)
     {
-        Add(new(key, value));
+        Add(new OptionItem<T>(key, value));
     }
 
     public T Get<T>(string key)
     {
-        return (T)Items.First(x => x.Key == key).Value;
+        return (T)Items.First(x => x.Key == key);
+    }
+
+    public void Load(string path)
+    {
+        if (!File.Exists(path)) return;
+        using var sr = new StreamReader(path);
+        using var reader = new JsonTextReader(sr);
+        var dict = JObject.Load(reader);
+        foreach (var item in this)
+        {
+            if (dict.ContainsKey(item.Key))
+            {
+                var value = dict[item.Key].ToObject(item.Type);
+                item.Value = value;
+            }
+        }
+    }
+
+    public void Save(string path)
+    {
+        SerializationUtil.JsonSave(path, this);
     }
 
     public class MacroOptionsConverter : JsonConverter<MacroOptions>
@@ -57,7 +80,6 @@ public class MacroOptions : IEnumerable<OptionItem>
                 {
                     var value = dict[item.Key].ToObject(item.Type);
                     item.Value = value;
-                    item.SavedValueString = value.ToString();
                 }
                 mo.Add(item);
             }
@@ -69,18 +91,10 @@ public class MacroOptions : IEnumerable<OptionItem>
             var dict = new JObject();
             foreach (var item in value.Items)
             {
-                var valueString = item.Value.ToString();
-                var isDefault = valueString == item.DefaultValueString;
-                var isSaved = valueString == (item.SavedValueString ?? item.DefaultValueString);
-
-                if (!isDefault)
+                if (!item.IsDefault && item.Value != null)
                 {
                     var token = JToken.FromObject(item.Value);
                     dict.Add(item.Key, token);
-                }
-                if (!isSaved)
-                {
-                    item.SavedValueString = valueString;
                 }
                 item.HasChanged = false;
             }

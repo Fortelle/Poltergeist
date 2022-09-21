@@ -5,45 +5,17 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:views="using:Poltergeist.Views"
     xmlns:informations="using:Poltergeist.Macros.Informations"
-    xmlns:models="clr-namespace:Poltergeist.Models"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:ui="http://schemas.modernwpf.com/2019" 
+    xmlns:views="clr-namespace:Poltergeist.Views" 
+    xmlns:macros="clr-namespace:Poltergeist.Automations.Macros;assembly=Poltergeist.Automations"
     d:DesignHeight="450"
     d:DesignWidth="800"
     d:Background="White"
-    d:DataContext="{d:DesignInstance models:MacroGroup}"
+    d:DataContext="{d:DesignInstance macros:MacroGroup}"
     KeepAlive="True"
     mc:Ignorable="d">
     <Page.Resources>
-        <!--<DataTemplate x:Key="NoSelectionContentTemplate">
-            <Grid>
-                <TextBlock
-                    x:Uid="ListDetails_NoSelection"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    TextAlignment="Center"
-                    Style="{ThemeResource SubtitleTextBlockStyle}" />
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ListHeaderTemplate">
-            <Grid Height="40">
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Style="{StaticResource ListTitleStyle}"
-                    Text="{Binding}" />
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="MinimalListHeaderTemplate">
-            <Grid Height="40">
-                <TextBlock
-                    Margin="96,0,0,0"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource ListTitleStyle}"
-                    Text="{Binding}" />
-            </Grid>
-        </DataTemplate>-->
     </Page.Resources>
 
     <Grid>
@@ -70,6 +42,17 @@
                     Style="{StaticResource DetailBodyBaseMediumStyle}"
                     Margin="0, 8"
                     />
+                
+                <TextBlock
+                    Text="Configs"
+                    Style="{StaticResource Header3Style}"
+                    />
+
+                <views:MacroConfigControl
+                    DataContext="{Binding Options, Mode=OneWay}"
+                    ItemUpdated="MacroConfigControl_ItemUpdated"
+                    />
+
             </StackPanel>
             <ScrollViewer
                 Grid.Row="2">

@@ -38,7 +38,6 @@
     <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Poltergeist.Common\Poltergeist.Common.csproj" PrivateAssets="All" />
     <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Poltergeist.Plugins\Poltergeist.Plugins.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Poltergeist.Automations.Macros;
+namespace Poltergeist.Automations.Configs;
 
 [JsonConverter(typeof(VariableCollectionConverter))]
 public class VariableCollection : IEnumerable<VariableItem>

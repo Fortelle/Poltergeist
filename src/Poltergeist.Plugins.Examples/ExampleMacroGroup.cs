@@ -6,20 +6,23 @@ using System.Threading;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Plugins.Examples;
 
-public class ExampleMacroGroup : IMacroGroup
+public class ExampleMacroGroup : MacroGroup
 {
-    public string Name => "Examples";
-
-    public string Description => "Provides a series of examples.";
-
-    public IEnumerable<MacroBase> GetMacros()
+    public ExampleMacroGroup() : base("Examples")
     {
-        yield return new BasicMacro("hello_world")
+        Description = "Provides a series of examples.";
+        LoadMacros();
+    }
+
+    public void LoadMacros()
+    {
+        Macros.Add(new BasicMacro("hello_world")
         {
             Title = "Hello world",
             Description = "Opens a notepad and inputs text.",
@@ -60,22 +63,20 @@ public class ExampleMacroGroup : IMacroGroup
 
                 steps.Execute();
             }
-        };
+        });
 
+        Macros.Add(new GridExample());
 
+        Macros.Add(new TaskListExample());
 
-        yield return new GridExample();
-
-        yield return new TaskListExample();
-
-        yield return new BasicMacro("test_stephelper")
+        Macros.Add(new BasicMacro("test_stephelper")
         {
             Title = "StepHelper",
             Description = "Tests StepHelper.",
             ShowStatus = false,
             UserOptions =
             {
-                new OptionItem("break", false),
+                new OptionItem<bool>("break", false),
             },
             Configure = (services) =>
             {
@@ -100,7 +101,7 @@ public class ExampleMacroGroup : IMacroGroup
 
                 steps.Execute();
             }
-        };
+        });
     }
 
 }

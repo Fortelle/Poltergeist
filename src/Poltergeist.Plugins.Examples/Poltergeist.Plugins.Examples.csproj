@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
     <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" />
-    <ProjectReference Include="..\Poltergeist.Plugins\Poltergeist.Plugins.csproj" />
   </ItemGroup>
 
 </Project>
