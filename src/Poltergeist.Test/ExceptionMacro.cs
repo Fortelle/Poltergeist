@@ -51,9 +51,19 @@ public class ExceptionMacro : RepeatableMacro
         };
     }
 
-    protected override void ReadyProc(MacroProcessor processor)
+    protected override void OnConfigure(MacroServiceCollection services)
     {
-        base.ReadyProc(processor);
+        base.OnConfigure(services);
+
+        if (UserOptions.Get<bool>("On initialization"))
+        {
+            throw new MacroRunningException("This exception is thrown on initialization.");
+        }
+    }
+
+    protected override void OnProcess(MacroProcessor processor)
+    {
+        base.OnProcess(processor);
 
         var work = processor.GetService<WorkingService>();
 
@@ -64,31 +74,13 @@ public class ExceptionMacro : RepeatableMacro
                 throw new MacroRunningException("This exception is thrown on availability check.");
             };
         }
+
         if (UserOptions.Get<bool>("On work end"))
         {
             work.Beginning += (s, e) =>
             {
                 throw new MacroRunningException("This exception is thrown on work end.");
             };
-        }
-    }
-
-    protected override void InitProc()
-    {
-        base.InitProc();
-
-        if (UserOptions.Get<bool>("On initialization"))
-        {
-            throw new MacroRunningException("This is an exception thrown on initialization.");
-        }
-
-    }
-
-    protected override void ConfigureProc(MacroServiceCollection services)
-    {
-        if (UserOptions.Get<bool>("On initialization"))
-        {
-            throw new MacroRunningException("This is an exception thrown on initialization.");
         }
     }
 

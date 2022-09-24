@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
@@ -12,16 +11,16 @@ using Poltergeist.Common.Utilities.Cryptology;
 namespace Poltergeist.Automations.Macros;
 
 [JsonObject(MemberSerialization.OptIn)]
-public abstract class MacroBase : IMacroInitializer
+public abstract class MacroBase : IMacroBase, IMacroInitializer
 {
     public string Name { get; set; }
-    public string Title { get => string.IsNullOrEmpty(_title) ? Name : _title; set => _title = value; }
     public string Category { get; set; }
     public string Description { get; set; }
     public string[] Tags { get; set; }
 
     [JsonProperty]
     public MacroOptions UserOptions { get; set; } = new();
+
     [JsonProperty]
     public VariableCollection Environments { get; set; } = new();
 
@@ -30,23 +29,35 @@ public abstract class MacroBase : IMacroInitializer
     public MacroStorage Storage { get; } = new();
 
     public Action<MacroServiceCollection> Configure { get; set; }
-    public Action<MacroProcessor> Ready { get; set; }
-    public MacroGroup Group { get; set; }
+    public Action<MacroProcessor> Process { get; set; }
 
-    public string PrivateFolder { get; set; }
-    public string SharedFolder { get; set; }
     private bool IsInitialized { get; set; }
+    private bool IsLoaded { get; set; }
+
+    MacroGroup IMacroBase.Group { get; set; }
 
     private string _title;
+    public string Title { get => string.IsNullOrEmpty(_title) ? Name : _title; set => _title = value; }
 
     private bool _requireAdmin;
     public bool RequireAdmin { get => _requireAdmin; set => _requireAdmin |= value; }
 
-    public bool UseFile => !string.IsNullOrEmpty(PrivateFolder);
+    private string _privateFolder;
+    public string PrivateFolder => _privateFolder;
+    string IMacroBase.PrivateFolder { get => _privateFolder; set => _privateFolder = value; }
 
-    protected internal virtual void InitProc() { }
-    protected internal virtual void ConfigureProc(MacroServiceCollection services) { }
-    protected internal virtual void ReadyProc(MacroProcessor processor) { }
+    private string _sharedFolder;
+    public string SharedFolder => _sharedFolder;
+    string IMacroBase.SharedFolder { get => _sharedFolder; set => _sharedFolder = value; }
+
+    private bool UseFile => !string.IsNullOrEmpty(PrivateFolder);
+
+    public bool Available => IsInitialized;
+
+    protected internal virtual void OnInitialize() { }
+    protected internal virtual void OnLoad() { }
+    protected internal virtual void OnConfigure(MacroServiceCollection services) { }
+    protected internal virtual void OnProcess(MacroProcessor processor) { }
 
     public MacroBase(string name)
     {
@@ -58,7 +69,7 @@ public abstract class MacroBase : IMacroInitializer
         return (T)this;
     }
 
-    public void Initialize()
+    void IMacroBase.Initialize()
     {
         if (IsInitialized) return;
 
@@ -71,21 +82,32 @@ public abstract class MacroBase : IMacroInitializer
         Environments.Add(new("TotalRunCount", 0));
         Environments.Add(new("TotalRunTime", default(TimeSpan)));
 
-        InitProc();
+        OnInitialize();
 
         foreach (var module in Modules)
         {
-            module.OnMacroInitializing(this);
+            module.OnMacroInitialize(this);
         }
-
-        LoadOptions();
 
         IsInitialized = true;
     }
 
-    public void LoadOptions()
+    void IMacroBase.Load()
     {
-        if (IsInitialized) return;
+        if (!IsInitialized) throw new InvalidOperationException();
+        if (IsLoaded) return;
+
+        if (UseFile)
+        {
+            ((IMacroBase)this).LoadOptions();
+        }
+
+        IsLoaded = true;
+    }
+
+    void IMacroBase.LoadOptions()
+    {
+        if (!IsInitialized) throw new InvalidOperationException();
         if (!UseFile) return;
 
         var path = Path.Combine(PrivateFolder, "config.json");
@@ -95,7 +117,7 @@ public abstract class MacroBase : IMacroInitializer
         }
     }
 
-    public void SaveOptions()
+    void IMacroBase.SaveOptions()
     {
         if (!IsInitialized) return;
         if (!UseFile) return;
@@ -105,6 +127,20 @@ public abstract class MacroBase : IMacroInitializer
         var path = Path.Combine(PrivateFolder, "config.json");
         SerializationUtil.JsonSave(path, this);
     }
+
+    void IMacroBase.ConfigureServices(MacroServiceCollection services)
+    {
+        Configure?.Invoke(services);
+        OnConfigure(services);
+    }
+
+    void IMacroBase.Process(MacroProcessor processor)
+    {
+        Process?.Invoke(processor);
+        OnProcess(processor);
+    }
+
+
 
     public void SetThumbnail(Bitmap image)
     {
@@ -124,4 +160,3 @@ public abstract class MacroBase : IMacroInitializer
     };
 
 }
-

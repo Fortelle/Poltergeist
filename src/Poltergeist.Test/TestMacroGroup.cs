@@ -71,7 +71,7 @@ public class TestMacroGroup : MacroGroup
 
                 new ChoiceOptionItem<string>("choice_string", new string[] { "Item1", "Item2", "Item3" }, "Item1"),
                 new ChoiceOptionItem<int>("choice_int", new int[] { 100, 200, 300 }, 100),
-                new FileOptionItem("file", ""),
+                new FileOptionItem("file"),
 
                 new OptionItem<int>("test_option_a", 2),
                 new OptionItem<int>("test_option_d", 2),

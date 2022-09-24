@@ -13,7 +13,7 @@ public abstract class MacroGroup
 
     public string GroupFolder { get; set; }
 
-    public List<MacroBase> Macros { get; } = new();
+    public List<IMacroBase> Macros { get; } = new();
 
     protected MacroGroup(string name)
     {
@@ -29,7 +29,7 @@ public abstract class MacroGroup
     {
         if (string.IsNullOrEmpty(GroupFolder)) return;
         var filepath = Path.Combine(GroupFolder, "config.json");
-        Options.Load(filepath);
+        Options.Load(filepath, true);
     }
 
     public void SaveOptions()

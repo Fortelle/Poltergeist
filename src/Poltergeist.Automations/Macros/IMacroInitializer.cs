@@ -11,5 +11,6 @@ public interface IMacroInitializer
     public VariableCollection Environments { get; }
 
     public string PrivateFolder { get; }
+    public string SharedFolder { get; }
 }
 

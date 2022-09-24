@@ -7,15 +7,15 @@ namespace Poltergeist.Automations.Macros;
 public abstract class MacroModule
 {
 
-    public virtual void OnMacroInitializing(IMacroInitializer macro)
+    public virtual void OnMacroInitialize(IMacroInitializer macro)
     {
     }
 
-    public virtual void OnServiceConfiguring(MacroServiceCollection services)
+    public virtual void OnMacroConfigure(MacroServiceCollection services)
     {
     }
 
-    public virtual void OnProcessorLoading(MacroProcessor processor)
+    public virtual void OnMacroProcess(MacroProcessor processor)
     {
     }
 

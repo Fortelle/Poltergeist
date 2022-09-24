@@ -17,22 +17,12 @@ public class PluginService
     public async Task Load()
     {
         var manager = App.GetService<MacroManager>();
-        var path = App.GetService<PathService>();
         var assemblies = GetAssemblies();
         var groups = assemblies.SelectMany(GetGroups);
 
         foreach (var group in groups)
         {
-            group.GroupFolder = path.GetGroupFolder(group);
-            group.LoadOptions();
-
-            manager.Groups.Add(group);
-
-            foreach(var macro in group.Macros)
-            {
-                macro.Group = group;
-                manager.AddMacro(macro);
-            }
+            manager.AddGroup(group);
         }
     }
 

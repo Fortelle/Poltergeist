@@ -5,10 +5,10 @@ namespace Poltergeist.Components.Loops;
 public class RepeatOptions
 {
     [SafetyLock]
-    public bool AllowInfinityLoop { get; set; }
+    public bool AllowInfiniteLoop { get; set; }
 
     public bool UseCount { get; set; } = true;
-    public bool UsePersistence { get; set; }
+    public bool UseTimeout { get; set; }
 
     public bool StopOnError { get; set; } = true;
 

@@ -19,7 +19,7 @@ namespace Poltergeist.ViewModels;
 
 public class MacroConsoleViewModel : ObservableRecipient
 {
-    private MacroBase _macro;
+    private IMacroBase _macro;
     private MacroProcessor _processor;
     private bool _isRunning;
     private MacroOptions _selectedOptions;
@@ -29,7 +29,7 @@ public class MacroConsoleViewModel : ObservableRecipient
     public ICommand StopCommand { get; }
 
     public bool IsRunning { get => _isRunning; set => SetProperty(ref _isRunning, value); }
-    public MacroBase Macro { get => _macro; set => SetProperty(ref _macro, value); }
+    public IMacroBase Macro { get => _macro; set => SetProperty(ref _macro, value); }
     public MacroProcessor Processor { get => _processor; set => SetProperty(ref _processor, value); }
     public MacroOptions UserOptions { get => _selectedOptions; set => SetProperty(ref _selectedOptions, value); }
     public VariableCollection Environments { get => _environments; set => SetProperty(ref _environments, value); }
@@ -53,12 +53,14 @@ public class MacroConsoleViewModel : ObservableRecipient
             return;
         }
 
+        Keyboard.ClearFocus();
+
         IsRunning = true;
         App.GetService<MacroManager>().IsRunning = true;
 
         App.GetService<NavigationService>().Navigate("console");
 
-        var options = GetOptions(Macro);
+        var options = GetOptions();
 
         Processor = new MacroProcessor(Macro, LaunchReason.ByUser, options)
         {
@@ -82,11 +84,13 @@ public class MacroConsoleViewModel : ObservableRecipient
         Processor.Abort();
     }
 
-    public void Load(MacroBase macro)
+    public void Load(IMacroBase macro)
     {
         Unload();
 
         Macro = macro;
+        macro.Load();
+
         UserOptions = macro.UserOptions;
         Environments = macro.Environments;
 
@@ -115,7 +119,7 @@ public class MacroConsoleViewModel : ObservableRecipient
         Macro.SaveOptions();
     }
 
-    private Dictionary<string, object> GetOptions(MacroBase macro)
+    private Dictionary<string, object> GetOptions()
     {
         var macroManager = App.GetService<MacroManager>();
 

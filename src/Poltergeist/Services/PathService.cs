@@ -39,7 +39,7 @@ public class PathService
 
     }
 
-    public string GetMacroFolder(MacroBase macro)
+    public string GetMacroFolder(IMacroBase macro)
     {
         return Path.Combine(MacroFolder, macro.Name);
     }

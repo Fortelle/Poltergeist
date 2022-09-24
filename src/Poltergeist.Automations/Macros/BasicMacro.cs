@@ -15,14 +15,9 @@ public class BasicMacro : MacroBase
     {
     }
 
-    protected internal override void ConfigureProc(MacroServiceCollection services)
+    protected internal override void OnProcess(MacroProcessor processor)
     {
-        base.ConfigureProc(services);
-    }
-
-    protected internal override void ReadyProc(MacroProcessor processor)
-    {
-        base.ReadyProc(processor);
+        base.OnProcess(processor);
 
         var work = processor.GetService<WorkingService>();
         work.WorkProc = () => Script(processor);
@@ -50,7 +45,7 @@ public class BasicMacro : MacroBase
         {
             li.Update(0, new(ProgressStatus.Busy, "Running"));
         });
-        hooks.Register("process_ended", _ =>
+        hooks.Register("process_exiting", _ =>
         {
             li.Update(0, new(ProgressStatus.Succeeded, "Completed"));
         });

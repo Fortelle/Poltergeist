@@ -10,15 +10,17 @@ namespace Poltergeist.Components.Loops;
 public class RepeatService : MacroService
 {
     public const string ConfigEnableKey = "repeat-enable";
-    public const string ConfigTimesKey = "repeat-count";
-    public const string ConfigPersistenceKey = "repeat-persistence";
+    public const string ConfigCountKey = "repeat-count";
+    public const string ConfigTimeoutKey = "repeat-timeout";
     public const string InstrumetKey = "repeat-instrumet";
 
     private readonly HookService Hooks;
 
     public int IterationIndex;
-    public int MaxIteration;
+    private int LoopCount;
+    private TimeSpan LoopTimeout;
     public bool SoftStop;
+
 
     public Func<bool> BeginProc;
     public Func<IterationResult> IterationProc;
@@ -36,26 +38,39 @@ public class RepeatService : MacroService
         Hooks = hooks;
         Options = options.Value;
 
-        var useLoop = Processor.GetOption<bool>(ConfigEnableKey);
-        var loopLimit = Processor.GetOption<int>(ConfigTimesKey);
+        CheckLimit();
 
-        MaxIteration = 1;
-        if (useLoop)
+        work.WorkProc = WorkProc;
+    }
+
+    private void CheckLimit()
+    {
+        var useLoop = Processor.GetOption<bool>(ConfigEnableKey);
+
+        if (!useLoop) return;
+
+        if (Options?.UseCount == true)
         {
-            if (loopLimit == 0)
+            LoopCount = Processor.GetOption<int>(ConfigCountKey);
+        }
+        if (Options?.UseTimeout == true)
+        {
+            var seconds = Processor.GetOption<int>(ConfigTimeoutKey);
+            LoopTimeout = TimeSpan.FromSeconds(seconds);
+        }
+
+        if (LoopCount == 0 && LoopTimeout == TimeSpan.Zero)
+        {
+            if (Options?.AllowInfiniteLoop == true)
             {
-                if (Options?.AllowInfinityLoop ?? false)
-                {
-                    MaxIteration = -1;
-                }
+                LoopCount = 0;
             }
             else
             {
-                MaxIteration = loopLimit;
+                LoopCount = 1;
+                Log(LogLevel.Warning, $"Neither {ConfigCountKey} nor {ConfigTimeoutKey} is set. To enable infinite loop, set ${nameof(Options.AllowInfiniteLoop)} to true.");
             }
         }
-
-        work.WorkProc = WorkProc;
     }
 
     private void WorkProc()
@@ -150,7 +165,6 @@ public class RepeatService : MacroService
         Log(LogLevel.Debug, $"Started running the checknext process.");
 
         var hasNext = false;
-        var duration = Options?.UsePersistence == true ? Processor.GetOption<TimeSpan>(ConfigPersistenceKey) : default;
 
         if (iterationResult == IterationResult.Stop)
         {
@@ -167,12 +181,11 @@ public class RepeatService : MacroService
             hasNext = false;
             Log(LogLevel.Debug, "SoftStop");
         }
-        else if (MaxIteration > 0 && IterationIndex >= MaxIteration - 1)
+        else if (CheckCount())
         {
             hasNext = false;
-            Log(LogLevel.Debug, $"Max iteration reached: {MaxIteration}.");
         }
-        else if (CheckMaxPersistence())
+        else if (CheckTimeout())
         {
             hasNext = false;
         }
@@ -205,24 +218,31 @@ public class RepeatService : MacroService
         return hasNext;
     }
 
-    private bool CheckMaxPersistence()
+    private bool CheckCount()
     {
-        if (Options?.UsePersistence == false) return false;
-        var duration = Processor.GetOption<TimeSpan>(ConfigPersistenceKey);
-        if (duration == TimeSpan.Zero) {
-            return false;
-        }
-        else if (DateTime.Now - Processor.StartTime > duration) 
+        if (LoopCount == 0) return false;
+
+        if (IterationIndex >= LoopCount - 1)
         {
-            Log(LogLevel.Debug, $"Max persistence reached: {duration}.");
+            Log(LogLevel.Debug, $"Max iteration reached: {LoopCount}.");
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
+    private bool CheckTimeout()
+    {
+        if (LoopTimeout == TimeSpan.Zero) return false;
+
+        if (DateTime.Now - Processor.StartTime > LoopTimeout)
+        {
+            Log(LogLevel.Debug, $"Timeout reached: {LoopTimeout}.");
+            return true;
+        }
+
+        return false;
+    }
 
     private void DoEnd()
     {
@@ -233,12 +253,11 @@ public class RepeatService : MacroService
             EndProc.Invoke();
         }
 
-        Processor.Macro.Environments.Set<int>("TotalRepeatCount", old => IterationIndex + 1);
+        Processor.Macro.Environments.Set<int>("TotalRepeatCount", old => old + IterationIndex + 1);
 
         Hooks.Raise("repeat_end");
 
         Log(LogLevel.Debug, $"Finished running the after-loop process.");
-
     }
 
 
@@ -263,9 +282,9 @@ public class RepeatService : MacroService
                         li.Key = InstrumetKey;
                         li.Title = "Repeats:";
 
-                        if (MaxIteration > 0)
+                        if (LoopCount > 0)
                         {
-                            for (var i = 0; i < MaxIteration; i++)
+                            for (var i = 0; i < LoopCount; i++)
                             {
                                 li.Add(new()
                                 {
@@ -286,9 +305,9 @@ public class RepeatService : MacroService
                         gi.Key = InstrumetKey;
                         gi.Title = "Repeats:";
 
-                        if (MaxIteration > 0)
+                        if (LoopCount > 0)
                         {
-                            gi.SetPlaceholders(MaxIteration);
+                            gi.SetPlaceholders(LoopCount);
                         }
                     });
                 }

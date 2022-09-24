@@ -240,9 +240,8 @@ public class WorkingService : MacroService
 
     private void DoEnd(ProcessEndReason reason)
     {
-        Hooks.Raise("process_ended", reason);
+        Hooks.Raise("process_exiting", reason);
 
-        
         Log(LogLevel.Information, "The macro is complete. The processor will shut down."); // this should be the last line
 
         if (WaitUI)

@@ -51,7 +51,7 @@ public sealed partial class MacroConfigControl : UserControl
             Path = new PropertyPath("Value"),
             Mode = BindingMode.TwoWay,
             NotifyOnSourceUpdated = true,
-            UpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
+            //UpdateSourceTrigger = UpdateSourceTrigger.LostFocus,
         };
         var isBlock = false;
         FrameworkElement element;
@@ -133,7 +133,7 @@ public sealed partial class MacroConfigControl : UserControl
                     {
                         element = new TextBlock()
                         {
-                            Text = item.ToString(),
+                            Text = item.Value.ToString(),
                         };
                     }
                     break;

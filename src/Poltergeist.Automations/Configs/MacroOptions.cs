@@ -44,23 +44,38 @@ public class MacroOptions : IEnumerable<IOptionItem>
 
     public T Get<T>(string key)
     {
-        return (T)Items.First(x => x.Key == key);
+        return (T)Items.First(x => x.Key == key).Value;
     }
 
-    public void Load(string path)
+    public void Load(string path, bool keepUndefined = false)
     {
         if (!File.Exists(path)) return;
+
         using var sr = new StreamReader(path);
         using var reader = new JsonTextReader(sr);
         var dict = JObject.Load(reader);
-        foreach (var item in this)
+
+        var undefinedItems = new List<UndefinedOptionItem>();
+        foreach (var (key, jtoken) in dict)
         {
-            if (dict.ContainsKey(item.Key))
+            var item = this.FirstOrDefault(x => x.Key == key);
+            if(item != null)
             {
-                var value = dict[item.Key].ToObject(item.Type);
+                var value = jtoken.ToObject(item.Type);
                 item.Value = value;
             }
+            else if (keepUndefined)
+            {
+                undefinedItems ??= new();
+                undefinedItems.Add(new(key, jtoken));
+            }
         }
+
+        foreach (var item in undefinedItems)
+        {
+            Items.Add(item);
+        }
+        undefinedItems.Clear();
     }
 
     public void Save(string path)
@@ -91,7 +106,7 @@ public class MacroOptions : IEnumerable<IOptionItem>
             var dict = new JObject();
             foreach (var item in value.Items)
             {
-                if (!item.IsDefault && item.Value != null)
+                if (item is UndefinedOptionItem || (!item.IsDefault && item.Value != null))
                 {
                     var token = JToken.FromObject(item.Value);
                     dict.Add(item.Key, token);

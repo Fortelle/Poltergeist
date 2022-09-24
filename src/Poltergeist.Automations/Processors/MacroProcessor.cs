@@ -26,7 +26,7 @@ public sealed class MacroProcessor : IDisposable
 
     public string ProcessId { get; set; }
 
-    public MacroBase Macro { get; }
+    public IMacroBase Macro { get; }
 
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
@@ -59,7 +59,7 @@ public sealed class MacroProcessor : IDisposable
         //Dispatcher = DispatcherQueue.GetForCurrentThread();
     }
 
-    public MacroProcessor(MacroBase data, LaunchReason reason) : this()
+    public MacroProcessor(IMacroBase data, LaunchReason reason) : this()
     {
         Macro = data;
         Reason = reason;
@@ -71,7 +71,7 @@ public sealed class MacroProcessor : IDisposable
         InitializeProcessor();
     }
 
-    public MacroProcessor(MacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
+    public MacroProcessor(IMacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
     {
         Macro = data;
         Reason = reason;
@@ -162,11 +162,10 @@ public sealed class MacroProcessor : IDisposable
         {
             foreach (var module in Macro.Modules)
             {
-                module.OnServiceConfiguring(services);
+                module.OnMacroConfigure(services);
             }
 
-            Macro.ConfigureProc(services);
-            Macro.Configure?.Invoke(services);
+            Macro.ConfigureServices(services);
         }
         catch (Exception e)
         {
@@ -220,10 +219,9 @@ public sealed class MacroProcessor : IDisposable
 
         foreach (var module in Macro.Modules)
         {
-            module.OnProcessorLoading(this);
+            module.OnMacroProcess(this);
         }
-        Macro.ReadyProc(this);
-        Macro.Ready?.Invoke(this);
+        Macro.Process(this);
 
         RaiseEvent(MacroEventType.ProcessStarted, new EventArgs());
 

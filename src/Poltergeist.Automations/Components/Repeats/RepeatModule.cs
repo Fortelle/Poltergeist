@@ -11,7 +11,7 @@ public class RepeatModule : MacroModule
 {
     public RepeatOptions Options { get; set; } = new();
 
-    public override void OnMacroInitializing(IMacroInitializer macro)
+    public override void OnMacroInitialize(IMacroInitializer macro)
     {
         macro.Environments.Add(new("TotalRepeatCount", 0));
 
@@ -23,33 +23,34 @@ public class RepeatModule : MacroModule
 
         if (Options.UseCount)
         {
-            macro.UserOptions.Add(new OptionItem<int>(RepeatService.ConfigTimesKey, 1)
+            macro.UserOptions.Add(new OptionItem<int>(RepeatService.ConfigCountKey, 1)
             {
-                DisplayLabel = "Times",
+                DisplayLabel = "Count",
                 Category = "Repeat",
             });
         }
 
-        if (Options.UsePersistence)
+        // todo: timespan
+        if (Options.UseTimeout)
         {
-            macro.UserOptions.Add(new OptionItem<TimeSpan>(RepeatService.ConfigPersistenceKey)
+            macro.UserOptions.Add(new OptionItem<int>(RepeatService.ConfigTimeoutKey)
             {
-                DisplayLabel = "Persistence",
+                DisplayLabel = "Timeout (seconds)",
                 Category = "Repeat",
             });
         }
 
     }
 
-    public override void OnServiceConfiguring(MacroServiceCollection services)
+    public override void OnMacroConfigure(MacroServiceCollection services)
     {
         if (Options != null)
         {
             services.Configure<RepeatOptions>(options =>
             {
-                options.AllowInfinityLoop = Options.AllowInfinityLoop;
+                options.AllowInfiniteLoop = Options.AllowInfiniteLoop;
                 options.UseCount = Options.UseCount;
-                options.UsePersistence = Options.UsePersistence;
+                options.UseTimeout = Options.UseTimeout;
                 options.StopOnError = Options.StopOnError;
                 options.Instrument = Options.Instrument;
             });

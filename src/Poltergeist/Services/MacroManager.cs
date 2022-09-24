@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
@@ -8,11 +9,11 @@ namespace Poltergeist.Services;
 
 public class MacroManager
 {
-    public List<MacroBase> Macros { get; } = new();
+    public List<IMacroBase> Macros { get; } = new();
     public List<MacroGroup> Groups { get; } = new();
     public MacroOptions GlobalOptions { get; set; } = new();
 
-    public MacroBase CurrentMacro { get; set; }
+    public IMacroBase CurrentMacro { get; set; }
     public bool IsRunning { get; set; }
 
     private PathService PathService;
@@ -23,19 +24,39 @@ public class MacroManager
         PathService = path;
     }
 
-    public MacroBase GetMacro(string name)
-    {
-        return Macros.FirstOrDefault(x => x.Name == name);
-    }
-
-    public void AddMacro(MacroBase macro)
+    public void AddMacro(IMacroBase macro)
     {
         macro.PrivateFolder = PathService.GetMacroFolder(macro);
         macro.SharedFolder = PathService.SharedFolder;
-        Macros.Add(macro);
+        try
+        {
+            macro.Initialize();
+            Macros.Add(macro);
+        } catch (Exception)
+        {
+        }
     }
 
-    public void Set(MacroBase macro)
+    public void AddGroup(MacroGroup group)
+    {
+        group.GroupFolder = PathService.GetGroupFolder(group);
+        group.LoadOptions();
+
+        Groups.Add(group);
+
+        foreach (var macro in group.Macros)
+        {
+            macro.Group = group;
+            AddMacro(macro);
+        }
+    }
+
+    public IMacroBase GetMacro(string name)
+    {
+        return Macros.First(x => x.Name == name);
+    }
+
+    public void Set(IMacroBase macro)
     {
         if (IsRunning && CurrentMacro != macro)
         {
@@ -97,7 +118,7 @@ public class MacroManager
         }
 
         var filepath = PathService.GlobalMacroOptionsFile;
-        GlobalOptions.Load(filepath);
+        GlobalOptions.Load(filepath, true);
     }
 
     public void SaveGlobalOptions()

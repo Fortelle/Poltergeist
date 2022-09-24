@@ -19,20 +19,20 @@ public class RepeatableMacro : MacroBase
         {
             Options = {
                 UseCount = true,
-                UsePersistence = true,
+                UseTimeout = true,
                 Instrument =  RepeatInstrumentType.List,
             }
         });
     }
 
-    protected internal override void ConfigureProc(MacroServiceCollection services)
+    protected internal override void OnConfigure(MacroServiceCollection services)
     {
-        base.ConfigureProc(services);
+        base.OnConfigure(services);
     }
 
-    protected internal override void ReadyProc(MacroProcessor processor)
+    protected internal override void OnProcess(MacroProcessor processor)
     {
-        base.ReadyProc(processor);
+        base.OnProcess(processor);
 
         var loop = processor.GetService<RepeatService>();
         if (Begin != null) loop.BeginProc = () => Begin.Invoke(processor);
