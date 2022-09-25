@@ -59,7 +59,7 @@ public class TerminalService : MacroService
 
     public void Close()
     {
-        Host.Dispose();
+        Host?.Dispose();
     }
 
     public override void Dispose()

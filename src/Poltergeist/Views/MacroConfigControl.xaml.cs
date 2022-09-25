@@ -43,6 +43,15 @@ public sealed partial class MacroConfigControl : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Text = item.DisplayLabel ?? item.Key,
         };
+        if(item is UndefinedOptionItem)
+        {
+            label.FontStyle = FontStyles.Italic;
+            label.ToolTip = "Undefined option";
+        }
+        else if (!string.IsNullOrEmpty(item.Description))
+        {
+            label.ToolTip = item.Description;
+        }
         grid.Children.Add(label);
 
         var width = 160;
@@ -55,90 +64,86 @@ public sealed partial class MacroConfigControl : UserControl
         };
         var isBlock = false;
         FrameworkElement element;
+        switch (item)
+        {
+            case FileOptionItem foi:
+                {
+                    element = CreatePathControl();
+                    element.Width = width;
+                    BindingOperations.SetBinding(element, DataContextProperty, binding);
+                }
+                break;
+            case IChoiceOptionItem coi:
+                {
+                    element = new ComboBox()
+                    {
+                        ItemsSource = coi.Choices,
+                        Width = width,
+                    };
+                    BindingOperations.SetBinding(element, ComboBox.SelectedItemProperty, binding);
+                }
+                break;
+            case OptionItem<string>:
+                {
+                    element = new TextBox()
+                    {
+                        Width = width,
+                        SpellCheck = {
+                            IsEnabled = false,
+                        },
+                    };
+                    BindingOperations.SetBinding(element, TextBox.TextProperty, binding);
+                }
+                break;
+            case OptionItem<bool>:
+                {
+                    element = new ModernWpf.Controls.ToggleSwitch()
+                    {
+                        OnContent = "",
+                        OffContent = "",
+                        Margin = new(0, 0, -110, 0),
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                    };
+                    BindingOperations.SetBinding(element, ModernWpf.Controls.ToggleSwitch.IsOnProperty, binding);
+                }
+                break;
+            case OptionItem<int>:
+            case OptionItem<double>:
+                {
+                    element = new ModernWpf.Controls.NumberBox()
+                    {
+                        SpinButtonPlacementMode = ModernWpf.Controls.NumberBoxSpinButtonPlacementMode.Compact,
+                        Width = width,
+                    };
+                    BindingOperations.SetBinding(element, ModernWpf.Controls.NumberBox.ValueProperty, binding);
+                }
+                break;
+            case IOptionItem x when x.Type.IsEnum:
+                {
+                    var source = Enum.GetValues(x.Type);
+                    element = new ComboBox()
+                    {
+                        ItemsSource = source,
+                        Width = width,
+                    };
+                    BindingOperations.SetBinding(element, ComboBox.SelectedItemProperty, binding);
+                }
+                break;
+            default:
+                {
+                    element = new TextBlock()
+                    {
+                        Text = item.Value.ToString(),
+                        Width = width,
+                        TextTrimming = TextTrimming.CharacterEllipsis,
+                        ToolTip = item.Value.ToString(),
+                    };
+                }
+                break;
+        }
         if (item.IsReadonly)
         {
-            element = new TextBlock()
-            {
-                Text = item.ToString(),
-            };
-        }
-        else
-        {
-            switch (item)
-            {
-                case FileOptionItem foi:
-                    {
-                        element = CreatePathControl();
-                        element.Width = width;
-                        BindingOperations.SetBinding(element, DataContextProperty, binding);
-                    }
-                    break;
-                case IChoiceOptionItem coi:
-                    {
-                        element = new ComboBox()
-                        {
-                            ItemsSource = coi.Choices,
-                            Width = width,
-                        };
-                        BindingOperations.SetBinding(element, ComboBox.SelectedItemProperty, binding);
-                    }
-                    break;
-                case OptionItem<string>:
-                    {
-                        element = new TextBox()
-                        {
-                            Width = width,
-                            SpellCheck = {
-                                IsEnabled = false,
-                            },
-                        };
-                        BindingOperations.SetBinding(element, TextBox.TextProperty, binding);
-                    }
-                    break;
-                case OptionItem<bool>:
-                    {
-                        element = new ModernWpf.Controls.ToggleSwitch()
-                        {
-                            OnContent = "",
-                            OffContent = "",
-                            Margin = new(0, 0, -110, 0),
-                            HorizontalAlignment = HorizontalAlignment.Right,
-                        };
-                        BindingOperations.SetBinding(element, ModernWpf.Controls.ToggleSwitch.IsOnProperty, binding);
-                    }
-                    break;
-                case OptionItem<int>:
-                case OptionItem<double>:
-                    {
-                        element = new ModernWpf.Controls.NumberBox()
-                        {
-                            SpinButtonPlacementMode = ModernWpf.Controls.NumberBoxSpinButtonPlacementMode.Compact,
-                            Width = width,
-                        };
-                        BindingOperations.SetBinding(element, ModernWpf.Controls.NumberBox.ValueProperty, binding);
-                    }
-                    break;
-                case IOptionItem x when x.Type.IsEnum:
-                    {
-                        var source = Enum.GetValues(x.Type);
-                        element = new ComboBox()
-                        {
-                            ItemsSource = source,
-                            Width = width,
-                        };
-                        BindingOperations.SetBinding(element, ComboBox.SelectedItemProperty, binding);
-                    }
-                    break;
-                default:
-                    {
-                        element = new TextBlock()
-                        {
-                            Text = item.Value.ToString(),
-                        };
-                    }
-                    break;
-            }
-
+            element.IsEnabled = false;
         }
 
         element.SourceUpdated += (s, args) =>

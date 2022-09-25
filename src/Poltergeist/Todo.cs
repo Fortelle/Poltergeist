@@ -4,8 +4,6 @@
 
     // Settings
 
-    // MacroGroup Options
-
     // ToastService
 
     // Two mode (task/thread)

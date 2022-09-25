@@ -203,7 +203,7 @@ public class WorkingService : MacroService
             DoError(e);
             endReason = ProcessEndReason.ErrorOccurred;
         }
-        catch (Exception e) when (!Debugger.IsAttached)
+        catch (Exception e) //when (!Debugger.IsAttached)
         {
             DoError(e);
             endReason = ProcessEndReason.ErrorOccurred;
