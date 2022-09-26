@@ -1,4 +1,5 @@
-﻿using Poltergeist.ViewModels;
+﻿using Poltergeist.Services;
+using Poltergeist.ViewModels;
 using Poltergeist.Views;
 using System;
 using System.Drawing;
@@ -42,7 +43,9 @@ namespace Poltergeist
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             var rect = new Rectangle((int)Top, (int)Left, (int)Width, (int)Height);
-            App.SetSettings("WindowPosition", rect);
+            var localSettings = App.GetService<LocalSettingsService>();
+            localSettings.SaveSetting("WindowPosition", rect);
+            localSettings.Save();
         }
     }
 }

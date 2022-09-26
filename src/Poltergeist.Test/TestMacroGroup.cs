@@ -75,9 +75,21 @@ public class TestMacroGroup : MacroGroup
 
                 new OptionItem<int>("test_option_a", 2),
                 new OptionItem<int>("test_option_d", 2),
+
+                new OptionItem<string>("readonly", "this option can not be changed")
+                {
+                    IsReadonly = true
+                },
+                new UndefinedOptionItem("undefined", "undefined"),
+
+                new OptionItem<string>("unbrowsable", "this option should not be seen")
+                {
+                    IsBrowsable = false
+                },
             },
             Script = (proc) =>
             {
+                var a = 0;
             }
         });
 

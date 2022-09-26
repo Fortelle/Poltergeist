@@ -14,7 +14,7 @@ public interface IMacroBase
     public string Description { get; }
     public string[] Tags { get; }
     public MacroOptions UserOptions { get; }
-    public VariableCollection Environments { get; }
+    public VariableCollection Statistics { get; }
 
     public List<MacroMaintenance> Maintenances { get; }
     public List<MacroModule> Modules { get; }

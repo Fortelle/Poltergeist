@@ -52,7 +52,9 @@ public class BackgroundService : MacroService
             return s;
         }).ToArray();
 
-        var optionList = Processor.Options.Select(x => $"{x.Key} = {x.Value}").ToArray();
+        var optionList = Processor.Options.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
+
+        var envList = Processor.Environments.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
 
         var moduleList = Processor.Macro.Modules.Select(x => $"{x.GetType().Name}").ToArray();
 
@@ -60,6 +62,7 @@ public class BackgroundService : MacroService
 
         WriteArray("Classes", family);
         WriteArray("UserOptions", optionList);
+        WriteArray("Environments", envList);
         WriteArray("Modules", moduleList);
         WriteArray("Services", serviceList);
     }

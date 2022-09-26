@@ -23,4 +23,12 @@ public sealed partial class SettingsPage : Page
 
         App.ShowFlyout("Global options saved");
     }
+
+    private void MacroConfigControl_ItemUpdated2(object sender, System.EventArgs e)
+    {
+        var manager = App.GetService<LocalSettingsService>();
+        manager.Save();
+
+        App.ShowFlyout("Local settings saved");
+    }
 }

@@ -23,7 +23,7 @@ public class MacroConsoleViewModel : ObservableRecipient
     private MacroProcessor _processor;
     private bool _isRunning;
     private MacroOptions _selectedOptions;
-    private VariableCollection _environments;
+    private VariableCollection _statistics;
 
     public ICommand StartCommand { get; }
     public ICommand StopCommand { get; }
@@ -32,7 +32,7 @@ public class MacroConsoleViewModel : ObservableRecipient
     public IMacroBase Macro { get => _macro; set => SetProperty(ref _macro, value); }
     public MacroProcessor Processor { get => _processor; set => SetProperty(ref _processor, value); }
     public MacroOptions UserOptions { get => _selectedOptions; set => SetProperty(ref _selectedOptions, value); }
-    public VariableCollection Environments { get => _environments; set => SetProperty(ref _environments, value); }
+    public VariableCollection Statistics { get => _statistics; set => SetProperty(ref _statistics, value); }
 
     public ObservableCollection<PanelTabItem> Panels { get; set; }
 
@@ -60,11 +60,11 @@ public class MacroConsoleViewModel : ObservableRecipient
 
         App.GetService<NavigationService>().Navigate("console");
 
-        var options = GetOptions();
-
-        Processor = new MacroProcessor(Macro, LaunchReason.ByUser, options)
+        Processor = new MacroProcessor(Macro, LaunchReason.ByUser)
         {
             WaitUiReady = true,
+            Options = GetOptions(),
+            Environments = GetEnvironments(),
         };
         Processor.Starting += Processor_Starting;
         Processor.Started += Processor_Started;
@@ -92,7 +92,7 @@ public class MacroConsoleViewModel : ObservableRecipient
         macro.Load();
 
         UserOptions = macro.UserOptions;
-        Environments = macro.Environments;
+        Statistics = macro.Statistics;
 
         Panels.Clear();
         Panels.Add(new PanelTabItem()
@@ -149,6 +149,17 @@ public class MacroConsoleViewModel : ObservableRecipient
         return macroOptions;
     }
 
+    private Dictionary<string, object> GetEnvironments()
+    {
+        var dict = new Dictionary<string, object>();
+
+        var localSettings = App.GetService<LocalSettingsService>();
+        dict.Add("logger.tofile", localSettings.ReadSetting<LogLevel>("logger.tofile"));
+        dict.Add("logger.toconsole", localSettings.ReadSetting<LogLevel>("logger.toconsole"));
+
+        return dict;
+    }
+
     private void Processor_Completed(object? sender, MacroCompletedEventArgs e)
     {
         Processor.Starting -= Processor_Starting;
@@ -163,8 +174,8 @@ public class MacroConsoleViewModel : ObservableRecipient
 
         Macro.SaveOptions();
 
-        Environments = null;
-        Environments = Macro.Environments;
+        Statistics = null;
+        Statistics = Macro.Statistics;
     }
 
     private void Processor_Starting(object? sender, MacroStartedEventArgs e)

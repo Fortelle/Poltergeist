@@ -22,7 +22,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     public MacroOptions UserOptions { get; set; } = new();
 
     [JsonProperty]
-    public VariableCollection Environments { get; set; } = new();
+    public VariableCollection Statistics { get; set; } = new();
 
     public List<MacroMaintenance> Maintenances { get; } = new();
     public List<MacroModule> Modules { get; } = new();
@@ -78,9 +78,9 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
             Maintenances.Add(OpenLocalFolder);
         }
 
-        Environments.Add(new("LastRunTime", default(DateTime)));
-        Environments.Add(new("TotalRunCount", 0));
-        Environments.Add(new("TotalRunTime", default(TimeSpan)));
+        Statistics.Add(new("LastRunTime", default(DateTime)));
+        Statistics.Add(new("TotalRunCount", 0));
+        Statistics.Add(new("TotalRunTime", default(TimeSpan)));
 
         OnInitialize();
 
@@ -122,7 +122,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         if (!IsInitialized) return;
         if (!UseFile) return;
 
-        if (!UserOptions.HasChanged && !Environments.HasChanged) return;
+        if (!UserOptions.HasChanged && !Statistics.HasChanged) return;
 
         var path = Path.Combine(PrivateFolder, "config.json");
         SerializationUtil.JsonSave(path, this);

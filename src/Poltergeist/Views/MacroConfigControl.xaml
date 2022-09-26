@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:macros="clr-namespace:Poltergeist.Automations.Macros;assembly=Poltergeist.Automations"
-    xmlns:converters="clr-namespace:Poltergeist.Common.Converters;assembly=Poltergeist.Common"
+    xmlns:converters="clr-namespace:Poltergeist.Common.Converters;assembly=Poltergeist.Common" xmlns:system="clr-namespace:System;assembly=netstandard"
     d:DataContext="{d:DesignInstance macros:MacroOptions}"
     mc:Ignorable="d"
     >
@@ -14,6 +14,8 @@
         <CollectionViewSource
             x:Key="OptionGroups" 
             Source="{Binding}"
+            Filter="CollectionViewSource_Filter"
+            IsLiveFilteringRequested="True"
             >
             <CollectionViewSource.GroupDescriptions>
                 <PropertyGroupDescription PropertyName="Category"/>

@@ -19,5 +19,5 @@ public interface IOptionItem
     public bool IsDefault { get; }
 
     public object Value { get; set; }
-
+    public object Default { get; }
 }

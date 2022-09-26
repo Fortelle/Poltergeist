@@ -36,11 +36,10 @@ public sealed class MacroProcessor : IDisposable
 
     public ServiceProvider Services { get; set; }
 
-    //private DispatcherQueue Dispatcher { get; }
-
     public bool WaitUiReady { get; set; }
 
     public Dictionary<string, object> Options { get; set; }
+    public Dictionary<string, object> Environments { get; set; }
 
     private PauseTokenSource PauseTokenSource;
     private PauseToken PauseToken;
@@ -66,22 +65,22 @@ public sealed class MacroProcessor : IDisposable
 
         InitializeMacroData();
 
-        Options = Macro.UserOptions.ToDictionary();
+        //Options = Macro.UserOptions.ToDictionary();
 
-        InitializeProcessor();
+        //InitializeProcessor();
     }
 
-    public MacroProcessor(IMacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
-    {
-        Macro = data;
-        Reason = reason;
+    //public MacroProcessor(IMacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
+    //{
+    //    Macro = data;
+    //    Reason = reason;
 
-        InitializeMacroData();
+    //    InitializeMacroData();
 
-        Options = options;
+    //    Options = options;
 
-        InitializeProcessor();
-    }
+    //    InitializeProcessor();
+    //}
 
     private void InitializeMacroData()
     {
@@ -102,6 +101,9 @@ public sealed class MacroProcessor : IDisposable
 
     private void InitializeProcessor()
     {
+        Options ??= Macro.UserOptions.ToDictionary();
+        Environments ??= new();
+
         var services = new MacroServiceCollection();
         InitializeBasicServices(services);
         InitializeExtraServices(services);
@@ -127,8 +129,8 @@ public sealed class MacroProcessor : IDisposable
         services.AddOptions<LoggerOptions>();
         services.Configure<LoggerOptions>(options =>
         {
-            options.FileLogLevel = LogLevel.All;
-            options.FrontLogLevel = LogLevel.All;
+            options.FileLogLevel = GetEnvironment("logger.tofile", LogLevel.All);
+            options.FrontLogLevel = GetEnvironment("logger.toconsole", LogLevel.All);
             options.Filename = Path.Combine(Macro.PrivateFolder, "Logs", $"{ProcessId}.log");
         });
         services.AddSingleton<MacroLogger>();
@@ -197,6 +199,17 @@ public sealed class MacroProcessor : IDisposable
             return def;
         }
     }
+    public T GetEnvironment<T>(string key, T def = default)
+    {
+        if (Environments.TryGetValue(key, out var value))
+        {
+            return (T)value;
+        }
+        else
+        {
+            return def;
+        }
+    }
 
     public object GetService(Type type)
     {
@@ -212,8 +225,13 @@ public sealed class MacroProcessor : IDisposable
     {
         StartTime = DateTime.Now;
 
-        Hooks.Raise("ui_ready");
+        InitializeProcessor();
+
         GetService<MacroLogger>().UpdateUI();
+        Thread.Sleep(100);
+        Log(LogLevel.Information, "The macro has started up.");
+
+        Hooks.Raise("ui_ready");
 
         RaiseEvent(MacroEventType.ProcessStarting, new MacroStartedEventArgs(StartTime));
 
@@ -237,13 +255,18 @@ public sealed class MacroProcessor : IDisposable
     {
     }
 
+    protected void Log(LogLevel level, string message, params object[] args)
+    {
+        GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message, args);
+    }
+
     private void OnEnd(object sender, EndingEventArgs args)
     {
         EndTime = DateTime.Now;
 
-        Macro.Environments.Set("LastRunTime", StartTime);
-        Macro.Environments.Set<int>("TotalRunCount", old => old + 1);
-        Macro.Environments.Set<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
+        Macro.Statistics.Set("LastRunTime", StartTime);
+        Macro.Statistics.Set<int>("TotalRunCount", old => old + 1);
+        Macro.Statistics.Set<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
 
         var report = new ProcessReport()
         {

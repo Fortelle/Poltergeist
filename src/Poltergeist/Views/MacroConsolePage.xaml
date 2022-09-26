@@ -81,7 +81,7 @@
                     Style="{StaticResource Header3Style}"
                     />
 
-                <ItemsControl ItemsSource="{Binding Environments}">
+                <ItemsControl ItemsSource="{Binding Statistics}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid HorizontalAlignment="Stretch">

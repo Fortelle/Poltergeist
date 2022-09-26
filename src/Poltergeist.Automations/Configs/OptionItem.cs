@@ -12,7 +12,7 @@ public class OptionItem<T> : IOptionItem
     public string Category { get; set; }
     public string Description { get; set; }
     public bool IsReadonly { get; set; }
-    public bool IsBrowsable { get; set; }
+    public bool IsBrowsable { get; set; } = true;
 
     public bool HasChanged { get; set; }
 
@@ -43,4 +43,5 @@ public class OptionItem<T> : IOptionItem
         get => Value;
         set => Value = (T)value;
     }
+    object IOptionItem.Default => DefaultValue;
 }

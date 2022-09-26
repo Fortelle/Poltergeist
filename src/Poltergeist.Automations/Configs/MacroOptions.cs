@@ -29,6 +29,10 @@ public class MacroOptions : IEnumerable<IOptionItem>
         var i = Items.FindIndex(x => x.Key == item.Key);
         if (i > -1)
         {
+            if(Items[i] is UndefinedOptionItem uoi && item.IsDefault)
+            {
+                item.Value = uoi.Value?.ToObject(item.Type);
+            }
             Items[i] = item;
         }
         else
@@ -47,6 +51,43 @@ public class MacroOptions : IEnumerable<IOptionItem>
         return (T)Items.First(x => x.Key == key).Value;
     }
 
+    public T TryGet<T>(string key, T def)
+    {
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item is null)
+        {
+            return def;
+        }
+        else if (item is UndefinedOptionItem uoi)
+        {
+            try
+            {
+                return uoi.Value.ToObject<T>();
+            }
+            catch (Exception)
+            {
+                return def;
+            }
+        }
+        else if (item.Value is T t)
+        {
+            return t;
+        }
+        else if (item.Default is T d)
+        {
+            return d;
+        }
+        else
+        {
+            return def;
+        }
+    }
+
+    public void Set<T>(string key, T value)
+    {
+        Items.First(x => x.Key == key).Value = value;
+    }
+
     public void Load(string path, bool keepUndefined = false)
     {
         if (!File.Exists(path)) return;
@@ -61,8 +102,14 @@ public class MacroOptions : IEnumerable<IOptionItem>
             var item = this.FirstOrDefault(x => x.Key == key);
             if(item != null)
             {
-                var value = jtoken.ToObject(item.Type);
-                item.Value = value;
+                try
+                {
+                    var value = jtoken.ToObject(item.Type);
+                    item.Value = value;
+                }
+                catch (Exception)
+                {
+                }
             }
             else if (keepUndefined)
             {

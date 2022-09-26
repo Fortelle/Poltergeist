@@ -13,7 +13,7 @@ public class RepeatModule : MacroModule
 
     public override void OnMacroInitialize(IMacroInitializer macro)
     {
-        macro.Environments.Add(new("TotalRepeatCount", 0));
+        macro.Statistics.Add(new("TotalRepeatCount", 0));
 
         macro.UserOptions.Add(new OptionItem<bool>(RepeatService.ConfigEnableKey, true)
         {

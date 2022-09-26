@@ -42,13 +42,6 @@ public class WorkingService : MacroService
 
     private void ThreadProc()
     {
-        if (WaitUI)
-        {
-            Thread.Sleep(300);
-        }
-
-        Log(LogLevel.Information, "The macro has started up.");
-
         Hooks.Raise("process_starting");
 
         if (!CheckInitializationError()) return;
@@ -246,7 +239,7 @@ public class WorkingService : MacroService
 
         if (WaitUI)
         {
-            Thread.Sleep(300);
+            Thread.Sleep(100);
         }
 
         var args = new EndingEventArgs

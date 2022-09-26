@@ -28,12 +28,17 @@
             <ScrollViewer
                 HorizontalAlignment="Stretch"
                 IsTabStop="False"
-                Padding="0,0,16,0"
+                Padding="0,0,32,0"
                 >
                 <StackPanel>
                     <TextBlock
                         Text="Local Settings"
                         Style="{StaticResource Header3Style}"
+                        />
+                    
+                    <views:MacroConfigControl
+                        DataContext="{Binding LocalSettings, Mode=OneWay}"
+                        ItemUpdated="MacroConfigControl_ItemUpdated2"
                         />
                 </StackPanel>
             </ScrollViewer>

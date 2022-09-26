@@ -11,14 +11,6 @@ namespace Poltergeist.Views;
 
 public sealed partial class MacroConfigControl : UserControl
 {
-    //public bool AutoSave { get; set; }
-    //public static readonly DependencyProperty AutoSaveProperty =
-    //    DependencyProperty.Register(
-    //        "AutoSave",
-    //        typeof(bool),
-    //        typeof(MacroConfigControl), 
-    //        new FrameworkPropertyMetadata(false)
-    //        );
     public event EventHandler ItemUpdated;
 
     public MacroConfigControl()
@@ -226,4 +218,8 @@ public sealed partial class MacroConfigControl : UserControl
         return grid;
     }
 
+    private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        e.Accepted = ((IOptionItem)e.Item).IsBrowsable;
+    }
 }
