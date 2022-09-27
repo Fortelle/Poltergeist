@@ -35,6 +35,7 @@ public class MacroConsoleViewModel : ObservableRecipient
     public VariableCollection Statistics { get => _statistics; set => SetProperty(ref _statistics, value); }
 
     public ObservableCollection<PanelTabItem> Panels { get; set; }
+    public bool UseStatistics { get; set; }
 
     public event Action Started;
 
@@ -156,6 +157,7 @@ public class MacroConsoleViewModel : ObservableRecipient
         var localSettings = App.GetService<LocalSettingsService>();
         dict.Add("logger.tofile", localSettings.ReadSetting<LogLevel>("logger.tofile"));
         dict.Add("logger.toconsole", localSettings.ReadSetting<LogLevel>("logger.toconsole"));
+        dict.Add("macro.usestatistics", localSettings.ReadSetting<bool>("macro.usestatistics"));
 
         return dict;
     }

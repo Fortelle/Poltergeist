@@ -32,15 +32,21 @@ public class LocalSettingsService
             IsBrowsable = false,
         };
 
+        yield return new OptionItem<bool>("macro.usestatistics", true)
+        {
+            Category = "Macro",
+            DisplayLabel = "Use statistics",
+        };
+
         yield return new OptionItem<LogLevel>("logger.tofile", LogLevel.All)
         {
-            Category = "Logger",
+            Category = "Macro",
             DisplayLabel = "Log to file",
         };
 
         yield return new OptionItem<LogLevel>("logger.toconsole", LogLevel.Information)
         {
-            Category = "Logger",
+            Category = "Macro",
             DisplayLabel = "Log to console",
         };
     }

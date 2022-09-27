@@ -17,6 +17,7 @@
     >
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:NotConverter x:Key="NotConverter"/>
         <converters:TypeNameConverter x:Key="TypeNameConverter"/>
     </Page.Resources>
@@ -77,11 +78,15 @@
                 </StackPanel>
 
                 <TextBlock
-                    Text="Analysis"
+                    Text="Statistics"
                     Style="{StaticResource Header3Style}"
+                    Visibility="{Binding UseStatistics, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     />
 
-                <ItemsControl ItemsSource="{Binding Statistics}">
+                <ItemsControl 
+                    ItemsSource="{Binding Statistics}"
+                    Visibility="{Binding UseStatistics, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    >
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid HorizontalAlignment="Stretch">

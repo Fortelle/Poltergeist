@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Documents;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Services;
 using Poltergeist.ViewModels;
 
 namespace Poltergeist.Views;
@@ -13,10 +14,10 @@ public sealed partial class MacroConsolePage : Page
     public MacroConsolePage(MacroConsoleViewModel vm)
     {
         ViewModel = vm;
+        ViewModel.UseStatistics = App.GetSettings<bool>("macro.usestatistics", true);
+        ViewModel.Started += ViewModel_Started;
 
         InitializeComponent();
-
-        ViewModel.Started += ViewModel_Started;
     }
 
     private void ViewModel_Started()
