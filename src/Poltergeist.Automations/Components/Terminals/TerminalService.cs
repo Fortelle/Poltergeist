@@ -16,38 +16,47 @@ public class TerminalService : MacroService
     public string PanelHeader { get; set; } = "Terminal";
     public string PanelName { get; set; } = "poltergeist-terminal";
 
+    public bool Visible { get; set; }
+
     public TerminalService(MacroProcessor processor) : base(processor)
     {
+        Visible = true;
     }
 
     public void Start()
     {
-        var panelService = Processor.GetService<PanelService>();
-        TerminalPanel = panelService.Create<TextPanelModel>(panel =>
+        if (Visible)
         {
-            panel.Key = PanelName;
-            panel.Header = PanelHeader;
-            panel.BackgroundColor = Color.FromRgb(16, 16, 16);
-            panel.ForegroundColor = Color.FromRgb(252, 252, 252);
+            var panelService = Processor.GetService<PanelService>();
+            TerminalPanel = panelService.Create<TextPanelModel>(panel =>
+            {
+                panel.Key = PanelName;
+                panel.Header = PanelHeader;
+                panel.BackgroundColor = Color.FromRgb(16, 16, 16);
+                panel.ForegroundColor = Color.FromRgb(252, 252, 252);
 
-            panel.Colors.Add("input", Colors.LimeGreen);
-            panel.Colors.Add("output", Colors.White);
-        });
+                panel.Colors.Add("input", Colors.LimeGreen);
+                panel.Colors.Add("output", Colors.White);
+            });
+        }
         Host = new(WorkingDirectory);
         Host.Start();
     }
 
-    public void Execute(string command)
+    public string Execute(string command)
     {
-        TerminalPanel.WriteLine(new TextLine()
+        if (Visible)
         {
-            Category = "input",
-            Text = "> " + command,
-        });
+            TerminalPanel.WriteLine(new TextLine()
+            {
+                Category = "input",
+                Text = "> " + command,
+            });
+        }
 
         Host.TryExecute(command, out var output);
 
-        if (!string.IsNullOrEmpty(output))
+        if (Visible && !string.IsNullOrEmpty(output))
         {
             TerminalPanel.WriteLine(new TextLine()
             {
@@ -55,6 +64,8 @@ public class TerminalService : MacroService
                 Text = output,
             });
         }
+
+        return output;
     }
 
     public void Close()
