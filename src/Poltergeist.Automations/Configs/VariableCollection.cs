@@ -63,11 +63,13 @@ public class VariableCollection : IEnumerable<VariableItem>
         item.HasChanged = true;
     }
 
-    public void Set<T>(string key, Func<T, T> action)
+    public void Set<T>(string key, Func<T, T> action, out T oldValue, out T newValue)
     {
         var item = Items.Find(x => x.Key == key);
         var value = (T)item.Value;
-        item.Value = action(value);
+        oldValue = value;
+        newValue = action(value);
+        item.Value = newValue;
         item.HasChanged = true;
     }
 

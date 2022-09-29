@@ -253,7 +253,7 @@ public class RepeatService : MacroService
             EndProc.Invoke();
         }
 
-        Processor.Macro.Statistics.Set<int>("TotalRepeatCount", old => old + IterationIndex + 1);
+        Processor.SetStatistic<int>("TotalRepeatCount", old => old + IterationIndex + 1);
 
         Hooks.Raise("repeat_end");
 

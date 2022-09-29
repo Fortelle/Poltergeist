@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components;
+using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Panels;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Automations.Services;
@@ -211,6 +211,21 @@ public sealed class MacroProcessor : IDisposable
         }
     }
 
+    public void SetStatistic<T>(string key, T value)
+    {
+        if (!GetEnvironment<bool>("macro.usestatistics")) return;
+        Macro.Statistics.Set(key, value);
+        //Log(LogLevel.Debug, $"Set statistic {key} = {value}.");
+
+    }
+
+    public void SetStatistic<T>(string key, Func<T, T> action)
+    {
+        if (!GetEnvironment<bool>("macro.usestatistics")) return;
+        Macro.Statistics.Set(key, action, out var oldValue, out var newValue);
+        //Log(LogLevel.Debug, $"Set statistic {key} = {newValue}.");
+    }
+
     public object GetService(Type type)
     {
         return Services.GetService(type);
@@ -264,9 +279,9 @@ public sealed class MacroProcessor : IDisposable
     {
         EndTime = DateTime.Now;
 
-        Macro.Statistics.Set("LastRunTime", StartTime);
-        Macro.Statistics.Set<int>("TotalRunCount", old => old + 1);
-        Macro.Statistics.Set<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
+        SetStatistic("LastRunTime", StartTime);
+        SetStatistic<int>("TotalRunCount", old => old + 1);
+        SetStatistic<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
 
         var report = new ProcessReport()
         {
@@ -293,14 +308,16 @@ public sealed class MacroProcessor : IDisposable
 
         var handlerArgs = new object[] { this, eventArgs };
 
-        originalContext.Post(d => {
+        originalContext.Post(d =>
+        {
             multicastDelegate?.DynamicInvoke(handlerArgs);
         }, null);
     }
 
     public void RaiseAction(Action action)
     {
-        originalContext.Post(d => {
+        originalContext.Post(d =>
+        {
             action.DynamicInvoke();
         }, null);
     }
