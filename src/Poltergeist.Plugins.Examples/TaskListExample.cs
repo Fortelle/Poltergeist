@@ -20,9 +20,9 @@ public class TaskListExample : BasicMacro
         Script += ScriptProc;
     }
 
-    private void ScriptProc(MacroProcessor proc)
+    private void ScriptProc(BasicMacroScriptArguments e)
     {
-        var noti = proc.GetService<InstrumentService>();
+        var noti = e.Processor.GetService<InstrumentService>();
         var gi = noti.Create<ListInstrument>(inst =>
         {
             inst.Title = "Tasks:";

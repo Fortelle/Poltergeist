@@ -8,10 +8,10 @@ namespace Poltergeist.Automations.Components.Repeats;
 
 public class RepeatableMacro : MacroBase
 {
-    public Func<MacroProcessor, bool> Begin;
-    public Func<MacroProcessor, IterationResult> Iteration;
-    public Func<MacroProcessor, CheckNextResult> CheckNext;
-    public Action<MacroProcessor> End;
+    public Action<LoopBeginArguments> Begin;
+    public Action<LoopIterationArguments> Iteration;
+    public Action<LoopCheckNextArguments> CheckNext;
+    public Action<ArgumentService> End;
 
     public RepeatableMacro(string name) : base(name)
     {
@@ -35,10 +35,10 @@ public class RepeatableMacro : MacroBase
         base.OnProcess(processor);
 
         var loop = processor.GetService<RepeatService>();
-        if (Begin != null) loop.BeginProc = () => Begin.Invoke(processor);
-        if (Iteration != null) loop.IterationProc = () => Iteration.Invoke(processor);
-        if (CheckNext != null) loop.CheckNextProc = () => CheckNext.Invoke(processor);
-        if (End != null) loop.EndProc = () => End.Invoke(processor);
+        if (Begin != null) loop.BeginProc = Begin;
+        if (Iteration != null) loop.IterationProc = Iteration;
+        if (CheckNext != null) loop.CheckNextProc = CheckNext;
+        if (End != null) loop.EndProc = End;
     }
 
 }

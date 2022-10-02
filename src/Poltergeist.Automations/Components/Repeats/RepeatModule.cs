@@ -55,6 +55,9 @@ public class RepeatModule : MacroModule
                 options.Instrument = Options.Instrument;
             });
         }
+        services.AddTransient<LoopBeginArguments>();
+        services.AddTransient<LoopIterationArguments>();
+        services.AddTransient<LoopCheckNextArguments>();
         services.AddAutoload<RepeatService>();
     }
 

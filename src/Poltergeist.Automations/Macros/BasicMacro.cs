@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -9,10 +10,15 @@ public class BasicMacro : MacroBase
 {
     public bool ShowStatus { get; set; } = true;
 
-    public Action<MacroProcessor> Script;
+    public Action<BasicMacroScriptArguments> Script;
 
     public BasicMacro(string name) : base(name)
     {
+    }
+
+    protected internal override void OnConfigure(MacroServiceCollection services)
+    {
+        services.AddTransient<BasicMacroScriptArguments>();
     }
 
     protected internal override void OnProcess(MacroProcessor processor)
@@ -20,7 +26,11 @@ public class BasicMacro : MacroBase
         base.OnProcess(processor);
 
         var work = processor.GetService<WorkingService>();
-        work.WorkProc = () => Script(processor);
+        work.WorkProc = () =>
+        {
+            var args = processor.GetService<BasicMacroScriptArguments>();
+            Script(args);
+        };
 
         SetStatus(processor);
     }
@@ -36,6 +46,7 @@ public class BasicMacro : MacroBase
             inst.Title = "Status:";
         });
 
+        // todo: improve hooks to support args.message
         var hooks = processor.GetService<HookService>();
         hooks.Register("process_starting", _ =>
         {

@@ -22,12 +22,12 @@ public class GridExample : BasicMacro
         UserOptions.Add("placeholder", false);
     }
 
-    private void ScriptProc(MacroProcessor proc)
+    private void ScriptProc(BasicMacroScriptArguments e)
     {
-        var usePlaceholder = proc.GetOption("placeholder", false);
+        var usePlaceholder = e.Processor.GetOption("placeholder", false);
         //var gi = usePlaceholder ? new GridInstrument(Count) : new GridInstrument();
-
-        var noti = proc.GetService<InstrumentService>();
+        
+        var noti = e.Processor.GetService<InstrumentService>();
         var gi = noti.Create<GridInstrument>(gi =>
         {
             gi.Title = "Task grids:";

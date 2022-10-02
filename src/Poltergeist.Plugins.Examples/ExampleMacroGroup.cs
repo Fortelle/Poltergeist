@@ -30,11 +30,11 @@ public class ExampleMacroGroup : MacroGroup
             {
                 services.AddTransient<StepHelperService>();
             },
-            Script = (proc) =>
+            Script = (e) =>
             {
                 Process notepad = null;
-
-                var steps = proc.GetService<StepHelperService>();
+                
+                var steps = e.Processor.GetService<StepHelperService>();
                 steps.Interval = 1000;
 
                 steps.Add("Wait 1 second", () =>
@@ -82,9 +82,9 @@ public class ExampleMacroGroup : MacroGroup
             {
                 services.AddSingleton<StepHelperService>();
             },
-            Script = (proc) =>
+            Script = (e) =>
             {
-                var steps = proc.GetService<StepHelperService>();
+                var steps = e.Processor.GetService<StepHelperService>();
                 steps.Add("Say Hello", () =>
                 {
                     Thread.Sleep(500);
@@ -92,7 +92,7 @@ public class ExampleMacroGroup : MacroGroup
                 steps.Add("Say World", () =>
                 {
                     Thread.Sleep(500);
-                    if (proc.GetOption("break", false)) throw new Exception();
+                    if (e.Processor.GetOption("break", false)) throw new Exception();
                 });
                 steps.Add("Done", () =>
                 {

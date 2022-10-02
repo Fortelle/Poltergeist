@@ -17,7 +17,7 @@ using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Processors;
 
-public sealed class MacroProcessor : IDisposable
+public sealed class MacroProcessor : IUserProcessor, IDisposable
 {
     public event EventHandler<MacroStartedEventArgs> Starting;
     public event EventHandler Started;
@@ -64,23 +64,7 @@ public sealed class MacroProcessor : IDisposable
         Reason = reason;
 
         InitializeMacroData();
-
-        //Options = Macro.UserOptions.ToDictionary();
-
-        //InitializeProcessor();
     }
-
-    //public MacroProcessor(IMacroBase data, LaunchReason reason, Dictionary<string, object> options) : this()
-    //{
-    //    Macro = data;
-    //    Reason = reason;
-
-    //    InitializeMacroData();
-
-    //    Options = options;
-
-    //    InitializeProcessor();
-    //}
 
     private void InitializeMacroData()
     {
@@ -154,6 +138,8 @@ public sealed class MacroProcessor : IDisposable
         services.AddTransient<GridInstrument>();
         services.AddTransient<ImageInstrument>();
         services.AddTransient<ListInstrument>();
+
+        services.AddTransient<ArgumentService>();
     }
 
     private void InitializeExtraServices(MacroServiceCollection services)
@@ -270,7 +256,7 @@ public sealed class MacroProcessor : IDisposable
     {
     }
 
-    protected void Log(LogLevel level, string message, params object[] args)
+    private void Log(LogLevel level, string message, params object[] args)
     {
         GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message, args);
     }

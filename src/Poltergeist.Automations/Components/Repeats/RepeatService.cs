@@ -21,11 +21,10 @@ public class RepeatService : MacroService
     private TimeSpan LoopTimeout;
     public bool SoftStop;
 
-
-    public Func<bool> BeginProc;
-    public Func<IterationResult> IterationProc;
-    public Func<CheckNextResult> CheckNextProc;
-    public Action EndProc;
+    public Action<LoopBeginArguments> BeginProc;
+    public Action<LoopIterationArguments> IterationProc;
+    public Action<LoopCheckNextArguments> CheckNextProc;
+    public Action<ArgumentService> EndProc;
 
     private readonly RepeatOptions Options;
 
@@ -91,16 +90,23 @@ public class RepeatService : MacroService
     {
         Log(LogLevel.Debug, "Started running the before-loop process.");
 
+        var canBegin = true;
+
         if (BeginProc is not null)
         {
-            BeginProc.Invoke();
+            var args = Processor.GetService<LoopBeginArguments>();
+            BeginProc.Invoke(args);
+            if (args.Cancel)
+            {
+                canBegin = false;
+            }
         }
 
         Hooks.Raise("repeat_begin");
 
         Log(LogLevel.Debug, "Finished running the before-loop process.");
 
-        return true;
+        return canBegin;
     }
 
     private void DoLoop()
@@ -140,7 +146,12 @@ public class RepeatService : MacroService
         {
             try
             {
-                state = IterationProc.Invoke();
+                var args = Processor.GetService<LoopIterationArguments>();
+                args.Index = index;
+                args.BeginTime = beginTime;
+                args.Result = IterationResult.Continue;
+                IterationProc.Invoke(args);
+                state = args.Result;
             }
             catch (Exception e)
             {
@@ -201,7 +212,9 @@ public class RepeatService : MacroService
         }
         else
         {
-            var state = CheckNextProc.Invoke();
+            var args = Processor.GetService<LoopCheckNextArguments>();
+            CheckNextProc.Invoke(args);
+            var state = args.Result;
             hasNext = state switch
             {
                 CheckNextResult.Continue => true,
@@ -250,7 +263,8 @@ public class RepeatService : MacroService
 
         if (EndProc is not null)
         {
-            EndProc.Invoke();
+            var args = Processor.GetService<ArgumentService>();
+            EndProc.Invoke(args);
         }
 
         Processor.SetStatistic<int>("TotalRepeatCount", old => old + IterationIndex + 1);

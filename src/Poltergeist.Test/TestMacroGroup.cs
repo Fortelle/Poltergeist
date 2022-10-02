@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Components.Repeats;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Logging;
@@ -32,6 +30,7 @@ public class TestMacroGroup : MacroGroup
 
     public void LoadMacros()
     {
+
         Macros.Add(new MinimalMacro("test_minimal")
         {
             Title = "Minimal",
@@ -48,9 +47,9 @@ public class TestMacroGroup : MacroGroup
         {
             Title = "Log test",
             Description = "Tests logger.",
-            Script = (proc) =>
+            Script = (e) =>
             {
-                var logger = proc.GetService<MacroLogger>();
+                var logger = e.Processor.GetService<MacroLogger>();
                 foreach (var level in Enum.GetValues<LogLevel>())
                 {
                     logger.Log(level, "", $"Test log line: {{{level}}}.");
@@ -99,16 +98,6 @@ public class TestMacroGroup : MacroGroup
             Description = "Provides a RepeatableMacro.",
             UserOptions =
             {
-                //new(RepeatService.ConfigTimesKey, 10)
-                //{
-                //    DisplayLabel = "Times",
-                //    Category = "Repeat",
-                //},
-                //new("loop-instrument", RepeatInstrumentType.List)
-                //{
-                //    DisplayLabel = "Instrument",
-                //    Category = "Repeat",
-                //},
             },
             Configure = (services) =>
             {
@@ -117,10 +106,9 @@ public class TestMacroGroup : MacroGroup
                     options.Instrument = RepeatInstrumentType.Grid;
                 });
             },
-            Iteration = (proc) =>
+            Iteration = (e) =>
             {
                 Thread.Sleep(500);
-                return IterationResult.Continue;
             }
         });
     }

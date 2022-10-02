@@ -24,7 +24,6 @@ public class ExceptionMacro : RepeatableMacro
             {
                 throw new MacroRunningException("This exception is thrown on loop begin.");
             }
-            return true;
         };
         End = _ =>
         {
@@ -39,7 +38,6 @@ public class ExceptionMacro : RepeatableMacro
             {
                 throw new MacroRunningException("This exception is thrown on loop iteration.");
             }
-            return IterationResult.Continue;
         };
         CheckNext = _ =>
         {
@@ -47,7 +45,6 @@ public class ExceptionMacro : RepeatableMacro
             {
                 throw new MacroRunningException("This exception is thrown on loop checknext.");
             }
-            return CheckNextResult.Continue;
         };
     }
 
