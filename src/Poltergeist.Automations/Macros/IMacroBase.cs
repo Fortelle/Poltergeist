@@ -31,7 +31,7 @@ public interface IMacroBase
     public void Load();
     public void LoadOptions();
     public void SaveOptions();
-    public void ConfigureServices(MacroServiceCollection services);
+    public void ConfigureServices(MacroServiceCollection services, IConfigureProcessor processor);
     public void Process(MacroProcessor processor);
 
     public T As<T>() where T : MacroBase;

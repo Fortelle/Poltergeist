@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Components.Loops;
@@ -42,8 +43,10 @@ public class RepeatModule : MacroModule
 
     }
 
-    public override void OnMacroConfigure(MacroServiceCollection services)
+    public override void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
     {
+        base.OnMacroConfigure(services, processor);
+
         if (Options != null)
         {
             services.Configure<RepeatOptions>(options =>

@@ -17,7 +17,7 @@ using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Processors;
 
-public sealed class MacroProcessor : IUserProcessor, IDisposable
+public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDisposable
 {
     public event EventHandler<MacroStartedEventArgs> Starting;
     public event EventHandler Started;
@@ -150,10 +150,10 @@ public sealed class MacroProcessor : IUserProcessor, IDisposable
         {
             foreach (var module in Macro.Modules)
             {
-                module.OnMacroConfigure(services);
+                module.OnMacroConfigure(services, this);
             }
 
-            Macro.ConfigureServices(services);
+            Macro.ConfigureServices(services, this);
         }
         catch (Exception e)
         {

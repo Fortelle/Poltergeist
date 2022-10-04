@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Repeats;
+using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
@@ -99,7 +100,7 @@ public class TestMacroGroup : MacroGroup
             UserOptions =
             {
             },
-            Configure = (services) =>
+            Configure = (services, _) =>
             {
                 services.Configure<RepeatOptions>(options =>
                 {
@@ -111,6 +112,27 @@ public class TestMacroGroup : MacroGroup
                 Thread.Sleep(500);
             }
         });
+
+        Macros.Add(new BasicMacro("test_cmd")
+        {
+            Configure = (services, _) =>
+            {
+                services.AddSingleton<TerminalService>();
+            },
+            Script = (e) =>
+            {
+                var cmd = e.Processor.GetService<TerminalService>();
+                cmd.Start();
+                Thread.Sleep(100);
+                cmd.Execute("cd");
+                cmd.Execute("cd /d c:/");
+                Thread.Sleep(100);
+                cmd.Execute("cd");
+                cmd.Execute("echo hello");
+                cmd.Close();
+            }
+        });
+
     }
 
 }

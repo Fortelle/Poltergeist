@@ -11,7 +11,7 @@ public abstract class MacroModule
     {
     }
 
-    public virtual void OnMacroConfigure(MacroServiceCollection services)
+    public virtual void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
     {
     }
 

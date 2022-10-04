@@ -11,7 +11,7 @@ public class ArgumentService : IDisposable, IUserLogger
 
     private string SenderName { get; }
 
-    protected ArgumentService(MacroProcessor processor)
+    public ArgumentService(MacroProcessor processor)
     {
         Processor = processor;
         Logger = this;

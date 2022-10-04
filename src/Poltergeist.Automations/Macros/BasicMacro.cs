@@ -16,8 +16,10 @@ public class BasicMacro : MacroBase
     {
     }
 
-    protected internal override void OnConfigure(MacroServiceCollection services)
+    protected internal override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)
     {
+        base.OnConfigure(services, processor);
+
         services.AddTransient<BasicMacroScriptArguments>();
     }
 

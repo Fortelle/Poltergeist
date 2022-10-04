@@ -48,9 +48,9 @@ public class ExceptionMacro : RepeatableMacro
         };
     }
 
-    protected override void OnConfigure(MacroServiceCollection services)
+    protected override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)
     {
-        base.OnConfigure(services);
+        base.OnConfigure(services, processor);
 
         if (UserOptions.Get<bool>("On initialization"))
         {

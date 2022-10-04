@@ -26,7 +26,7 @@ public class ExampleMacroGroup : MacroGroup
         {
             Title = "Hello world",
             Description = "Opens a notepad and inputs text.",
-            Configure = (services) =>
+            Configure = (services, _) =>
             {
                 services.AddTransient<StepHelperService>();
             },
@@ -78,7 +78,7 @@ public class ExampleMacroGroup : MacroGroup
             {
                 new OptionItem<bool>("break", false),
             },
-            Configure = (services) =>
+            Configure = (services, _) =>
             {
                 services.AddSingleton<StepHelperService>();
             },

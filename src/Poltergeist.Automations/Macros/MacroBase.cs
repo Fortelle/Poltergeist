@@ -28,7 +28,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     public List<MacroModule> Modules { get; } = new();
     public MacroStorage Storage { get; } = new();
 
-    public Action<MacroServiceCollection> Configure { get; set; }
+    public Action<MacroServiceCollection, IConfigureProcessor> Configure { get; set; }
     public Action<MacroProcessor> Process { get; set; }
 
     private bool IsInitialized { get; set; }
@@ -56,7 +56,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     protected internal virtual void OnInitialize() { }
     protected internal virtual void OnLoad() { }
-    protected internal virtual void OnConfigure(MacroServiceCollection services) { }
+    protected internal virtual void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor) { }
     protected internal virtual void OnProcess(MacroProcessor processor) { }
 
     public MacroBase(string name)
@@ -128,10 +128,10 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         SerializationUtil.JsonSave(path, this);
     }
 
-    void IMacroBase.ConfigureServices(MacroServiceCollection services)
+    void IMacroBase.ConfigureServices(MacroServiceCollection services, IConfigureProcessor processor)
     {
-        Configure?.Invoke(services);
-        OnConfigure(services);
+        Configure?.Invoke(services, processor);
+        OnConfigure(services, processor);
     }
 
     void IMacroBase.Process(MacroProcessor processor)

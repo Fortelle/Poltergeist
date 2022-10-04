@@ -25,9 +25,9 @@ public class RepeatableMacro : MacroBase
         });
     }
 
-    protected internal override void OnConfigure(MacroServiceCollection services)
+    protected internal override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)
     {
-        base.OnConfigure(services);
+        base.OnConfigure(services, processor);
     }
 
     protected internal override void OnProcess(MacroProcessor processor)
