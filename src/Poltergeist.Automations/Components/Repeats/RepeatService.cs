@@ -72,18 +72,27 @@ public class RepeatService : MacroService
         }
     }
 
-    private void WorkProc()
+    private EndReason Status = EndReason.None;
+
+    private EndReason WorkProc()
     {
         CreateInstrument();
 
         if (!DoBegin())
         {
-            return;
+            return EndReason.Unstarted;
         }
 
         DoLoop();
 
         DoEnd();
+
+        if(Status == EndReason.None)
+        {
+            Status = EndReason.Complete;
+        }
+
+        return Status;
     }
 
     private bool DoBegin()
@@ -185,11 +194,13 @@ public class RepeatService : MacroService
         if (iterationResult == IterationResult.Error && Options?.StopOnError == true)
         {
             hasNext = false;
+            Status = EndReason.ErrorOccurred;
             Log(LogLevel.Debug, $"StopOnError");
         }
         else if (SoftStop)
         {
             hasNext = false;
+            Status = EndReason.UserAborted;
             Log(LogLevel.Debug, "SoftStop");
         }
         else if (CheckCount())

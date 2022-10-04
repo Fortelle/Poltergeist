@@ -11,7 +11,7 @@ namespace Poltergeist.Automations.Processors;
 
 public class WorkingService : MacroService
 {
-    public Action WorkProc;
+    public Func<EndReason> WorkProc;
     public event EventHandler<BeginningEventArgs> Beginning;
     public event EventHandler<EndingEventArgs> Ending;
 
@@ -25,6 +25,7 @@ public class WorkingService : MacroService
     private CancellationTokenSource Cancellation;
 
     public bool WaitUI;
+    private EndReason? EndStatus;
 
     public WorkingService(MacroProcessor processor, HookService hooks) : base(processor)
     {
@@ -44,15 +45,21 @@ public class WorkingService : MacroService
     {
         Hooks.Raise("process_starting");
 
-        if (!CheckInitializationError()) return;
-        if (!LoadServices()) return;
-        if (!CheckAvailability()) return;
+        CheckInitializationError();
+        if (EndStatus.HasValue) goto end;
+
+        LoadServices();
+        if (EndStatus.HasValue) goto end;
+
+        CheckAvailability();
+        if (EndStatus.HasValue) goto end;
 
         Hooks.Raise("process_started");
 
-        if (!DoWork()) return;
+        DoWork();
 
-        DoEnd(ProcessEndReason.Completed);
+        end:
+        DoEnd();
     }
 
     public void Abort()
@@ -72,21 +79,18 @@ public class WorkingService : MacroService
         //}
     }
 
-    private bool CheckInitializationError()
+    private void CheckInitializationError()
     {
-        if (Processor.InitializationException == null) return true;
+        if (Processor.InitializationException == null) return;
 
         Log(LogLevel.Debug, "An error has occurred during initialization.");
 
         DoError(Processor.InitializationException);
-        DoEnd(ProcessEndReason.ErrorOccurred);
-        return false;
+        EndStatus = EndReason.ErrorOccurred;
     }
 
-    private bool LoadServices()
+    private void LoadServices()
     {
-        ProcessEndReason? endReason = null;
-
         Log(LogLevel.Debug, "Started loading startup services.");
 
         try
@@ -100,27 +104,14 @@ public class WorkingService : MacroService
         catch (Exception e) //when (!Debugger.IsAttached)
         {
             DoError(e);
-            endReason = ProcessEndReason.ErrorOccurred;
         }
 
         Log(LogLevel.Debug, "Finished loading startup services.");
-
-        if (endReason.HasValue)
-        {
-            DoEnd(endReason.Value);
-            return false;
-        }
-        else
-        {
-            return true;
-        }
     }
 
     // todo: add hooks if necessary
-    private bool CheckAvailability()
+    private void CheckAvailability()
     {
-        ProcessEndReason? endReason = null;
-
         Log(LogLevel.Debug, "Started running availability check.");
 
         try
@@ -148,58 +139,39 @@ public class WorkingService : MacroService
             else
             {
                 Log(LogLevel.Warning, "The availability check failed."); // not an error
-                endReason = ProcessEndReason.CheckFailed;
+                EndStatus = EndReason.Unstarted;
             }
 
         }
         catch (Exception e) // when (!Debugger.IsAttached)
         {
             DoError(e);
-            endReason = ProcessEndReason.ErrorOccurred;
         }
 
         Log(LogLevel.Debug, "Finished running availability check.");
-
-        if (endReason.HasValue)
-        {
-            DoEnd(endReason.Value);
-            return false;
-        }
-        else
-        {
-            return true;
-        }
     }
 
-    private bool DoWork()
+    private void DoWork()
     {
-        ProcessEndReason? endReason = null;
-
         Log(LogLevel.Debug, "Started running the main process.");
 
         try
         {
             CanAbort = true;
 
-            Hooks.Raise("process_begin");
-
-            WorkProc?.Invoke();
-
-            Hooks.Raise("process_done");
+            EndStatus = WorkProc?.Invoke();
         }
         catch (ThreadInterruptedException e)
         {
-            endReason = ProcessEndReason.UserAborted;
+            EndStatus = EndReason.UserAborted;
         }
         catch (MacroRunningException e)
         {
             DoError(e);
-            endReason = ProcessEndReason.ErrorOccurred;
         }
         catch (Exception e) //when (!Debugger.IsAttached)
         {
             DoError(e);
-            endReason = ProcessEndReason.ErrorOccurred;
         }
         finally
         {
@@ -207,20 +179,12 @@ public class WorkingService : MacroService
         }
 
         Log(LogLevel.Debug, "Finished running the main process.");
-
-        if (endReason.HasValue)
-        {
-            DoEnd(endReason.Value);
-            return false;
-        }
-        else
-        {
-            return true;
-        }
     }
 
     private void DoError(Exception exception)
     {
+        EndStatus = EndReason.ErrorOccurred;
+
         Log(LogLevel.Error, exception.Message);
 
         if (exception.InnerException != null)
@@ -231,11 +195,18 @@ public class WorkingService : MacroService
         Hooks.Raise("error_occured", exception.Message);
     }
 
-    private void DoEnd(ProcessEndReason reason)
+    private void DoEnd()
     {
-        Hooks.Raise("process_exiting", reason);
+        if(!EndStatus.HasValue || EndStatus == EndReason.None)
+        {
+            EndStatus = EndReason.Complete;
+        }
 
-        Log(LogLevel.Information, "The macro is complete. The processor will shut down."); // this should be the last line
+        Hooks.Raise("process_exiting", EndStatus.Value);
+
+        Log(LogLevel.Information, $"The macro is finished with status: {EndStatus}.");
+
+        Log(LogLevel.Debug, "The processor will shut down."); // this should be the last line
 
         if (WaitUI)
         {
@@ -244,7 +215,7 @@ public class WorkingService : MacroService
 
         var args = new EndingEventArgs
         {
-            Reason = reason
+            Reason = EndStatus.Value
         };
         Ending?.Invoke(this, args);
     }

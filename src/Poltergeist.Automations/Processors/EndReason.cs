@@ -1,10 +1,12 @@
 ﻿namespace Poltergeist.Automations.Processors;
 
-public enum ProcessEndReason
+public enum EndReason
 {
     None,
-    CheckFailed,
+    Unstarted,
+    Purposed,
     UserAborted,
+    SystemShutdown,// todo
     ErrorOccurred,
-    Completed,
+    Complete,
 }

@@ -4,10 +4,10 @@ namespace Poltergeist.Automations.Processors.Events;
 
 public class MacroCompletedEventArgs : EventArgs
 {
-    public ProcessEndReason Status;
+    public EndReason Status;
     public ProcessReport Summary;
 
-    public MacroCompletedEventArgs(ProcessEndReason status, ProcessReport summary)
+    public MacroCompletedEventArgs(EndReason status, ProcessReport summary)
     {
         Status = status;
         Summary = summary;

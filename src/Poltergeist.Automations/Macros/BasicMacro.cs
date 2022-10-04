@@ -32,6 +32,7 @@ public class BasicMacro : MacroBase
         {
             var args = processor.GetService<BasicMacroScriptArguments>();
             Script(args);
+            return EndReason.Complete;
         };
 
         SetStatus(processor);

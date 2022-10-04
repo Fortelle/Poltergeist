@@ -2,7 +2,7 @@
 
 public class EndingEventArgs
 {
-    public ProcessEndReason Reason
+    public EndReason Reason
     {
         get; set;
     }

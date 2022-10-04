@@ -13,7 +13,7 @@ public sealed class ProcessReport
 
     public DateTime EndTime { get; set; }
 
-    public ProcessEndReason EndReason { get; set; }
+    public EndReason EndReason { get; set; }
 
     public string Summary { get; set; }
 
