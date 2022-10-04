@@ -1,26 +1,46 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Windows.Media;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Converters;
 
 namespace Poltergeist.Automations.Instruments;
 
-public class ImageInstrument// : InstrumentBase
+public class ImageInstrument : InstrumentModel<ImageInstrumentControl, ImageInstrumentViewModel>
 {
-    public ObservableCollection<ImageSource> Images { get; set; } = new();
+    public int Max { get; set; }
 
-    public void Clear()
+    public event Action<int, ImageSource> Changed;
+
+    public ImageInstrument(MacroProcessor processor) : base(processor)
     {
-        Images.Clear();
+        Max = 1;
     }
 
     public void Add(Bitmap bitmap)
     {
-        var image = BitmapToImageSourceConverter.ToImageSource(bitmap);
-        bitmap.Dispose();
-        Images.Add(image);
+        var newBitmap = new Bitmap(bitmap);
+        Processor.RaiseAction(() =>
+        {
+            var image = BitmapToImageSourceConverter.ToImageSource(newBitmap);
+            Changed?.Invoke(-1, image);
+            newBitmap.Dispose();
+        });
     }
 
-    //public override Type GetControlType() => typeof(ImageInstrumentControl);
+    public void Update(int index, Bitmap bitmap)
+    {
+        var newBitmap = new Bitmap(bitmap);
+        Processor.RaiseAction(() =>
+        {
+            var image = BitmapToImageSourceConverter.ToImageSource(newBitmap);
+            Changed?.Invoke(index, image);
+            newBitmap.Dispose();
+        });
+    }
+
+    public override ImageInstrumentViewModel CreateViewModel()
+    {
+        return new ImageInstrumentViewModel(this);
+    }
 }
