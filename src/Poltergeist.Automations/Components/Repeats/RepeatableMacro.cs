@@ -23,6 +23,7 @@ public class RepeatableMacro : MacroBase
                 Instrument =  RepeatInstrumentType.List,
             }
         });
+        Modules.Add(new CompleteModule());
     }
 
     protected internal override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)

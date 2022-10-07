@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Poltergeist.Components.Loops;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -14,6 +15,7 @@ public class BasicMacro : MacroBase
 
     public BasicMacro(string name) : base(name)
     {
+        Modules.Add(new CompleteModule());
     }
 
     protected internal override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)

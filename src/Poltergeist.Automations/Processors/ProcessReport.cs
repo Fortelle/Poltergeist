@@ -28,4 +28,6 @@ public sealed class ProcessReport
     {
         Extra.Add(key, value);
     }
+
+    public TimeSpan Duration => EndTime - BeginTime;
 }

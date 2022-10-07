@@ -178,6 +178,11 @@ public class MacroConsoleViewModel : ObservableRecipient
 
         Statistics = null;
         Statistics = Macro.Statistics;
+
+        if (e.IsSucceeded && e.CompleteAction != CompleteAction.None && e.Summary.Duration.TotalSeconds >= 15) // todo: config
+        {
+            App.GetService<ActionService>().Execute(e.CompleteAction, e.ActionArgument);
+        }
     }
 
     private void Processor_Starting(object? sender, MacroStartedEventArgs e)

@@ -261,7 +261,7 @@ public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDispo
         GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message, args);
     }
 
-    private void OnEnd(object sender, EndingEventArgs args)
+    private void OnEnd(object sender, EndingEventArgs e)
     {
         EndTime = DateTime.Now;
 
@@ -275,9 +275,11 @@ public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDispo
             ProcessId = ProcessId,
             BeginTime = StartTime,
             EndTime = EndTime,
-            EndReason = args.Reason,
+            EndReason = e.Reason,
         };
-        RaiseEvent(MacroEventType.ProcessCompleted, new MacroCompletedEventArgs(args.Reason, report));
+        var args = new MacroCompletedEventArgs(e.Reason, report);
+        args.CompleteAction = GetOption("CompleteAction", CompleteAction.None);
+        RaiseEvent(MacroEventType.ProcessCompleted, args);
     }
 
     public void RaiseEvent(MacroEventType type, EventArgs eventArgs)
