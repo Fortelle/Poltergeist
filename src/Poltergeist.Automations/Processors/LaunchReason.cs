@@ -3,6 +3,7 @@
 public enum LaunchReason
 {
     ByUser,
+    ByCommandLine,
     ByAnotherMacro,
     ByScheduler,
 }

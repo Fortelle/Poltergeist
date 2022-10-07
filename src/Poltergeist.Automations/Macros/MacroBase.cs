@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
@@ -59,9 +62,11 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     protected internal virtual void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor) { }
     protected internal virtual void OnProcess(MacroProcessor processor) { }
 
+    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+
     public MacroBase(string name)
     {
-        Name = name;
+        Name = string.Join(null, name.Select(c => c == ' ' || InvalidFileNameChars.Contains(c) ? '_' : c));
     }
 
     public T As<T>() where T : MacroBase
@@ -77,6 +82,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         {
             Maintenances.Add(OpenLocalFolder);
         }
+        Maintenances.Add(CreateShortcut);
 
         Statistics.Add(new("LastRunTime", default(DateTime)));
         Statistics.Add(new("TotalRunCount", 0));
@@ -111,7 +117,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         if (!UseFile) return;
 
         var path = Path.Combine(PrivateFolder, "config.json");
-        if (File.Exists(path))
+        if (System.IO.File.Exists(path))
         {
             SerializationUtil.JsonPopulate(path, this);
         }
@@ -159,4 +165,29 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         },
     };
 
+    private static readonly MacroMaintenance CreateShortcut = new()
+    {
+        Text = "Create shortcut(.lnk)",
+        Execute = macro =>
+        {
+            var sfd = new SaveFileDialog();
+            sfd.Filter = "Desktop shortcut(*.lnk)|*.lnk";
+            sfd.FileName = $"{macro.Name}.lnk";
+            if (sfd.ShowDialog() != true) return;
+
+            var path = sfd.FileName;
+            var wshShell = new WshShell(); 
+            var shortcut = wshShell.CreateShortcut(path) as IWshShortcut;
+            shortcut.TargetPath = Environment.ProcessPath;
+            shortcut.Arguments = $"--macro={macro.Name} --immediacy";
+            shortcut.WorkingDirectory = Environment.CurrentDirectory;
+            shortcut.Save();
+            if (macro.RequireAdmin)
+            {
+                using var fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
+                fs.Seek(21, SeekOrigin.Begin);
+                fs.WriteByte(0x22);
+            }
+        },
+    };
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
 using Poltergeist.ViewModels;
 
 namespace Poltergeist.Services;
@@ -53,15 +54,22 @@ public class MacroManager
 
     public IMacroBase GetMacro(string name)
     {
-        return Macros.First(x => x.Name == name);
+        return Macros.FirstOrDefault(x => x.Name == name);
     }
 
-    public void Set(IMacroBase macro)
+    public bool Set(string name, LaunchReason? reason = null)
+    {
+        var macro = GetMacro(name);
+        if (macro == null) return false;
+        return Set(macro, reason);
+    }
+
+    public bool Set(IMacroBase macro, LaunchReason? reason = null)
     {
         if (IsRunning && CurrentMacro != macro)
         {
             App.ShowFlyout("Another macro is already running.");
-            return;
+            return false;
         }
 
         var nav = App.GetService<NavigationService>();
@@ -76,29 +84,42 @@ public class MacroManager
 
             CurrentMacro = macro;
         }
+
+        if (reason.HasValue)
+        {
+            TryStart(reason.Value);
+        }
+
+        return true;
     }
 
     public void Toggle()
     {
-        if (CurrentMacro is null)
-        {
-            return;
-        }
-
-        var exe = App.GetService<MacroConsoleViewModel>();
-
         if (!IsRunning)
         {
-            exe.Start();
+            TryStart(LaunchReason.ByUser);
         }
         else
         {
-            exe.Stop();
+            TryStop();
         }
     }
 
+    private void TryStart(LaunchReason reason)
+    {
+        if (CurrentMacro is null) return;
+        if (IsRunning) return;
+        var consoleVM = App.GetService<MacroConsoleViewModel>();
+        consoleVM.Start(reason);
+    }
 
-
+    private void TryStop()
+    {
+        if (CurrentMacro is null) return;
+        if (!IsRunning) return;
+        var consoleVM = App.GetService<MacroConsoleViewModel>();
+        consoleVM.Stop();
+    }
 
     public void AddGlobalOption(IOptionItem option)
     {

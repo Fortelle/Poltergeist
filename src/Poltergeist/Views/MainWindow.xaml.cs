@@ -1,11 +1,8 @@
-﻿using Poltergeist.Services;
-using Poltergeist.ViewModels;
-using Poltergeist.Views;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Imaging;
+using Poltergeist.Services;
+using Poltergeist.Views;
 
 namespace Poltergeist
 {
@@ -30,14 +27,10 @@ namespace Poltergeist
             this.Content = App.GetService<ShellPage>();
         }
 
-        private void NavigationViewControl_ItemInvoked(ModernWpf.Controls.NavigationView sender, ModernWpf.Controls.NavigationViewItemInvokedEventArgs args)
+        protected override void OnSourceInitialized(EventArgs e)
         {
-
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
+            base.OnSourceInitialized(e);
+            SingletonHelper.Load(this);
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -47,5 +40,6 @@ namespace Poltergeist
             localSettings.SaveSetting("WindowPosition", rect);
             localSettings.Save();
         }
+
     }
 }

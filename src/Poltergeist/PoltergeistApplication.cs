@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Threading;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
+using Poltergeist.Common.Utilities;
 using Poltergeist.Services;
 using Poltergeist.ViewModels;
 using Poltergeist.Views;
@@ -14,22 +16,51 @@ namespace Poltergeist;
 public abstract class PoltergeistApplication : Application
 {
     private static IHost _host;
-    private readonly Mutex _mutex = new Mutex(true, "Poltergeist");
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        if (_mutex.WaitOne(TimeSpan.Zero))
+        var options = CommandLineUtil.GetOptions(e.Args);
+
+        if (SingletonHelper.IsSingleInstance)
         {
             Initialize();
 
             MainWindow = new MainWindow();
             MainWindow.Show();
+
+            ParseArguments(options);
+        }
+        else if (Debugger.IsAttached)
+        {
+            throw new Exception("Another instance is already running.");
         }
         else
         {
+            SingletonHelper.SendData(e.Args);
             Shutdown();
+        }
+    }
+
+    public static void ParseArguments(string[] args)
+    {
+        var options = CommandLineUtil.GetOptions(args);
+        ParseArguments(options);
+    }
+
+    private static void ParseArguments(CommandOption[] options)
+    {
+        foreach(var option in options)
+        {
+            switch (option.Name)
+            {
+                case "macro":
+                    var immediacy = options.Any(x => x.Name == "immediacy");
+                    var mng = App.GetService<MacroManager>();
+                    mng.Set(option.Value, immediacy ? LaunchReason.ByCommandLine : null);
+                    break;
+            }
         }
     }
 
@@ -37,7 +68,7 @@ public abstract class PoltergeistApplication : Application
     {
         base.OnExit(e);
 
-        _host.Dispose();
+        _host?.Dispose();
     }
 
     public void Initialize()
@@ -78,6 +109,7 @@ public abstract class PoltergeistApplication : Application
                 services.AddSingleton<PathService>();
                 services.AddSingleton<PluginService>();
                 services.AddSingleton<SchedulerService>();
+                services.AddSingleton<ActionService>();
 
                 services.AddSingleton<MacroManager>();
 

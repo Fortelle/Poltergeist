@@ -49,6 +49,11 @@ public class MacroConsoleViewModel : ObservableRecipient
 
     public void Start()
     {
+        Start(LaunchReason.ByUser);
+    }
+
+    public void Start(LaunchReason reason)
+    {
         if (Macro is null)
         {
             return;
@@ -61,7 +66,7 @@ public class MacroConsoleViewModel : ObservableRecipient
 
         App.GetService<NavigationService>().Navigate("console");
 
-        Processor = new MacroProcessor(Macro, LaunchReason.ByUser)
+        Processor = new MacroProcessor(Macro, reason)
         {
             WaitUiReady = true,
             Options = GetOptions(),
