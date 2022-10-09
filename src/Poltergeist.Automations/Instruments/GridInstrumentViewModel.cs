@@ -46,7 +46,7 @@ public class GridInstrumentViewModel : InstrumentItemViewModel
     {
         var vm = ToItemViewModel(item);
 
-        if(index == -1)
+        if(index == -1 || index == Items.Count)
         {
             Items.Add(vm);
         }
