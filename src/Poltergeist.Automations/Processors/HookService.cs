@@ -25,14 +25,13 @@ public sealed class HookService : MacroService
         }
 
         Hooks[eventName] += handler;
-
-        Log(LogLevel.Debug, $"A method is registered to hook \"{eventName}\".");
+        Logger.Debug($"A method is registered to hook \"{eventName}\".");
     }
 
     public void Raise(string eventName, params object[] args)
     {
         eventName = eventName.ToLower();
-        Log(LogLevel.Debug, $"Hook \"{eventName}\" is triggered.");
+        Logger.Debug($"Hook \"{eventName}\" is triggered.", args);
 
         if (Hooks.TryGetValue(eventName, out var hooker))
         {

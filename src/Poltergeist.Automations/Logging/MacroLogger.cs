@@ -58,7 +58,7 @@ public class MacroLogger : MacroService
         });
     }
 
-    public void Log(LogLevel logLevel, string sender, string message, params object[] args)
+    public void Log(LogLevel logLevel, string sender, string message)
     {
         if (!IsEnabled(logLevel))
         {

@@ -25,6 +25,8 @@ public abstract class InstrumentModel<TView, TViewModel> : MacroService, IInstru
     //    return new TView();
     //}
     public abstract InstrumentItemViewModel CreateViewModel();
+
+    public override string ToString() => new { Key, Title }.ToString();
 }
 
 public interface IInstrumentModel

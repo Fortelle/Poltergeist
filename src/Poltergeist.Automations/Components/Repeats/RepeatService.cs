@@ -67,7 +67,7 @@ public class RepeatService : MacroService
             else
             {
                 LoopCount = 1;
-                Log(LogLevel.Warning, $"Neither {ConfigCountKey} nor {ConfigTimeoutKey} is set. To enable infinite loop, set ${nameof(Options.AllowInfiniteLoop)} to true.");
+                Logger.Warn($"Neither {ConfigCountKey} nor {ConfigTimeoutKey} is set. To enable infinite loop, set ${nameof(Options.AllowInfiniteLoop)} to true.");
             }
         }
     }
@@ -97,7 +97,7 @@ public class RepeatService : MacroService
 
     private bool DoBegin()
     {
-        Log(LogLevel.Debug, "Started running the before-loop process.");
+        Logger.Debug("Started running the before-loop procedure.");
 
         var canBegin = true;
 
@@ -113,14 +113,14 @@ public class RepeatService : MacroService
 
         Hooks.Raise("repeat_begin");
 
-        Log(LogLevel.Debug, "Finished running the before-loop process.");
+        Logger.Debug("Finished running the before-loop procedure.", new {canBegin});
 
         return canBegin;
     }
 
     private void DoLoop()
     {
-        Log(LogLevel.Debug, "Started running the loop-body process.");
+        Logger.Debug("Started running the loop-body procedure.");
 
         IterationIndex = -1;
 
@@ -136,14 +136,16 @@ public class RepeatService : MacroService
 
         }
 
-        Log(LogLevel.Debug, "Finished running the loop-body process.");
+        Logger.Debug("Finished running the loop-body procedure.");
     }
 
     private IterationResult DoIterate(int index)
     {
-        Log(LogLevel.Debug, $"Started running the loop-iteration {index}.");
+        Logger.Debug($"Started running the loop iteration.", new { index });
 
         var beginTime = DateTime.Now;
+
+        Logger.Info($"Repeat: {IterationIndex + 1}");
 
         UpdateInstrumentBefore(index);
 
@@ -162,7 +164,7 @@ public class RepeatService : MacroService
                 IterationProc.Invoke(args);
                 state = args.Result;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 state = IterationResult.Error;
             }
@@ -173,35 +175,32 @@ public class RepeatService : MacroService
 
         UpdateInstrumentAfter(index, beginTime, endTime);
 
-        Log(LogLevel.Information, $"Repeat: {IterationIndex + 1}");
-
-        Log(LogLevel.Debug, $"Finished running the loop-iteration {index}: {state}.");
+        Logger.Debug($"Finished running the loop iteration.", new {index, state});
         
         return state;
     }
 
     private bool DoCheck(IterationResult iterationResult)
     {
-        Log(LogLevel.Debug, $"Started running the checknext process.");
+        Logger.Debug($"Started running the checknext procedure.");
 
         var hasNext = false;
 
         if (iterationResult == IterationResult.Stop)
         {
             hasNext = false;
-            Log (LogLevel.Debug, $"Iteration returned {iterationResult}.");
         }
         if (iterationResult == IterationResult.Error && Options?.StopOnError == true)
         {
             hasNext = false;
             Status = EndReason.ErrorOccurred;
-            Log(LogLevel.Debug, $"StopOnError");
+            Logger.Debug($"StopOnError");
         }
         else if (SoftStop)
         {
             hasNext = false;
             Status = EndReason.UserAborted;
-            Log(LogLevel.Debug, "SoftStop");
+            Logger.Debug("SoftStop");
         }
         else if (CheckCount())
         {
@@ -214,12 +213,11 @@ public class RepeatService : MacroService
         else if (iterationResult == IterationResult.ForceRestart)
         {
             hasNext = true;
-            Log(LogLevel.Debug, $"Iteration returned {iterationResult}.");
         }
         else if (CheckNextProc is null)
         {
             hasNext = true;
-            Log(LogLevel.Debug, $"{nameof(CheckNextProc)} is null.");
+            Logger.Debug($"{nameof(CheckNextProc)} is null.");
         }
         else
         {
@@ -232,12 +230,12 @@ public class RepeatService : MacroService
                 CheckNextResult.Break => false,
                 _ => true,
             };
-            Log(LogLevel.Debug, $"{nameof(CheckNextProc)} returned {state}.");
+            Logger.Debug($"{nameof(CheckNextProc)} returned {state}.");
         }
 
         Hooks.Raise("repeat_check", hasNext);
 
-        Log(LogLevel.Debug, $"Finished running the checknext process: {hasNext}.");
+        Logger.Debug($"Finished running the checknext procedure.", new { hasNext });
 
         return hasNext;
     }
@@ -248,7 +246,7 @@ public class RepeatService : MacroService
 
         if (IterationIndex >= LoopCount - 1)
         {
-            Log(LogLevel.Debug, $"Max iteration reached: {LoopCount}.");
+            Logger.Debug($"Max iteration reached.", new { IterationIndex, LoopCount });
             return true;
         }
 
@@ -258,10 +256,12 @@ public class RepeatService : MacroService
     private bool CheckTimeout()
     {
         if (LoopTimeout == TimeSpan.Zero) return false;
-
-        if (DateTime.Now - Processor.StartTime > LoopTimeout)
+        var now = DateTime.Now;
+        var startTime = Processor.StartTime;
+        var duration = now - startTime;
+        if (duration > LoopTimeout)
         {
-            Log(LogLevel.Debug, $"Timeout reached: {LoopTimeout}.");
+            Logger.Debug($"Timeout reached.", new { now, startTime, duration, LoopTimeout });
             return true;
         }
 
@@ -270,7 +270,7 @@ public class RepeatService : MacroService
 
     private void DoEnd()
     {
-        Log(LogLevel.Debug, $"Started running the after-loop process.");
+        Logger.Debug($"Started running the after-loop procedure.");
 
         if (EndProc is not null)
         {
@@ -282,7 +282,7 @@ public class RepeatService : MacroService
 
         Hooks.Raise("repeat_end");
 
-        Log(LogLevel.Debug, $"Finished running the after-loop process.");
+        Logger.Debug($"Finished running the after-loop procedure.");
     }
 
 

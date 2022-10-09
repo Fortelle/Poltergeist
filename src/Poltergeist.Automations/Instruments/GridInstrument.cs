@@ -59,4 +59,6 @@ public class GridInstrument : ColorInstrumentModel<GridInstrumentControl, ListIn
     {
         return new GridInstrumentViewModel(this);
     }
+
+    public override string ToString() => new { Key, Title, Columns, Size }.ToString();
 }

@@ -256,9 +256,9 @@ public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDispo
     {
     }
 
-    private void Log(LogLevel level, string message, params object[] args)
+    private void Log(LogLevel level, string message)
     {
-        GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message, args);
+        GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message);
     }
 
     private void OnEnd(object sender, EndingEventArgs e)

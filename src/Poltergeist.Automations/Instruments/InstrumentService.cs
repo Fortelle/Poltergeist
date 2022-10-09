@@ -34,7 +34,7 @@ public class InstrumentService : MacroService
 
         instrument.IsCreated = true;
 
-        Log(Logging.LogLevel.Debug, $"Created a new instrument <{instrument.GetType().Name}>(\"{instrument.Key}\").");
+        Logger.Debug($"Created a new instrument <{instrument.GetType().Name}>.", instrument);
 
         return instrument;
     }

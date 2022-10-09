@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
+using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 
 namespace Poltergeist.Automations.Processors;
@@ -20,34 +22,9 @@ public class ArgumentService : IDisposable, IUserLogger
     }
 
 
-    void IUserLogger.Trace(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Trace, SenderName, message);
-    }
-
-    void IUserLogger.Debug(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Debug, SenderName, message);
-    }
-
-    void IUserLogger.Info(string message)
+    void IUserLogger.Log(string message)
     {
         Processor.GetService<MacroLogger>().Log(LogLevel.Information, SenderName, message);
-    }
-
-    void IUserLogger.Warn(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Warning, SenderName, message);
-    }
-
-    void IUserLogger.Error(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Error, SenderName, message);
-    }
-
-    void IUserLogger.Critical(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Critical, SenderName, message);
     }
 
 
@@ -55,4 +32,5 @@ public class ArgumentService : IDisposable, IUserLogger
     {
         Debug.WriteLine($"Disposed {SenderName}.");
     }
+
 }

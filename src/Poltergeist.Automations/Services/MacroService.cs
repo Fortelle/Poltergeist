@@ -1,30 +1,73 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
+using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Services;
 
-public abstract class MacroService : IDisposable
+public abstract class MacroService : IDisposable, IServiceLogger
 {
-    public MacroProcessor Processor { get; }
-
-    private string SenderName { get; }
+    protected MacroProcessor Processor { get; }
+    protected IServiceLogger Logger { get; }
 
     private MacroLogger _logger;
-    private MacroLogger Logger => _logger ??= Processor.GetService<MacroLogger>();
+    private MacroLogger _Logger => _logger ??= Processor.GetService<MacroLogger>();
+
+    private string SenderName { get; }
 
     protected MacroService(MacroProcessor processor)
     {
         Processor = processor;
+        Logger = this;
 
-        SenderName = this.GetType().Name;
+        SenderName = GetType().Name;
     }
 
-    protected virtual void Log(LogLevel level, string message, params object[] args)
+    void IServiceLogger.Trace(string message)
     {
-        Logger.Log(level, SenderName, message, args);
+        _Logger.Log(LogLevel.Trace, SenderName, message);
+    }
+
+    void IServiceLogger.Trace(object variable, string name)
+    {
+        var text = JsonConvert.SerializeObject(variable);
+        var message = $"{name}={text}";
+        _Logger.Log(LogLevel.Trace, SenderName, message);
+    }
+
+    void IServiceLogger.Debug(string message)
+    {
+        _Logger.Log(LogLevel.Debug, SenderName, message);
+    }
+
+    void IServiceLogger.Debug(string message, object[] variables)
+    {
+        var text = string.Join(", ", variables.Select(x => x.ToString()));
+        message += $" ({text})";
+        _Logger.Log(LogLevel.Debug, SenderName, message);
+    }
+
+    void IServiceLogger.Info(string message)
+    {
+        _Logger.Log(LogLevel.Information, SenderName, message);
+    }
+
+    void IServiceLogger.Warn(string message)
+    {
+        _Logger.Log(LogLevel.Warning, SenderName, message);
+    }
+
+    void IServiceLogger.Error(string message)
+    {
+        _Logger.Log(LogLevel.Error, SenderName, message);
+    }
+
+    void IServiceLogger.Critical(string message)
+    {
+        _Logger.Log(LogLevel.Critical, SenderName, message);
     }
 
     public virtual void Dispose()

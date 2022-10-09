@@ -57,4 +57,5 @@ public class ListInstrument : ColorInstrumentModel<ListInstrumentControl, ListIn
     {
         return new ListInstrumentViewModel(this);
     }
+
 }

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Poltergeist.Automations.Exceptions;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Automations.Services;
 
@@ -66,7 +64,7 @@ public class WorkingService : MacroService
     {
         if (!CanAbort) return;
 
-        Log(LogLevel.Information, "User aborted.");
+        Logger.Info("User aborted.");
         WorkingThread.Interrupt();
     }
 
@@ -82,8 +80,7 @@ public class WorkingService : MacroService
     private void CheckInitializationError()
     {
         if (Processor.InitializationException == null) return;
-
-        Log(LogLevel.Debug, "An error has occurred during initialization.");
+        Logger.Debug("An error has occurred during initialization.");
 
         DoError(Processor.InitializationException);
         EndStatus = EndReason.ErrorOccurred;
@@ -91,14 +88,14 @@ public class WorkingService : MacroService
 
     private void LoadServices()
     {
-        Log(LogLevel.Debug, "Started loading startup services.");
+        Logger.Debug("Started loading startup services.");
 
         try
         {
             foreach (var type in Processor.AutoloadTypes)
             {
                 Processor.GetService(type);
-                Log(LogLevel.Debug, $"Loaded service <{type.Name}>.");
+                Logger.Debug($"Loaded service <{type.Name}>.");
             }
         }
         catch (Exception e) //when (!Debugger.IsAttached)
@@ -106,13 +103,13 @@ public class WorkingService : MacroService
             DoError(e);
         }
 
-        Log(LogLevel.Debug, "Finished loading startup services.");
+        Logger.Debug("Finished loading startup services.");
     }
 
     // todo: add hooks if necessary
     private void CheckAvailability()
     {
-        Log(LogLevel.Debug, "Started running availability check.");
+        Logger.Debug("Started running availability check.");
 
         try
         {
@@ -134,11 +131,11 @@ public class WorkingService : MacroService
 
             if (isSucceeded)
             {
-                Log(LogLevel.Debug, "The availability check passed.");
+                Logger.Debug("The availability check passed.");
             }
             else
             {
-                Log(LogLevel.Warning, "The availability check failed."); // not an error
+                Logger.Warn("The availability check failed."); // not an error
                 EndStatus = EndReason.Unstarted;
             }
 
@@ -148,12 +145,12 @@ public class WorkingService : MacroService
             DoError(e);
         }
 
-        Log(LogLevel.Debug, "Finished running availability check.");
+        Logger.Debug("Finished running availability check.");
     }
 
     private void DoWork()
     {
-        Log(LogLevel.Debug, "Started running the main process.");
+        Logger.Debug("Started running the main process.");
 
         try
         {
@@ -178,18 +175,18 @@ public class WorkingService : MacroService
             CanAbort = false;
         }
 
-        Log(LogLevel.Debug, "Finished running the main process.");
+        Logger.Debug("Finished running the main process.");
     }
 
     private void DoError(Exception exception)
     {
         EndStatus = EndReason.ErrorOccurred;
 
-        Log(LogLevel.Error, exception.Message);
+        Logger.Error(exception.Message);
 
         if (exception.InnerException != null)
         {
-            Log(LogLevel.Error, exception.InnerException.Message);
+            Logger.Error(exception.InnerException.Message);
         }
 
         Hooks.Raise("error_occured", exception.Message);
@@ -204,9 +201,9 @@ public class WorkingService : MacroService
 
         Hooks.Raise("process_exiting", EndStatus.Value);
 
-        Log(LogLevel.Information, $"The macro is finished with status: {EndStatus}.");
+        Logger.Info($"The macro is finished with status: {EndStatus}.");
 
-        Log(LogLevel.Debug, "The processor will shut down."); // this should be the last line
+        Logger.Debug("The processor will shut down."); // this should be the last line
 
         if (WaitUI)
         {
