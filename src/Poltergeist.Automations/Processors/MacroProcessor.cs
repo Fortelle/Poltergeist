@@ -17,7 +17,7 @@ using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Processors;
 
-public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDisposable
+public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUserProcessor, IDisposable
 {
     public event EventHandler<MacroStartedEventArgs> Starting;
     public event EventHandler Started;
@@ -40,13 +40,13 @@ public sealed class MacroProcessor : IConfigureProcessor, IUserProcessor, IDispo
 
     public Dictionary<string, object> Options { get; set; }
     public Dictionary<string, object> Environments { get; set; }
+    internal string[] ServiceList { get; set; }
 
     private PauseTokenSource PauseTokenSource;
     private PauseToken PauseToken;
 
     internal Exception InitializationException;
     internal Type[] AutoloadTypes;
-    internal string[] ServiceList;
 
     public LaunchReason Reason;
 

@@ -12,7 +12,7 @@ using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Logging;
 
-public class MacroLogger : MacroService
+public class MacroLogger : KernelService
 {
     private LoggerOptions Options;
 

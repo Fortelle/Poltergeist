@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
-using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -52,13 +48,15 @@ public class BackgroundService : MacroService
             return s;
         }).ToArray();
 
-        var optionList = Processor.Options.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
+        var processer = (MacroProcessor)Processor; // ???
 
-        var envList = Processor.Environments.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
+        var optionList = processer.Options.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
+
+        var envList = processer.Environments.Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}").ToArray();
 
         var moduleList = Processor.Macro.Modules.Select(x => $"{x.GetType().Name}").ToArray();
 
-        var serviceList = Processor.ServiceList.Where(x=>!x.StartsWith("IOptions") && !x.StartsWith("IConfigureOptions")).ToArray();
+        var serviceList = processer.ServiceList.Where(x=>!x.StartsWith("IOptions") && !x.StartsWith("IConfigureOptions")).ToArray();
 
         WriteArray("Classes", family);
         WriteArray("UserOptions", optionList);

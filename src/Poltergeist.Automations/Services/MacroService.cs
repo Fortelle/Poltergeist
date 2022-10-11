@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using Newtonsoft.Json;
@@ -8,9 +9,9 @@ using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Services;
 
-public abstract class MacroService : IDisposable, IServiceLogger
+public abstract class MacroService : IExtensionService, IServiceLogger, IDisposable
 {
-    protected MacroProcessor Processor { get; }
+    protected IServiceProcessor Processor { get; }
     protected IServiceLogger Logger { get; }
 
     private MacroLogger _logger;
@@ -45,9 +46,20 @@ public abstract class MacroService : IDisposable, IServiceLogger
 
     void IServiceLogger.Debug(string message, object[] variables)
     {
-        var text = string.Join(", ", variables.Select(x => x.ToString()));
+        var text = string.Join(", ", variables.Select(ConvertToString));
         message += $" ({text})";
         _Logger.Log(LogLevel.Debug, SenderName, message);
+    }
+
+    private static string ConvertToString(object item)
+    {
+        return item switch
+        {
+            null => "(null)",
+            string s => '"' + s + '"',
+            IEnumerable ie => '[' + string.Join(", ", ie.Cast<object>().Select(ConvertToString)),
+            _ => item.ToString()
+        };
     }
 
     void IServiceLogger.Info(string message)
@@ -69,6 +81,8 @@ public abstract class MacroService : IDisposable, IServiceLogger
     {
         _Logger.Log(LogLevel.Critical, SenderName, message);
     }
+
+    IUserProcessor IExtensionService.GetProcessor() => (IUserProcessor)Processor;
 
     public virtual void Dispose()
     {

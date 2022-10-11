@@ -8,16 +8,19 @@ namespace Poltergeist.Automations.Panels;
 
 public class PanelService : MacroService
 {
+    private HookService Hooks;
     private List<IOutputPanelModel> Panels = new();
 
-    public PanelService(MacroProcessor processor) : base(processor)
+    public PanelService(MacroProcessor processor, HookService hooks) : base(processor)
     {
-        processor.Hooks.Register("ui_ready", UpdateUI);
+        Hooks = hooks;
+
+        Hooks.Register("ui_ready", UpdateUI);
     }
 
     private void UpdateUI(object[] args)
     {
-        Processor.Hooks.Raise("ui_panel_ready");
+        Hooks.Raise("ui_panel_ready");
     }
 
     public T Create<T>(Action<T> config)

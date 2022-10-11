@@ -2,12 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Poltergeist.Automations.Exceptions;
+using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Processors;
 
-public class WorkingService : MacroService
+public class WorkingService : KernelService
 {
     public Func<EndReason> WorkProc;
     public event EventHandler<BeginningEventArgs> Beginning;
@@ -17,6 +18,7 @@ public class WorkingService : MacroService
     public Task WorkingTask;
 
     private readonly HookService Hooks;
+    private readonly MacroLogger Logger;
     private bool CanAbort;
 
     private Thread WorkingThread;
@@ -25,9 +27,10 @@ public class WorkingService : MacroService
     public bool WaitUI;
     private EndReason? EndStatus;
 
-    public WorkingService(MacroProcessor processor, HookService hooks) : base(processor)
+    public WorkingService(MacroProcessor processor, HookService hooks, MacroLogger logger) : base(processor)
     {
         Hooks = hooks;
+        Logger = logger;
     }
 
     public void Start()
@@ -64,7 +67,7 @@ public class WorkingService : MacroService
     {
         if (!CanAbort) return;
 
-        Logger.Info("User aborted.");
+        Logger.Log(LogLevel.Debug, ServiceName, "User aborted.");
         WorkingThread.Interrupt();
     }
 
@@ -80,7 +83,7 @@ public class WorkingService : MacroService
     private void CheckInitializationError()
     {
         if (Processor.InitializationException == null) return;
-        Logger.Debug("An error has occurred during initialization.");
+        Logger.Log(LogLevel.Information, ServiceName, "An error has occurred during initialization.");
 
         DoError(Processor.InitializationException);
         EndStatus = EndReason.ErrorOccurred;
@@ -88,14 +91,14 @@ public class WorkingService : MacroService
 
     private void LoadServices()
     {
-        Logger.Debug("Started loading startup services.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Started loading startup services.");
 
         try
         {
             foreach (var type in Processor.AutoloadTypes)
             {
                 Processor.GetService(type);
-                Logger.Debug($"Loaded service <{type.Name}>.");
+                Logger.Log(LogLevel.Information, ServiceName, $"Loaded service <{type.Name}>.");
             }
         }
         catch (Exception e) //when (!Debugger.IsAttached)
@@ -103,13 +106,13 @@ public class WorkingService : MacroService
             DoError(e);
         }
 
-        Logger.Debug("Finished loading startup services.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Finished loading startup services.");
     }
 
     // todo: add hooks if necessary
     private void CheckAvailability()
     {
-        Logger.Debug("Started running availability check.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Started running availability check.");
 
         try
         {
@@ -131,11 +134,11 @@ public class WorkingService : MacroService
 
             if (isSucceeded)
             {
-                Logger.Debug("The availability check passed.");
+                Logger.Log(LogLevel.Information, ServiceName, "The availability check passed.");
             }
             else
             {
-                Logger.Warn("The availability check failed."); // not an error
+                Logger.Log(LogLevel.Information, ServiceName, "The availability check failed."); // not an error
                 EndStatus = EndReason.Unstarted;
             }
 
@@ -145,12 +148,12 @@ public class WorkingService : MacroService
             DoError(e);
         }
 
-        Logger.Debug("Finished running availability check.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Finished running availability check.");
     }
 
     private void DoWork()
     {
-        Logger.Debug("Started running the main process.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Started running the main process.");
 
         try
         {
@@ -175,18 +178,18 @@ public class WorkingService : MacroService
             CanAbort = false;
         }
 
-        Logger.Debug("Finished running the main process.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Finished running the main process.");
     }
 
     private void DoError(Exception exception)
     {
         EndStatus = EndReason.ErrorOccurred;
 
-        Logger.Error(exception.Message);
+        Logger.Log(LogLevel.Error, ServiceName, exception.Message);
 
         if (exception.InnerException != null)
         {
-            Logger.Error(exception.InnerException.Message);
+            Logger.Log(LogLevel.Error, ServiceName, exception.InnerException.Message);
         }
 
         Hooks.Raise("error_occured", exception.Message);
@@ -201,9 +204,9 @@ public class WorkingService : MacroService
 
         Hooks.Raise("process_exiting", EndStatus.Value);
 
-        Logger.Info($"The macro is finished with status: {EndStatus}.");
+        Logger.Log(LogLevel.Information, ServiceName, $"The macro is finished with status: {EndStatus}.");
 
-        Logger.Debug("The processor will shut down."); // this should be the last line
+        Logger.Log(LogLevel.Debug, ServiceName, "The processor will shut down."); // this should be the last line
 
         if (WaitUI)
         {

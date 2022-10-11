@@ -25,6 +25,8 @@ public class TerminalService : MacroService
 
     public void Start()
     {
+        Logger.Debug($"Starting <{nameof(TerminalService)}>.");
+
         if (Visible)
         {
             var panelService = Processor.GetService<PanelService>();
@@ -41,10 +43,14 @@ public class TerminalService : MacroService
         }
         Host = new(WorkingDirectory);
         Host.Start();
+
+        Logger.Debug($"Started <{nameof(TerminalService)}>.");
     }
 
     public string Execute(string command)
     {
+        Logger.Debug($"Executing command line \"{command}\".");
+
         if (Visible)
         {
             TerminalPanel.WriteLine(new TextLine()
@@ -64,6 +70,8 @@ public class TerminalService : MacroService
                 Text = output,
             });
         }
+
+        Logger.Debug($"Executed command line.", new { output });
 
         return output;
     }
