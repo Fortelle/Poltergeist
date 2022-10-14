@@ -236,11 +236,14 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
         RaiseEvent(MacroEventType.ProcessStarting, new MacroStartedEventArgs(StartTime));
 
-        foreach (var module in Macro.Modules)
+        if (InitializationException == null)
         {
-            module.OnMacroProcess(this);
+            foreach (var module in Macro.Modules)
+            {
+                module.OnMacroProcess(this);
+            }
+            Macro.Process(this);
         }
-        Macro.Process(this);
 
         RaiseEvent(MacroEventType.ProcessStarted, new EventArgs());
 
