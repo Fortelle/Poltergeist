@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -181,6 +182,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
             shortcut.TargetPath = Environment.ProcessPath;
             shortcut.Arguments = $"--macro={macro.Name} --immediacy";
             shortcut.WorkingDirectory = Environment.CurrentDirectory;
+            shortcut.IconLocation = Assembly.GetAssembly(typeof(MacroBase)).Location;
             shortcut.Save();
             if (macro.RequireAdmin)
             {
