@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Logging;
@@ -178,7 +179,14 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     {
         if (Options.TryGetValue(key, out var value))
         {
-            return (T)value;
+            if(value is JToken jt)
+            {
+                return jt.ToObject<T>();
+            }
+            else
+            {
+                return (T)value;
+            }
         }
         else
         {
