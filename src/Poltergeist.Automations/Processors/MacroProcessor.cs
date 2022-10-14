@@ -193,6 +193,19 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             return def;
         }
     }
+
+    void IConfigureProcessor.SetOption(string key, object value)
+    {
+        if (Options.ContainsKey(key))
+        {
+            Options[key] = value;
+        }
+        else
+        {
+            Options.Add(key, value);
+        }
+    }
+
     public T GetEnvironment<T>(string key, T def = default)
     {
         if (Environments.TryGetValue(key, out var value))
@@ -210,7 +223,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         if (!GetEnvironment<bool>("macro.usestatistics")) return;
         Macro.Statistics.Set(key, value);
         //Log(LogLevel.Debug, $"Set statistic {key} = {value}.");
-
     }
 
     public void SetStatistic<T>(string key, Func<T, T> action)

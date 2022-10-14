@@ -17,6 +17,7 @@ public interface IUserProcessor : IProcessor
 
 public interface IConfigureProcessor : IProcessor
 {
+    public void SetOption(string key, object value);
 }
 
 public interface IServiceProcessor : IProcessor
