@@ -19,15 +19,20 @@ public class DistributionService
     {
         var targetPoint = (shape, type) switch
         {
-            (RectangleShape rect, ShapeDistributionType.Preference) => RectangleToPointMean(rect),
             (RectangleShape rect, ShapeDistributionType.Uniform) => RectangleToPointUniform(rect),
-            (CircleShape circle, ShapeDistributionType.Central) => CircleToPointCentral(circle),
+            (RectangleShape rect, ShapeDistributionType.Central) => RectangleToPointCentral(rect),
+            (RectangleShape rect, ShapeDistributionType.Inclination) => RectangleToPointInclination(rect),
+
             (CircleShape circle, ShapeDistributionType.Uniform) => CircleToPointUniform(circle),
-            _ => throw new NotImplementedException(),
+            (CircleShape circle, ShapeDistributionType.Central) => CircleToPointCentral(circle),
+
+            (PolygonShape polygon, ShapeDistributionType.Uniform) => PolygonToPointUniform(polygon),
+            (PolygonShape polygon, ShapeDistributionType.Central) => PolygonToPointCentral(polygon),
+
+            _ => throw new NotSupportedException(),
         };
         return targetPoint;
     }
-
 
     public Point GetPointByOffset(Point clientPoint, int offset)
     {
@@ -42,51 +47,18 @@ public class DistributionService
         return clientPoint;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public double NextDouble(RangeDistributionType type)
+    {
+        return type switch
+        {
+            RangeDistributionType.Uniform => Random.NextDouble(),
+            RangeDistributionType.Gaussian => Random.NextDoubleBoxMuller(),
+            RangeDistributionType.Triangular => Random.NextDoubleTriangular(),
+            RangeDistributionType.Increasing => 1 - Random.NextDoubleExponential(),
+            RangeDistributionType.Decreasing => Random.NextDoubleExponential(),
+            _ => throw new NotImplementedException(),
+        };
+    }
 
 
     private Point RectangleToPointUniform(RectangleShape rect)
@@ -99,31 +71,29 @@ public class DistributionService
         return new Point(x, y);
     }
 
-    private Point RectangleToPointMean(RectangleShape rect)
+    private Point RectangleToPointCentral(RectangleShape rect)
+    {
+        double randX = Random.NextDoubleBoxMuller(),
+               randY = Random.NextDoubleBoxMuller();
+        int x = (int)(rect.X + rect.Width * randX),
+            y = (int)(rect.Y + rect.Height * randY);
+
+        return new Point(x, y);
+    }
+
+    private Point RectangleToPointInclination(RectangleShape rect)
     {
         double meanX = GetMeanRate(rect.X, rect.Width),
                meanY = GetMeanRate(rect.Y, rect.Height);
         meanX = meanX * 0.5 + 0.25;
         meanY = meanY * 0.5 + 0.25;
-        double randX = Random.NextTriangular(meanX),
-               randY = Random.NextTriangular(meanY);
+        double randX = Random.NextDoubleBoxMuller(meanX),
+               randY = Random.NextDoubleBoxMuller(meanY);
         int x = rect.X + (int)(rect.Width * randX),
             y = rect.Y + (int)(rect.Height * randY);
 
         return new Point(x, y);
     }
-
-    private Point RectangleToPointCLT(RectangleShape rect, int sigma)
-    {
-        double randX = Random.NextCentral(sigma),
-               randY = Random.NextCentral(sigma);
-        int x = rect.X + (int)(rect.Width * randX),
-            y = rect.Y + (int)(rect.Height * randY);
-
-        return new Point(x, y);
-    }
-
-
 
     private Point CircleToPointUniform(CircleShape circle)
     {
@@ -137,7 +107,6 @@ public class DistributionService
         return new Point((int)x, (int)y);
     }
 
-
     private Point CircleToPointCentral(CircleShape circle)
     {
         var randR = Random.NextDouble();
@@ -150,69 +119,25 @@ public class DistributionService
         return new Point((int)x, (int)y);
     }
 
-    private Point FromCircleTest(CircleShape circle, Random random)
+    private Point PolygonToPointUniform(PolygonShape polygon)
     {
-        double x = 0, y = 0;
-        for (var i = 0; i < 4; i++)
+        var bounds = polygon.Bounds;
+        while (true)
         {
-            var randR = random.NextDouble();// random.NextDouble();
-            var randT = random.NextDouble();
-            var radius = Math.Sqrt(randR) * circle.Radius;
-            var theta = randT * Math.PI * 2;
-            x += circle.Origin.X + radius * Math.Cos(theta);
-            y += circle.Origin.Y + radius * Math.Sin(theta);
-        }
-        x /= 4;
-        y /= 4;
+            double randX = Random.NextDouble(),
+                   randY = Random.NextDouble();
+            int x = (int)(bounds.X + bounds.Width * randX),
+                y = (int)(bounds.Y + bounds.Height * randY);
 
-        return new Point((int)x, (int)y);
-    }
-
-    private Point FromCircleG(CircleShape circle, Random random)
-    {
-        double x2 = 0, y2 = 0;
-
-        if (true)
-        {
-            var randR = random.NextDouble();
-            var randT = random.NextDouble();
-            var radius = Math.Sqrt(randR) * circle.Radius;
-            var theta = randT * Math.PI * 2;
-            x2 += circle.Origin.X + radius * Math.Cos(theta);
-            y2 += circle.Origin.Y + radius * Math.Sin(theta);
-        }
-
-        var c = 1;
-        var t = 2;
-        for (var i = 0; i < t - 1; i++)
-        {
-            if (i > 0 && random.NextDouble() > 0.618)
+            var point = new Point(x, y);
+            if (polygon.Contains(point))
             {
-                continue;
+                return point;
             }
-            var randR = random.NextDouble();
-            var randT = random.NextDouble();
-            var radius = Math.Sqrt(randR) * circle.Radius;
-            var theta = randT * Math.PI * 2;
-            x2 += circle.Origin.X + radius * Math.Cos(theta);
-            y2 += circle.Origin.Y + radius * Math.Sin(theta);
-            c++;
         }
-
-        if (random.NextDouble() < 0.618)
-        {
-            var t2 = GetMeanRate((int)circle.Origin.X, (int)circle.Origin.Y) * Math.PI * 2;
-            var r2 = 0.5 / (0.5 + 0.618) * circle.Radius;
-            x2 += circle.Origin.X + r2 * Math.Cos(t2);
-            y2 += circle.Origin.Y + r2 * Math.Sin(t2);
-            c++;
-        }
-
-        return new Point((int)(x2 / c), (int)(y2 / c));
     }
 
-
-    private Point FromPolygonMean(PolygonShape rect)
+    private Point PolygonToPointCentral(PolygonShape rect)
     {
         var mean = rect.Centroid;
         var bounds = rect.Bounds;
@@ -220,10 +145,10 @@ public class DistributionService
                meanY = (double)(mean.Y - bounds.Y) / bounds.Height;
         while (true)
         {
-            double randX = Random.NextTriangular(meanX),
-                   randY = Random.NextTriangular(meanY);
-            int x = bounds.X + (int)(bounds.Width * randX),
-                y = bounds.Y + (int)(bounds.Height * randY);
+            double randX = Random.NextDoubleBoxMuller(meanX),
+                   randY = Random.NextDoubleBoxMuller(meanY);
+            int x = (int)(bounds.X + bounds.Width * randX),
+                y = (int)(bounds.Y + bounds.Height * randY);
             var point = new Point(x, y);
             if (rect.Contains(point))
             {
@@ -231,8 +156,6 @@ public class DistributionService
             }
         }
     }
-
-
 
     private int CombineHashCodes(int h1, int h2)
     {
@@ -265,11 +188,3 @@ public class DistributionService
     }
 
 }
-
-public enum ShapeDistributionType
-{
-    Uniform,
-    Central,
-    Preference,
-}
-
