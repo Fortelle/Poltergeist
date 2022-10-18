@@ -113,6 +113,15 @@ public class TestMacroGroup : MacroGroup
             }
         });
 
+        Macros.Add(new BasicMacro("test_minimize")
+        {
+            MinimizeApplication = true,
+            Script = (e) =>
+            {
+                Thread.Sleep(3000);
+            }
+        });
+
         Macros.Add(new BasicMacro("test_cmd")
         {
             Configure = (services, _) =>
