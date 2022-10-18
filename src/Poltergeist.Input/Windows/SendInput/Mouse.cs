@@ -60,7 +60,7 @@ public partial class SendInputHelper
         return this;
     }
 
-    public SendInputHelper AddMouseWheel(int detents)
+    public SendInputHelper AddMouseWheel(int movement)
     {
         AddInput(new()
         {
@@ -68,14 +68,14 @@ public partial class SendInputHelper
             inputUnion = {
                 mi = {
                     dwFlags = NativeMethods.MouseEventFlags.Wheel,
-                    mouseData = detents,
+                    mouseData = movement,
                 },
             },
         });
         return this;
     }
 
-    public SendInputHelper AddMouseHWheel(int detents)
+    public SendInputHelper AddMouseHWheel(int movement)
     {
         AddInput(new()
         {
@@ -83,7 +83,7 @@ public partial class SendInputHelper
             inputUnion = {
                 mi = {
                     dwFlags = NativeMethods.MouseEventFlags.HWheel,
-                    mouseData = detents,
+                    mouseData = movement,
                 },
             },
         });

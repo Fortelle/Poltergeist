@@ -46,6 +46,38 @@ public static class WindowsFinder
         return hWnd;
     }
 
+    public static IntPtr FindWindow(Func<IntPtr, bool> action)
+    {
+        var hwnd = IntPtr.Zero;
+        NativeMethods.EnumWindows((h, l) => {
+            if (action(h))
+            {
+                hwnd = h;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }, IntPtr.Zero);
+
+        return hwnd;
+    }
+
+    public static IntPtr[] FindWindows(Func<IntPtr, bool> action)
+    {
+        var windows = new List<IntPtr>();
+        NativeMethods.EnumWindows((h, l) => {
+            if (action(h))
+            {
+                windows.Add(h);
+            }
+            return true;
+        }, IntPtr.Zero);
+
+        return windows.ToArray();
+    }
+
     public static IntPtr[] FindChildWindows(IntPtr hwnd)
     {
         var parentHwnd = hwnd;
@@ -83,11 +115,14 @@ public static class WindowsFinder
 
         [DllImport("USER32.DLL")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsIconic(IntPtr hWnd);
+        public static extern bool IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+        public static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 

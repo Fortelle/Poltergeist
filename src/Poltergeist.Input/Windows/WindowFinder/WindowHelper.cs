@@ -37,23 +37,31 @@ public class WindowHelper
         return GetClassName(Handle);
     }
 
-    public int GetProcessId()
+    public Process GetProcess()
     {
         NativeMethods.GetWindowThreadProcessId(Handle, out var processId);
-        return processId;
-    }
-
-    public string GetProcessName()
-    {
-        var processId = GetProcessId();
-        var process = Process.GetProcessById(processId);
-        var processName = process.ProcessName;
-        return processName;
+        var process = Process.GetProcessById((int)processId);
+        return process;
     }
 
     public Rectangle? GetBounds()
     {
         return GetBounds(Handle);
+    }
+
+    public void BringToFront()
+    {
+        NativeMethods.SetForegroundWindow(Handle);
+    }
+
+    public void Minimize()
+    {
+        NativeMethods.ShowWindow(Handle, NativeMethods.SW_MINIMIZE);
+    }
+
+    public void Unminimize()
+    {
+        NativeMethods.ShowWindow(Handle, NativeMethods.SW_RESTORE);
     }
 
     public static string GetClassName(IntPtr hWnd)
@@ -106,8 +114,19 @@ public class WindowHelper
         public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
 
         [DllImport("USER32.DLL")]
-        public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int processId);
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+        [DllImport("USER32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("USER32.dll", CharSet = CharSet.Auto)]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        public const int SW_SHOWNORMAL = 1;
+        public const int SW_MAXIMIZE = 3;
+        public const int SW_MINIMIZE = 6;
+        public const int SW_RESTORE = 9;
+        
         [DllImport("dwmapi.dll")]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwAttribute, out RECT pvAttribute, int cbAttribute);
 
