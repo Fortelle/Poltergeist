@@ -46,6 +46,8 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     private bool _requireAdmin;
     public bool RequireAdmin { get => _requireAdmin; set => _requireAdmin |= value; }
 
+    public bool MinimizeApplication { get; set; }
+
     private string _privateFolder;
     public string PrivateFolder => _privateFolder;
     string IMacroBase.PrivateFolder { get => _privateFolder; set => _privateFolder = value; }

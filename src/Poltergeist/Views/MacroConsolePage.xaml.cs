@@ -15,17 +15,8 @@ public sealed partial class MacroConsolePage : Page
     {
         ViewModel = vm;
         ViewModel.UseStatistics = App.GetSettings<bool>("macro.usestatistics", true);
-        ViewModel.Started += ViewModel_Started;
 
         InitializeComponent();
-    }
-
-    private void ViewModel_Started()
-    {
-        if (PanelTab.Items.Count > 0 && PanelTab.SelectedIndex == -1)
-        {
-            PanelTab.SelectedIndex = 0;
-        }
     }
 
     private void HyperlinkButton_Click(object sender, RoutedEventArgs e)

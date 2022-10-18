@@ -25,6 +25,7 @@ public interface IMacroBase
     public string SharedFolder { get; set; }
 
     public bool RequireAdmin { get; }
+    public bool MinimizeApplication { get; }
     public bool Available { get; }
 
     public void Initialize();

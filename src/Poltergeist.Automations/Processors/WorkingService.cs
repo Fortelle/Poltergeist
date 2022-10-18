@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors.Events;
@@ -55,6 +57,7 @@ public class WorkingService : KernelService
         CheckAvailability();
         if (EndStatus.HasValue) goto end;
 
+        RaiseStartedEvent();
         Hooks.Raise("process_started");
 
         DoWork();
@@ -218,6 +221,21 @@ public class WorkingService : KernelService
             Reason = EndStatus.Value
         };
         Ending?.Invoke(this, args);
+    }
+
+    private void RaiseStartedEvent()
+    {
+        var startedActions = new List<StartedAction>();
+        if (Processor.Macro.MinimizeApplication)
+        {
+            startedActions.Add(StartedAction.MinimizedWindow);
+        }
+
+        Processor.RaiseEvent(MacroEventType.ProcessStarted, new MacroStartedEventArgs()
+        {
+            Started = !EndStatus.HasValue,
+            StartedActions = startedActions.ToArray(),
+        });
     }
 
 }

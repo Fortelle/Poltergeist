@@ -20,8 +20,8 @@ namespace Poltergeist.Automations.Processors;
 
 public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUserProcessor, IDisposable
 {
-    public event EventHandler<MacroStartedEventArgs> Starting;
-    public event EventHandler Started;
+    public event EventHandler<MacroStartingEventArgs> Starting;
+    public event EventHandler<MacroStartedEventArgs> Started;
     public event EventHandler<MacroCompletedEventArgs> Completed;
     public event EventHandler<PanelCreatedEventArgs> PanelCreated;
 
@@ -254,7 +254,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
         Hooks.Raise("ui_ready");
 
-        RaiseEvent(MacroEventType.ProcessStarting, new MacroStartedEventArgs(StartTime));
+        RaiseEvent(MacroEventType.ProcessStarting, new MacroStartingEventArgs(StartTime));
 
         if (InitializationException == null)
         {
@@ -264,8 +264,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             }
             Macro.Process(this);
         }
-
-        RaiseEvent(MacroEventType.ProcessStarted, new EventArgs());
 
         Workflow.Start();
     }
@@ -292,6 +290,15 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         SetStatistic<int>("TotalRunCount", old => old + 1);
         SetStatistic<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
 
+        var completeAction = GetOption("CompleteAction", CompleteAction.None);
+        if (completeAction == CompleteAction.None)
+        {
+            if (Macro.MinimizeApplication)
+            {
+                completeAction = CompleteAction.RestoreApplication;
+            }
+        }
+
         var report = new ProcessReport()
         {
             MacroName = Macro.Name,
@@ -300,8 +307,11 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             EndTime = EndTime,
             EndReason = e.Reason,
         };
-        var args = new MacroCompletedEventArgs(e.Reason, report);
-        args.CompleteAction = GetOption("CompleteAction", CompleteAction.None);
+        var args = new MacroCompletedEventArgs(e.Reason, report)
+        {
+             CompleteAction = completeAction,
+        };
+
         RaiseEvent(MacroEventType.ProcessCompleted, args);
     }
 

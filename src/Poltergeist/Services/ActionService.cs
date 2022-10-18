@@ -37,16 +37,18 @@ public class ActionService
         Application.Current.Shutdown();
     }
 
-    public void RestartApplication()
-    {
-    }
-
     public void MinimizeApplication()
     {
+        Application.Current.MainWindow.WindowState = WindowState.Minimized;
     }
 
     public void RestoreApplication()
     {
+        if(Application.Current.MainWindow.WindowState == WindowState.Minimized)
+        {
+            Application.Current.MainWindow.WindowState = WindowState.Normal;
+        }
+        Application.Current.MainWindow.Activate();
     }
 
     public void LockScreen()

@@ -184,19 +184,36 @@ public class MacroConsoleViewModel : ObservableRecipient
         Statistics = null;
         Statistics = Macro.Statistics;
 
-        if (e.IsSucceeded && e.CompleteAction != CompleteAction.None && e.Summary.Duration.TotalSeconds >= 15) // todo: config
+        if(e.CompleteAction == CompleteAction.RestoreApplication)
+        {
+            App.GetService<ActionService>().RestoreApplication();
+        }
+        else if (e.IsSucceeded && e.CompleteAction != CompleteAction.None && e.Summary.Duration.TotalSeconds >= 15) // todo: config
         {
             App.GetService<ActionService>().Execute(e.CompleteAction, e.ActionArgument);
         }
     }
 
-    private void Processor_Starting(object? sender, MacroStartedEventArgs e)
+    private void Processor_Starting(object? sender, MacroStartingEventArgs e)
     {
 
     }
 
-    private void Processor_Started(object? sender, EventArgs e)
+    private void Processor_Started(object? sender, MacroStartedEventArgs e)
     {
+        if(e.Started && e.StartedActions != null)
+        {
+            foreach(var action in e.StartedActions)
+            {
+                switch (action)
+                {
+                    case StartedAction.MinimizedWindow:
+                        App.GetService<ActionService>().MinimizeApplication();
+                        break;
+                }
+            }
+        }
+
         Started?.Invoke();
     }
 

@@ -4,6 +4,7 @@ public enum CompleteAction
 {
     None,
     ExitApplication,
+    RestoreApplication,
 
     LockScreen,
 
