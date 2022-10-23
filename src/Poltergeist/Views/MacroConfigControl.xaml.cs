@@ -11,7 +11,7 @@ namespace Poltergeist.Views;
 
 public sealed partial class MacroConfigControl : UserControl
 {
-    public event EventHandler ItemUpdated;
+    public event EventHandler<ConfigUpdatedArguments> ItemUpdated;
 
     public MacroConfigControl()
     {
@@ -141,7 +141,11 @@ public sealed partial class MacroConfigControl : UserControl
         element.SourceUpdated += (s, args) =>
         {
             item.HasChanged = true;
-            ItemUpdated?.Invoke(this, new());
+            ItemUpdated?.Invoke(this, new()
+            {
+                Key = item.Key,
+                Value = item.Value,
+            });
         };
 
         grid.Children.Add(element);
@@ -152,7 +156,6 @@ public sealed partial class MacroConfigControl : UserControl
             Grid.SetColumn(element, 0);
             Grid.SetRow(element, 1);
             Grid.SetColumnSpan(element, 2);
-
         }
         else
         {
@@ -222,4 +225,10 @@ public sealed partial class MacroConfigControl : UserControl
     {
         e.Accepted = ((IOptionItem)e.Item).IsBrowsable;
     }
+}
+
+public class ConfigUpdatedArguments
+{
+    public string Key { get; set; }
+    public object Value { get; set; }
 }

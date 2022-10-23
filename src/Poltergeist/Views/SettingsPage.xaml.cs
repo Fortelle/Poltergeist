@@ -16,7 +16,7 @@ public sealed partial class SettingsPage : Page
         InitializeComponent();
     }
 
-    private void MacroConfigControl_ItemUpdated(object sender, System.EventArgs e)
+    private void MacroConfigControl_ItemUpdated(object sender, ConfigUpdatedArguments e)
     {
         var manager = App.GetService<MacroManager>();
         manager.SaveGlobalOptions();
@@ -24,10 +24,12 @@ public sealed partial class SettingsPage : Page
         App.ShowFlyout("Global options saved");
     }
 
-    private void MacroConfigControl_ItemUpdated2(object sender, System.EventArgs e)
+    private void MacroConfigControl_ItemUpdated2(object sender, ConfigUpdatedArguments e)
     {
-        var manager = App.GetService<LocalSettingsService>();
-        manager.Save();
+        var localSettings = App.GetService<LocalSettingsService>();
+        localSettings.Save();
+
+        localSettings.OnChanged(e.Key, e.Value);
 
         App.ShowFlyout("Local settings saved");
     }
