@@ -246,6 +246,8 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     {
         StartTime = DateTime.Now;
 
+        Macro.LastRunTime = StartTime;
+
         InitializeProcessor();
 
         GetService<MacroLogger>().UpdateUI();
@@ -286,7 +288,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     {
         EndTime = DateTime.Now;
 
-        SetStatistic("LastRunTime", StartTime);
         SetStatistic<int>("TotalRunCount", old => old + 1);
         SetStatistic<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
 

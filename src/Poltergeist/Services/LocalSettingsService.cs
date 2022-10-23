@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Logging;
-using Poltergeist.Common.Utilities.Cryptology;
 
 namespace Poltergeist.Services;
 
@@ -28,11 +28,24 @@ public class LocalSettingsService
 
     private static IEnumerable<IOptionItem> CreateSettings()
     {
-        yield return new OptionItem<Rectangle>("WindowPosition")
+        // Application
+        yield return new OptionItem<int>("app.maxrecentmacros", 10)
+        {
+            Category = "Application",
+            DisplayLabel = "Max recent macros",
+        };
+
+        yield return new OptionItem<string[]>("app.recentmacros", Array.Empty<string>())
         {
             IsBrowsable = false,
         };
 
+        yield return new OptionItem<Rectangle>("app.windowposition")
+        {
+            IsBrowsable = false,
+        };
+
+        // Macro
         yield return new OptionItem<bool>("macro.usestatistics", true)
         {
             Category = "Macro",
@@ -52,12 +65,12 @@ public class LocalSettingsService
         };
     }
 
-    public T ReadSetting<T>(string key, T def = default)
+    public T GetSetting<T>(string key, T def = default)
     {
         return Settings.TryGet<T>(key, def);
     }
 
-    public void SaveSetting<T>(string key, T value)
+    public void SetSetting<T>(string key, T value)
     {
         Settings.Set(key, value);
     }

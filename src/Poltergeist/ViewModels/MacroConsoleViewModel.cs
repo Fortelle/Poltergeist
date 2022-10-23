@@ -24,6 +24,7 @@ public class MacroConsoleViewModel : ObservableRecipient
     private bool _isRunning;
     private MacroOptions _selectedOptions;
     private VariableCollection _statistics;
+    private MacroManager MacroManager;
 
     public ICommand StartCommand { get; }
     public ICommand StopCommand { get; }
@@ -39,8 +40,10 @@ public class MacroConsoleViewModel : ObservableRecipient
 
     public event Action Started;
 
-    public MacroConsoleViewModel()
+    public MacroConsoleViewModel(MacroManager macroManager)
     {
+        MacroManager = macroManager;
+
         Panels = new();
 
         StartCommand = new RelayCommand(Start);
@@ -62,7 +65,8 @@ public class MacroConsoleViewModel : ObservableRecipient
         Keyboard.ClearFocus();
 
         IsRunning = true;
-        App.GetService<MacroManager>().IsRunning = true;
+        MacroManager.IsRunning = true;
+        MacroManager.AddRecentMacro(Macro);
 
         App.GetService<NavigationService>().Navigate("console");
 
@@ -160,9 +164,9 @@ public class MacroConsoleViewModel : ObservableRecipient
         var dict = new Dictionary<string, object>();
 
         var localSettings = App.GetService<LocalSettingsService>();
-        dict.Add("logger.tofile", localSettings.ReadSetting<LogLevel>("logger.tofile"));
-        dict.Add("logger.toconsole", localSettings.ReadSetting<LogLevel>("logger.toconsole"));
-        dict.Add("macro.usestatistics", localSettings.ReadSetting<bool>("macro.usestatistics"));
+        dict.Add("logger.tofile", localSettings.GetSetting<LogLevel>("logger.tofile"));
+        dict.Add("logger.toconsole", localSettings.GetSetting<LogLevel>("logger.toconsole"));
+        dict.Add("macro.usestatistics", localSettings.GetSetting<bool>("macro.usestatistics"));
 
         return dict;
     }

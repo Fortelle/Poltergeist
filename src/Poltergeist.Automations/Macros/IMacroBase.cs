@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -19,6 +20,7 @@ public interface IMacroBase
     public List<MacroMaintenance> Maintenances { get; }
     public List<MacroModule> Modules { get; }
     public MacroStorage Storage { get; }
+    public DateTime LastRunTime { get; set; }
 
     public MacroGroup Group { get; set; }
     public string PrivateFolder { get; set; }

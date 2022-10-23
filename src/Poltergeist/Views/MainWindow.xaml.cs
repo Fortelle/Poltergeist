@@ -15,7 +15,7 @@ namespace Poltergeist
         {
             InitializeComponent();
 
-            var rect = App.GetSettings<Rectangle>("WindowPosition");
+            var rect = App.GetSettings<Rectangle>("app.windowposition");
             if (rect != default)
             {
                 this.Top = rect.Top;
@@ -37,7 +37,7 @@ namespace Poltergeist
         {
             var rect = new Rectangle((int)Top, (int)Left, (int)Width, (int)Height);
             var localSettings = App.GetService<LocalSettingsService>();
-            localSettings.SaveSetting("WindowPosition", rect);
+            localSettings.SetSetting("app.windowposition", rect);
             localSettings.Save();
         }
 

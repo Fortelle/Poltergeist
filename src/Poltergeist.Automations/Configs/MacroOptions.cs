@@ -85,7 +85,12 @@ public class MacroOptions : IEnumerable<IOptionItem>
 
     public void Set<T>(string key, T value)
     {
-        Items.First(x => x.Key == key).Value = value;
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if(item != null)
+        {
+            item.Value = value;
+            item.HasChanged = true;
+        }
     }
 
     public void Load(string path, bool keepUndefined = false)

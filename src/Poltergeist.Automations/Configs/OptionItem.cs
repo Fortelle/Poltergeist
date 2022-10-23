@@ -34,6 +34,7 @@ public class OptionItem<T> : IOptionItem
     public bool IsDefault =>
         Value is null ? DefaultValue is not null
         : Value is IEquatable<T> ie ? ie.Equals(DefaultValue)
+        : Value.GetType().IsClass && DefaultValue .GetType().IsClass ? false
         : Value.ToString() == DefaultValue.ToString();
 
     public Type Type => typeof(T);

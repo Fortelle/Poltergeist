@@ -12,6 +12,7 @@ public class MacroManager
 {
     public List<IMacroBase> Macros { get; } = new();
     public List<MacroGroup> Groups { get; } = new();
+    public List<string> RecentMacros { get; } = new();
     public MacroOptions GlobalOptions { get; set; } = new();
 
     public IMacroBase CurrentMacro { get; set; }
@@ -148,4 +149,48 @@ public class MacroManager
         GlobalOptions.Save(filepath);
     }
 
+    public void AddRecentMacro(IMacroBase macro)
+    {
+        var maxRecentMacros = App.GetSettings<int>("app.maxrecentmacros", 0);
+        if (maxRecentMacros <= 0)
+        {
+            return;
+        }
+        if(RecentMacros.Count > 0 && RecentMacros.Last() == macro.Name)
+        {
+            return;
+        }
+
+        var i = RecentMacros.IndexOf(macro.Name);
+        if (i > -1)
+        {
+            RecentMacros.RemoveAt(i);
+        }
+        else if (RecentMacros.Count >= maxRecentMacros)
+        {
+            RecentMacros.RemoveRange(0, maxRecentMacros - RecentMacros.Count + 1);
+        }
+
+        RecentMacros.Add(macro.Name);
+
+        App.SetSettings("app.recentmacros", RecentMacros.ToArray(), save: true);
+
+        var homeVM = App.GetService<HomeViewModel>();
+        homeVM.UpdateRecentMacros();
+    }
+
+    public void LoadRecentMacros()
+    {
+        var maxRecentMacros = App.GetSettings<int>("app.maxrecentmacros", 0);
+        var recentMacros = App.GetSettings<string[]>("app.recentmacros", Array.Empty<string>());
+
+        if(maxRecentMacros > 0 && recentMacros?.Length > 0)
+        {
+            recentMacros = recentMacros
+                .Where(x => Macros.Any(y => y.Name == x))
+                .TakeLast(maxRecentMacros)
+                .ToArray();
+            RecentMacros.AddRange(recentMacros);
+        }
+    }
 }

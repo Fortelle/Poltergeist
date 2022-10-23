@@ -19,10 +19,19 @@
     <ScrollViewer>
         <StackPanel>
             <StackPanel Visibility="{Binding EnableRecentMacro, Converter={StaticResource BoolToVisibilityConverter} }">
-                <TextBlock
-                    Text="Recent macros" 
-                    Style="{DynamicResource Header2Style}"
-                    />
+                <DockPanel>
+                    <TextBlock
+                        Text="Recent macros" 
+                        Style="{DynamicResource Header2Style}"
+                        />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Margin="16, 0"
+                        >
+                        <Hyperlink Command="{Binding ClearRecentsCommand}">Clear</Hyperlink>
+                    </TextBlock>
+                </DockPanel>
                 <ItemsControl
                     ItemsSource="{Binding RecentMacros, Mode=OneWay}"
                     >

@@ -135,22 +135,20 @@ public abstract class PoltergeistApplication : Application
     public static T GetSettings<T>(string key, T def = default)
     {
         var settingsService = GetService<LocalSettingsService>();
-        var value = settingsService.ReadSetting<T>(key, def);
+        var value = settingsService.GetSetting<T>(key, def);
 
         return value;
     }
 
-    public static void SetSettings<T>(string key, T value)
+    public static void SetSettings<T>(string key, T value, bool save = false)
     {
         var settingsService = GetService<LocalSettingsService>();
-        settingsService.SaveSetting<T>(key, value);
+        settingsService.SetSetting<T>(key, value);
+        if (save)
+        {
+            settingsService.Save();
+        }
     }
-
-    //public void AddMacro(MacroBase macro)
-    //{
-    //    var macroManager = GetService<MacroManager>();
-    //    macroManager.AddMacro(macro);
-    //}
 
     public static void ShowFlyout(string message)
     {

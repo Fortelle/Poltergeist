@@ -28,6 +28,9 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     [JsonProperty]
     public VariableCollection Statistics { get; set; } = new();
 
+    [JsonProperty]
+    public DateTime LastRunTime { get; set; }
+
     public List<MacroMaintenance> Maintenances { get; } = new();
     public List<MacroModule> Modules { get; } = new();
     public MacroStorage Storage { get; } = new();
@@ -86,8 +89,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
             Maintenances.Add(OpenLocalFolder);
         }
         Maintenances.Add(CreateShortcut);
-
-        Statistics.Add(new("LastRunTime", default(DateTime)));
+        
         Statistics.Add(new("TotalRunCount", 0));
         Statistics.Add(new("TotalRunTime", default(TimeSpan)));
 
