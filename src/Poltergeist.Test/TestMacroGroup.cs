@@ -1,11 +1,15 @@
 using System;
+using System.Media;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Components.Repeats;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Instruments;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Components.Loops;
 
 namespace Poltergeist.Test;
@@ -37,6 +41,72 @@ public class TestMacroGroup : MacroGroup
             Title = "Minimal",
             Description = "Provides an empty macro with the minimum dependencies.",
         });
+
+        Macros.Add(new BasicMacro("test_sound")
+        {
+            Title = "Sound test",
+            Configure = (services, _) =>
+            {
+                services.AddTransient<StepHelperService>();
+                services.AddSingleton<SoundService>();
+            },
+            Script = (e) =>
+            {
+                var sounds = e.Processor.GetService<SoundService>();
+
+                var sh1 = e.Processor.GetService<StepHelperService>();
+                sh1.Title = "Play system sounds:";
+                sh1.Interval = 1000;
+                sh1.Add("Play Beep", () => sounds.Beep());
+                sh1.Add("Play Asterisk", () => sounds.Asterisk());
+                sh1.Add("Play Exclamation", () => sounds.Exclamation());
+                sh1.Add("Play Hand", () => sounds.Hand());
+                sh1.Add("Play Question", () => sounds.Question());
+                sh1.Show();
+
+                sh1.Execute();
+            }
+        });
+
+        //Macros.Add(new BasicMacro("test_bgm")
+        //{
+        //    // todo: ignore fadeout on error
+        //    // todo: use progress instrument
+        //    Title = "BGM test",
+        //    Description = "Plays background music while macro is running.",
+        //    UserOptions =
+        //    {
+        //        new FileOptionItem("bgm"),
+        //        new OptionItem<int>("duration", "duration (ms)", 10000),
+        //        new OptionItem<int>("fadeout", "fadeout (ms)", 3000),
+        //    },
+        //    Configure = (services, _) =>
+        //    {
+        //        services.AddSingleton<SoundService>();
+        //    },
+        //    Process = (e) =>
+        //    {
+        //        var bgmfile = e.GetOption<string>("bgm");
+        //        if (string.IsNullOrEmpty(bgmfile))
+        //        {
+        //            return;
+        //        }
+        //        var fadeout = e.GetOption<int>("fadeout");
+
+        //        var sounds = e.GetService<SoundService>();
+        //        var hooks = e.GetService<HookService>();
+        //        hooks.Register("process_started", _ => sounds.PlayBgm(bgmfile));
+        //        hooks.Register("process_exiting", _ => sounds.StopBgm(fadeout));
+        //    },
+        //    Script = (e) =>
+        //    {
+        //        var duration = e.Processor.GetOption<int>("duration");
+        //        var sounds = e.Processor.GetService<SoundService>();
+        //        Thread.Sleep(duration >> 1);
+        //        sounds.Beep();
+        //        Thread.Sleep(duration >> 1);
+        //    }
+        //});
 
         Macros.Add(new ExceptionMacro("test_exception")
         {
@@ -97,9 +167,6 @@ public class TestMacroGroup : MacroGroup
         {
             Title = "RepeatableMacro",
             Description = "Provides a RepeatableMacro.",
-            UserOptions =
-            {
-            },
             Configure = (services, _) =>
             {
                 services.Configure<RepeatOptions>(options =>
