@@ -101,7 +101,7 @@ public class WorkingService : KernelService
             foreach (var type in Processor.AutoloadTypes)
             {
                 Processor.GetService(type);
-                Logger.Log(LogLevel.Information, ServiceName, $"Loaded service <{type.Name}>.");
+                Logger.Log(LogLevel.Debug, ServiceName, $"Loaded service <{type.Name}>.");
             }
         }
         catch (Exception e) //when (!Debugger.IsAttached)

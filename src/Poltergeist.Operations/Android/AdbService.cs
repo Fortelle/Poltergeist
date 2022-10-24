@@ -89,7 +89,7 @@ public class AdbService : MacroService
 
         var autoclose = Processor.GetOption(AutoCloseKey, false);
 
-        Logger.Debug($"Connecting to {Address}.", new { Address, autoclose });
+        Logger.Debug($"Connecting to adb server {Address}.", new { Address, autoclose });
 
         if (autoclose)
         {
@@ -102,6 +102,8 @@ public class AdbService : MacroService
             Logger.Error(output);
             return false;
         }
+
+        Logger.Info($"Connected to adb server {Address}.");
         return true;
     }
 
@@ -112,6 +114,8 @@ public class AdbService : MacroService
         if (!IsInitialized) Initialize();
 
         Execute($"kill-server");
+
+        Logger.Info($"Closed adb server {Address}.");
         IsClosed = true;
     }
 

@@ -80,26 +80,37 @@ public class ExampleMacroGroup : MacroGroup
             },
             Configure = (services, _) =>
             {
-                services.AddSingleton<StepHelperService>();
+                services.AddTransient<StepHelperService>();
             },
             Script = (e) =>
             {
-                var steps = e.Processor.GetService<StepHelperService>();
-                steps.Add("Say Hello", () =>
+                var steps1 = e.Processor.GetService<StepHelperService>();
+                steps1.Title = "Section 1:";
+                steps1.Add("Say Hello", () =>
                 {
                     Thread.Sleep(500);
                 });
-                steps.Add("Say World", () =>
+                steps1.Add("Say World", () =>
                 {
                     Thread.Sleep(500);
                     if (e.Processor.GetOption("break", false)) throw new Exception();
                 });
-                steps.Add("Done", () =>
+                steps1.Add("Done", () =>
                 {
                     Thread.Sleep(500);
                 });
+                steps1.Show();
 
-                steps.Execute();
+                var steps2 = e.Processor.GetService<StepHelperService>();
+                steps2.Title = "Section 2:";
+                steps2.Interval = 500;
+                steps2.Add("Say Hello", () => { });
+                steps2.Add("Say World", () => { });
+                steps2.Add("Done", () => { });
+                steps2.Show();
+
+                steps1.Execute();
+                steps2.Execute();
             }
         });
     }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 
 namespace Poltergeist.Input.Windows;
@@ -64,6 +66,25 @@ public static class WindowsFinder
         return hwnd;
     }
 
+    public static WindowHelper? FindWindow(Func<WindowHelper, bool> action)
+    {
+        WindowHelper? windowHelper = null;
+        NativeMethods.EnumWindows((h, l) => {
+            var wh = new WindowHelper(h);
+            if (action(wh))
+            {
+                windowHelper = wh;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }, IntPtr.Zero);
+        return windowHelper;
+    }
+
+
     public static IntPtr[] FindWindows(Func<IntPtr, bool> action)
     {
         var windows = new List<IntPtr>();
@@ -98,6 +119,23 @@ public static class WindowsFinder
         var childHwnd = NativeMethods.FindWindowEx(parentHwnd, IntPtr.Zero, lpszClass, null);
         return childHwnd;
     }
+
+    public static Process[] GetProcessesByPath(string path)
+    {
+        var processes = new List<Process>();
+        var processName = Path.GetFileNameWithoutExtension(path);
+
+        foreach (var process in Process.GetProcessesByName(processName))
+        {
+            if(process.MainModule?.FileName == path)
+            {
+                processes.Add(process);
+            }
+        }
+
+        return processes.ToArray();
+    }
+
 
     private static class NativeMethods
     {

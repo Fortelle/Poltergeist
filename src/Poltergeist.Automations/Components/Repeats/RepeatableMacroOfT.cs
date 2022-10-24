@@ -6,12 +6,14 @@ using Poltergeist.Components.Loops;
 
 namespace Poltergeist.Automations.Components.Repeats;
 
-public class RepeatableMacro : MacroBase
+public class RepeatableMacro<T> : MacroBase
 {
-    public Action<LoopBeginArguments> Begin;
-    public Action<LoopIterationArguments> Iteration;
-    public Action<LoopCheckNextArguments> CheckNext;
-    public Action<ArgumentService> End;
+    public T Argument;
+
+    public Action<LoopBeginArguments, T> Begin;
+    public Action<LoopIterationArguments, T> Iteration;
+    public Action<LoopCheckNextArguments, T> CheckNext;
+    public Action<ArgumentService, T> End;
 
     public RepeatableMacro(string name) : base(name)
     {
@@ -36,10 +38,10 @@ public class RepeatableMacro : MacroBase
         base.OnProcess(processor);
 
         var loop = processor.GetService<RepeatService>();
-        if (Begin != null) loop.BeginProc += Begin;
-        if (Iteration != null) loop.IterationProc += Iteration;
-        if (CheckNext != null) loop.CheckNextProc += CheckNext;
-        if (End != null) loop.EndProc += End;
+        if (Begin != null) loop.BeginProc += e => Begin(e, Argument);
+        if (Iteration != null) loop.IterationProc += e => Iteration(e, Argument);
+        if (CheckNext != null) loop.CheckNextProc += e => CheckNext(e, Argument);
+        if (End != null) loop.EndProc += e => End(e, Argument);
     }
 
 }

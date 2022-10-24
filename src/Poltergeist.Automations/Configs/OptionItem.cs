@@ -28,7 +28,11 @@ public class OptionItem<T> : IOptionItem
 
     public OptionItem(string key) : this(key, default)
     {
-        Key = key;
+    }
+
+    public OptionItem(string key, string title, T defaultValue) : this(key, defaultValue)
+    {
+        DisplayLabel = title;
     }
 
     public bool IsDefault =>

@@ -10,8 +10,10 @@ namespace Poltergeist.Automations.Components;
 
 public class StepHelperService : MacroService
 {
+    public string Title { get; set; }
     public int Interval { get; set; }
     private List<StepItem> Steps = new();
+    private ListInstrument Instrument;
 
     public StepHelperService(MacroProcessor proc) : base(proc)
     {
@@ -26,50 +28,58 @@ public class StepHelperService : MacroService
         });
     }
 
-    public void Execute()
+    public void Show()
     {
-        var noti = Processor.GetService<InstrumentService>();
-        var gi = noti.Create<ListInstrument>(inst =>
+        var instruments = Processor.GetService<InstrumentService>();
+        Instrument = instruments.Create<ListInstrument>(inst =>
         {
-            inst.Title = "Steps:";
+            inst.Title = Title ?? "Steps:";
         });
 
         foreach (var item in Steps)
         {
-            gi.Add(new()
+            Instrument.Add(new()
             {
                 Status = ProgressStatus.Idle,
                 Text = item.Text,
             });
+        }
+    }
+
+    public void Execute()
+    {
+        if (Instrument == null)
+        {
+            Show();
         }
 
         var timer = new Stopwatch();
 
         for (var i = 0; i < Steps.Count; i++)
         {
-            gi.Update(i, new()
+            Instrument.Update(i, new()
             {
                 Status = ProgressStatus.Busy,
                 Text = Steps[i].Text,
             });
 
-            var sucessed = false;
-
+            var success = false;
             timer.Restart();
             try
             {
                 Steps[i].Action.Invoke();
-                sucessed = true;
+                success = true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                sucessed = false;
+                success = false;
+                Logger.Error(e.Message);
             }
             timer.Stop();
 
-            gi.Update(i, new()
+            Instrument.Update(i, new()
             {
-                Status = sucessed ? ProgressStatus.Succeeded : ProgressStatus.Failed,
+                Status = success ? ProgressStatus.Succeeded : ProgressStatus.Failed,
                 Text = Steps[i].Text,
                 Subtext = $"{timer.ElapsedMilliseconds}ms"
             });
@@ -79,7 +89,7 @@ public class StepHelperService : MacroService
                 Thread.Sleep(Interval);
             }
 
-            if (!sucessed) break;
+            if (!success) break;
         }
     }
 
