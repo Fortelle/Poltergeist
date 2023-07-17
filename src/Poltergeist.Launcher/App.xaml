@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<poltergeist:PoltergeistApplication
+    x:Class="Poltergeist.Launcher.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:poltergeist="using:Poltergeist"
+    xmlns:local="using:Poltergeist.Launcher">
+</poltergeist:PoltergeistApplication>

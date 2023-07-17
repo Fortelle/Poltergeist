@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Linq;
 using Newtonsoft.Json;
 using Poltergeist.Common.Utilities.Images;
 
@@ -9,7 +8,7 @@ namespace Poltergeist.Common.Structures.Shapes;
 public class RectangleShape : IShape
 {
     [JsonProperty]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonProperty]
     public int X { get; set; }
@@ -43,19 +42,19 @@ public class RectangleShape : IShape
         Height = rect.Height;
     }
 
-    public RectangleShape(Point pt)
+    public RectangleShape(Point pt, Size size)
     {
         X = pt.X;
         Y = pt.Y;
-        Width = 1;
-        Height = 1;
+        Width = size.Width;
+        Height = size.Height;
     }
 
     public int Left => X;
     public int Right => X + Width;
     public int Top => Y;
     public int Bottom => Y + Height;
-    public Size Size => new Size(Width, Height);
+    public Size Size => new(Width, Height);
     //public Point Location => new Point(X, Y);
 
     public bool IsValid => Width != 0 && Height != 0;
@@ -69,7 +68,13 @@ public class RectangleShape : IShape
             && pt.Y <= Y + Width;
     }
 
-    public Rectangle Bounds => new Rectangle(X, Y, Width, Height);
+    public void Pan(int x, int y)
+    {
+        X += x;
+        Y += y;
+    }
+
+    public Rectangle Bounds => new(X, Y, Width, Height);
 
     public Point Location
     {
@@ -84,11 +89,11 @@ public class RectangleShape : IShape
         }
     }
 
-    public double Perimeter => Width + Width + Height + Height;
+    public double Perimeter => Math.Abs(Width) * 2 + Math.Abs(Height) * 2;
 
-    public float Area => Width * Height;
+    public float Area => Math.Abs(Width) * Math.Abs(Height);
 
-    public PointF Centroid => new PointF(X + (float)Width / 2, Y + (float)Height / 2);
+    public PointF Centroid => new(X + Width / 2f, Y + Height / 2f);
 
     public Bitmap ToMask()
     {
@@ -110,9 +115,6 @@ public class RectangleShape : IShape
         }
     }
 
-
-
-
     public bool[] GetPointAvailabilities()
     {
         return Enumerable.Repeat(true, Width * Height).ToArray();
@@ -128,12 +130,5 @@ public class RectangleShape : IShape
         return $"Rectangle-{X}-{Y}-{Width}-{Height}";
     }
 
-    public enum RectangleDistributeType
-    {
-        Random,
-        Uniform,
-        Triangular,
-        CLT,
-    }
 }
 

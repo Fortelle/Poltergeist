@@ -1,17 +1,16 @@
-﻿namespace Poltergeist.Operations
+﻿namespace Poltergeist.Operations;
+
+public enum LocateResult
 {
-    public enum LocateResult
-    {
-        None,
+    None,
 
-        Succeeded,
+    Succeeded,
 
-        NotFound,
-        Minimized,
-        WrongRectangle,
-        SizeNotMatch,
-        RescaleOverflow,
+    NotFound,
+    Minimized,
+    WrongRectangle,
+    SizeNotMatch,
+    RescaleOverflow,
 
-        EmptyParameters,
-    }
+    EmptyParameters,
 }

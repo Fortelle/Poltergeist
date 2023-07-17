@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Input.Windows;
+﻿namespace Poltergeist.Input.Windows;
 
 public partial class SendMessageHelper
 {

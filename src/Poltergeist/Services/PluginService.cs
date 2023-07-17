@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
+using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Services;
 
 public class PluginService
 {
+    private const string FilenameFormat = "Poltergeist.Plugins.*.dll";
+
     public PluginService()
     {
+        App.ContentLoading += Load;
     }
 
-    public async Task Load()
+    private static void Load()
     {
         var manager = App.GetService<MacroManager>();
         var assemblies = GetAssemblies();
@@ -48,7 +47,7 @@ public class PluginService
         {
             if (!Directory.Exists(folder)) continue;
 
-            var files = Directory.GetFiles(folder, "Poltergeist.Plugins.*.dll", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(folder, FilenameFormat, SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
                 var assembly = Assembly.LoadFrom(file);
@@ -63,13 +62,20 @@ public class PluginService
         var groupType = typeof(MacroGroup);
         foreach (var type in assembly.GetTypes())
         {
-            if (groupType.IsAssignableFrom(type))
+            if (!type.IsAssignableTo(groupType))
             {
-                if (Activator.CreateInstance(type) is MacroGroup result)
-                {
-                    yield return result;
-                }
+                continue;
             }
+            if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
+            {
+                continue;
+            }
+            if (Activator.CreateInstance(type) is not MacroGroup result)
+            {
+                continue;
+            }
+
+            yield return result;
         }
     }
 }

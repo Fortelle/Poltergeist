@@ -1,141 +1,87 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Media;
-using System.Windows;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 
 namespace Poltergeist.Automations.Components;
 
 public class SoundService : MacroService
 {
-    private Dictionary<string, SoundPlayer> SoundEffects;
+    private MediaPlayer? mediaPlayer;
 
     public SoundService(MacroProcessor processor) : base(processor)
     {
     }
 
-    public void Beep()
+    public void Play(string path, bool loop = false)
     {
-        SystemSounds.Beep.Play();
-    }
-
-    public void Asterisk()
-    {
-        SystemSounds.Asterisk.Play();
-    }
-
-    public void Exclamation()
-    {
-        SystemSounds.Exclamation.Play();
-    }
-
-    public void Hand()
-    {
-        SystemSounds.Hand.Play();
-    }
-
-    public void Question()
-    {
-        SystemSounds.Question.Play();
-    }
-
-    public SoundPlayer AddSfx(string path)
-    {
-        return AddSfx(path, path);
-    }
-    public SoundPlayer AddSfx(string key, string path)
-    {
-        SoundEffects ??= new();
-
-        if (!SoundEffects.TryGetValue(key, out var player))
+        mediaPlayer?.Dispose();
+        mediaPlayer = new MediaPlayer
         {
-            player = GetSoundPlayer(path);
-            SoundEffects.Add(key, player);
+            Source = MediaSource.CreateFromUri(new Uri(path)),
+        };
+        if (loop)
+        {
+            mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+        }
+        mediaPlayer.Play();
+    }
+
+    public void Play()
+    {
+        if (mediaPlayer is null)
+        {
+            return;
         }
 
-        return player;
+        mediaPlayer.Play();
     }
 
-    private SoundPlayer GetSoundPlayer(string path)
+    public void Pause()
     {
-        if (path.StartsWith("pack://application:,,,/"))
+        if (mediaPlayer is null)
         {
-            try
-            {
-                var sri = Application.GetResourceStream(new Uri(path));
-                var player = new SoundPlayer(sri.Stream);
-                player.Load();
-                sri.Stream.Close();
-                Logger.Debug($"Loaded sound resource \"{path}\".");
-                return player;
-            }
-            catch (IOException)
-            {
-                Logger.Warn($"Cannot find sound resource \"{path}\".");
-                return null;
-            }
+            return;
         }
-        else
+
+        mediaPlayer.Pause();
+    }
+
+    public void Stop()
+    {
+        if (mediaPlayer is null)
         {
-            var player = new SoundPlayer(path);
-            try
-            {
-                player.Load();
-                Logger.Debug($"Loaded sound file \"{path}\".");
-            }
-            catch (IOException)
-            {
-                Logger.Warn($"Cannot find sound file \"{path}\".");
-            }
-            catch (Exception e)
-            {
-                Logger.Warn($"Cannot load sound file \"{path}\": {e.Message}.");
-            }
-            return player;
+            return;
         }
+
+        mediaPlayer.Pause();
+        mediaPlayer.Dispose();
+        mediaPlayer = null;
     }
 
-    public void PlaySfx(string path)
+    public void Restart()
     {
-        var player = AddSfx(path);
-
-        if(player != null)
+        if(mediaPlayer is null)
         {
-            try
-            {
-                player.PlaySync();
-            }
-            catch (InvalidOperationException)
-            {
-                Logger.Warn($"Cannot play sound effect \"{path}\". The file is not a valid .wav file.");
-                SoundEffects[path] = null;
-            }
+            return;
         }
+
+        mediaPlayer.Position = default;
+        mediaPlayer.Play();
     }
 
-    public void PlayBgm(string path)
+    private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
     {
-        throw new NotImplementedException();
-    }
-    
-    public void StopBgm(int fadeout = 0)
-    {
-        throw new NotImplementedException();
+        Restart();
     }
 
     public override void Dispose()
     {
         base.Dispose();
 
-        if(SoundEffects?.Count > 0)
-        {
-            foreach (var (_, sp) in SoundEffects)
-            {
-                sp?.Dispose();
-            }
-            SoundEffects.Clear();
-        }
+        mediaPlayer?.Dispose();
+        mediaPlayer = null;
     }
+
 }

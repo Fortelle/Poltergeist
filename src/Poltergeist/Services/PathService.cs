@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Services;
 

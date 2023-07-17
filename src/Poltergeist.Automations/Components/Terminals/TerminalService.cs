@@ -1,46 +1,43 @@
-﻿using System;
-using System.Windows.Media;
-using Poltergeist.Automations.Panels;
+﻿using Microsoft.UI;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Windows;
+using Windows.UI;
 
 namespace Poltergeist.Automations.Components.Terminals;
 
+// todo: move to default transient
 public class TerminalService : MacroService
 {
-    private TextPanelModel TerminalPanel { get; set; }
-    private CmdHost Host { get; set; }
-
-    public string WorkingDirectory { get; set; }
     public string PanelHeader { get; set; } = "Terminal";
     public string PanelName { get; set; } = "poltergeist-terminal";
+    public string? WorkingDirectory { get; set; }
 
-    public bool Visible { get; set; }
+    private readonly TextInstrument TerminalInstrument;
+    private CmdHost? Host;
 
-    public TerminalService(MacroProcessor processor) : base(processor)
+    public TerminalService(MacroProcessor processor, TextInstrument instrument) : base(processor)
     {
-        Visible = true;
+        TerminalInstrument = instrument;
     }
 
     public void Start()
     {
         Logger.Debug($"Starting <{nameof(TerminalService)}>.");
 
-        if (Visible)
-        {
-            var panelService = Processor.GetService<PanelService>();
-            TerminalPanel = panelService.Create<TextPanelModel>(panel =>
-            {
-                panel.Key = PanelName;
-                panel.Header = PanelHeader;
-                panel.BackgroundColor = Color.FromRgb(16, 16, 16);
-                panel.ForegroundColor = Color.FromRgb(252, 252, 252);
+        TerminalInstrument.Stretch = true;
+        TerminalInstrument.AutoScroll = true;
+        TerminalInstrument.BackgroundColor = Color.FromArgb(255, 16, 16, 16);
+        TerminalInstrument.ForegroundColor = Color.FromArgb(255, 252, 252, 252);
+        TerminalInstrument.Templates.Add("input", new() { Foreground = Colors.LimeGreen });
+        TerminalInstrument.Templates.Add("output", new() { Foreground = Colors.White });
 
-                panel.Colors.Add("input", Colors.LimeGreen);
-                panel.Colors.Add("output", Colors.White);
-            });
-        }
+        Processor.GetService<PanelService>().Create(new(PanelName, PanelHeader, TerminalInstrument)
+        {
+            IsFilled = true,
+        });
+
         Host = new(WorkingDirectory);
         Host.Start();
 
@@ -51,29 +48,26 @@ public class TerminalService : MacroService
     {
         Logger.Debug($"Executing command line \"{command}\".");
 
-        if (Visible)
+        TerminalInstrument.WriteLine(new TextLine()
         {
-            TerminalPanel.WriteLine(new TextLine()
-            {
-                Category = "input",
-                Text = "> " + command,
-            });
-        }
+            TemplateKey = "input",
+            Text = "> " + command,
+        });
 
-        Host.TryExecute(command, out var output);
+        Host!.TryExecute(command, out var output);
 
-        if (Visible && !string.IsNullOrEmpty(output))
+        if (!string.IsNullOrEmpty(output))
         {
-            TerminalPanel.WriteLine(new TextLine()
+            TerminalInstrument.WriteLine(new TextLine()
             {
-                Category = "output",
+                TemplateKey = "output",
                 Text = output,
             });
         }
 
         Logger.Debug($"Executed command line.", new { output });
 
-        return output;
+        return output ?? "";
     }
 
     public void Close()

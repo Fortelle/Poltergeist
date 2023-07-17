@@ -1,9 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Diagnostics;
+using Poltergeist.Automations.Components.Loops;
+using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Components.Loops;
+using Poltergeist.Input.Windows;
 using Poltergeist.Operations.ForegroundWindows;
 
 namespace Poltergeist.Operations.Macros;
@@ -11,22 +11,33 @@ namespace Poltergeist.Operations.Macros;
 // todo: close process
 public class ForegroundMacro : MacroBase
 {
-    private ForegroundOperator Operator { get; set; }
+    public LoopOptions LoopOptions { get; } = new()
+    {
+        IsCountLimitable = true,
+        IsDurationLimitable = true,
+        Instrument = LoopInstrumentType.List,
+    };
+
+    private ForegroundOperator? Operator { get; set; }
 
     public RegionConfig RegionConfig { get; set; }
 
-    public string Filename { get; set; }
-    public string Arguments { get; set; }
+    public string? Filename { get; set; }
+    public string? Arguments { get; set; }
 
-    public Action<LoopBeginArguments, ForegroundOperator> Begin;
-    public Action<LoopIterationArguments, ForegroundOperator> Iteration;
-    public Action<LoopCheckNextArguments, ForegroundOperator> CheckNext;
-    public Action<ArgumentService, ForegroundOperator> End;
+    public Action<LoopBeforeArguments, ForegroundOperator>? Begin;
+    public Action<LoopExecutionArguments, ForegroundOperator>? Iteration;
+    public Action<LoopCheckContinueArguments, ForegroundOperator>? CheckContinue;
+    public Action<ArgumentService, ForegroundOperator>? End;
 
     public ForegroundMacro(string name) : base(name)
     {
+    }
+
+    protected override void OnInitialize()
+    {
         Modules.Add(new InputOptionsModule());
-        Modules.Add(new RepeatModule());
+        Modules.Add(new LoopModule(LoopOptions));
         Modules.Add(new ForegroundModule());
     }
 
@@ -34,19 +45,32 @@ public class ForegroundMacro : MacroBase
     {
         base.OnProcess(processor);
 
-        var repeat = processor.GetService<RepeatService>();
-        repeat.BeginProc = OnBegin;
-        if (Iteration != null) repeat.IterationProc = (e) => Iteration.Invoke(e, Operator);
-        if (CheckNext != null) repeat.CheckNextProc = (e) => CheckNext.Invoke(e, Operator);
-        if (End != null) repeat.EndProc = (e) => End.Invoke(e, Operator);
+        var repeat = processor.GetService<LoopService>();
+        repeat.Before = OnBegin;
+        if (Iteration != null)
+        {
+            repeat.Execution = (e) => Iteration.Invoke(e, Operator!);
+        }
+
+        if (CheckContinue != null)
+        {
+            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, Operator!);
+        }
+
+        if (End != null)
+        {
+            repeat.After = (e) => End.Invoke(e, Operator!);
+        }
     }
 
-    private void OnBegin(LoopBeginArguments e)
+    private void OnBegin(LoopBeforeArguments e)
     {
         Operator = e.Processor.GetService<ForegroundOperator>();
 
         if (!string.IsNullOrEmpty(Filename))
         {
+            var oldprocess = WindowsFinder.GetForegroundWindow();
+
             using var process = new Process()
             {
                 StartInfo =
@@ -67,15 +91,16 @@ public class ForegroundMacro : MacroBase
                 return;
             }
 
-            do
+            var newprocess = IntPtr.Zero;
+            while (newprocess == IntPtr.Zero || oldprocess == newprocess)
             {
                 Thread.Sleep(100);
-                process.Refresh();
-            } while (process.MainWindowHandle == IntPtr.Zero);
-
+                newprocess = WindowsFinder.GetForegroundWindow();
+            }
+            
             RegionConfig = RegionConfig with
             {
-                Handle = process.MainWindowHandle
+                Handle = newprocess
             };
         }
 

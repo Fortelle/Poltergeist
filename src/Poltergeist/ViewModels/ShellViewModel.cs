@@ -1,64 +1,85 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.Linq;
-using System.Windows.Controls;
+﻿using System.Diagnostics;
+using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Poltergeist.Automations.Macros;
+
+using Poltergeist.Contracts.Services;
 using Poltergeist.Services;
 
 namespace Poltergeist.ViewModels;
 
-public class ShellViewModel : ObservableRecipient
+public partial class ShellViewModel : ObservableRecipient
 {
-    public IList MenuItems;
-    public MacroGroup[] Groups { get; set; }
-    public bool IsDebug => Debugger.IsAttached;
+    public NavigationInfo HomeInfo { get; }
+    public NavigationInfo SettingsInfo { get; }
+    public NavigationInfo AboutInfo { get; }
+    public NavigationInfo DebugInfo { get; }
 
-    private bool _isReady;
-    public bool IsReady { get => _isReady; set => SetProperty(ref _isReady, value); }
+    [ObservableProperty]
+    private string? _cpuValue;
 
-    private bool _isConsoleLoaded;
-    public bool IsConsoleLoaded { get => _isConsoleLoaded; set => SetProperty(ref _isConsoleLoaded, value); }
+    [ObservableProperty]
+    private string? _ramValue;
 
-    private Page _currentPage;
-    public Page CurrentPage
+    protected PerformanceCounter? CpuCounter;
+    protected PerformanceCounter? RamCounter;
+
+    public bool IsDebug { get; }
+    public bool IsSingleMacroMode { get; }
+
+    private bool _showPerformance;
+    public bool ShowPerformance
     {
-        get => _currentPage;
+        get => _showPerformance;
         set
         {
-            SetProperty(ref _currentPage, value);
-            var pageName = value.Name;
-            if (MenuItems == null) return;
-            if (SelectedItem?.Tag.ToString() == pageName) return;
-            SelectedItem = MenuItems.OfType<ModernWpf.Controls.NavigationViewItem>().FirstOrDefault(x => x.Tag.ToString() == pageName);
-            if (SelectedItem != null)
+            SetProperty(ref _showPerformance, value);
+
+            if (value)
             {
-                SelectedItem.IsSelected = true;
+                Task.Run(() =>
+                {
+                    var processName = Process.GetCurrentProcess().ProcessName;
+                    CpuCounter = new PerformanceCounter("Process", "% Processor Time", processName);
+                    RamCounter = new PerformanceCounter("Process", "Working Set", processName);
+                    var timer = new System.Timers.Timer(3000);
+                    timer.Elapsed += Timer_Elapsed;
+                    timer.Start();
+                });
             }
-            if(pageName == "console")
+            else
             {
-                IsConsoleLoaded = true;
+                CpuCounter?.Dispose();
+                RamCounter?.Dispose();
             }
         }
     }
 
-    private ModernWpf.Controls.NavigationViewItem _selectedItem;
-    public ModernWpf.Controls.NavigationViewItem SelectedItem
+    public ShellViewModel(INavigationService navigationService)
     {
-        get => _selectedItem;
-        set => SetProperty(ref _selectedItem, value);
+        HomeInfo = navigationService.GetInfo("home")!;
+        SettingsInfo = navigationService.GetInfo("settings")!;
+        AboutInfo = navigationService.GetInfo("about")!;
+        DebugInfo = navigationService.GetInfo("debug")!;
+
+        IsDebug = Debugger.IsAttached;
+        IsSingleMacroMode = App.SingleMacroMode is not null;
+
+        //todo: config
+        //ShowPerformance = true;
     }
 
-    public ShellViewModel(NavigationService navigationService, MacroManager macroManager)
+    private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
     {
-        navigationService.Navigated += OnNavigated;
-        Groups = macroManager.Groups.ToArray();
-        IsReady = true;
+        App.MainWindow.DispatcherQueue.TryEnqueue(Update);
     }
 
-    private void OnNavigated(Page page)
+    private void Update()
     {
-        CurrentPage = page;
-    }
+        var cpuValue = CpuCounter?.NextValue();
+        CpuValue = $"{cpuValue:N2}%";
 
+        var ramValue = RamCounter?.NextValue();
+        ramValue = ramValue / 1024 / 1024;
+        RamValue = $"{ramValue:#} MB";
+    }
 }

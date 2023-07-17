@@ -1,23 +1,31 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Configs;
+﻿using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Components.Loops;
 
 public class CompleteModule : MacroModule
 {
-    public override void OnMacroInitialize(IMacroInitializer macro)
+
+    public override void OnMacroInitialized(IMacroInitializer macro)
     {
-        macro.UserOptions.Add(new OptionItem<CompleteAction>("CompleteAction", CompleteAction.None)
+        macro.UserOptions.Add(new OptionItem<CompletionAction>("aftercompletion.action", CompletionAction.None)
         {
-            DisplayLabel = "After complete",
-            Category = "Common",
+            DisplayLabel = "Action",
+            Category = "After Completion",
         });
 
+        macro.UserOptions.Add(new OptionItem<int>("aftercompletion.minimumseconds", 0)
+        {
+            DisplayLabel = "Minimum run time (seconds)",
+            Category = "After Completion",
+        });
+
+        macro.UserOptions.Add(new OptionItem<bool>("aftercompletion.allowerror", false)
+        {
+            DisplayLabel = "Allow error",
+            Category = "After Completion",
+        });
     }
 
 }

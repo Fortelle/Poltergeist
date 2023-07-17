@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Structures.Shapes;

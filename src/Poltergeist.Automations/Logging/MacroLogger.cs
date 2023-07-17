@@ -4,24 +4,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Panels;
+using Microsoft.UI;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Windows.UI;
 
 namespace Poltergeist.Automations.Logging;
 
 public class MacroLogger : KernelService
 {
-    private LoggerOptions Options;
+    private readonly LoggerOptions Options;
 
-    private readonly BlockingCollection<string> writingQueue = new(256);
-    private readonly Task WritingTask;
-    private Stream LogFileStream;
-    private TextWriter LogFileWriter;
+    private readonly Stream? LogFileStream;
+    private readonly TextWriter? LogFileWriter;
+    private readonly BlockingCollection<string>? WritingQueue;
+    //private readonly Task WritingTask;
 
-    private TextPanelModel LogPanel;
+    private readonly TextInstrument LogInstrument;
 
     private readonly Dictionary<LogLevel, Color> LogColors = new()
     {
@@ -34,27 +35,38 @@ public class MacroLogger : KernelService
         [LogLevel.None] = (Colors.Black),
     };
 
-    public MacroLogger(MacroProcessor processor, IOptions<LoggerOptions> options) : base(processor)
+    public MacroLogger(MacroProcessor processor, IOptions<LoggerOptions> options, PanelService panelService) : base(processor)
     {
         Options = options.Value;
 
-        OpenFile();
-        WritingTask = Task.Factory.StartNew(WriteFile, this, TaskCreationOptions.LongRunning);
-
-    }
-
-    public void UpdateUI()
-    {
-        var panelService = Processor.GetService<PanelService>();
-        LogPanel = panelService.Create<TextPanelModel>(panel =>
+        if(Options.Filename is not null)
         {
-            panel.Key = "poltergeist-logger";
-            panel.Header = "Log";
+            WritingQueue = new(256);
 
-            foreach (var (level, color) in LogColors)
+            var fileInfo = new FileInfo(Options.Filename);
+            if (fileInfo.Directory is not null && fileInfo.Directory.FullName != fileInfo.Directory.Root.FullName)
             {
-                panel.Colors.Add(level.ToString(), color);
+                fileInfo.Directory.Create();
             }
+            LogFileStream = new FileStream(Options.Filename, FileMode.OpenOrCreate, FileAccess.Write);
+            LogFileWriter = new StreamWriter(LogFileStream);
+
+            /* WritingTask = */
+            Task.Factory.StartNew(WriteFile, this, TaskCreationOptions.LongRunning);
+        }
+
+        LogInstrument = Processor.GetService<TextInstrument>();
+        foreach (var (level, color) in LogColors)
+        {
+            LogInstrument.Templates.Add(level.ToString(), new()
+            {
+                Foreground = color,
+            });
+        }
+
+        panelService.Create(new("poltergeist-logger", "Log", LogInstrument)
+        {
+            IsFilled = true,
         });
     }
 
@@ -90,6 +102,11 @@ public class MacroLogger : KernelService
 
     private void ToFile(LogEntry entry)
     {
+        if(WritingQueue is null)
+        {
+            return;
+        }
+
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(entry.Message))
         {
@@ -103,20 +120,18 @@ public class MacroLogger : KernelService
         }
 
         var line = sb.ToString();
-        writingQueue.Add(line);
+        WritingQueue.Add(line);
     }
 
     private void ToFront(LogEntry entry)
     {
-        if (LogPanel == null) return;
-
         var line = new TextLine()
         {
             Text = entry.Message,
-            Category = entry.Level.ToString(),
+            TemplateKey = entry.Level.ToString(),
         };
 
-        LogPanel.WriteLine(line);
+        LogInstrument.WriteLine(line);
     }
 
     private static string ToShortLevel(LogLevel level)
@@ -133,39 +148,31 @@ public class MacroLogger : KernelService
         };
     }
 
-    private void OpenFile()
+    private void WriteFile(object? state)
     {
-        var fileInfo = new FileInfo(Options.Filename);
-        fileInfo.Directory.Create();
-        LogFileStream = new FileStream(Options.Filename, FileMode.OpenOrCreate, FileAccess.Write);
-        LogFileWriter = new StreamWriter(LogFileStream);
-    }
-
-    private void WriteFile(object state)
-    {
-        foreach (var message in writingQueue.GetConsumingEnumerable())
+        foreach (var message in WritingQueue!.GetConsumingEnumerable())
         {
-            LogFileWriter.WriteLine(message);
+            LogFileWriter!.WriteLine(message);
         }
-        LogFileWriter.Flush();
-    }
-
-    private void CloseFile()
-    {
-        LogFileWriter.Close();
-        LogFileStream.Close();
-        writingQueue.Dispose();
+        LogFileWriter!.Flush();
     }
 
     public override void Dispose()
     {
         base.Dispose();
 
-        writingQueue.CompleteAdding();
-        Task.Run(async () => {
-            await Task.Delay(1000);
-            CloseFile();
-        });
+        if(WritingQueue is not null)
+        {
+            WritingQueue.CompleteAdding();
+
+            Task.Run(async () => {
+                await Task.Delay(1000);
+
+                LogFileWriter?.Close();
+                LogFileStream?.Close();
+                WritingQueue?.Dispose();
+            });
+        }
     }
 
 }

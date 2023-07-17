@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Poltergeist.Input.Windows;
+﻿using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Services;
 
@@ -15,7 +13,7 @@ public class HotKeyService : IDisposable
 
     public HotKeyService()
     {
-        Listener = new ();
+        Listener = new();
 
         Actions = new();
         Listener.HotkeyPressed += HotKeyPressed;

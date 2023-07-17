@@ -1,20 +1,18 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using Poltergeist.Common.Utilities.Images;
 using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Common.Utilities.Images;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
 public class CircleShape : IShape
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     public PointF Origin { get; set; }
     public double Radius { get; set; }
-    public double Diameter => Radius * 2;
 
+    public double Diameter => Radius * 2;
     public bool IsValid => Radius > 0;
     public bool IsRegular => Radius > 0;
 
@@ -95,10 +93,7 @@ public class CircleShape : IShape
                 (int)Math.Floor(Origin.Y - Radius)
                 );
         }
-        set
-        {
-            Origin = value;
-        }
+        set => Origin = value;
     }
 
     public PointF Centroid => Origin;
@@ -173,10 +168,10 @@ public class CircleShape : IShape
         return new Point((int)x, (int)y);
     }
 
-    //public void Offset(int x, int y)
-    //{
-    //    Origin = new PointF(Origin.X + x, Origin.Y + y);
-    //}
+    public void Pan(int x, int y)
+    {
+        Origin = new PointF(Origin.X + x, Origin.Y + y);
+    }
 
     public Bitmap ToMask()
     {
@@ -225,14 +220,4 @@ public class CircleShape : IShape
         return $"Circle-{Origin.X}-{Origin.Y}-{Radius}";
     }
 
-    public enum CircleDistributeType
-    {
-        Uniform,
-        Random,
-        Average,
-        Measure,
-        Donuts,
-    }
-
 }
-

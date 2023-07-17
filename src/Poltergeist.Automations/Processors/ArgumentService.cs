@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
-using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 
 namespace Poltergeist.Automations.Processors;
@@ -10,6 +8,7 @@ public class ArgumentService : IDisposable, IUserLogger
 {
     public IUserProcessor Processor { get; }
     public IUserLogger Logger { get; }
+    public OutputService Outputer => Processor.GetService<OutputService>();
 
     private string SenderName { get; }
 
@@ -20,7 +19,6 @@ public class ArgumentService : IDisposable, IUserLogger
 
         SenderName = GetType().Name;
     }
-
 
     void IUserLogger.Log(string message)
     {

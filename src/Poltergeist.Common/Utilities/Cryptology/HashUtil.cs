@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Poltergeist.Common.Utilities.Cryptology;
 
@@ -13,8 +8,7 @@ public static class HashUtil
 {
     public static string SHAHash(byte[] data)
     {
-        using var sha1 = new SHA1CryptoServiceProvider();
-        var hashData = sha1.ComputeHash(data);
+        var hashData = SHA1.HashData(data);
         var hash = Convert.ToBase64String(hashData);
         return hash;
     }
@@ -81,7 +75,10 @@ public static class HashUtil
         var dist = 0;
         for (var i = 0; i < bit1.Length; i++)
         {
-            if (bit1[i] != bit2[i]) dist++;
+            if (bit1[i] != bit2[i])
+            {
+                dist++;
+            }
         }
         return dist;
     }
@@ -91,7 +88,10 @@ public static class HashUtil
         var diff = 0;
         for (var i = 0; i < arr1.Length; i++)
         {
-            if (arr1[i] != arr2[i]) diff++;
+            if (arr1[i] != arr2[i])
+            {
+                diff++;
+            }
         }
         return diff;
     }
@@ -101,7 +101,10 @@ public static class HashUtil
         var diff = 0;
         for (var i = 0; i < hash1.Length; i++)
         {
-            if (hash1[i] != hash2[i]) diff++;
+            if (hash1[i] != hash2[i])
+            {
+                diff++;
+            }
         }
         return diff;
     }

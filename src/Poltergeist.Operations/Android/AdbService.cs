@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -10,13 +8,13 @@ namespace Poltergeist.Operations.Android;
 
 public class AdbService : MacroService
 {
-    public const string AutoCloseKey = "adb.auto_close";
+    public const string KeepAliveKey = "adb.keep_alive";
     public const string IpAddressKey = "adb.ip_address";
     public const string ExePathKey = "adb.exepath";
 
-    public string WorkingDirectory { get; set; }
-    public string Filename { get; set; }
-    public string Address { get; set; }
+    public string? WorkingDirectory { get; set; }
+    public string? Filename { get; set; }
+    public string? Address { get; set; }
 
     private TerminalService Terminal { get; init; }
 
@@ -32,18 +30,27 @@ public class AdbService : MacroService
 
     private void Initialize()
     {
-        if (IsInitialized) return;
+        if (IsInitialized)
+        {
+            return;
+        }
 
         Logger.Debug($"Initializing <{nameof(AdbService)}>.");
 
         if (string.IsNullOrEmpty(WorkingDirectory))
         {
             var path = Processor.GetOption(ExePathKey, "");
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                WorkingDirectory = Path.GetDirectoryName(path);
-                Filename = Path.GetFileName(path);
+                throw new ArgumentException($"{nameof(ExePathKey)} is not set.");
             }
+            if (!File.Exists(path))
+            {
+                throw new ArgumentException($"File \"{path}\" does not exist.");
+            }
+
+            WorkingDirectory = Path.GetDirectoryName(path);
+            Filename = Path.GetFileName(path);
         }
 
         if (string.IsNullOrEmpty(Address))
@@ -57,7 +64,7 @@ public class AdbService : MacroService
         }
         if (!Directory.Exists(WorkingDirectory))
         {
-            throw new DirectoryNotFoundException($"{WorkingDirectory} cannot be found.");
+            throw new DirectoryNotFoundException($"Directory \"{WorkingDirectory}\" does not exist.");
         }
         if (string.IsNullOrEmpty(Filename))
         {
@@ -66,7 +73,7 @@ public class AdbService : MacroService
         var exePath = Path.Combine(WorkingDirectory, Filename);
         if (!File.Exists(exePath))
         {
-            throw new FileNotFoundException($"File {nameof(exePath)} is not set.");
+            throw new FileNotFoundException($"File {nameof(exePath)} does not exist.");
         }
         if (string.IsNullOrEmpty(Address))
         {
@@ -85,15 +92,18 @@ public class AdbService : MacroService
 
     public bool Connect()
     {
-        if (!IsInitialized) Initialize();
-
-        var autoclose = Processor.GetOption(AutoCloseKey, false);
-
-        Logger.Debug($"Connecting to adb server {Address}.", new { Address, autoclose });
-
-        if (autoclose)
+        if (!IsInitialized)
         {
-            Processor.GetService<HookService>().Register("process_exiting", _ => Close());
+            Initialize();
+        }
+
+        var keepalive = Processor.GetOption(KeepAliveKey, false);
+
+        Logger.Debug($"Connecting to adb server {Address}.", new { Address, keepalive });
+
+        if (keepalive)
+        {
+            Processor.GetService<HookService>().Register<ProcessExitingHook>(_ => Close());
         }
 
         var output = Execute($"connect {Address}");
@@ -109,9 +119,15 @@ public class AdbService : MacroService
 
     public void Close()
     {
-        if (IsClosed) return;
+        if (IsClosed)
+        {
+            return;
+        }
 
-        if (!IsInitialized) Initialize();
+        if (!IsInitialized)
+        {
+            Initialize();
+        }
 
         Execute($"kill-server");
 
@@ -127,14 +143,14 @@ public class AdbService : MacroService
 
     public byte[] ExecOut(params string[] args)
     {
-        var cmd = new CmdExecutor(WorkingDirectory)
+        var cmd = new CmdExecutor(WorkingDirectory!)
         {
             AsBinary = true,
         };
 
-        cmd.TryExecute(Filename, "exec-out", string.Join(' ', args));
+        cmd.TryExecute(Filename!, "exec-out", string.Join(' ', args));
         var buff = cmd.OutputData;
-        var length = buff.Length;
+        var length = buff!.Length;
         var list = new List<byte>(length);
         for (var i = 0; i < length; i++)
         {

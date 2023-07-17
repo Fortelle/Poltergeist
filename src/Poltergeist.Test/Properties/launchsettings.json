@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Poltergeist.Test (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "Poltergeist.Test (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Dev": {
+      "commandName": "Project",
+      "commandLineArgs": "--macro=DevMacro --singlemode --autostart"
+    }
+  }
+}

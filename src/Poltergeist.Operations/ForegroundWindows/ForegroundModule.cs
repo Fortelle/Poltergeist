@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Maths;
 using Poltergeist.Operations.Macros;
 using Poltergeist.Operations.Timers;
@@ -10,7 +9,7 @@ namespace Poltergeist.Operations.ForegroundWindows;
 
 public class ForegroundModule : MacroModule
 {
-    public override void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
+    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
     {
         services.AddTransient<ForegroundOperator>();
 
@@ -20,7 +19,7 @@ public class ForegroundModule : MacroModule
         services.AddTransient<ForegroundKeyboardService>();
         services.AddTransient<TimerService>();
 
-        services.AddTransient<RandomEx>();
+        services.AddSingleton<RandomEx>();
         services.AddTransient<DistributionService>();
     }
 }

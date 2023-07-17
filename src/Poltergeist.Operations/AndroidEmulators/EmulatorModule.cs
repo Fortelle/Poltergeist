@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Maths;
-using Poltergeist.Components.Loops;
 using Poltergeist.Operations.Android;
 using Poltergeist.Operations.BackgroundWindows;
 using Poltergeist.Operations.ForegroundWindows;
@@ -16,44 +15,44 @@ namespace Poltergeist.Operations.AndroidEmulators;
 
 public class EmulatorModule : MacroModule
 {
-    public enum InputMode
-    {
-        ADB_Only,
-        ADB_Background,
-        Mouse,
-    }
+    public const string InputModeKey = "adb.inputmode";
 
     public EmulatorModule()
     {
 
     }
 
-    public override void OnMacroInitialize(IMacroInitializer macro)
+    public override void OnMacroInitialized(IMacroInitializer macro)
     {
-        macro.UserOptions.Add(new OptionItem<bool>(AdbService.AutoCloseKey, true)
+        macro.UserOptions.Add(new OptionItem<bool>(AdbService.KeepAliveKey, true)
         {
-            DisplayLabel = "Auto close adb",
+            DisplayLabel = "Keep adb server alive",
+            Description = "Skips killing the adb server when the macro is completed. " +
+                "This helps when you are planning to launch the macro frequently in a short time. " +
+                "You can use the \"kill-server\" action to kill the adb server manually.",
             Category = "ADB",
         });
 
-        macro.UserOptions.Add(new OptionItem<InputMode>("adb.inputmode", InputMode.ADB_Only)
+        macro.UserOptions.Add(new OptionItem<InputMode>(InputModeKey, InputMode.ADB_Only)
         {
             DisplayLabel = "Input mode",
             Category = "ADB",
         });
+
+        macro.Actions.Add(KillServerAction);
     }
 
 
-    public override void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
+    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
     {
-        base.OnMacroConfigure(services, processor);
+        base.OnMacroConfiguring(services, processor);
 
         services.AddSingleton<TimerService>();
         services.AddSingleton<AndroidEmulatorOperator>();
         services.AddSingleton<RandomEx>();
         services.AddSingleton<DistributionService>();
 
-        var inputMode = processor.GetOption<InputMode>("adb.inputmode");
+        var inputMode = processor.GetOption<InputMode>(InputModeKey);
 
         switch (inputMode)
         {
@@ -92,15 +91,15 @@ public class EmulatorModule : MacroModule
         }
     }
 
-    public override void OnMacroProcess(MacroProcessor processor)
+    public override void OnMacroProcessing(MacroProcessor processor)
     {
-        base.OnMacroProcess(processor);
+        base.OnMacroProcessing(processor);
 
-        var repeats = processor.GetService<RepeatService>();
+        var repeats = processor.GetService<LoopService>();
 
-        repeats.BeginProc += (e) =>
+        repeats.Before += (e) =>
         {
-            var inputMode = e.Processor.GetOption<InputMode>("adb.inputmode");
+            var inputMode = e.Processor.GetOption<InputMode>(InputModeKey);
 
             if (inputMode is InputMode.ADB_Only or InputMode.ADB_Background)
             {
@@ -145,16 +144,46 @@ public class EmulatorModule : MacroModule
             Category = "ADB",
         });
 
-        options.Add(new FileOptionItem(AdbService.ExePathKey)
+        options.Add(new PathOption(AdbService.ExePathKey)
         {
             DisplayLabel = "Exe file",
             Category = "ADB",
         });
 
-        options.Add(new OptionItem<bool>("capture_preview")
+        options.Add(new OptionItem<bool>(CapturingSource.PreviewCaptureKey)
         {
             DisplayLabel = "Preview captured image",
             Category = "Debug",
         });
+    }
+
+    public static readonly MacroAction KillServerAction = new()
+    {
+        Text = "Kill ADB server",
+        Glyph = "\uE756",
+        Execute = args =>
+        {
+            throw new NotImplementedException();
+
+            //var path = ; // todo: how to access global options here?
+            //if (!File.Exists(path))
+            //{
+            //    Debug.WriteLine($"File \"{path}\" does not exist.");
+            //    return;
+            //}
+
+            //Process.Start(new ProcessStartInfo()
+            //{
+            //    FileName = path,
+            //    Arguments = "kill-server",
+            //});
+        },
+    };
+
+    public enum InputMode
+    {
+        ADB_Only,
+        ADB_Background,
+        Mouse,
     }
 }

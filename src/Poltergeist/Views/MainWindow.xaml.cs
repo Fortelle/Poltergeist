@@ -1,45 +1,98 @@
-﻿using System;
-using System.Drawing;
-using System.Windows;
+﻿using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Contracts.Services;
+using Poltergeist.Helpers;
+using Poltergeist.Pages;
 using Poltergeist.Services;
-using Poltergeist.Views;
+using Windows.UI.ViewManagement;
 
-namespace Poltergeist
+namespace Poltergeist;
+
+public sealed partial class MainWindow : WindowEx
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue;
+
+    private readonly UISettings settings;
+
+    public MainWindow()
     {
-        public MainWindow()
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/7164#issuecomment-1171618502
+        _ = Dispatcher;
+
+        InitializeComponent();
+
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Poltergeist/Assets/WindowIcon.ico"));
+        Content = null;
+        Content = new ProgressRing()
         {
-            InitializeComponent();
+            IsActive = true,
+            Background = new SolidColorBrush(Colors.LightGray),
+        };
 
-            var rect = App.GetSettings<Rectangle>("app.windowposition");
-            if (rect != default)
-            {
-                this.Top = rect.Top;
-                this.Left = rect.Left;
-                this.Width = rect.Width;
-                this.Height = rect.Height;
-            }
+        //Title = "AppDisplayName".GetLocalized();
+        Title = "Poltergeist";
+        CenterToScreen();
+        AppWindow.Closing += AppWindow_Closing;
 
-            this.Content = App.GetService<ShellPage>();
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            SingletonHelper.Load(this);
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            var rect = new Rectangle((int)Top, (int)Left, (int)Width, (int)Height);
-            var localSettings = App.GetService<LocalSettingsService>();
-            localSettings.SetSetting("app.windowposition", rect);
-            localSettings.Save();
-        }
-
+        // Theme change code picked from https://github.com/microsoft/WinUI-Gallery/pull/1239
+        dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+        settings = new UISettings();
+        settings.ColorValuesChanged += Settings_ColorValuesChanged; // cannot use FrameworkElement.ActualThemeChanged event
     }
+
+    private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        if (App.GetService<MacroManager>().IsBusy)
+        {
+            TipService.Show(new TipModel()
+            {
+                Type = TipType.Disabled,
+                Title = "One or more macros are running.",
+            });
+            args.Cancel = true;
+            return;
+        }
+
+        var tabview = App.GetService<INavigationService>().TabView;
+        if(tabview is not null)
+        {
+            foreach(var tabviewitem in tabview.TabItems.OfType<TabViewItem>())
+            {
+                if(tabviewitem.Content is not IApplicationClosing closing)
+                {
+                    continue;
+                }
+
+                closing.OnApplicationClosing();
+            }
+        }
+    }
+
+
+// this handles updating the caption button colors correctly when windows system theme is changed
+// while the app is open
+private void Settings_ColorValuesChanged(UISettings sender, object args)
+    {
+        // This calls comes off-thread, hence we will need to dispatch it to current app's thread
+        dispatcherQueue.TryEnqueue(() =>
+        {
+            TitleBarHelper.ApplySystemThemeToCaptionButtons();
+        });
+    }
+
+    private void CenterToScreen()
+    {
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        if (displayArea is not null)
+        {
+            var x = (int)((displayArea.WorkArea.Width - Width) / 2);
+            var y = (int)((displayArea.WorkArea.Height - Height) / 2);
+            AppWindow.Move(new(x, y));
+        }
+        
+    }
+
 }

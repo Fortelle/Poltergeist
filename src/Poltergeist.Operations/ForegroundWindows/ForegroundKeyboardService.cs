@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Logging;
+﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Maths;
@@ -30,7 +27,7 @@ public class ForegroundKeyboardService : MacroService
         Logger.Debug($"Initialized <{nameof(ForegroundKeyboardService)}>.", DefaultOptions);
     }
 
-    public void KeyPress(VirtualKey key, KeyboardInputOptions options = null)
+    public void KeyPress(VirtualKey key, KeyboardInputOptions? options = null)
     {
         //Logger.Debug($"Simulating key press: {{{key}}}.", options);
 
@@ -166,7 +163,7 @@ public class ForegroundKeyboardService : MacroService
         ['\''] = VirtualKey.OEM_7,
     };
 
-    public void Input(string text, KeyboardInputOptions options = null)
+    public void Input(string text, KeyboardInputOptions? options = null)
     {
         //Logger.Debug($"Simulating inputting text: \"{text}\".", options);
 

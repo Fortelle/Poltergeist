@@ -1,21 +1,21 @@
-﻿using Poltergeist.Automations.Configs;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Macros;
 
 public abstract class MacroModule
 {
 
-    public virtual void OnMacroInitialize(IMacroInitializer macro)
+    public virtual void OnMacroInitialized(IMacroInitializer macro)
     {
     }
 
-    public virtual void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
+    public virtual void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
     {
     }
 
-    public virtual void OnMacroProcess(MacroProcessor processor)
+    public virtual void OnMacroProcessing(MacroProcessor processor)
     {
     }
 

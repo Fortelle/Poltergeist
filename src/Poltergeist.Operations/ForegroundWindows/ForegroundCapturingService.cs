@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using Poltergeist.Automations.Processors;
 
@@ -18,11 +17,16 @@ public class ForegroundCapturingService : CapturingSource
         Locating = locating;
     }
 
-    
-    public override Bitmap DoCapture(Rectangle? area)
-    {
-        var clientArea = area ?? new Rectangle(Point.Empty, Locating.ClientRegion.Size);
 
+    public override Bitmap DoCapture()
+    {
+        var clientArea = new Rectangle(Point.Empty, Locating.ClientRegion.Size);
+
+        return DoCapture(clientArea);
+    }
+
+    public override Bitmap DoCapture(Rectangle clientArea)
+    {
         var begintime = DateTime.Now;
 
         var screenArea = Locating.RectangleToScreen(clientArea);
@@ -44,10 +48,15 @@ public class ForegroundCapturingService : CapturingSource
         return bmp;
     }
 
-    public static Bitmap Capture(RegionConfig config)
+    public static Bitmap? Capture(RegionConfig config)
     {
         var result = ForegroundLocatingService.TryLocate(config, out var client);
-        return result == LocateResult.Succeeded ? CaptureFromScreen(client) : null;
+        if (result != LocateResult.Succeeded)
+        {
+            return null;
+        }
+
+        return CaptureFromScreen(client);
     }
 
 }

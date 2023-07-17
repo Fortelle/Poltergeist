@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Poltergeist.Common.Utilities.Maths;
+﻿namespace Poltergeist.Common.Utilities.Maths;
 
 public static class CombinatoricsUtil
 {

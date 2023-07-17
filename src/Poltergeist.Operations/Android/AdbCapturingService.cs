@@ -1,9 +1,6 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
+﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Images;
-using Poltergeist.Common.Windows;
 
 namespace Poltergeist.Operations.Android;
 
@@ -21,7 +18,7 @@ public class AdbCapturingService : CapturingSource
     }
 
     // experimental
-    public override Bitmap DoCapture(Rectangle? area)
+    public override Bitmap DoCapture()
     {
         var begintime = DateTime.Now;
 
@@ -33,19 +30,15 @@ public class AdbCapturingService : CapturingSource
         using var ms = new MemoryStream(data);
         var bmp = (Bitmap)Image.FromStream(ms);
 
-        if (area.HasValue)
-        {
-            var bmp2 = BitmapUtil.Crop(bmp, area.Value);
-            Logger.Debug($"Captured an image via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, areaLocation = area.Value.Location, areaSize = area.Value.Size, duration });
+        Logger.Debug($"Captured an image via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, duration });
+        return bmp;
+    }
 
-            bmp.Dispose();
-            return bmp2;
-        }
-        else
-        {
-            Logger.Debug($"Captured an image via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, duration });
-            return bmp;
-        }
+    public override Bitmap DoCapture(Rectangle area)
+    {
+        using var bmp = DoCapture();
+        var bmp2 = BitmapUtil.Crop(bmp, area);
+        return bmp2;
     }
 
 }

@@ -2,32 +2,52 @@
 
 namespace Poltergeist.Automations.Configs;
 
-public class OptionItem<T> : IOptionItem
+public class OptionItem<T> : IOptionItem 
 {
     public string Key { get; }
-    public T Value { get; set; }
-    private T DefaultValue { get; }
 
-    public string DisplayLabel { get; set; }
-    public string Category { get; set; }
-    public string Description { get; set; }
+    private T? _value;
+    public T? Value { 
+        get => _value;
+        set
+        {
+            _value = value;
+            HasChanged = true;
+        }
+    }
+
+    private T? DefaultValue { get; }
+
+    public string? DisplayLabel { get; set; }
+    public string? Category { get; set; }
+    public string? Description { get; set; }
     public bool IsReadonly { get; set; }
     public bool IsBrowsable { get; set; } = true;
 
     public bool HasChanged { get; set; }
-
-
 
     public OptionItem(string key, T defaultValue)
     {
         Key = key;
         DefaultValue = defaultValue;
 
-        Value = defaultValue;
+        _value = defaultValue;
     }
 
-    public OptionItem(string key) : this(key, default)
+    public OptionItem(string key)
     {
+        Key = key;
+
+        if (BaseType.IsClass)
+        {
+            DefaultValue = default;
+        }
+        else
+        {
+            DefaultValue = (T?)Activator.CreateInstance(BaseType);
+        }
+
+        _value = DefaultValue;
     }
 
     public OptionItem(string key, string title, T defaultValue) : this(key, defaultValue)
@@ -35,18 +55,43 @@ public class OptionItem<T> : IOptionItem
         DisplayLabel = title;
     }
 
-    public bool IsDefault =>
-        Value is null ? DefaultValue is not null
-        : Value is IEquatable<T> ie ? ie.Equals(DefaultValue)
-        : Value.GetType().IsClass && DefaultValue .GetType().IsClass ? false
-        : Value.ToString() == DefaultValue.ToString();
+    public Type BaseType => typeof(T);
 
-    public Type Type => typeof(T);
+    object? IOptionItem.Default => DefaultValue;
 
-    object IOptionItem.Value
+    public bool IsDefault
+    {
+        get
+        {
+            if(Value is null)
+            {
+                return DefaultValue is not null;
+            }
+
+            if (Value is IEquatable<T> ie)
+            {
+                return ie.Equals(DefaultValue);
+            }
+
+            if (BaseType.IsClass)
+            {
+                return false;
+            }
+
+            if (DefaultValue is null)
+            {
+                return false;
+            }
+
+            return Value.ToString() == DefaultValue.ToString();
+        }
+    }
+
+    object? IOptionItem.Value
     {
         get => Value;
-        set => Value = (T)value;
+        set => Value = (T?)value;
     }
-    object IOptionItem.Default => DefaultValue;
+
+    public override string? ToString() => Value?.ToString();
 }

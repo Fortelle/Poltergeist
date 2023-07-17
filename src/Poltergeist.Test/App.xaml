@@ -2,7 +2,6 @@
     x:Class="Poltergeist.Test.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:Poltergeist.Test" 
-    xmlns:poltergeist="clr-namespace:Poltergeist;assembly=Poltergeist"
+    xmlns:poltergeist="using:Poltergeist"
     >
 </poltergeist:PoltergeistApplication>

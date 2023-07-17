@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Poltergeist.Input.Windows;
 
+// the class must be created in the UI thread, otherwise the wndProc will not receive any keyboard input.
 public class HotKeyListener : IDisposable
 {
     public delegate void HotkeyPressHandler(HotKey hotkey);
-    public event HotkeyPressHandler HotkeyPressed;
+    public event HotkeyPressHandler? HotkeyPressed;
 
     private readonly IntPtr Hwnd;
     private readonly NativeMethods.WndProcDelegate wndProc;
@@ -20,7 +17,7 @@ public class HotKeyListener : IDisposable
     public HotKeyListener()
     {
         HotKeyList = new();
-
+        
         var hInstance = IntPtr.Zero;
         wndProc = new NativeMethods.WndProcDelegate(WindowProc);
 

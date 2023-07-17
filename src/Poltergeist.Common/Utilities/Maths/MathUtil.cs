@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Poltergeist.Common.Utilities.Maths;
+﻿namespace Poltergeist.Common.Utilities.Maths;
 
 public static class MathUtil
 {
-    public static int Clamp(int source, int min, int max)
-    {
-        var isReversed = min.CompareTo(max) > 0;
-        var smallest = isReversed ? max : min;
-        var biggest = isReversed ? min : max;
-
-        return source.CompareTo(smallest) < 0 ? smallest : source.CompareTo(biggest) > 0 ? biggest : source;
-    }
-
+    /// <summary>
+    /// Returns the square root of the sum of squares of x and y.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
     public static double Hypot(double x, double y)
     {
         return Math.Sqrt(x * x + y * y);
@@ -32,4 +23,5 @@ public static class MathUtil
             yield return accumulator;
         }
     }
+
 }

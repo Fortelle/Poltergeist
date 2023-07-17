@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Poltergeist.Common.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Configs;
 
-[JsonConverter(typeof(VariableCollectionConverter))]
 public class VariableCollection : IEnumerable<VariableItem>
 {
     private List<VariableItem> Items { get; } = new();
-    public bool HasChanged => Items.Count > 0 && Items.Any(x => x.HasChanged);
 
     public IEnumerator<VariableItem> GetEnumerator() => Items.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
@@ -25,12 +25,10 @@ public class VariableCollection : IEnumerable<VariableItem>
         var i = Items.FindIndex(x => x.Key == item.Key);
         if (i > -1)
         {
-            Items[i] = item;
+            throw new ArgumentException("An element with the same key already exists.");
         }
-        else
-        {
-            Items.Add(item);
-        }
+
+        Items.Add(item);
     }
 
     public void Add(string key, object value)
@@ -38,71 +36,88 @@ public class VariableCollection : IEnumerable<VariableItem>
         Add(new(key, value));
     }
 
-    public T Get<T>(string key)
-    {
-        return (T)Items.First(x => x.Key == key).Value;
-    }
-
     public T Get<T>(string key, T defaultValue)
     {
-        var i = Items.FindIndex(x => x.Key == key);
-        if (i > -1)
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item is null)
         {
-            return (T)Items[i].Value;
+            throw new KeyNotFoundException($"The key \"{key}\" does not exist in the {nameof(VariableCollection)}.");
         }
-        else
+
+        if(item.Value is null)
         {
             return defaultValue;
         }
+
+        return (T)item.Value;
     }
 
     public void Set(string key, object value)
     {
-        var item = Items.Find(x => x.Key == key);
-        item.Value = value;
-        item.HasChanged = true;
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item is not null)
+        {
+            item.Value = value;
+        }
+        else
+        {
+            Add(key, value);
+        }
     }
 
-    public void Set<T>(string key, Func<T, T> action, out T oldValue, out T newValue)
+    public void Set<T>(string key, Func<T, T> action) where T : notnull
     {
-        var item = Items.Find(x => x.Key == key);
-        var value = (T)item.Value;
-        oldValue = value;
-        newValue = action(value);
-        item.Value = newValue;
-        item.HasChanged = true;
+        var item = Items.FirstOrDefault(x => x.Key == key);
+        if (item is null)
+        {
+            throw new KeyNotFoundException($"The key \"{key}\" does not exist in the {nameof(VariableCollection)}.");
+        }
+        if (item.Value is not T value)
+        {
+            throw new ArgumentException($"The value of \"{key}\" is not {typeof(T)}.");
+        }
+
+        item.Value = action(value);
     }
 
-    public class VariableCollectionConverter : JsonConverter<VariableCollection>
+    public void Load(string path)
     {
-        public override VariableCollection ReadJson(JsonReader reader, Type objectType, VariableCollection existingValue, bool hasExistingValue, JsonSerializer serializer)
+        if (!File.Exists(path))
         {
-            var dict = JObject.Load(reader);
-            var mo = new VariableCollection();
-            foreach (var item in existingValue)
-            {
-                if (dict.ContainsKey(item.Key))
-                {
-                    var value = dict[item.Key].ToObject(item.Type);
-                    item.Value = value;
-                }
-                mo.Add(item);
-            }
-            return mo;
+            return;
         }
 
-        public override void WriteJson(JsonWriter writer, VariableCollection value, JsonSerializer serializer)
+        using var sr = new StreamReader(path);
+        using var reader = new JsonTextReader(sr);
+        var dict = JObject.Load(reader);
+
+        foreach (var (key, jtoken) in dict)
         {
-            var dict = new JObject();
-            foreach (var item in value.Items)
+            if (jtoken is null)
             {
-                var token = JToken.FromObject(item.Value);
-                dict.Add(item.Key, token);
-                item.HasChanged = false;
+                continue;
             }
 
-            dict.WriteTo(writer);
+            var existingItem = this.FirstOrDefault(x => x.Key == key);
+            if (existingItem is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                existingItem.Value = jtoken.ToObject(existingItem.BaseType)!;
+            }
+            catch (Exception)
+            {
+            }
         }
+    }
+
+    public void Save(string path)
+    {
+        var dict = Items.ToDictionary(x => x.Key, x => x.Value);
+        SerializationUtil.JsonSave(path, dict);
     }
 
 }

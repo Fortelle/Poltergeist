@@ -1,97 +1,161 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Poltergeist.Contracts.Services;
+using Poltergeist.Helpers;
+using Poltergeist.Pages;
 using Poltergeist.Services;
 using Poltergeist.ViewModels;
 
 namespace Poltergeist.Views;
-/// <summary>
-/// Interaction logic for ShellPage.xaml
-/// </summary>
-public partial class ShellPage : Page
-{
-    public ShellViewModel ViewModel { get; }
 
-    public ShellPage(
-        ShellViewModel viewModel,
-        NavigationService navigationService,
-        MacroManager macroManager
-        )
+public sealed partial class ShellPage : Page
+{
+    public ShellViewModel ViewModel
+    {
+        get;
+    }
+
+    public ShellPage(ShellViewModel viewModel, MacroManager macroManager, INavigationService navigationService)
     {
         ViewModel = viewModel;
-        DataContext = viewModel;
-
         InitializeComponent();
 
-        foreach (var vNavigationCommand in new RoutedUICommand[]
-                {   NavigationCommands.BrowseBack,
-                    NavigationCommands.BrowseForward,
-                    NavigationCommands.BrowseHome,
-                    NavigationCommands.BrowseStop,
-                    NavigationCommands.Refresh,
-                    NavigationCommands.Favorites,
-                    NavigationCommands.Search,
-                    NavigationCommands.IncreaseZoom,
-                    NavigationCommands.DecreaseZoom,
-                    NavigationCommands.Zoom,
-                    NavigationCommands.NextPage,
-                    NavigationCommands.PreviousPage,
-                    NavigationCommands.FirstPage,
-                    NavigationCommands.LastPage,
-                    NavigationCommands.GoToPage,
-                    NavigationCommands.NavigateJournal })
-        {
-            NavigationFrame.CommandBindings.Add(new CommandBinding(vNavigationCommand, (sender, args) => { }));
-        }
+        navigationService.TabView = NavigationTabView;
+        navigationService.NavigationView = NavigationViewControl;
 
-        navigationService.Navigate("home");
+        // A custom title bar is required for full window theme and Mica support.
+        // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
+        App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow.SetTitleBar(AppTitleBar);
+        App.MainWindow.Activated += MainWindow_Activated;
 
-        foreach (var group in macroManager.Groups)
+        AppTitleBarText.Text = "Poltergeist";
+
+        if (App.SingleMacroMode is null)
         {
-            NavigationViewControl.MenuItems.Add(new ModernWpf.Controls.NavigationViewItem()
+            foreach (var group in macroManager.Groups)
             {
-                Content = group.Name,
-                Tag = "group_" + group.Name,
-                Icon = new ModernWpf.Controls.SymbolIcon(ModernWpf.Controls.Symbol.Folder)
-            });
+                var groupInfo = navigationService.GetInfo("group")!;
+                var nvi = new NavigationViewItem()
+                {
+                    Content = $"{group.Name} ({group.Macros.Count})",
+                    Tag = "group:" + group.Name,
+                    //IsExpanded = true,
+                    Icon = new FontIcon()
+                    {
+                        Glyph = groupInfo.Glyph,
+                    }
+                };
+
+                foreach (var macro in group.Macros.OrderBy(x => x.Title))
+                {
+                    var macroInfo = navigationService.GetInfo("macro")!;
+                    nvi.MenuItems.Add(new NavigationViewItem()
+                    {
+                        Content = macro.Title,
+                        Tag = "macro:" + macro.Name,
+                        IsEnabled = macro.IsAvailable,
+                        Icon = new FontIcon()
+                        {
+                            Glyph = macroInfo.Glyph,
+                        }
+                    });
+                }
+                NavigationViewControl.MenuItems.Add(nvi);
+            }
         }
-
-        viewModel.MenuItems = NavigationViewControl.MenuItems;
-    }
-    
-    public void Ready()
-    {
-
     }
 
-    private void NavigationViewControl_ItemInvoked(ModernWpf.Controls.NavigationView sender, ModernWpf.Controls.NavigationViewItemInvokedEventArgs args)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var tag = args.InvokedItemContainer.Tag as string;
-        var nav = App.GetService<NavigationService>();
-        nav.Navigate(tag);
+        TitleBarHelper.UpdateTitleBar(RequestedTheme);
     }
 
-    private void Button_Click(object sender, RoutedEventArgs e)
+    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        var resource = args.WindowActivationState == WindowActivationState.Deactivated ? "WindowCaptionForegroundDisabled" : "WindowCaptionForeground";
+
+        AppTitleBarText.Foreground = (SolidColorBrush)App.Current.Resources[resource];
+        App.AppTitlebar = AppTitleBarText as UIElement;
     }
 
-    private ModernWpf.Controls.NavigationViewItem ConvertTemp()
+    private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
-        return HomeMenu;
-    }
-
-    public void ShowFlyout(string message)
-    {
-        var flyout = new ModernWpf.Controls.Flyout
+        AppTitleBar.Margin = AppTitleBar.Margin with
         {
-            Content = new TextBlock()
-            {
-                Text = message
-            },
-            ShowMode = ModernWpf.Controls.Primitives.FlyoutShowMode.Transient,
-            Placement = ModernWpf.Controls.Primitives.FlyoutPlacementMode.Bottom,
+            Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
         };
+    }
 
-        flyout.ShowAt(FlyoutParent);
+    private void NavigationViewControl_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    {
+        if (args.InvokedItemContainer is not FrameworkElement fe) return;
+        if (fe.Tag is not string value) return;
+
+        App.GetService<INavigationService>().NavigateTo(value);
+    }
+
+    private void NavigationTabView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!e.AddedItems.Any()) // close tab
+        {
+            return;
+        }
+        if (e.AddedItems[0] is not TabViewItem tvi)
+        {
+            return;
+        }
+        if (tvi.Tag is not string tabKey)
+        {
+            return;
+        }
+
+        var menuItems = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().Concat(NavigationViewControl.FooterMenuItems.OfType<NavigationViewItem>()) ;
+        var selectedItem = menuItems.FirstOrDefault(x => ((string)x.Tag) == tabKey);
+        if(selectedItem is null)
+        {
+            foreach(var menuItem in menuItems.Where(x => x.MenuItems?.Count > 0))
+            {
+                selectedItem = menuItem.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == tabKey);
+                if(selectedItem is not null)
+                {
+                    if (NavigationViewControl.IsPaneOpen)
+                    {
+                        menuItem.IsExpanded = true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        NavigationViewControl.SelectedItem = selectedItem;
+
+        if (tvi.Content is IPageNavigating navigating)
+        {
+            navigating.OnNavigating();
+        }
+    }
+
+    private void NavigationTabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+    {
+        if(args.Tab.Content is IPageClosing pageclosing)
+        {
+            if (!pageclosing.OnPageClosing())
+            {
+                return;
+            }
+        }
+
+        sender.TabItems.Remove(args.Tab);
+    }
+
+    private void NavigationViewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+    }
+
+    private void DebugNavigationViewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        Debug.Do();
     }
 }

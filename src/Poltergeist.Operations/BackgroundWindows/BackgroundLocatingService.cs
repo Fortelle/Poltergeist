@@ -1,6 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Linq;
+﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Input.Windows;
@@ -9,9 +7,9 @@ namespace Poltergeist.Operations.BackgroundWindows;
 
 public class BackgroundLocatingService : MacroService
 {
-    public SendMessageHelper SendMessage { get; set; }
+    public required SendMessageHelper SendMessage { get; set; }
 
-    public Size ClientSize { get; set; }
+    public required Size ClientSize { get; set; }
 
     public BackgroundLocatingService(MacroProcessor processor) : base(processor)
     {

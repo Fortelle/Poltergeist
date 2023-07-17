@@ -1,10 +1,8 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
 using Newtonsoft.Json;
-using Poltergeist.Common.Utilities.Images;
 using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Common.Utilities.Images;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
@@ -12,13 +10,14 @@ namespace Poltergeist.Common.Structures.Shapes;
 public class PolygonShape : IShape
 {
     [JsonProperty]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonProperty]
     public Point[] Points { get; set; }
 
     public PolygonShape()
     {
+        Points = Array.Empty<Point>();
     }
 
     public PolygonShape(params Point[] points)
@@ -104,10 +103,13 @@ public class PolygonShape : IShape
     {
         get
         {
-            if (Points.Length < 2) return false;
+            if (Points.Length < 2)
+            {
+                return false;
+            }
+
             var bounds = Bounds;
-            if (bounds.Height == 0 || bounds.Width == 0) return false;
-            return true;
+            return bounds.Height != 0 && bounds.Width != 0;
         }
     }
 
@@ -161,7 +163,10 @@ public class PolygonShape : IShape
             {
                 x = (int)(bounds.X + bounds.Width * random.NextDouble());
                 y = (int)(bounds.Y + bounds.Height * random.NextDouble());
-                if (Contains(new Point(x, y))) break;
+                if (Contains(new Point(x, y)))
+                {
+                    break;
+                }
             }
         }
         else if (type == PolygonDistributeType.Meansure)
@@ -193,10 +198,10 @@ public class PolygonShape : IShape
         return new Point(x, y);
     }
 
-    //public void Offset(int x, int y)
-    //{
-    //    Points = Points.Select(pt => new Point(pt.X + x, pt.Y + y)).ToArray();
-    //}
+    public void Pan(int x, int y)
+    {
+        Points = Points.Select(pt => new Point(pt.X + x, pt.Y + y)).ToArray();
+    }
 
     public Bitmap ToMask()
     {
@@ -231,6 +236,14 @@ public class PolygonShape : IShape
         return dest;
     }
 
+    public bool[] GetPointAvailabilities()
+    {
+        using var bmp = ToMask();
+        var pixels = PixelData.FromBitmap(bmp);
+        var pa = pixels.ColorIterator((r, g, b, a) => a == 255).ToArray();
+        return pa;
+    }
+
     public string GetSignature()
     {
         var s = "Polygon";
@@ -242,22 +255,10 @@ public class PolygonShape : IShape
     }
 
 
-    public bool[] GetPointAvailabilities()
-    {
-        using var bmp = ToMask();
-        var pixels = PixelData.FromBitmap(bmp);
-        var pa = pixels.ColorIterator((r, g, b, a) => a == 255).ToArray();
-        return pa;
-    }
 
     public object Clone()
     {
         return new PolygonShape(Points.ToArray());
     }
 
-    public enum PolygonDistributeType
-    {
-        Meansure,
-        Random,
-    }
 }

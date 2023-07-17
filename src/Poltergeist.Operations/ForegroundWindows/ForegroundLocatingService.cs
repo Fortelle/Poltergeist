@@ -1,11 +1,7 @@
-﻿using Poltergeist.Automations.Logging;
+﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Input.Windows;
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 
 namespace Poltergeist.Operations.ForegroundWindows;
 

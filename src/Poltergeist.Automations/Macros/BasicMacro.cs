@@ -1,73 +1,99 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Instruments;
+using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
-using Poltergeist.Components.Loops;
 
 namespace Poltergeist.Automations.Macros;
 
 public class BasicMacro : MacroBase
 {
-    public bool ShowStatus { get; set; } = true;
+    public bool ShowStatusBar { get; set; }
 
-    public Action<BasicMacroScriptArguments> Script;
+    public Action<BasicMacroExecutionArguments>? Execution;
+
+    public Func<BasicMacroExecutionArguments, Task>? AsyncExecution;
+
+    public BasicMacro() : base()
+    {
+    }
 
     public BasicMacro(string name) : base(name)
     {
-        Modules.Add(new CompleteModule());
     }
 
-    protected internal override void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor)
+    protected override void OnConfigure(ServiceCollection services, IConfigureProcessor processor)
     {
         base.OnConfigure(services, processor);
 
-        services.AddTransient<BasicMacroScriptArguments>();
+        services.AddTransient<BasicMacroExecutionArguments>();
     }
 
-    protected internal override void OnProcess(MacroProcessor processor)
+    protected override void OnProcess(MacroProcessor processor)
     {
         base.OnProcess(processor);
 
-        var work = processor.GetService<WorkingService>();
-        work.WorkProc = () =>
+        if (ShowStatusBar)
         {
-            var args = processor.GetService<BasicMacroScriptArguments>();
-            Script(args);
-            return EndReason.Complete;
-        };
+            InstallStatusBar(processor);
+        }
 
-        SetStatus(processor);
+        var work = processor.GetService<WorkingService>();
+        if(Execution != null)
+        {
+            work.WorkProc = () =>
+            {
+                var args = processor.GetService<BasicMacroExecutionArguments>();
+                Execution(args);
+                return EndReason.Complete;
+            };
+        }
+        else if (AsyncExecution != null)
+        {
+            work.AsyncWorkProc = async () =>
+            {
+                var args = processor.GetService<BasicMacroExecutionArguments>();
+                await AsyncExecution(args);
+                return EndReason.Complete;
+            };
+        }
+
     }
 
-    private void SetStatus(MacroProcessor processor)
+    private static void InstallStatusBar(MacroProcessor processor)
     {
-        if (!ShowStatus) return;
-
-        var ns = processor.GetService<InstrumentService>();
-        var li = ns.Create<ListInstrument>(inst =>
+        var ph = processor.GetService<ProgressListInstrument>();
+        ph.Title = "Status:";
+        ph.Add(new(ProgressStatus.Idle)
         {
-            inst.Key = "basic_instrument";
-            inst.Title = "Status:";
+            Text = "Idle",
         });
+        processor.GetService<DashboardService>().Add(ph);
 
-        // todo: improve hooks to support args.message
         var hooks = processor.GetService<HookService>();
-        hooks.Register("process_starting", _ =>
+
+        hooks.Register<ProcessStartedHook>(_ =>
         {
-            li.Update(0, new(ProgressStatus.Succeeded, "Initialized"));
+            ph.Update(0, new(ProgressStatus.Busy)
+            {
+                Text = "Running",
+            });
         });
-        hooks.Register("process_started", _ =>
+
+        hooks.Register<ProcessExitingHook>(e =>
         {
-            li.Update(0, new(ProgressStatus.Busy, "Running"));
-        });
-        hooks.Register("process_exiting", _ =>
-        {
-            li.Update(0, new(ProgressStatus.Succeeded, "Completed"));
-        });
-        hooks.Register("error_occured", _ =>
-        {
-            li.Update(0, new(ProgressStatus.Failed, "Error"));
+            var status = e.Reason switch
+            {
+                EndReason.Complete or EndReason.Purposed => ProgressStatus.Success,
+                EndReason.Unstarted or EndReason.UserAborted => ProgressStatus.Warning,
+                EndReason.ErrorOccurred => ProgressStatus.Failure,
+                _ => ProgressStatus.Idle,
+            };
+            ph.Update(0, new(status)
+            {
+                Text = e.Reason.ToString(),
+            });
         });
     }
 }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.IO;
-using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 
 namespace Poltergeist.Input.Windows;
@@ -17,7 +13,7 @@ public static class WindowsFinder
         return new Size(width, height);
     }
 
-    public static IntPtr FindWindow(string windowName, string className, string processName)
+    public static IntPtr FindWindow(string? windowName, string? className, string? processName)
     {
         var hWnd = IntPtr.Zero;
         if (processName != null)
@@ -116,7 +112,7 @@ public static class WindowsFinder
 
     public static IntPtr FindChildWindow(IntPtr parentHwnd, string lpszClass)
     {
-        var childHwnd = NativeMethods.FindWindowEx(parentHwnd, IntPtr.Zero, lpszClass, null);
+        var childHwnd = NativeMethods.FindWindowEx(parentHwnd, IntPtr.Zero, lpszClass, "");
         return childHwnd;
     }
 
@@ -137,6 +133,11 @@ public static class WindowsFinder
     }
 
 
+    public static IntPtr GetForegroundWindow()
+    {
+        return NativeMethods.GetForegroundWindow();
+    }
+
     private static class NativeMethods
     {
         public const int SM_CXSCREEN = 0;
@@ -146,7 +147,7 @@ public static class WindowsFinder
         public static extern int GetSystemMetrics(int nIndex);
 
         [DllImport("USER32.DLL", CharSet = CharSet.Unicode)]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        public static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
@@ -164,5 +165,10 @@ public static class WindowsFinder
 
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
     }
 }

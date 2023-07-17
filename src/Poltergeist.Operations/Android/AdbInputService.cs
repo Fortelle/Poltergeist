@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Structures.Shapes;
@@ -168,16 +167,5 @@ public class AdbInputService : MacroService
         }
         Logger.Debug($"Simulated swipe: {{{p1}}} to {{{p2}}}.", new { duration });
     }
-
-    //public void Text(string text)
-    //{
-    //    Execute($"shell input text {text}");
-    //}
-
-    //public void Keyevent(string keyCode, bool isLongpress)
-    //{
-    //    var arg = isLongpress ? "--longpress" : "";
-    //    Execute($"shell input keyevent {keyCode} {arg}");
-    //}
 
 }

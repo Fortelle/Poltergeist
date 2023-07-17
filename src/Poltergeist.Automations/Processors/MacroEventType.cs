@@ -6,4 +6,5 @@ public enum MacroEventType
     ProcessStarted,
     ProcessCompleted,
     PanelCreated,
+    Interacting,
 }

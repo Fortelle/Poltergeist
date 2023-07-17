@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Operations.ForegroundWindows;
@@ -53,7 +51,7 @@ public static class CursorHelper
     private static void DoDelay(int timeout)
     {
         if (timeout == 0) return;
-        System.Threading.Thread.Sleep(timeout);
+        Thread.Sleep(timeout);
     }
 
 }

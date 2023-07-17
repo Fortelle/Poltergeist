@@ -1,6 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Linq;
+﻿using System.Drawing;
 using Poltergeist.Common.Structures.Shapes;
 
 namespace Poltergeist.Common.Utilities.Maths;
@@ -53,7 +51,7 @@ public class DistributionService
         {
             RangeDistributionType.Uniform => Random.NextDouble(),
             RangeDistributionType.Gaussian => Random.NextDoubleBoxMuller(),
-            RangeDistributionType.Triangular => Random.NextDoubleTriangular(),
+            RangeDistributionType.Triangular => Random.NextDoubleTriangular(.5),
             RangeDistributionType.Increasing => 1 - Random.NextDoubleExponential(),
             RangeDistributionType.Decreasing => Random.NextDoubleExponential(),
             _ => throw new NotImplementedException(),

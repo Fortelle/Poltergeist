@@ -9,21 +9,26 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components;
-using Poltergeist.Automations.Instruments;
+using Poltergeist.Automations.Components.FlowBuilders;
+using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Components.Loops;
+using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Components.Repetitions;
+using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Panels;
 using Poltergeist.Automations.Processors.Events;
-using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Processors;
 
 public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUserProcessor, IDisposable
 {
-    public event EventHandler<MacroStartingEventArgs> Starting;
-    public event EventHandler<MacroStartedEventArgs> Started;
-    public event EventHandler<MacroCompletedEventArgs> Completed;
-    public event EventHandler<PanelCreatedEventArgs> PanelCreated;
+    public event EventHandler<MacroStartingEventArgs>? Starting;
+    public event EventHandler<MacroStartedEventArgs>? Started;
+    public event EventHandler<MacroCompletedEventArgs>? Completed;
+    public event EventHandler<PanelCreatedEventArgs>? PanelCreated;
+    public event EventHandler<InteractingEventArgs>? Interacting;
 
     public string ProcessId { get; set; }
 
@@ -32,35 +37,31 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
 
-    public HookService Hooks { get; set; }
-    public WorkingService Workflow { get; set; }
+    public ServiceCollection? ServiceCollection { get; set; }
+    public ServiceProvider? ServiceProvider { get; set; }
 
-    public ServiceProvider Services { get; set; }
+    public bool IsCancelled { get; set; }
 
-    public bool WaitUiReady { get; set; }
+    public required Dictionary<string, object?> Options { get; set; }
+    public required Dictionary<string, object> Environments { get; set; }
 
-    public Dictionary<string, object> Options { get; set; }
-    public Dictionary<string, object> Environments { get; set; }
-    internal string[] ServiceList { get; set; }
+    private HookService? Hooks { get; set; }
+    private WorkingService? Workflow { get; set; }
 
-    private PauseTokenSource PauseTokenSource;
-    private PauseToken PauseToken;
+    private PauseProvider? PauseProvider;
 
-    internal Exception InitializationException;
-    internal Type[] AutoloadTypes;
+    internal Exception? InitializationException;
 
-    public LaunchReason Reason;
+    public LaunchReason Reason { get; set; }
 
-    private readonly SynchronizationContext originalContext = SynchronizationContext.Current;
+    private readonly SynchronizationContext? OriginalContext = SynchronizationContext.Current;
 
-    private MacroProcessor()
+    CancellationToken? IUserProcessor.CancellationToken => Workflow?.GetCancellationToken();
+
+    public MacroProcessor(IMacroBase data, LaunchReason reason)
     {
         ProcessId = Guid.NewGuid().ToString();
-        //Dispatcher = DispatcherQueue.GetForCurrentThread();
-    }
 
-    public MacroProcessor(IMacroBase data, LaunchReason reason) : this()
-    {
         Macro = data;
         Reason = reason;
 
@@ -73,7 +74,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         {
             Macro.Initialize();
 
-            if (Macro.RequireAdmin)
+            if (Macro.RequiresAdmin)
             {
                 CheckAdmin();
             }
@@ -89,25 +90,24 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         Options ??= Macro.UserOptions.ToDictionary();
         Environments ??= new();
 
-        var services = new MacroServiceCollection();
-        InitializeBasicServices(services);
-        InitializeExtraServices(services);
-        AutoloadTypes = services.AutoloadTypes.ToArray();
-        Services = services.BuildServiceProvider();
-        ServiceList = services.Select(x => x.ServiceType.Name).ToArray();
+        ServiceCollection = new();
+        InitializeBasicServices(ServiceCollection);
+        InitializeExtraServices(ServiceCollection);
+        ServiceProvider = ServiceCollection.BuildServiceProvider();
 
         // active basic services
-        GetService<MacroLogger>(); // first
-        Hooks = GetService<HookService>(); // second
+        Hooks = GetService<HookService>();
         GetService<PanelService>();
-        GetService<InstrumentService>();
+        GetService<MacroLogger>();
+
+        GetService<DashboardService>();
 
         Workflow = GetService<WorkingService>();
-        Workflow.WaitUI = true;
-        Workflow.Ending += OnEnd;
+        Workflow.Ending += OnEnding;
+        Workflow.Ended += OnEnded;
     }
 
-    private void InitializeBasicServices(MacroServiceCollection services)
+    private void InitializeBasicServices(ServiceCollection services)
     {
         services.AddSingleton(this);
 
@@ -116,42 +116,55 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         {
             options.FileLogLevel = GetEnvironment("logger.tofile", LogLevel.All);
             options.FrontLogLevel = GetEnvironment("logger.toconsole", LogLevel.All);
-            options.Filename = Path.Combine(Macro.PrivateFolder, "Logs", $"{ProcessId}.log");
+            options.Filename = Macro.PrivateFolder is null ? null : Path.Combine(Macro.PrivateFolder, "Logs", $"{ProcessId}.log");
         });
         services.AddSingleton<MacroLogger>();
 
-        services.AddSingleton<InstrumentService>();
+        services.AddSingleton<DashboardService>();
+        services.AddTransient<InteractionCallbackArguments>();
 
         services.AddSingleton<WorkingService>();
         services.AddSingleton<HookService>();
         services.AddSingleton<PanelService>();
-
-        services.AddTransient<DialogService>();
+        services.AddSingleton<InteractionService>();
+        services.AddSingleton<OutputService>();
 
         if (Debugger.IsAttached)
         {
-            services.AddAutoload<Components.Background.BackgroundService>();
+            // todo: convert to model
+            services.AddSingleton<BackgroundService>();
         }
 
-        services.AddTransient<InstrumentPanel>();
-        services.AddTransient<TextPanelModel>();
-
-        services.AddTransient<GridInstrument>();
-        services.AddTransient<ImageInstrument>();
+        services.AddTransient<PanelModel>();
+        services.AddTransient<TextInstrument>();
         services.AddTransient<ListInstrument>();
+        services.AddTransient<ProgressListInstrument>();
+        services.AddTransient<GridInstrument>();
+        services.AddTransient<ProgressGridInstrument>();
+        services.AddTransient<ImageInstrument>();
 
         services.AddTransient<ArgumentService>();
+
+
+        services.AddTransient<FlowBuilderService>();
+        services.AddTransient<LoopBuilderService>();
+        services.AddTransient<LoopBeforeArguments>();
+        services.AddTransient<LoopExecutionArguments>();
+        services.AddTransient<LoopCheckContinueArguments>();
     }
 
-    private void InitializeExtraServices(MacroServiceCollection services)
+    private void InitializeExtraServices(ServiceCollection services)
     {
-        if (InitializationException != null) return;
+        if (InitializationException != null)
+        {
+            return;
+        }
 
         try
         {
             foreach (var module in Macro.Modules)
             {
-                module.OnMacroConfigure(services, this);
+                module.OnMacroConfiguring(services, this);
             }
 
             Macro.ConfigureServices(services, this);
@@ -164,7 +177,10 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     private void CheckAdmin()
     {
-        if (!Macro.RequireAdmin) return;
+        if (!Macro.RequiresAdmin)
+        {
+            return;
+        }
 
         var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
@@ -175,22 +191,34 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         }
     }
 
-    public T GetOption<T>(string key, T def = default) //where T : struct
+    public T? GetOption<T>(string key, T? def = default)
+    {
+        var value = GetOption(key, typeof(T));
+
+        if (value is null)
+        {
+            return def;
+        }
+
+        return (T)value;
+    }
+
+    public object? GetOption(string key, Type type)
     {
         if (Options.TryGetValue(key, out var value))
         {
-            if(value is JToken jt)
+            if (value is JToken jt)
             {
-                return jt.ToObject<T>();
+                return jt.ToObject(type)!;
             }
             else
             {
-                return (T)value;
+                return value;
             }
         }
         else
         {
-            return def;
+            return null;
         }
     }
 
@@ -206,11 +234,11 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         }
     }
 
-    public T GetEnvironment<T>(string key, T def = default)
+    public T? GetEnvironment<T>(string key, T? def = default)
     {
         if (Environments.TryGetValue(key, out var value))
         {
-            return (T)value;
+            return (T?)value;
         }
         else
         {
@@ -218,43 +246,56 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         }
     }
 
-    public void SetStatistic<T>(string key, T value)
+    public void SetStatistic<T>(string key, T value) where T : notnull
     {
-        if (!GetEnvironment<bool>("macro.usestatistics")) return;
-        Macro.Statistics.Set(key, value);
+        if (!GetEnvironment<bool>("macro.usestatistics"))
+        {
+            return;
+        }
+
+        Macro.Statistics.Set(key, value!);
         //Log(LogLevel.Debug, $"Set statistic {key} = {value}.");
     }
 
-    public void SetStatistic<T>(string key, Func<T, T> action)
+    public void SetStatistic<T>(string key, Func<T, T> action) where T : notnull
     {
-        if (!GetEnvironment<bool>("macro.usestatistics")) return;
-        Macro.Statistics.Set(key, action, out var oldValue, out var newValue);
+        if (!GetEnvironment<bool>("macro.usestatistics"))
+        {
+            return;
+        }
+
+        Macro.Statistics.Set(key, action);
         //Log(LogLevel.Debug, $"Set statistic {key} = {newValue}.");
     }
 
-    public object GetService(Type type)
+    public T GetStatistic<T>(string key) where T : notnull
     {
-        return Services.GetService(type);
+        var item = Macro.Statistics.FirstOrDefault(x => x.Key == key);
+        if (item is null)
+        {
+            throw new KeyNotFoundException();
+        }
+
+        return (T)item.Value;
     }
 
     public T GetService<T>() where T : class
     {
-        return GetService(typeof(T)) as T;
+        return (T)GetService(typeof(T))!;
+    }
+
+    public object? GetService(Type type)
+    {
+        return ServiceProvider!.GetService(type);
     }
 
     public void Launch()
     {
         StartTime = DateTime.Now;
 
-        Macro.LastRunTime = StartTime;
-
         InitializeProcessor();
 
-        GetService<MacroLogger>().UpdateUI();
-        Thread.Sleep(100);
         Log(LogLevel.Information, "The macro has started up.");
-
-        Hooks.Raise("ui_ready");
 
         RaiseEvent(MacroEventType.ProcessStarting, new MacroStartingEventArgs(StartTime));
 
@@ -262,21 +303,27 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         {
             foreach (var module in Macro.Modules)
             {
-                module.OnMacroProcess(this);
+                module.OnMacroProcessing(this);
             }
             Macro.Process(this);
         }
 
-        Workflow.Start();
+        SetStatistic<int>("total_run_count", old => old + 1);
+        SetStatistic("last_run_time", StartTime);
+
+        Workflow!.Start();
     }
 
     public void Abort()
     {
-        Workflow.Abort();
-    }
+        IsCancelled = true;
 
-    public void CheckPause()
-    {
+        Workflow?.Abort();
+
+        if (PauseProvider?.IsPaused == true)
+        {
+            PauseProvider.Resume();
+        }
     }
 
     private void Log(LogLevel level, string message)
@@ -284,36 +331,65 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message);
     }
 
-    private void OnEnd(object sender, EndingEventArgs e)
+    private void OnEnding(object? sender, WorkEndingEventArgs e)
     {
         EndTime = DateTime.Now;
+        var duration = EndTime - StartTime;
 
-        SetStatistic<int>("TotalRunCount", old => old + 1);
-        SetStatistic<TimeSpan>("TotalRunTime", old => old + (EndTime - StartTime));
+        SetStatistic<TimeSpan>("total_run_duration", old => old + duration);
 
-        var completeAction = GetOption("CompleteAction", CompleteAction.None);
-        if (completeAction == CompleteAction.None)
+        var completeAction = GetOption("aftercompletion.action", CompletionAction.None);
+        if (e.Reason == EndReason.UserAborted)
+        {
+            completeAction = CompletionAction.None;
+        }
+
+        var completeAllowerror = GetOption("aftercompletion.allowerror", false);
+        if (!completeAllowerror && e.Reason != EndReason.Complete)
+        {
+            completeAction = CompletionAction.None;
+        }
+
+        var completeMinimumSeconds = GetOption("aftercompletion.minimumseconds", 0);
+        if (completeMinimumSeconds > 0 && completeMinimumSeconds < duration.TotalSeconds)
+        {
+            completeAction = CompletionAction.None;
+        }
+
+        if (completeAction == CompletionAction.None)
         {
             if (Macro.MinimizeApplication)
             {
-                completeAction = CompleteAction.RestoreApplication;
+                completeAction = CompletionAction.RestoreApplication;
             }
         }
 
-        var report = new ProcessReport()
+        Macro.SaveStatistics();
+
+        var summary = new ProcessSummary()
         {
-            MacroName = Macro.Name,
+            MacroKey = Macro.Name,
             ProcessId = ProcessId,
-            BeginTime = StartTime,
+            StartTime = StartTime,
             EndTime = EndTime,
             EndReason = e.Reason,
         };
-        var args = new MacroCompletedEventArgs(e.Reason, report)
+        Hooks?.Raise(new ProcessSummaryCreatedHook(summary));
+
+        var args = new MacroCompletedEventArgs(e.Reason, summary)
         {
              CompleteAction = completeAction,
         };
 
+        Macro.Summaries.Add(summary);
+        Macro.SaveSummaries();
+
         RaiseEvent(MacroEventType.ProcessCompleted, args);
+    }
+
+    private void OnEnded(object? sender, EventArgs e)
+    {
+        Dispose();
     }
 
     public void RaiseEvent(MacroEventType type, EventArgs eventArgs)
@@ -324,13 +400,17 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             MacroEventType.ProcessStarted => Started,
             MacroEventType.ProcessCompleted => Completed,
             MacroEventType.PanelCreated => PanelCreated,
+            MacroEventType.Interacting => Interacting,
             _ => throw new NotSupportedException(),
         };
-        if (multicastDelegate == null) return;
+        if (multicastDelegate is null)
+        {
+            return;
+        }
 
         var handlerArgs = new object[] { this, eventArgs };
 
-        originalContext.Post(d =>
+        OriginalContext!.Post(d =>
         {
             multicastDelegate?.DynamicInvoke(handlerArgs);
         }, null);
@@ -338,7 +418,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     public void RaiseAction(Action action)
     {
-        originalContext.Post(d =>
+        OriginalContext!.Post(d =>
         {
             action.DynamicInvoke();
         }, null);
@@ -346,22 +426,38 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     public async Task Pause()
     {
-        PauseTokenSource = new();
-        PauseToken = PauseTokenSource.Token;
-        PauseTokenSource.IsPaused = true;
+        Log(LogLevel.Debug, "The process is paused.");
 
-        await PauseToken.WaitWhilePausedAsync();
-        PauseToken = null;
-        PauseTokenSource = null;
+        PauseProvider = new();
+        await PauseProvider.Pause();
+        PauseProvider = null;
+
+        if (Workflow!.IsAborted)
+        {
+            throw new UserAbortException();
+        }
     }
 
     public void Resume()
     {
-        PauseTokenSource.IsPaused = false;
+        if(PauseProvider is null)
+        {
+            return;
+        }
+
+        Log(LogLevel.Debug, "The process is resumed.");
+
+        PauseProvider.Resume();
     }
+
+    public void ReceiveMessage(Dictionary<string, string> paramaters)
+    {
+        Hooks?.Raise(new MessageReceivedHook(paramaters));
+    }
+
 
     public void Dispose()
     {
-        Services.Dispose();
+        ServiceProvider!.Dispose();
     }
 }

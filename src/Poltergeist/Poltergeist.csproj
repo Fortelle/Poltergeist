@@ -1,73 +1,73 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
-    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
-    
-    
-    <PackageId>Poltergeist</PackageId>
-    <Description>Poltergeist is a .NET framework for desktop automation.</Description>
-    <PackageIcon>images\favicon.png</PackageIcon>
-    <Version>0.5.0</Version>
-    <Authors>Fortelle</Authors>
+    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Poltergeist</RootNamespace>
+    <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;arm64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Version>0.6.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/Fortelle/Poltergeist</RepositoryUrl>
+    <Description>A .NET framework for desktop automation.</Description>
   </PropertyGroup>
 
-  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-    </ItemGroup>
-  </Target>
+  <PropertyGroup>
+    <LicenseUrl>https://github.com/Fortelle/Poltergeist/blob/master/LICENSE.txt</LicenseUrl>
+    <GitHub>Poltergeist</GitHub>
+    <GitHubUrl>https://github.com/Fortelle/Poltergeist</GitHubUrl>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Poltergeist.Common\Poltergeist.Common.csproj" PrivateAssets="All" />
-    <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="favicon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="favicon.ico" />
+    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyLicenseUrlAttribute">
+      <_Parameter1>$(LicenseUrl)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyLicenseAttribute">
+      <_Parameter1>$(PackageLicenseExpression)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyGitHubUrlAttribute">
+      <_Parameter1>$(GitHubUrl)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyGitHubAttribute">
+      <_Parameter1>$(GitHub)</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
   
-  <ItemGroup>
-    <None Include="favicon.png" Pack="true" PackagePath="images\favicon.png" />
-  </ItemGroup>
   
   <ItemGroup>
-    <Page Update="Views\AboutPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\DevelopPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\MacroNotificationControl.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Views\SchedulerPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
+    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23280.8" />
+    <PackageReference Include="WinUIEx" Version="2.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230518007-experimental1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.4.23259.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
+    <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
 </Project>

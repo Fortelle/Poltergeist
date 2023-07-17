@@ -1,29 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Newtonsoft.Json;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.ViewModels;
 
 namespace Poltergeist.Services;
 
 public class MacroManager
 {
+    private const string MacroSummariesKey = "app.macrosummaries";
+
     public List<IMacroBase> Macros { get; } = new();
     public List<MacroGroup> Groups { get; } = new();
-    public List<string> RecentMacros { get; } = new();
     public MacroOptions GlobalOptions { get; set; } = new();
 
-    public IMacroBase CurrentMacro { get; set; }
-    public bool IsRunning { get; set; }
+    public List<MacroProcessor> InRunningProcesses { get; set; } = new();
 
-    private PathService PathService;
+    public bool IsBusy => InRunningProcesses.Any();
 
+    private readonly PathService PathService;
+    private readonly LocalSettingsService LocalSettings;
 
-    public MacroManager(PathService path)
+    public Dictionary<string, MacroSummaryEntry> Summaries { get; } = new();
+
+    public MacroManager(PathService path, LocalSettingsService localSettings)
     {
         PathService = path;
+        LocalSettings = localSettings;
+
+        App.SettingsLoading += (settings) =>
+        {
+            settings.Add(new OptionItem<MacroSummaryEntry[]>(MacroSummariesKey, Array.Empty<MacroSummaryEntry>())
+            {
+                IsBrowsable = false,
+            });
+        };
+
+        App.ContentLoading += () =>
+        {
+            var summaries = LocalSettings.Get<MacroSummaryEntry[]>(MacroSummariesKey);
+            if(summaries?.Length > 0)
+            {
+                foreach (var summary in summaries)
+                {
+                    Summaries.Add(summary.MacroKey, summary);
+                }
+            }
+        };
+
+        App.ContentLoaded += () =>
+        {
+            LoadGlobalOptions();
+
+            var macroManager = App.GetService<MacroManager>();
+            foreach(var summary in Summaries.Values)
+            {
+                var macro = macroManager.GetMacro(summary.MacroKey);
+                if (macro is not null)
+                {
+                    summary.Title = macro.Title;
+                    summary.IsAvailable = true;
+                }
+                else
+                {
+                    summary.IsAvailable = false;
+                }
+            }
+        };
     }
 
     public void AddMacro(IMacroBase macro)
@@ -33,10 +76,11 @@ public class MacroManager
         try
         {
             macro.Initialize();
-            Macros.Add(macro);
         } catch (Exception)
         {
         }
+
+        Macros.Add(macro);
     }
 
     public void AddGroup(MacroGroup group)
@@ -53,73 +97,41 @@ public class MacroManager
         }
     }
 
-    public IMacroBase GetMacro(string name)
+    public IMacroBase? GetMacro(string name)
     {
         return Macros.FirstOrDefault(x => x.Name == name);
     }
 
-    public bool Set(string name, LaunchReason? reason = null)
+    public void TryStart(MacroProcessor processor)
     {
-        var macro = GetMacro(name);
-        if (macro == null) return false;
-        return Set(macro, reason);
+        var macro = processor.Macro;
+
+        if (InRunningProcesses.Contains(processor))
+        {
+            throw new Exception("The macro is already running.");
+        }
+
+        InRunningProcesses.Add(processor);
+
+        processor.Completed += Processor_Completed;
+
+        processor.Launch();
+
+        UpdateSummary(processor.Macro.Name, x =>
+        {
+            x.LastRunTime = processor.GetStatistic<DateTime>("last_run_time");
+            x.RunCount = processor.GetStatistic<int>("total_run_count");
+        });
     }
 
-    public bool Set(IMacroBase macro, LaunchReason? reason = null)
+    private void Processor_Completed(object? sender, Automations.Processors.Events.MacroCompletedEventArgs e)
     {
-        if (IsRunning && CurrentMacro != macro)
-        {
-            App.ShowFlyout("Another macro is already running.");
-            return false;
-        }
+        var processor = (MacroProcessor)sender!;
 
-        var nav = App.GetService<NavigationService>();
-        nav.Navigate("console");
+        processor.Completed -= Processor_Completed;
 
-        if (CurrentMacro != macro)
-        {
-            macro.Initialize();
-
-            var exe = App.GetService<MacroConsoleViewModel>();
-            exe.Load(macro);
-
-            CurrentMacro = macro;
-        }
-
-        if (reason.HasValue)
-        {
-            TryStart(reason.Value);
-        }
-
-        return true;
-    }
-
-    public void Toggle()
-    {
-        if (!IsRunning)
-        {
-            TryStart(LaunchReason.ByUser);
-        }
-        else
-        {
-            TryStop();
-        }
-    }
-
-    private void TryStart(LaunchReason reason)
-    {
-        if (CurrentMacro is null) return;
-        if (IsRunning) return;
-        var consoleVM = App.GetService<MacroConsoleViewModel>();
-        consoleVM.Start(reason);
-    }
-
-    private void TryStop()
-    {
-        if (CurrentMacro is null) return;
-        if (!IsRunning) return;
-        var consoleVM = App.GetService<MacroConsoleViewModel>();
-        consoleVM.Stop();
+        var macro = processor.Macro;
+        InRunningProcesses.Remove(processor);
     }
 
     public void AddGlobalOption(IOptionItem option)
@@ -140,7 +152,7 @@ public class MacroManager
         }
 
         var filepath = PathService.GlobalMacroOptionsFile;
-        GlobalOptions.Load(filepath, true);
+        GlobalOptions.Load(filepath);
     }
 
     public void SaveGlobalOptions()
@@ -149,48 +161,61 @@ public class MacroManager
         GlobalOptions.Save(filepath);
     }
 
-    public void AddRecentMacro(IMacroBase macro)
+    public void SendMessage(InteractionMessage message)
     {
-        var maxRecentMacros = App.GetSettings<int>("app.maxrecentmacros", 0);
-        if (maxRecentMacros <= 0)
+        var processor = InRunningProcesses.FirstOrDefault(x => x.ProcessId == message.ProcessId);
+        if (processor == null)
         {
             return;
         }
-        if(RecentMacros.Count > 0 && RecentMacros.Last() == macro.Name)
+        if (message.MacroKey != processor.Macro.Name)
         {
             return;
         }
 
-        var i = RecentMacros.IndexOf(macro.Name);
-        if (i > -1)
-        {
-            RecentMacros.RemoveAt(i);
-        }
-        else if (RecentMacros.Count >= maxRecentMacros)
-        {
-            RecentMacros.RemoveRange(0, maxRecentMacros - RecentMacros.Count + 1);
-        }
-
-        RecentMacros.Add(macro.Name);
-
-        App.SetSettings("app.recentmacros", RecentMacros.ToArray(), save: true);
-
-        var homeVM = App.GetService<HomeViewModel>();
-        homeVM.UpdateRecentMacros();
+        processor.ReceiveMessage(message.ToDictionary());
     }
 
-    public void LoadRecentMacros()
+    public MacroSummaryEntry? GetSummary(string macroKey)
     {
-        var maxRecentMacros = App.GetSettings<int>("app.maxrecentmacros", 0);
-        var recentMacros = App.GetSettings<string[]>("app.recentmacros", Array.Empty<string>());
-
-        if(maxRecentMacros > 0 && recentMacros?.Length > 0)
+        if (Summaries.TryGetValue(macroKey, out var entry))
         {
-            recentMacros = recentMacros
-                .Where(x => Macros.Any(y => y.Name == x))
-                .TakeLast(maxRecentMacros)
-                .ToArray();
-            RecentMacros.AddRange(recentMacros);
+            return entry;
         }
+
+        return null;
     }
+
+    public void UpdateSummary(string key, Action<MacroSummaryEntry>? action = null)
+    {
+        if(!Summaries.TryGetValue(key, out var entry))
+        {
+            var macro = GetMacro(key)!;
+            entry = new MacroSummaryEntry()
+            {
+                MacroKey = key,
+                Title = macro.Title,
+                IsAvailable = macro.IsAvailable,
+            };
+            Summaries.Add(key, entry);
+        }
+
+        action?.Invoke(entry);
+
+        LocalSettings.Set(MacroSummariesKey, Summaries.Values.ToArray());
+        LocalSettings.Save();
+    }
+
+}
+
+public class MacroSummaryEntry
+{
+    public required string MacroKey { get; set; }
+    public required string Title { get; set; }
+    public bool IsFavorite { get; set; }
+    public DateTime LastRunTime { get; set; }
+    public int RunCount { get; set; }
+
+    [JsonIgnore]
+    public bool IsAvailable { get; set; }
 }

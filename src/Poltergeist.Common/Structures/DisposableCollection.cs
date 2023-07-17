@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Poltergeist.Common.Structures;
+﻿namespace Poltergeist.Common.Structures;
 
 public class DisposableList<T> : List<T>, IDisposable where T : IDisposable
 {

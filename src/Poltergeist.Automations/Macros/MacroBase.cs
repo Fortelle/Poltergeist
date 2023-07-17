@@ -1,78 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using IWshRuntimeLibrary;
-using Microsoft.Win32;
-using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Macros;
 
-[JsonObject(MemberSerialization.OptIn)]
+/// <summary>
+/// Provides the base class of a macro.
+/// </summary>
 public abstract class MacroBase : IMacroBase, IMacroInitializer
 {
-    public string Name { get; set; }
-    public string Category { get; set; }
-    public string Description { get; set; }
-    public string[] Tags { get; set; }
+    public string Name { get; }
+    public string? Category { get; set; }
+    public string? Description { get; set; }
+    public string[]? Details { get; set; }
+    public string[]? Tags { get; set; }
 
-    [JsonProperty]
-    public MacroOptions UserOptions { get; set; } = new();
+    public MacroOptions UserOptions { get; } = new();
+    public VariableCollection Statistics { get; } = new();
+    public List<ProcessSummary> Summaries { get; } = new();
 
-    [JsonProperty]
-    public VariableCollection Statistics { get; set; } = new();
-
-    [JsonProperty]
-    public DateTime LastRunTime { get; set; }
-
-    public List<MacroMaintenance> Maintenances { get; } = new();
+    public List<MacroAction> Actions { get; } = new();
     public List<MacroModule> Modules { get; } = new();
     public MacroStorage Storage { get; } = new();
 
-    public Action<MacroServiceCollection, IConfigureProcessor> Configure { get; set; }
-    public Action<MacroProcessor> Process { get; set; }
+    public Action<ServiceCollection, IConfigureProcessor>? Configure { get; set; }
+    public Action<MacroProcessor>? Process { get; set; }
+
+    private string? _title;
+    public string Title { get => _title ?? Name; set => _title = value; }
+
+    MacroGroup? IMacroBase.Group { get; set; }
+
+    private bool _requiresAdmin;
+    public bool RequiresAdmin { get => _requiresAdmin; set => _requiresAdmin |= value; }
+
+    public bool MinimizeApplication { get; set; }
+
+    public string? PrivateFolder { get; set; }
+    public string? SharedFolder { get; set; }
+
+    public bool IsAvailable => IsInitialized;
+
+    private bool UseFile => !string.IsNullOrEmpty(PrivateFolder);
+
+    protected virtual void OnInitialize() { }
+    protected virtual void OnLoad() { }
+    protected virtual void OnConfigure(ServiceCollection services, IConfigureProcessor processor) { }
+    protected virtual void OnProcess(MacroProcessor processor) { }
 
     private bool IsInitialized { get; set; }
     private bool IsLoaded { get; set; }
 
-    MacroGroup IMacroBase.Group { get; set; }
+    private static readonly char[] InvalidKeyChars;
 
-    private string _title;
-    public string Title { get => string.IsNullOrEmpty(_title) ? Name : _title; set => _title = value; }
+    static MacroBase()
+    {
+        InvalidKeyChars = new[]
+        {
+            ' ',
+            '@',
+            ':',
+        }
+        .Concat(Path.GetInvalidFileNameChars())
+        .ToArray();
+    }
 
-    private bool _requireAdmin;
-    public bool RequireAdmin { get => _requireAdmin; set => _requireAdmin |= value; }
-
-    public bool MinimizeApplication { get; set; }
-
-    private string _privateFolder;
-    public string PrivateFolder => _privateFolder;
-    string IMacroBase.PrivateFolder { get => _privateFolder; set => _privateFolder = value; }
-
-    private string _sharedFolder;
-    public string SharedFolder => _sharedFolder;
-    string IMacroBase.SharedFolder { get => _sharedFolder; set => _sharedFolder = value; }
-
-    private bool UseFile => !string.IsNullOrEmpty(PrivateFolder);
-
-    public bool Available => IsInitialized;
-
-    protected internal virtual void OnInitialize() { }
-    protected internal virtual void OnLoad() { }
-    protected internal virtual void OnConfigure(MacroServiceCollection services, IConfigureProcessor processor) { }
-    protected internal virtual void OnProcess(MacroProcessor processor) { }
-
-    private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+    public MacroBase()
+    {
+        Name = GetType().Name;
+    }
 
     public MacroBase(string name)
     {
-        Name = string.Join(null, name.Select(c => c == ' ' || InvalidFileNameChars.Contains(c) ? '_' : c));
+        Name = string.Join(null, name.Select(c => InvalidKeyChars.Contains(c) ? '_' : c));
     }
 
     public T As<T>() where T : MacroBase
@@ -82,22 +87,35 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     void IMacroBase.Initialize()
     {
-        if (IsInitialized) return;
+        if (IsInitialized)
+        {
+            return;
+        }
 
         if (UseFile)
         {
-            Maintenances.Add(OpenLocalFolder);
+            Actions.Add(ActionHelper.OpenLocalFolder);
         }
-        Maintenances.Add(CreateShortcut);
+        Actions.Add(ActionHelper.CreateShortcut);
         
-        Statistics.Add(new("TotalRunCount", 0));
-        Statistics.Add(new("TotalRunTime", default(TimeSpan)));
+        Statistics.Add(new("total_run_count", 0)
+        {
+            Title = "Total run count",
+        });
+        Statistics.Add(new("total_run_duration", default(TimeSpan))
+        {
+            Title = "Total run duration",
+        });
+        Statistics.Add(new("last_run_time", default(DateTime))
+        {
+            Title = "Last run time",
+        });
 
         OnInitialize();
 
         foreach (var module in Modules)
         {
-            module.OnMacroInitialize(this);
+            module.OnMacroInitialized(this);
         }
 
         IsInitialized = true;
@@ -105,41 +123,125 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     void IMacroBase.Load()
     {
-        if (!IsInitialized) throw new InvalidOperationException();
-        if (IsLoaded) return;
-
-        if (UseFile)
+        if (!IsInitialized)
         {
-            ((IMacroBase)this).LoadOptions();
+            throw new InvalidOperationException();
         }
+
+        if (IsLoaded)
+        {
+            return;
+        }
+
+        LoadOptions();
+        LoadStatistics();
+        LoadSummaries();
 
         IsLoaded = true;
     }
 
-    void IMacroBase.LoadOptions()
+    private void LoadOptions()
     {
-        if (!IsInitialized) throw new InvalidOperationException();
-        if (!UseFile) return;
-
-        var path = Path.Combine(PrivateFolder, "config.json");
-        if (System.IO.File.Exists(path))
+        if (string.IsNullOrEmpty(PrivateFolder))
         {
-            SerializationUtil.JsonPopulate(path, this);
+            return;
         }
+
+        var path = Path.Combine(PrivateFolder, "useroptions.json");
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        UserOptions.Load(path);
     }
 
     void IMacroBase.SaveOptions()
     {
-        if (!IsInitialized) return;
-        if (!UseFile) return;
+        if (!IsInitialized)
+        {
+            return;
+        }
 
-        if (!UserOptions.HasChanged && !Statistics.HasChanged) return;
+        if (string.IsNullOrEmpty(PrivateFolder))
+        {
+            return;
+        }
 
-        var path = Path.Combine(PrivateFolder, "config.json");
-        SerializationUtil.JsonSave(path, this);
+        if (!UserOptions.HasChanged)
+        {
+            return;
+        }
+
+        var path = Path.Combine(PrivateFolder, "useroptions.json");
+        UserOptions.Save(path);
     }
 
-    void IMacroBase.ConfigureServices(MacroServiceCollection services, IConfigureProcessor processor)
+    private void LoadStatistics()
+    {
+        if (string.IsNullOrEmpty(PrivateFolder))
+        {
+            return;
+        }
+
+        var path = Path.Combine(PrivateFolder, "statistics.json");
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        Statistics.Load(path);
+    }
+
+    void IMacroBase.SaveStatistics()
+    {
+        if (!IsInitialized)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(PrivateFolder))
+        {
+            return;
+        }
+
+        var path = Path.Combine(PrivateFolder, "statistics.json");
+        Statistics.Save(path);
+    }
+
+    private void LoadSummaries()
+    {
+        if (string.IsNullOrEmpty(PrivateFolder))
+        {
+            return;
+        }
+
+        var path = Path.Combine(PrivateFolder, "summaries.json");
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        SerializationUtil.JsonPopulate(path, Summaries);
+    }
+
+    void IMacroBase.SaveSummaries()
+    {
+        if (!IsInitialized)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(PrivateFolder))
+        {
+            return;
+        }
+
+        var path = Path.Combine(PrivateFolder, "summaries.json");
+        SerializationUtil.JsonSave(path, Summaries);
+    }
+
+    void IMacroBase.ConfigureServices(ServiceCollection services, IConfigureProcessor processor)
     {
         Configure?.Invoke(services, processor);
         OnConfigure(services, processor);
@@ -151,49 +253,18 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         OnProcess(processor);
     }
 
-
-
-    public void SetThumbnail(Bitmap image)
+    public IMacroBase CreateDuplicate()
     {
-        if (!UseFile) return;
-        var path = Path.Combine(PrivateFolder, "thumbnail.png");
-        image.Save(path);
+        var macrokey = Name.Split('@')[0];
+        var cloneGuid = Guid.NewGuid().ToString();
+        var cloneKey = $"{macrokey}@{cloneGuid}";
+
+        var type = GetType();
+        var clone = (MacroBase)Activator.CreateInstance(type, cloneKey)!;
+
+        return clone;
     }
 
-    private static readonly MacroMaintenance OpenLocalFolder = new()
-    {
-        Text = "Open macro folder",
-        Execute = macro =>
-        {
-            if (!Directory.Exists(macro.PrivateFolder)) return;
-            System.Diagnostics.Process.Start("explorer.exe", macro.PrivateFolder);
-        },
-    };
 
-    private static readonly MacroMaintenance CreateShortcut = new()
-    {
-        Text = "Create shortcut(.lnk)",
-        Execute = macro =>
-        {
-            var sfd = new SaveFileDialog();
-            sfd.Filter = "Desktop shortcut(*.lnk)|*.lnk";
-            sfd.FileName = $"{macro.Name}.lnk";
-            if (sfd.ShowDialog() != true) return;
-
-            var path = sfd.FileName;
-            var wshShell = new WshShell(); 
-            var shortcut = wshShell.CreateShortcut(path) as IWshShortcut;
-            shortcut.TargetPath = Environment.ProcessPath;
-            shortcut.Arguments = $"--macro={macro.Name} --immediacy";
-            shortcut.WorkingDirectory = Environment.CurrentDirectory;
-            shortcut.IconLocation = Assembly.GetAssembly(typeof(MacroBase)).Location;
-            shortcut.Save();
-            if (macro.RequireAdmin)
-            {
-                using var fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
-                fs.Seek(21, SeekOrigin.Begin);
-                fs.WriteByte(0x22);
-            }
-        },
-    };
 }
+ 

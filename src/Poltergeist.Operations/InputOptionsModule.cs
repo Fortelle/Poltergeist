@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Maths;
 using Poltergeist.Operations.ForegroundWindows;
 using Poltergeist.Operations.Timers;
@@ -11,7 +10,7 @@ namespace Poltergeist.Operations;
 public class InputOptionsModule : MacroModule
 {
     // todo: global options
-    public override void OnMacroConfigure(MacroServiceCollection services, IConfigureProcessor processor)
+    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
     {
         services.Configure<DelayOptions>(options =>
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -33,7 +32,7 @@ public class ForegroundMouseService : MacroService
 
     #region "click"
 
-    public void Click(MouseButtons button, MouseInputOptions options = null)
+    public void Click(MouseButtons button, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse click: {{{button}}}.", options);
 
@@ -68,7 +67,7 @@ public class ForegroundMouseService : MacroService
 
     #region "double click"
 
-    public void DoubleClick(MouseButtons button, MouseInputOptions options = null)
+    public void DoubleClick(MouseButtons button, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse double-click: {{{button}}}.", options);
 
@@ -86,7 +85,7 @@ public class ForegroundMouseService : MacroService
     //todo: LineTo
     #region "move"
 
-    public void MoveBy(int dx, int dy, MouseInputOptions options = null)
+    public void MoveBy(int dx, int dy, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse move: to offset({dx},{dy}).", options);
 
@@ -95,26 +94,26 @@ public class ForegroundMouseService : MacroService
         DoMoveTo(clientPoint, options);
     }
 
-    public void MoveTo(Point clientPoint, MouseInputOptions options = null)
+    public void MoveTo(Point clientPoint, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse move: to point({clientPoint.X},{clientPoint.Y}).", options);
 
         DoMoveTo(clientPoint, options);
     }
 
-    public void MoveTo(int x, int y, MouseInputOptions options = null)
+    public void MoveTo(int x, int y, MouseInputOptions? options = null)
     {
         MoveTo(new Point(x, y), options);
     }
 
-    public void MoveTo(IShape targetShape, MouseInputOptions options = null)
+    public void MoveTo(IShape targetShape, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse move: to shape \"{targetShape.Name}\"({targetShape.GetSignature()}).", options);
 
         DoMoveTo(targetShape, options);
     }
 
-    public void MoveTo(Rectangle clientArea, MouseInputOptions options = null)
+    public void MoveTo(Rectangle clientArea, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse move: to rectangle({clientArea.X},{clientArea.Y},{clientArea.Width},{clientArea.Height}).", options);
 
@@ -145,28 +144,28 @@ public class ForegroundMouseService : MacroService
 
     #region "Mouse wheel"
 
-    public void WheelForward(int detents, MouseInputOptions options = null)
+    public void WheelForward(int detents, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents forward.", options);
 
         DoVerticalWheel(detents, options);
     }
 
-    public void WheelBackward(int detents, MouseInputOptions options = null)
+    public void WheelBackward(int detents, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents backward.", options);
 
         DoVerticalWheel(-detents, options);
     }
 
-    public void WheelLeft(int detents, MouseInputOptions options = null)
+    public void WheelLeft(int detents, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents left.", options);
 
         DoHorizonWheel(-detents, options);
     }
 
-    public void WheelRight(int detents, MouseInputOptions options = null)
+    public void WheelRight(int detents, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents right.", options);
 
@@ -193,11 +192,15 @@ public class ForegroundMouseService : MacroService
 
     private static void DoDelay(int timeout)
     {
-        if (timeout == 0) return;
-        System.Threading.Thread.Sleep(timeout);
+        if (timeout == 0)
+        {
+            return;
+        }
+
+        Thread.Sleep(timeout);
     }
 
-    private void DoMoveTo(IShape targetShape, MouseInputOptions options)
+    private void DoMoveTo(IShape targetShape, MouseInputOptions? options)
     {
         var distribution = options?.ShapeDistribution ?? DefaultOptions?.ShapeDistribution ?? default;
         var clientPoint = Distribution.GetPointByShape(targetShape, distribution);
@@ -207,7 +210,7 @@ public class ForegroundMouseService : MacroService
         Logger.Debug($"Simulated mouse move: to screen({screenPoint.X},{screenPoint.Y}).", new { targetShape, distribution, clientPoint, screenPoint, motion });
     }
 
-    private void DoMoveTo(Point targetPoint, MouseInputOptions options)
+    private void DoMoveTo(Point targetPoint, MouseInputOptions? options)
     {
         var offsetRange = options?.PointOffsetRange ?? DefaultOptions?.PointOffsetRange ?? 0;
         var clientPoint = Distribution.GetPointByOffset(targetPoint, offsetRange);
@@ -217,7 +220,7 @@ public class ForegroundMouseService : MacroService
         Logger.Debug($"Simulated mouse move: to screen({screenPoint.X},{screenPoint.Y}).", new { targetPoint, offsetRange, clientPoint, screenPoint, motion });
     }
 
-    private void DoClick(MouseButtons button, MouseInputOptions options)
+    private void DoClick(MouseButtons button, MouseInputOptions? options)
     {
         var (min, max) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
 
@@ -239,7 +242,7 @@ public class ForegroundMouseService : MacroService
         }
     }
 
-    private void DoDoubleClick(MouseButtons button, MouseInputOptions options)
+    private void DoDoubleClick(MouseButtons button, MouseInputOptions? options)
     {
         var (min1, max1) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
         var (min2, max2) = options?.DoubleClickTime ?? DefaultOptions?.DoubleClickTime ?? (0, 0);
@@ -283,7 +286,7 @@ public class ForegroundMouseService : MacroService
         Logger.Debug($"Simulated mouse up: {{{button}}}.");
     }
 
-    private void DoVerticalWheel(int detents, MouseInputOptions options = null)
+    private void DoVerticalWheel(int detents, MouseInputOptions? options = null)
     {
         var (min, max) = options?.VerticalWheelInterval ?? DefaultOptions?.VerticalWheelInterval ?? (0, 0);
 
@@ -303,13 +306,16 @@ public class ForegroundMouseService : MacroService
             for (var i = 0; i < absoluteDetent; i++)
             {
                 new SendInputHelper().AddMouseWheel(movement).Execute();
-                if (i < absoluteDetent - 1) DoDelay(interval);
+                if (i < absoluteDetent - 1)
+                {
+                    DoDelay(interval);
+                }
             }
             Logger.Debug($"Simulated mouse wheel scrolling.", new { detents, delta, interval });
         }
     }
 
-    private void DoHorizonWheel(int detents, MouseInputOptions options = null)
+    private void DoHorizonWheel(int detents, MouseInputOptions? options = null)
     {
         var (min, max) = options?.HorizonWheelInterval ?? DefaultOptions?.HorizonWheelInterval ?? (0, 0);
 
@@ -329,7 +335,10 @@ public class ForegroundMouseService : MacroService
             for (var i = 0; i < absoluteDetent; i++)
             {
                 new SendInputHelper().AddMouseHWheel(movement).Execute();
-                if (i < absoluteDetent - 1) DoDelay(interval);
+                if (i < absoluteDetent - 1)
+                {
+                    DoDelay(interval);
+                }
             }
             Logger.Debug($"Simulated mouse h-wheel scrolling.", new { detents, delta, interval });
         }

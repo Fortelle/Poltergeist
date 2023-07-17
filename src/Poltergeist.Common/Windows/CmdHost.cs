@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace Poltergeist.Common.Windows;
 
@@ -13,16 +7,16 @@ public class CmdHost : IDisposable
     private const string BeginToken = "#process_begin";
     private const string CompletionToken = "#process_received";
 
-    public bool HasExited { get; set; }
+    public bool IsExited { get; set; }
 
-    private Process CmdProcess;
-    private List<string> OutputBuff = new();
-    private List<string> ErrorBuff = new();
-    private string OutputText;
+    private readonly Process CmdProcess;
+    private readonly List<string> OutputBuff = new();
+    private readonly List<string> ErrorBuff = new();
+    private readonly AutoResetEvent AutoEvent = new(false);
+    private string? OutputText;
     private bool HasError;
-    private AutoResetEvent AutoEvent = new(false);
 
-    public CmdHost(string workingDirectory = "")
+    public CmdHost(string? workingDirectory = "")
     {
         CmdProcess = new Process()
         {
@@ -53,12 +47,12 @@ public class CmdHost : IDisposable
     {
         TryExecute(command, out var output);
 
-        return output;
+        return output ?? "";
     }
 
-    public bool TryExecute(string command, out string output)
+    public bool TryExecute(string command, out string? output)
     {
-        if (HasExited)
+        if (IsExited)
         {
             throw new ObjectDisposedException(nameof(CmdProcess), "The process has exited.");
         }
@@ -73,7 +67,7 @@ public class CmdHost : IDisposable
         output = OutputText;
         HasError = false;
 
-        if (HasExited)
+        if (IsExited)
         {
             Dispose();
         }
@@ -83,7 +77,7 @@ public class CmdHost : IDisposable
 
     public void Dispose()
     {
-        HasExited = true;
+        IsExited = true;
 
         CmdProcess.OutputDataReceived -= OutputDataReceived;
         CmdProcess.ErrorDataReceived -= ErrorDataReceived;
@@ -104,7 +98,7 @@ public class CmdHost : IDisposable
                 AutoEvent.Set();
                 break;
             case null: // exit
-                HasExited = true;
+                IsExited = true;
                 AutoEvent.Set();
                 break;
             default:

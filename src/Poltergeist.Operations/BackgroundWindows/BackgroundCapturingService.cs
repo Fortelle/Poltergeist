@@ -1,5 +1,4 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Images;
 using Poltergeist.Input.Windows;
@@ -19,7 +18,7 @@ public class BackgroundCapturingService : CapturingSource
         Locating = locating;
     }
 
-    public override Bitmap DoCapture(Rectangle? area)
+    public override Bitmap DoCapture()
     {
         var begintime = DateTime.Now;
 
@@ -30,22 +29,18 @@ public class BackgroundCapturingService : CapturingSource
         var endtime = DateTime.Now;
         var duration = endtime - begintime;
 
-        if (area.HasValue)
-        {
-            var bmp2 = BitmapUtil.Crop(bmp, area.Value);
-            Logger.Debug($"Captured an image from background window.", new { hwnd, clientSize = size, areaLocation = area.Value.Location, areaSize = area.Value.Size, duration });
-
-            bmp.Dispose(); 
-            return bmp2;
-        }
-        else
-        {
-            Logger.Debug($"Captured an image from background window.", new { hwnd, clientSize = size, duration });
-            return bmp;
-        }
+        Logger.Debug($"Captured an image from background window.", new { hwnd, clientSize = size, duration });
+        return bmp;
     }
 
-    public static Bitmap Capture(RegionConfig config)
+    public override Bitmap DoCapture(Rectangle area)
+    {
+        using var bmp = DoCapture();
+        var bmp2 = BitmapUtil.Crop(bmp, area);
+        return bmp2;
+    }
+
+    public static Bitmap? Capture(RegionConfig config)
     {
         var result = BackgroundLocatingService.TryLocate(config, out var hwnd, out var size);
         return result == LocateResult.Succeeded ? WindowHelper.Capture(hwnd, size, 2) : null;

@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 
 namespace Poltergeist.Common.Windows;
+
 
 public class CmdExecutor
 {
     public bool AsBinary { get; set; }
 
-    public string Output { get; set; }
-    public byte[] OutputData { get; set; }
-    public string Error { get; set; }
+    public string? Output { get; set; }
+    public byte[]? OutputData { get; set; }
+    public string? Error { get; set; }
 
     private readonly string WorkingDirectory;
 

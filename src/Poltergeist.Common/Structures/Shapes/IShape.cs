@@ -1,56 +1,30 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
 public interface IShape : ICloneable
 {
-    public string Name
-    {
-        get; set;
-    }
+    public string? Name { get; set; }
 
-    public Point Location
-    {
-        get; set;
-    }
-    public Rectangle Bounds
-    {
-        get;
-    }
+    public Point Location { get; set; }
+    public Rectangle Bounds { get; }
 
-    public PointF Centroid
-    {
-        get;
-    }
-    public float Area
-    {
-        get;
-    }
-    public double Perimeter
-    {
-        get;
-    }
+    public PointF Centroid { get; }
+    public float Area { get; }
+    public double Perimeter { get; }
 
-    public bool IsValid
-    {
-        get;
-    }
-    public bool IsRegular
-    {
-        get;
-    }
+    public bool IsValid { get; }
+    public bool IsRegular { get; }
 
     public bool Contains(Point pt);
-    //public void Offset(int x, int y);
+    public void Pan(int x, int y);
 
     public Bitmap ToMask();
     public Bitmap CropFrom(Bitmap src);
     public bool[] GetPointAvailabilities();
     public string GetSignature();
 
-
-    public static IShape FromSignature(string sign)
+    public static IShape? FromSignature(string sign)
     {
         var values = sign.Split('-');
         if (values[0] == "Rectangle")

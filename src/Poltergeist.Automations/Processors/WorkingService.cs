@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors.Events;
@@ -12,22 +13,25 @@ namespace Poltergeist.Automations.Processors;
 
 public class WorkingService : KernelService
 {
-    public Func<EndReason> WorkProc;
-    public event EventHandler<BeginningEventArgs> Beginning;
-    public event EventHandler<EndingEventArgs> Ending;
+    public Func<EndReason>? WorkProc;
+    private Thread? WorkingThread;
 
-    public Func<Task> WorkingAsync;
-    public Task WorkingTask;
+    public Func<Task<EndReason>>? AsyncWorkProc;
+    private Task? WorkingTask;
+
+    public event EventHandler<WorkBeginningEventArgs>? Beginning;
+    public event EventHandler<WorkEndingEventArgs>? Ending;
+    public event EventHandler? Ended;
 
     private readonly HookService Hooks;
     private readonly MacroLogger Logger;
     private bool CanAbort;
 
-    private Thread WorkingThread;
-    private CancellationTokenSource Cancellation;
+    public CancellationTokenSource? Cancellation;
 
-    public bool WaitUI;
     private EndReason? EndStatus;
+
+    public bool IsAborted { get; set; }
 
     public WorkingService(MacroProcessor processor, HookService hooks, MacroLogger logger) : base(processor)
     {
@@ -37,55 +41,105 @@ public class WorkingService : KernelService
 
     public void Start()
     {
-        Cancellation = new();
-        var start = new ThreadStart(ThreadProc);
-        WorkingThread = new Thread(start);
-        WorkingThread.SetApartmentState(ApartmentState.STA);
-        WorkingThread.Start();
+        if(WorkProc == null && AsyncWorkProc == null)
+        {
+            WorkProc = () => EndReason.Complete;
+        }
+
+        if(WorkProc != null)
+        {
+            var start = new ThreadStart(ThreadProc);
+            WorkingThread = new Thread(start);
+            WorkingThread.SetApartmentState(ApartmentState.STA);
+            WorkingThread.Start();
+        }
+        else if (AsyncWorkProc != null)
+        {
+            WorkingTask = TaskProc();
+        }
     }
 
     private void ThreadProc()
     {
-        Hooks.Raise("process_starting");
+        Hooks.Raise(new ProcessStartingHook());
 
-        CheckInitializationError();
-        if (EndStatus.HasValue) goto end;
-
-        LoadServices();
-        if (EndStatus.HasValue) goto end;
-
-        CheckAvailability();
-        if (EndStatus.HasValue) goto end;
+        if (!DoInitialize())
+        {
+            DoEnd();
+            return;
+        }
 
         RaiseStartedEvent();
-        Hooks.Raise("process_started");
+
+        Hooks.Raise(new ProcessStartedHook());
 
         DoWork();
 
-        end:
+        DoEnd();
+    }
+
+    private async Task TaskProc()
+    {
+        Cancellation = new();
+
+        Hooks.Raise(new ProcessStartingHook());
+
+        if (!DoInitialize())
+        {
+            DoEnd();
+            return;
+        }
+
+        RaiseStartedEvent();
+
+        Hooks.Raise(new ProcessStartedHook());
+
+        await DoWorkAsync();
+
         DoEnd();
     }
 
     public void Abort()
     {
-        if (!CanAbort) return;
+        if (!CanAbort)
+        {
+            return;
+        }
+
+        IsAborted = true;
+
+        if (WorkingThread != null)
+        {
+            WorkingThread.Interrupt();
+        }
+        //else if (AsyncWorkProc != null)
+        //{
+        //    Cancellation?.Cancel();
+        //}
+
+        Cancellation?.Cancel();
 
         Logger.Log(LogLevel.Debug, ServiceName, "User aborted.");
-        WorkingThread.Interrupt();
     }
 
     public void CheckCancel()
     {
-        Cancellation.Token.ThrowIfCancellationRequested();
-        //if (Cancellation.IsCancellationRequested)
-        //{
-        //    throw new Exception("User cancel");
-        //}
+        Cancellation?.Token.ThrowIfCancellationRequested();
+    }
+
+    public CancellationToken GetCancellationToken()
+    {
+        Cancellation ??= new();
+        return Cancellation.Token;
     }
 
     private void CheckInitializationError()
     {
-        if (Processor.InitializationException == null) return;
+        if (Processor.InitializationException == null)
+        {
+            return;
+        }
+
         Logger.Log(LogLevel.Information, ServiceName, "An error has occurred during initialization.");
 
         DoError(Processor.InitializationException);
@@ -98,10 +152,15 @@ public class WorkingService : KernelService
 
         try
         {
-            foreach (var type in Processor.AutoloadTypes)
+            foreach (var serviceDescriptor in Processor.ServiceCollection!)
             {
-                Processor.GetService(type);
-                Logger.Log(LogLevel.Debug, ServiceName, $"Loaded service <{type.Name}>.");
+                var serviceType = serviceDescriptor.ServiceType;
+                var isAutoloadable = serviceType.IsAssignableTo(typeof(IAutoloadable));
+                if (isAutoloadable)
+                {
+                    Processor.GetService(serviceType);
+                    Logger.Log(LogLevel.Debug, ServiceName, $"Loaded service <{serviceType.Name}>.");
+                }
             }
         }
         catch (Exception e) //when (!Debugger.IsAttached)
@@ -112,10 +171,9 @@ public class WorkingService : KernelService
         Logger.Log(LogLevel.Debug, ServiceName, "Finished loading startup services.");
     }
 
-    // todo: add hooks if necessary
     private void CheckAvailability()
     {
-        Logger.Log(LogLevel.Debug, ServiceName, "Started running availability check.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Started running the availability check.");
 
         try
         {
@@ -125,9 +183,9 @@ public class WorkingService : KernelService
                 var checkingList = Beginning.GetInvocationList();
                 foreach (var checking in checkingList)
                 {
-                    var args = new BeginningEventArgs();
+                    var args = new WorkBeginningEventArgs();
                     checking.DynamicInvoke(this, args);
-                    if (args.Succeeded == false)
+                    if (args.IsSucceeded == false)
                     {
                         isSucceeded = false;
                         break;
@@ -137,7 +195,7 @@ public class WorkingService : KernelService
 
             if (isSucceeded)
             {
-                Logger.Log(LogLevel.Information, ServiceName, "The availability check passed.");
+                Logger.Log(LogLevel.Debug, ServiceName, "The availability check passed.");
             }
             else
             {
@@ -151,7 +209,30 @@ public class WorkingService : KernelService
             DoError(e);
         }
 
-        Logger.Log(LogLevel.Debug, ServiceName, "Finished running availability check.");
+        Logger.Log(LogLevel.Debug, ServiceName, "Finished running the availability check.");
+    }
+
+    private bool DoInitialize()
+    {
+        CheckInitializationError();
+        if (EndStatus.HasValue)
+        {
+            return false;
+        }
+
+        LoadServices();
+        if (EndStatus.HasValue)
+        {
+            return false;
+        }
+
+        CheckAvailability();
+        if (EndStatus.HasValue)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void DoWork()
@@ -164,7 +245,15 @@ public class WorkingService : KernelService
 
             EndStatus = WorkProc?.Invoke();
         }
-        catch (ThreadInterruptedException e)
+        catch (UserAbortException)
+        {
+            EndStatus = EndReason.UserAborted;
+        }
+        catch (ThreadInterruptedException) when (IsAborted)
+        {
+            EndStatus = EndReason.UserAborted;
+        }
+        catch (AggregateException e) when (e.InnerException is ThreadInterruptedException && IsAborted)
         {
             EndStatus = EndReason.UserAborted;
         }
@@ -184,6 +273,41 @@ public class WorkingService : KernelService
         Logger.Log(LogLevel.Debug, ServiceName, "Finished running the main process.");
     }
 
+    private async Task DoWorkAsync()
+    {
+        Logger.Log(LogLevel.Debug, ServiceName, "Started running the main process.");
+
+        try
+        {
+            CanAbort = true;
+
+            EndStatus = await AsyncWorkProc!();
+        }
+        catch (UserAbortException)
+        {
+            EndStatus = EndReason.UserAborted;
+        }
+        catch (ThreadInterruptedException)
+        {
+            EndStatus = EndReason.UserAborted;
+        }
+        catch (MacroRunningException e)
+        {
+            DoError(e);
+        }
+        catch (Exception e) //when (!Debugger.IsAttached)
+        {
+            DoError(e);
+        }
+        finally
+        {
+            CanAbort = false;
+        }
+
+        Logger.Log(LogLevel.Debug, ServiceName, "Finished running the main process.");
+    }
+
+
     private void DoError(Exception exception)
     {
         EndStatus = EndReason.ErrorOccurred;
@@ -195,7 +319,7 @@ public class WorkingService : KernelService
             Logger.Log(LogLevel.Error, ServiceName, exception.InnerException.Message);
         }
 
-        Hooks.Raise("error_occured", exception.Message);
+        Hooks.Raise(new ErrorOccurredHook(exception.Message));
     }
 
     private void DoEnd()
@@ -205,22 +329,43 @@ public class WorkingService : KernelService
             EndStatus = EndReason.Complete;
         }
 
-        Hooks.Raise("process_exiting", EndStatus.Value);
+        try
+        {
+            Hooks.Raise(new ProcessExitingHook(EndStatus.Value));
+        }
+        catch (Exception exception)
+        {
+            EndStatus = EndReason.ErrorOccurred;
 
-        Logger.Log(LogLevel.Information, ServiceName, $"The macro is finished with status: {EndStatus}.");
+            Logger.Log(LogLevel.Error, ServiceName, exception.Message);
+        }
+
+        try
+        {
+            var args = new WorkEndingEventArgs
+            {
+                Reason = EndStatus.Value
+            };
+            Ending?.Invoke(this, args);
+        }
+        catch (Exception exception)
+        {
+            EndStatus = EndReason.ErrorOccurred;
+            Logger.Log(LogLevel.Error, ServiceName, exception.Message);
+        }
+
+        Logger.Log(LogLevel.Information, ServiceName, $"The macro has ended: {EndStatus}.");
 
         Logger.Log(LogLevel.Debug, ServiceName, "The processor will shut down."); // this should be the last line
 
-        if (WaitUI)
+        try
         {
-            Thread.Sleep(100);
+            Ended?.Invoke(this, new());
         }
-
-        var args = new EndingEventArgs
+        catch (Exception exception)
         {
-            Reason = EndStatus.Value
-        };
-        Ending?.Invoke(this, args);
+            Debug.WriteLine(exception);
+        }
     }
 
     private void RaiseStartedEvent()

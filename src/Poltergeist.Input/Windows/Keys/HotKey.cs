@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Input.Windows;
+﻿namespace Poltergeist.Input.Windows;
 
 public struct HotKey : IEquatable<HotKey>, IEquatable<VirtualKey>
 {
@@ -14,6 +12,12 @@ public struct HotKey : IEquatable<HotKey>, IEquatable<VirtualKey>
         get; set;
     }
 
+    public HotKey()
+    {
+        KeyCode = VirtualKey.None;
+        Modifiers = KeyModifiers.None;
+    }
+
     public HotKey(VirtualKey key)
     {
         KeyCode = key;
@@ -24,16 +28,6 @@ public struct HotKey : IEquatable<HotKey>, IEquatable<VirtualKey>
     {
         KeyCode = key;
         Modifiers = modifiers;
-    }
-
-    public bool Equals(HotKey other)
-    {
-        return Modifiers == other.Modifiers && KeyCode == other.KeyCode;
-    }
-
-    public bool Equals(VirtualKey keyCode)
-    {
-        return Modifiers == KeyModifiers.None && KeyCode == keyCode;
     }
 
     public bool HasModifier(KeyModifiers modifier)
@@ -62,5 +56,15 @@ public struct HotKey : IEquatable<HotKey>, IEquatable<VirtualKey>
         }
         s += KeyCode.ToString();
         return s;
+    }
+
+    bool IEquatable<HotKey>.Equals(HotKey other)
+    {
+        return Modifiers == other.Modifiers && KeyCode == other.KeyCode;
+    }
+
+    bool IEquatable<VirtualKey>.Equals(VirtualKey other)
+    {
+        return Modifiers == KeyModifiers.None && KeyCode == other;
     }
 }

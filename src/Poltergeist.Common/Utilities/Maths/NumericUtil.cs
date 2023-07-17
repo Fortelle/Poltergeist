@@ -2,8 +2,31 @@
 
 public static class NumericUtil
 {
+    public static bool IsPrime(int n)
+    {
+        if (n <= 1)
+        {
+            return false;
+        }
+
+        var m = n / 2;
+        for (var i = 2; i <= m; i++)
+        {
+            if (n % i == 0)
+            {
+                return false;
+            }
+        };
+        return true;
+    }
+
     public static int NextPrime(int n)
     {
+        if (n <= 1)
+        {
+            n = 1;
+        }
+
         while (true)
         {
             n++;
@@ -17,21 +40,30 @@ public static class NumericUtil
                     break;
                 }
             };
-            if (isPrime) return n;
+            if (isPrime)
+            {
+                return n;
+            }
         }
     }
 
     public static string ToOrdinal(int value)
     {
-        var s1 = value % 10;
-        var s2 = value % 100;
-        return value switch
+        if(value <= 0)
         {
-            < 0 => $"{value}",
-            _ when s2 >= 11 && s2 <= 13 => $"{value}th",
-            _ when s1 == 1 => $"{value}st",
-            _ when s1 == 2 => $"{value}nd",
-            _ when s1 == 3 => $"{value}rd",
+            return value.ToString();
+        }
+
+        if((value % 100) is 11 or 12 or 13)
+        {
+            return $"{value}th";
+        }
+
+        return (value % 10) switch
+        {
+            1 => $"{value}st",
+            2 => $"{value}nd",
+            3 => $"{value}rd",
             _ => $"{value}th"
         };
     }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Logging;
+﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Maths;
@@ -32,7 +29,7 @@ public class TimerService : MacroService
 
     #region "Delay"
 
-    public void Delay(int milliseconds, DelayOptions options = null)
+    public void Delay(int milliseconds, DelayOptions? options = null)
     {
         //Logger.Debug($"Delaying for {milliseconds} ms.", options);
 
@@ -42,7 +39,7 @@ public class TimerService : MacroService
         Logger.Debug($"Delayed for {timeout} ms.", new { milliseconds, options });
     }
 
-    public void Delay(int min, int max, DelayOptions options = null)
+    public void Delay(int min, int max, DelayOptions? options = null)
     {
         //Logger.Debug($"Delaying for {min}-{max} ms.", options);
 
@@ -52,7 +49,7 @@ public class TimerService : MacroService
         Logger.Debug($"Delayed for {timeout} ms.", new { min, max, options });
     }
 
-    public async Task DelayAsync(int milliseconds, DelayOptions options = null)
+    public async Task DelayAsync(int milliseconds, DelayOptions? options = null)
     {
         //Logger.Debug($"Delaying for {milliseconds} ms.", options);
 
@@ -62,7 +59,7 @@ public class TimerService : MacroService
         Logger.Debug($"Delayed for {timeout} ms.", new { milliseconds, options });
     }
 
-    public async Task DelayAsync(int min, int max, DelayOptions options = null)
+    public async Task DelayAsync(int min, int max, DelayOptions? options = null)
     {
         //Logger.Debug($"Delaying for {min}-{max} ms.", options);
 
@@ -96,7 +93,7 @@ public class TimerService : MacroService
         Workflow.CheckCancel();
     }
 
-    private int GetTimeout(int milliseconds, DelayOptions options)
+    private int GetTimeout(int milliseconds, DelayOptions? options)
     {
         var floating = options?.Floating ?? DefaultOptions?.Floating ?? false;
         if (!floating)
@@ -115,7 +112,7 @@ public class TimerService : MacroService
         return (int)value;
     }
 
-    private int GetTimeout(int min, int max, DelayOptions options)
+    private int GetTimeout(int min, int max, DelayOptions? options)
     {
         var distribution = options?.RangeDistribution ?? DefaultOptions?.RangeDistribution ?? RangeDistributionType.Uniform;
 

@@ -1,6 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Windows;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Contracts.Services;
+using Poltergeist.Input.Windows;
+using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Services;
 
@@ -10,48 +14,123 @@ public class ActionService
     {
     }
 
-    public void Execute(CompleteAction action, object argument)
+    public void Execute(CompletionAction action, object? argument = null)
     {
         switch (action)
         {
-            case CompleteAction.ExitApplication:
-                Application.Current.Shutdown();
+            case CompletionAction.ExitApplication:
+                ExitApplication();
                 break;
-            case CompleteAction.LockScreen:
+            case CompletionAction.LockScreen:
                 LockScreen();
                 break;
-            case CompleteAction.ShutdownSystem:
+            case CompletionAction.ShutdownSystem:
                 ShutdownSystem();
                 break;
-            case CompleteAction.HibernateSystem:
+            case CompletionAction.HibernateSystem:
                 HibernateSystem();
                 break;
-            case CompleteAction.LogOffSystem:
+            case CompletionAction.LogOffSystem:
                 LogOffSystem();
+                break;
+            case CompletionAction.RestoreApplication:
+                RestoreApplication();
                 break;
         }
     }
 
-    public void ExitApplication()
+    public static void RunMacro(LaunchReason reason, bool toggle)
     {
-        Application.Current.Shutdown();
-    }
-
-    public void MinimizeApplication()
-    {
-        Application.Current.MainWindow.WindowState = WindowState.Minimized;
-    }
-
-    public void RestoreApplication()
-    {
-        if(Application.Current.MainWindow.WindowState == WindowState.Minimized)
+        var navigationService = App.GetService<INavigationService>();
+        if (navigationService.TabView!.SelectedItem is not TabViewItem tabViewItem)
         {
-            Application.Current.MainWindow.WindowState = WindowState.Normal;
+            return;
         }
-        Application.Current.MainWindow.Activate();
+
+        if(tabViewItem.Content is not MacroPage macroPage)
+        {
+            return;
+        }
+
+        if (macroPage.ViewModel!.IsRunning)
+        {
+            if (toggle)
+            {
+                macroPage.ViewModel.Stop();
+            }
+            else
+            {
+                App.ShowTeachingTip($"Macro '{macroPage.ViewModel.Macro.Title}' is already running.");
+                return;
+            }
+        }
+        else
+        {
+            macroPage.ViewModel.Start(new(){
+                MacroKey = macroPage.ViewModel.Macro.Name,
+                Reason = reason,
+            });
+        }
     }
 
-    public void LockScreen()
+    public static void RunMacro(MacroStartArguments args)
+    {
+        var pageKey = "macro:" + args.MacroKey;
+
+        var navigationService = App.GetService<INavigationService>();
+        if (!navigationService.NavigateTo(pageKey))
+        {
+            return;
+        }
+        if (navigationService.TabView!.SelectedItem is not TabViewItem tabViewItem)
+        {
+            return;
+        }
+        if (tabViewItem.Tag.ToString() != pageKey)
+        {
+            return;
+        }
+        if (tabViewItem.Content is not MacroPage macroPage)
+        {
+            return;
+        }
+        if (macroPage.ViewModel!.IsRunning)
+        {
+            App.ShowTeachingTip($"Macro '{macroPage.ViewModel.Macro.Title}' is already running.");
+            return;
+        }
+        else
+        {
+            macroPage.ViewModel.Start(args);
+        }
+    }
+
+    public static void ExitApplication()
+    {
+        Application.Current.Exit();
+    }
+
+    public static void MinimizeApplication()
+    {
+        var hwnd = App.MainWindow.GetWindowHandle();
+        var wh = new WindowHelper(hwnd);
+        wh.Minimize();
+    }
+
+    public static void RestoreApplication()
+    {
+        var hwnd = App.MainWindow.GetWindowHandle();
+        var wh = new WindowHelper(hwnd);
+        wh.Unminimize();
+    }
+
+    public static void BringToFront()
+    {
+        RestoreApplication();
+        App.MainWindow.BringToFront();
+    }
+
+    public static void LockScreen()
     {
         Process.Start(new ProcessStartInfo()
         {
@@ -61,7 +140,7 @@ public class ActionService
         });
     }
 
-    public void ShutdownSystem()
+    public static void ShutdownSystem()
     {
         Process.Start(new ProcessStartInfo()
         {
@@ -72,7 +151,8 @@ public class ActionService
         ExitApplication();
     }
 
-    public void RestartSystem()
+    // todo: toast notification (cancellable)
+    public static void RestartSystem()
     {
         Process.Start(new ProcessStartInfo()
         {
@@ -83,10 +163,10 @@ public class ActionService
         ExitApplication();
     }
 
-    public void HibernateSystem()
+    public static void HibernateSystem()
     {
-        System.GC.Collect();
-        System.GC.WaitForPendingFinalizers();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
 
         Process.Start(new ProcessStartInfo()
         {
@@ -96,10 +176,10 @@ public class ActionService
         });
     }
 
-    public void LogOffSystem()
+    public static void LogOffSystem()
     {
-        System.GC.Collect();
-        System.GC.WaitForPendingFinalizers();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
 
         Process.Start(new ProcessStartInfo()
         {
@@ -107,5 +187,10 @@ public class ActionService
             Arguments = "/l",
             CreateNoWindow = true,
         });
+    }
+
+    public static void RestartApplication()
+    {
+        throw new NotImplementedException();
     }
 }

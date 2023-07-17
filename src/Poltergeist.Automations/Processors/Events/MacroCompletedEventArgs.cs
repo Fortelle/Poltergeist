@@ -4,15 +4,17 @@ namespace Poltergeist.Automations.Processors.Events;
 
 public class MacroCompletedEventArgs : EventArgs
 {
-    public EndReason Status;
-    public ProcessReport Summary;
+    public EndReason Status { get; set; }
+    public ProcessSummary Summary { get; set; }
 
-    public CompleteAction CompleteAction;
-    public object ActionArgument;
+    public CompletionAction CompleteAction { get; set; }
+    public object? ActionArgument { get; set; }
 
     public bool IsSucceeded => Status == EndReason.Complete || Status == EndReason.Purposed;
 
-    public MacroCompletedEventArgs(EndReason status, ProcessReport summary)
+    public Exception? Exception { get; set; }
+
+    public MacroCompletedEventArgs(EndReason status, ProcessSummary summary)
     {
         Status = status;
         Summary = summary;

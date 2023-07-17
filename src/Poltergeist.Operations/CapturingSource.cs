@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Poltergeist.Automations.Instruments;
+﻿using System.Drawing;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Utilities.Images;
@@ -10,21 +8,23 @@ namespace Poltergeist.Operations;
 
 public abstract class CapturingSource : MacroService
 {
-    public abstract Bitmap DoCapture(Rectangle? area);
+    public const string PreviewCaptureKey = "preview_capture";
 
-    protected Bitmap CachedImage { get; set; }
-    protected bool ShowPreview { get; set; }
-    protected ImageInstrument Instrument { get; set; }
+    public abstract Bitmap DoCapture();
+    public abstract Bitmap DoCapture(Rectangle area);
+
+    protected Bitmap? CachedImage { get; set; }
+    protected ImageInstrument? Instrument { get; set; }
 
     public CapturingSource(MacroProcessor processor) : base(processor)
     {
-        ShowPreview = Processor.GetOption<bool>("capture_preview");
-        if (ShowPreview)
+        var isPreviewable = Processor.GetOption<bool>(PreviewCaptureKey);
+        if (isPreviewable)
         {
-            var inst = processor.GetService<InstrumentService>();
+            var inst = processor.GetService<DashboardService>();
             Instrument = inst.Create<ImageInstrument>(inst =>
             {
-                inst.Key = "capture_preview";
+                inst.Key = PreviewCaptureKey;
                 inst.Title = "Preview Capture:";
             });
         }
@@ -36,11 +36,8 @@ public abstract class CapturingSource : MacroService
 
         if (CachedImage == null)
         {
-            bmp = DoCapture(null);
-            if (ShowPreview)
-            {
-                Instrument.Add(bmp);
-            }
+            bmp = DoCapture();
+            Instrument?.Add(new(new Bitmap(bmp)));
         }
         else
         {
@@ -59,10 +56,7 @@ public abstract class CapturingSource : MacroService
         if (CachedImage == null)
         {
             bmp = DoCapture(area);
-            if (ShowPreview)
-            {
-                Instrument.Add(bmp);
-            }
+            Instrument?.Add(new(new Bitmap(bmp)));
         }
         else
         {
