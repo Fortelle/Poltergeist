@@ -43,7 +43,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     public bool IsCancelled { get; set; }
 
     public required Dictionary<string, object?> Options { get; set; }
-    public required Dictionary<string, object> Environments { get; set; }
+    public required Dictionary<string, object?> Environments { get; set; }
 
     private HookService? Hooks { get; set; }
     private WorkingService? Workflow { get; set; }
@@ -53,6 +53,8 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     internal Exception? InitializationException;
 
     public LaunchReason Reason { get; set; }
+
+    public CacheStorage Caches { get; } = new();
 
     private readonly SynchronizationContext? OriginalContext = SynchronizationContext.Current;
 
@@ -460,5 +462,10 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     public void Dispose()
     {
         ServiceProvider!.Dispose();
+
+        foreach(var item in Caches.GetAll<IDisposable>())
+        {
+            item.Dispose();
+        }
     }
 }
