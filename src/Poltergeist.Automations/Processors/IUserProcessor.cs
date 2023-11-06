@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace Poltergeist.Automations.Processors;
+﻿namespace Poltergeist.Automations.Processors;
 
 public interface IUserProcessor : IProcessor
 {

@@ -46,6 +46,7 @@ public partial class MainViewModel : ObservableRecipient
 
         FavoriteMacros = macroManager.Summaries.Values
             .Where(x => x.IsFavorite)
+            .Where(x => x.IsAvailable)
             .ToArray();
 
         RecentMacros = macroManager.Summaries.Values

@@ -160,7 +160,7 @@ public partial class MacroViewModel : ObservableRecipient
         IsFavorite = !IsFavorite;
     }
 
-    private Dictionary<string, object?> GetOptions()
+    public Dictionary<string, object?> GetOptions()
     {
         var macroManager = App.GetService<MacroManager>();
 
@@ -190,15 +190,10 @@ public partial class MacroViewModel : ObservableRecipient
         return macroOptions;
     }
 
-    private static Dictionary<string, object> GetEnvironments()
+    public Dictionary<string, object?> GetEnvironments()
     {
-        var dict = new Dictionary<string, object>();
-
         var localSettings = App.GetService<LocalSettingsService>();
-        dict.Add("logger.tofile", localSettings.Get<LogLevel>("logger.tofile"));
-        dict.Add("logger.toconsole", localSettings.Get<LogLevel>("logger.toconsole"));
-        dict.Add("macro.usestatistics", localSettings.Get<bool>("macro.usestatistics"));
-
+        var dict = localSettings.Settings.ToDictionary();
         return dict;
     }
 
@@ -316,26 +311,12 @@ public partial class MacroViewModel : ObservableRecipient
         {
             case TipModel tipModel:
                 tipModel.Title = string.IsNullOrEmpty(tipModel.Title) ? Macro.Title : $"{tipModel.Title} ({Macro.Title})";
-                TipService.Show(tipModel);
                 break;
             case DialogModel dialogModel:
                 dialogModel.Title = string.IsNullOrEmpty(dialogModel.Title) ? Macro.Title : $"{dialogModel.Title} ({Macro.Title})";
-                _ = DialogService.ShowAsync(dialogModel);
-                break;
-            case FileOpenModel fileOpenModel:
-                _ = DialogService.ShowFileOpenPickerAsync(fileOpenModel);
-                break;
-            case FileSaveModel fileSaveModel:
-                _ = DialogService.ShowFileSavePickerAsync(fileSaveModel);
-                break;
-            case FolderModel folderModel:
-                _ = DialogService.ShowFolderPickerAsync(folderModel);
-                break;
-            case ToastModel toastModel:
-                App.GetService<AppNotificationService>().Show(toastModel);
                 break;
         }
-
+        _ = App.Interact(e.Model);
     }
 
 }

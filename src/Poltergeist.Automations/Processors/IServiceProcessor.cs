@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Processors;
 
@@ -19,4 +17,5 @@ public interface IServiceProcessor : IProcessor
     public void RaiseAction(Action action);
     public Task Pause();
     public void Resume();
+
 }

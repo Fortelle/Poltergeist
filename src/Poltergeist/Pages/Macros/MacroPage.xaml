@@ -10,7 +10,8 @@
     xmlns:local1="using:Poltergeist.Views"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:converters="using:Poltergeist.Helpers.Converters" xmlns:processors="using:Poltergeist.Automations.Processors"
+    xmlns:converters="using:Poltergeist.Helpers.Converters" 
+    xmlns:processors="using:Poltergeist.Automations.Processors"
     Style="{StaticResource TabPageStyle}"
     mc:Ignorable="d"
     >
@@ -116,7 +117,73 @@
                 </PivotItem>
 
                 <PivotItem Header="Actions">
-                    <ItemsControl
+                    <ScrollViewer
+                        >
+                        <ItemsControl
+                            ItemsSource="{x:Bind ViewModel.Macro.Actions, Mode=OneTime}"
+                            >
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Expander
+                                        HorizontalAlignment="Stretch" 
+                                        ExpandDirection="Down"
+                                        VerticalAlignment="Top"
+                                        HorizontalContentAlignment="Stretch"
+                                        Margin="0, 0, 0, 8"
+                                        >
+                                        <Expander.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="36" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <FontIcon
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0"
+                                                    Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
+                                                    HorizontalAlignment="Left"
+                                                    />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    HorizontalAlignment="Stretch"
+                                                    TextAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Text, Mode=OneTime}"
+                                                    />
+                                            </Grid>
+                                        </Expander.Header>
+                                        <Expander.Content>
+                                            <Grid
+                                                RowSpacing="16"
+                                                >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    HorizontalAlignment="Stretch"
+                                                    TextAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Description, Mode=OneTime}"
+                                                    />
+                                                <Button
+                                                    Grid.Row="1"
+                                                    HorizontalAlignment="Right"
+                                                    Content="Execute"
+                                                    Style="{StaticResource AccentButtonStyle}"
+                                                    Click="HyperlinkButton_Click"
+                                                    />
+                                            </Grid>
+                                        </Expander.Content>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer> 
+                    <!--<ItemsControl
                         ItemsSource="{x:Bind ViewModel.Macro.Actions, Mode=OneTime}"
                         >
                         <ItemsControl.ItemTemplate>
@@ -153,7 +220,7 @@
                                 </HyperlinkButton>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    </ItemsControl>-->
                 </PivotItem>
 
                 <PivotItem Header="Statistics">

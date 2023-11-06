@@ -5,6 +5,7 @@ namespace Poltergeist.Automations.Macros;
 
 public interface IMacroInitializer
 {
+    public string Name { get; }
     public MacroStorage Storage { get; }
     public List<MacroAction> Actions { get; }
     public MacroOptions UserOptions { get; }
@@ -12,5 +13,6 @@ public interface IMacroInitializer
 
     public string? PrivateFolder { get; }
     public string? SharedFolder { get; }
-}
 
+    public bool RequiresAdmin { get; set; }
+}

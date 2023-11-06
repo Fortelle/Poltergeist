@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components;
@@ -61,6 +55,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     CancellationToken? IUserProcessor.CancellationToken => Workflow?.GetCancellationToken();
 
     public string? Summary { get; set; }
+
     public MacroProcessor(IMacroBase data, LaunchReason reason)
     {
         ProcessId = Guid.NewGuid().ToString();

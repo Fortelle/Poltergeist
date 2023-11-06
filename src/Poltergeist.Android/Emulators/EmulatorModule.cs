@@ -9,7 +9,7 @@ using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Maths;
 using Poltergeist.Operations;
 using Poltergeist.Operations.Background;
-using Poltergeist.Operations.ForegroundWindows;
+using Poltergeist.Operations.Foreground;
 using Poltergeist.Operations.Macros;
 using Poltergeist.Operations.Timers;
 
