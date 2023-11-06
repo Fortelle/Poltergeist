@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Launcher", "Pol
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Plugins.Examples", "Poltergeist.Plugins.Examples\Poltergeist.Plugins.Examples.csproj", "{D49A1A68-FD50-4637-A088-A3239B6D41F2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Android", "Poltergeist.Android\Poltergeist.Android.csproj", "{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,22 @@ Global
 		{D49A1A68-FD50-4637-A088-A3239B6D41F2}.Release|x64.Build.0 = Release|Any CPU
 		{D49A1A68-FD50-4637-A088-A3239B6D41F2}.Release|x86.ActiveCfg = Release|Any CPU
 		{D49A1A68-FD50-4637-A088-A3239B6D41F2}.Release|x86.Build.0 = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|arm64.Build.0 = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|x64.Build.0 = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Debug|x86.Build.0 = Debug|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|arm64.ActiveCfg = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|arm64.Build.0 = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|x64.ActiveCfg = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|x64.Build.0 = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|x86.ActiveCfg = Release|Any CPU
+		{2BE594D2-A891-4A54-94EB-14DC29B3B9BB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

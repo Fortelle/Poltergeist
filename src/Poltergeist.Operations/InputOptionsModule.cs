@@ -2,7 +2,7 @@
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Maths;
-using Poltergeist.Operations.ForegroundWindows;
+using Poltergeist.Operations.Foreground;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Operations;

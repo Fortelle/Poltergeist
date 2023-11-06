@@ -21,19 +21,3 @@ public struct RegionConfig
 
     public bool Wildcard { get; set; }
 }
-
-public enum ResizeRule
-{
-    Default,
-    Disallow,
-    ConstrainProportion,
-    AnySize,
-}
-
-public enum RegionType
-{
-    FullScreen,
-    Window,
-    FixedWindow,
-    WindowClient,
-}
