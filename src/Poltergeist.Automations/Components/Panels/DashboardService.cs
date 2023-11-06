@@ -31,7 +31,14 @@ public class DashboardService : MacroService
         var instrument = Processor.GetService<T>();
         config?.Invoke(instrument);
 
-        Panel.Instruments.Add(instrument);
+        if (instrument.IsSticky)
+        {
+            Panel.Instruments.Insert(0, instrument);
+        }
+        else
+        {
+            Panel.Instruments.Add(instrument);
+        }
 
         Logger.Debug($"A new instrument <{instrument.GetType().Name}> is created.");
 

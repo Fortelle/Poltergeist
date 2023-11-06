@@ -13,4 +13,6 @@ public interface IInstrumentModel
     public bool AutoScroll { get; }
 
     public bool Stretch { get; }
+
+    public bool IsSticky { get; }
 }

@@ -13,6 +13,8 @@ public abstract class InstrumentModel : MacroService, IInstrumentModel
     public bool AutoScroll { get; set; }
     public bool Stretch { get; set; }
 
+    public bool IsSticky { get; set; }
+
     public InstrumentModel(MacroProcessor processor) : base(processor)
     {
         MacroKey = processor.Macro.Name;

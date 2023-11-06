@@ -275,6 +275,7 @@ public class LoopBuilderService : MacroService
                     var listInstrument = dashboard.Create<ProgressListInstrument>(instrument =>
                     {
                         instrument.Title = Title ?? "Loops:";
+                        instrument.IsSticky = IsSticky;
                     });
 
                     listInstrument.Add(new(ProgressStatus.Busy)
@@ -317,6 +318,7 @@ public class LoopBuilderService : MacroService
                     var gridInstrument = dashboard.Create<ProgressGridInstrument>(instrument =>
                     {
                         instrument.Title = Title ?? "Loops:";
+                        instrument.IsSticky = IsSticky;
                     });
 
                     if (MaxCount > 0)
@@ -352,6 +354,7 @@ public class LoopBuilderService : MacroService
                     var listInstrument = dashboard.Create<ProgressListInstrument>(instrument =>
                     {
                         instrument.Title = Title ?? "Loops:";
+                        instrument.IsSticky = IsSticky;
                     });
 
                     if (MaxCount > 0)
