@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 
 namespace Poltergeist.Automations.Macros;
 
-public class MacroStorage
+public class MacroStorage : IEnumerable<object>
 {
     private List<object> Items { get; set; } = new();
 
@@ -28,4 +26,6 @@ public class MacroStorage
         return Items.OfType<T>().ToArray();
     }
 
+    public IEnumerator<object> GetEnumerator() => Items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 }
