@@ -90,7 +90,6 @@ public abstract class PoltergeistApplication : Application
 
                 services.AddSingleton<ActionService>();
                 services.AddSingleton<MacroManager>();
-                services.AddSingleton<PluginService>();
                 services.AddSingleton<HotKeyService>();
                 services.AddSingleton<InstrumentManager>();
                 services.AddSingleton<TipService>();

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Common.Structures.Shapes;
 using Poltergeist.Input.Windows;
-using Poltergeist.Operations.ForegroundWindows;
+using Poltergeist.Operations.Foreground;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.Emulators;
