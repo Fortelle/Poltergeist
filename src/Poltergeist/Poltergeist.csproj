@@ -55,7 +55,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
-    <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

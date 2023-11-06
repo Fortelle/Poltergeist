@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Input.Windows;
 
-public enum VirtualKey
+public enum VirtualKey : byte
 {
     None = 0,
     LButton = 1,

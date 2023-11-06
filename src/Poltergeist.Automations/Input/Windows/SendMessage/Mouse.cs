@@ -4,19 +4,19 @@ namespace Poltergeist.Input.Windows;
 
 public partial class SendMessageHelper
 {
-    public SendMessageHelper MouseButtonUp(Point point, MouseButtons button)
+    public SendMessageHelper MouseButtonUp(uint x, uint y, MouseButtons button)
     {
-        DoMouseButton(point, button, true);
+        DoMouseButton(x, y, button, true);
         return this;
     }
 
-    public SendMessageHelper MouseButtonDown(Point point, MouseButtons button)
+    public SendMessageHelper MouseButtonDown(uint x, uint y, MouseButtons button)
     {
-        DoMouseButton(point, button, false);
+        DoMouseButton(x, y, button, false);
         return this;
     }
 
-    private void DoMouseButton(Point point, MouseButtons button, bool isUp)
+    private void DoMouseButton(uint x, uint y, MouseButtons button, bool isUp)
     {
         var wm = button switch
         {
@@ -45,8 +45,9 @@ public partial class SendMessageHelper
             _ => 0,
         };
 
-        var lParam = (point.X & 0xFFFF) | (point.Y << 16);
+        var lParam = (x & 0xFFFF) | (y << 16);
 
-        NativeMethods.SendMessage(Hwnd, wm, (int)wParam, lParam);
+        NativeMethods.SendMessage(Hwnd, wm, (nint)wParam, (nint)lParam);
     }
+
 }

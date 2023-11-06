@@ -6,6 +6,7 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>Assets\macro.ico</ApplicationIcon>
   </PropertyGroup>
@@ -27,10 +28,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0-preview.4.23259.5" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.230518007-experimental1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.0-preview.2.23128.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Poltergeist.Common\Poltergeist.Common.csproj" />
-  </ItemGroup>
 </Project>

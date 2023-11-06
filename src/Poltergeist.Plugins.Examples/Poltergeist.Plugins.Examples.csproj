@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
-    <ProjectReference Include="..\Poltergeist.Input\Poltergeist.Input.csproj" />
     <ProjectReference Include="..\Poltergeist.Operations\Poltergeist.Operations.csproj" />
   </ItemGroup>
 </Project>

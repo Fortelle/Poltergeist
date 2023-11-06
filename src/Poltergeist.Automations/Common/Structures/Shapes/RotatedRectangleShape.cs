@@ -1,24 +1,25 @@
 ﻿using System.Drawing;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
-[JsonObject(MemberSerialization.OptIn)]
+[DataContract]
 public class RotatedRectangleShape : PolygonShape
 {
-    [JsonProperty]
+    [DataMember]
     public int X { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Y { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Width { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Height { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public float Rotation { get; set; }
 
     public RotatedRectangleShape()

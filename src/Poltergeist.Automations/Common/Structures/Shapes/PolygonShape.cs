@@ -1,18 +1,19 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using Newtonsoft.Json;
 using Poltergeist.Common.Utilities.Maths;
 using Poltergeist.Common.Utilities.Images;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
-[JsonObject(MemberSerialization.OptIn)]
+[DataContract]
 public class PolygonShape : IShape
 {
-    [JsonProperty]
+    [DataMember]
     public string? Name { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public Point[] Points { get; set; }
 
     public PolygonShape()
@@ -27,6 +28,7 @@ public class PolygonShape : IShape
 
     public Rectangle Bounds => CoordinationUtil.GetWholeRect(Points);
 
+    [JsonIgnore]
     public Point Location
     {
         get

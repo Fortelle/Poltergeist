@@ -24,4 +24,18 @@ internal static class VirtualKeyExtension
         // numpad-enter: normal enter scancode with extended = true
     }
 
+    public static bool IsModifier(this VirtualKey key)
+    {
+        return key == VirtualKey.Shift
+            || key == VirtualKey.Menu
+            || key == VirtualKey.Control
+            || key == VirtualKey.LShift
+            || key == VirtualKey.RShift
+            || key == VirtualKey.LMenu
+            || key == VirtualKey.RMenu
+            || key == VirtualKey.LControl
+            || key == VirtualKey.RControl
+            ;
+    }
+
 }

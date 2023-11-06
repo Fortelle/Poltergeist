@@ -1,25 +1,26 @@
 ﻿using System.Drawing;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using Poltergeist.Common.Utilities.Images;
 
 namespace Poltergeist.Common.Structures.Shapes;
 
-[JsonObject(MemberSerialization.OptIn)]
+[DataContract]
 public class RectangleShape : IShape
 {
-    [JsonProperty]
+    [DataMember]
     public string? Name { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int X { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Y { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Width { get; set; }
 
-    [JsonProperty]
+    [DataMember]
     public int Height { get; set; }
 
     public RectangleShape()
@@ -76,6 +77,7 @@ public class RectangleShape : IShape
 
     public Rectangle Bounds => new(X, Y, Width, Height);
 
+    [JsonIgnore]
     public Point Location
     {
         get

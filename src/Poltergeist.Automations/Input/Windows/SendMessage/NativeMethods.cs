@@ -29,11 +29,15 @@ public partial class SendMessageHelper
         public const uint WM_XBUTTONDBLCLK = 0x020D;
         public const uint WM_MOUSEHWHEEL = 0x020E;
         public const uint WM_MOUSELAST = 0x020E;
-    
+
+        public const uint WM_KEYDOWN = 0x100;
+        public const uint WM_KEYUP = 0x0101;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT
