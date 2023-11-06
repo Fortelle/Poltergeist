@@ -11,4 +11,5 @@ public class LoopBeforeArguments : ArgumentService
     public LoopBeforeArguments(MacroProcessor processor) : base(processor)
     {
     }
+
 }

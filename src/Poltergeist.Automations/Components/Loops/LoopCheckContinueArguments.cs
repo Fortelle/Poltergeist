@@ -15,4 +15,5 @@ public class LoopCheckContinueArguments : ArgumentService
     public LoopCheckContinueArguments(MacroProcessor processor) : base(processor)
     {
     }
+
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Poltergeist.Automations.Components.Panels;
+﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Processors;
@@ -14,6 +12,8 @@ public class LoopBuilderService : MacroService
 
     public Action<LoopExecutionArguments>? Execution;
     public Action<LoopCheckContinueArguments>? CheckContinue;
+
+    public bool IsSticky { get; set; }
 
     public LoopInstrumentType InstrumentType { get; set; }
     public bool ContinuesOnError { get; set; }
@@ -109,6 +109,7 @@ public class LoopBuilderService : MacroService
 
                 Execution.Invoke(args);
                 status = args.Result;
+                Processor.Summary = args.Summary;
             }
             catch (UserAbortException e)
             {
@@ -151,7 +152,7 @@ public class LoopBuilderService : MacroService
             shouldContinue = false;
             Logger.Debug($"The loop will be stopped because the previous iteration has returned {iterationResult.Status}.");
         }
-        if (iterationResult.Status == IterationStatus.Error && !ContinuesOnError)
+        else if (iterationResult.Status == IterationStatus.Error && !ContinuesOnError)
         {
             shouldContinue = false;
             Status = LoopStatus.ErrorOccurred;
@@ -206,6 +207,7 @@ public class LoopBuilderService : MacroService
             args.Result = CheckContinueResult.NotSet;
             CheckContinue.Invoke(args);
             var state = args.Result;
+            Processor.Summary = args.Summary;
             shouldContinue = state switch
             {
                 CheckContinueResult.Continue => true,
@@ -287,10 +289,20 @@ public class LoopBuilderService : MacroService
 
                     IterationStarted += () =>
                     {
-                        listInstrument.Update(0, new()
+                        if (MaxCount <= 0)
                         {
-                            Progress = MaxCount <= 0 ? 1 : (IterationIndex + 1d) / (MaxCount + 1),
-                        });
+                            listInstrument.Update(0, new()
+                            {
+                            });
+                        }
+                        else
+                        {
+                            listInstrument.Update(0, new()
+                            {
+                                Progress = (IterationIndex + 1d) / (MaxCount + 1),
+                                Subtext = $"{IterationIndex + 1} / {MaxCount}",
+                            });
+                        }
                     };
 
                     IterationProgressChanged += (current, max) =>
@@ -304,11 +316,20 @@ public class LoopBuilderService : MacroService
 
                     LoopEnded += () =>
                     {
-                        listInstrument.Update(0, new(ProgressStatus.Success)
+                        if (MaxCount <= 0)
                         {
-                            Subtext = "complete",
-                            Progress = 1,
-                        });
+                            listInstrument.Update(0, new(ProgressStatus.Success)
+                            {
+                                Subtext = "complete",
+                            });
+                        }
+                        else
+                        {
+                            listInstrument.Update(0, new(ProgressStatus.Success)
+                            {
+                                Progress = 1,
+                            });
+                        }
                     };
 
                 }

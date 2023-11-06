@@ -63,6 +63,7 @@ public class LoopService : MacroService, IAutoloadable
         LoopHelper.CheckContinue = CheckContinue;
         LoopHelper.InstrumentType = Options.Instrument;
         LoopHelper.MaxIterationLimit = Options.MaxIterationLimit;
+        LoopHelper.IsSticky = true;
 
         LoopHelper.Execute();
 
@@ -122,6 +123,7 @@ public class LoopService : MacroService, IAutoloadable
                 canBegin = false;
             }
             MaxCount = args.CountLimit;
+            Processor.Summary = args.Summary;
         }
 
         Hooks.Raise(new LoopStartedHook());

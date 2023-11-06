@@ -21,4 +21,5 @@ public partial class LoopExecutionArguments : ArgumentService
     public LoopExecutionArguments(MacroProcessor processor) : base(processor)
     {
     }
+
 }
