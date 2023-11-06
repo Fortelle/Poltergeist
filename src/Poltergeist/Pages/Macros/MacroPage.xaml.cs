@@ -96,12 +96,12 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
 
     private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
     {
-        if(((HyperlinkButton)sender).DataContext is MacroAction action)
+        if(((FrameworkElement)sender).DataContext is MacroAction action)
         {
-            var args = new MacroActionArguments(ViewModel.Macro)
-            {
-            };
-            action.Execute(args);
+            var options = ViewModel.GetOptions();
+            var environments = ViewModel.GetEnvironments();
+
+            ViewModel.Macro.ExecuteAction(action, options, environments);
         }
     }
 

@@ -11,6 +11,7 @@ internal static class ActionHelper
     public static readonly MacroAction OpenLocalFolder = new()
     {
         Text = "Open macro folder",
+        Description = "Opens the macro folder in Windows Explorer.",
         Glyph = "\uED25",
         Execute = args =>
         {
@@ -21,7 +22,8 @@ internal static class ActionHelper
 
     public static readonly MacroAction CreateShortcut = new()
     {
-        Text = "Create shortcut (.lnk)",
+        Text = "Create shortcut",
+        Description = "Creates a desktop shortcut (*.lnk) for launching the macro directly.",
         Glyph = "\uE8E5",
         Execute = async args =>
         {
@@ -38,7 +40,10 @@ internal static class ActionHelper
             await InteractionService.UIShowAsync(savedialog);
             var path = savedialog.FileName;
 
-            if (path is null) return;
+            if (path is null)
+            {
+                return;
+            }
 
             var optiondialog = new DialogModel()
             {

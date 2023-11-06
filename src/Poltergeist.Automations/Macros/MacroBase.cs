@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Cryptology;
@@ -251,6 +248,64 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     {
         Process?.Invoke(processor);
         OnProcess(processor);
+    }
+
+    void IMacroBase.ExecuteAction(MacroAction action, Dictionary<string, object?>? options, Dictionary<string, object?>? environments)
+    {
+        if (!IsInitialized)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (!IsLoaded)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (action == null)
+        {
+            throw new ArgumentNullException(nameof(action));
+        }
+
+        if (!Actions.Contains(action))
+        {
+            throw new ArgumentException();
+        }
+
+        var args = new MacroActionArguments(this)
+        {
+            Options = options,
+            Environments = environments,
+        };
+        if (action.Execute is not null)
+        {
+            action.Execute(args);
+            if (!string.IsNullOrEmpty(args.Message))
+            {
+                _ = InteractionService.UIShowAsync(new TipModel()
+                {
+                    Text = args.Message,
+                });
+            }
+        }
+        else if(action.ExecuteAsync is not null)
+        {
+            Task.Run(async () => {
+                await action.ExecuteAsync(args);
+
+                if (!string.IsNullOrEmpty(args.Message))
+                {
+                    _ = InteractionService.UIShowAsync(new TipModel()
+                    {
+                        Text = args.Message,
+                    });
+                }
+            });
+        }
+        else
+        {
+            throw new ArgumentNullException();
+        }
     }
 
     public IMacroBase CreateDuplicate()

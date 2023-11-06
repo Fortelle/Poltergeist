@@ -38,6 +38,7 @@ public interface IMacroBase
     public void SaveSummaries();
     public void ConfigureServices(ServiceCollection services, IConfigureProcessor processor);
     public void Process(MacroProcessor processor);
+    public void ExecuteAction(MacroAction action, Dictionary<string, object?>? options, Dictionary<string, object?>? environments);
 
     public T As<T>() where T : MacroBase;
 
