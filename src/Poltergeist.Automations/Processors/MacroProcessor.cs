@@ -60,6 +60,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     CancellationToken? IUserProcessor.CancellationToken => Workflow?.GetCancellationToken();
 
+    public string? Summary { get; set; }
     public MacroProcessor(IMacroBase data, LaunchReason reason)
     {
         ProcessId = Guid.NewGuid().ToString();
@@ -376,6 +377,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             StartTime = StartTime,
             EndTime = EndTime,
             EndReason = e.Reason,
+            Comment = Summary,
         };
         Hooks?.Raise(new ProcessSummaryCreatedHook(summary));
 

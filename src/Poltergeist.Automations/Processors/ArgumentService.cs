@@ -11,6 +11,7 @@ public class ArgumentService : IDisposable, IUserLogger
     public IMacroBase Macro { get; }
     public IUserLogger Logger { get; }
     public OutputService Outputer => Processor.GetService<OutputService>();
+    public string? Summary { get; set; }
     public CacheStorage Caches => Processor.Caches;
 
     private string SenderName { get; }
