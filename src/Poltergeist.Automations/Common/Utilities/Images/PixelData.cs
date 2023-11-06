@@ -109,4 +109,26 @@ public class PixelData
         return bmp;
     }
 
+    public void Binarize(Func<byte, byte, byte, bool> func)
+    {
+        foreach (var i in Iterator())
+        {
+            var value = func(Source[i + 2], Source[i + 1], Source[i]) ? (byte)0 : (byte)255;
+            Source[i] = value;
+            Source[i + 1] = value;
+            Source[i + 2] = value;
+        }
+    }
+
+    public void Grayscale(Func<byte, byte, byte, byte> func)
+    {
+        foreach (var i in Iterator())
+        {
+            var value = func(Source[i + 2], Source[i + 1], Source[i]);
+            Source[i] = value;
+            Source[i + 1] = value;
+            Source[i + 2] = value;
+        }
+    }
+
 }
