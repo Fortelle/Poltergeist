@@ -7,12 +7,17 @@ public class OptionItem<T> : IOptionItem
     public string Key { get; }
 
     private T? _value;
-    public T? Value { 
+    public T? Value
+    { 
         get => _value;
         set
         {
+            var oldValue = _value;
             _value = value;
+
             HasChanged = true;
+
+            Changed?.Invoke(this, new ChangedEventArgs(oldValue, value));
         }
     }
 
@@ -25,6 +30,8 @@ public class OptionItem<T> : IOptionItem
     public bool IsBrowsable { get; set; } = true;
 
     public bool HasChanged { get; set; }
+
+    public event EventHandler<ChangedEventArgs>? Changed;
 
     public OptionItem(string key, T defaultValue)
     {
@@ -94,4 +101,17 @@ public class OptionItem<T> : IOptionItem
     }
 
     public override string? ToString() => Value?.ToString();
+
+    public class ChangedEventArgs : EventArgs
+    {
+        public T? OldValue { get; }
+        public T? NewValue { get; }
+
+        public ChangedEventArgs(T? oldValue, T? newValue)
+        {
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
+
+    }
 }

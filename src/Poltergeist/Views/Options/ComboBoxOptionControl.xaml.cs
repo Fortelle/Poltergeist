@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Configs;
 
@@ -9,33 +10,37 @@ namespace Poltergeist.Views.Options;
 
 public sealed partial class ComboBoxOptionControl : UserControl
 {
-    private IOptionItem Item { get; }
-    private object? Value { get; }
-    private object[] Choices { get; set; }
+    public static readonly DependencyProperty ItemProperty = DependencyProperty.RegisterAttached("Item", typeof(IOptionItem), typeof(ComboBoxOptionControl), new PropertyMetadata(null));
 
-    public ComboBoxOptionControl(IOptionItem item)
+    private object? Value { get; set; }
+    private object[]? Choices { get; set; }
+
+    public IOptionItem? Item
+    {
+        get => (IOptionItem?)GetValue(ItemProperty);
+        set
+        {
+            SetValue(ItemProperty, value);
+            if (value is null) return;
+
+            Value = value.Value;
+            Choices = value switch
+            {
+                IChoiceOptionItem choiceoption => choiceoption.Choices.OfType<object>().ToArray(),
+                { BaseType.IsEnum: true } or IEnumOptionItem => Enum.GetValues(value.BaseType).OfType<object>().ToArray(),
+                _ => throw new NotSupportedException(),
+            };
+        }
+    }
+
+    public ComboBoxOptionControl()
     {
         InitializeComponent();
+    }
 
+    public ComboBoxOptionControl(IOptionItem item) : this()
+    {
         Item = item;
-        Value = item.Value;
-
-        switch (item)
-        {
-            case IChoiceOptionItem choiceoption:
-                {
-                    Choices = choiceoption.Choices.OfType<object>().ToArray();
-                }
-                break;
-            case { BaseType.IsEnum: true }:
-            case IEnumOptionItem:
-                {
-                    Choices = Enum.GetValues(item.BaseType).OfType<object>().ToArray();
-                }
-                break;
-            default:
-                throw new NotSupportedException();
-        }
     }
 
     private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

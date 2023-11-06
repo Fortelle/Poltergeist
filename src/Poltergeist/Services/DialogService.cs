@@ -11,7 +11,6 @@ public class DialogService
 
     public static async Task ShowAsync(DialogModel model)
     {
-
         var stackPanel = new StackPanel();
 
         if (!string.IsNullOrEmpty(model.Text))
@@ -103,7 +102,7 @@ public class DialogService
         }
     }
 
-    private static async Task<ContentDialogResult> ShowAsync(ContentDialog contentDialog)
+    public static async Task<ContentDialogResult> ShowAsync(ContentDialog contentDialog)
     {
         contentDialog.XamlRoot = App.GetService<ShellPage>().XamlRoot;
 

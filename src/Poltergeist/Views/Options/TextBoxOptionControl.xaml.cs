@@ -14,7 +14,7 @@ public sealed partial class TextBoxOptionControl : UserControl
 
     private string? Value
     {
-        get => Item.IsDefault ? null : Item.Value as string;
+        get => Item.Value as string;
         set => Item.Value = string.IsNullOrEmpty(value) ? null : value;
     }
 

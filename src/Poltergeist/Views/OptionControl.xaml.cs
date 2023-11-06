@@ -38,6 +38,8 @@ public sealed partial class OptionControl : UserControl
             BoolOption { Mode: BoolOptionMode.CheckBox } => new CheckBoxOptionControl(item),
             OptionItem<bool> => new SwitchOptionControl(item),
 
+            OptionItem<string[]> x => new StringArrayOptionControl(x),
+
             INumberOptionItem { Layout: NumberOptionLayout.NumberBox } => new NumberBoxOptionControl(item),
             INumberOptionItem { Layout: NumberOptionLayout.Slider } => new SliderOptionControl(item),
             OptionItem<int> or
