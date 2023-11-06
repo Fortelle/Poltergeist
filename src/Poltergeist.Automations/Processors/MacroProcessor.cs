@@ -128,6 +128,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         services.AddSingleton<PanelService>();
         services.AddSingleton<InteractionService>();
         services.AddSingleton<OutputService>();
+        services.AddSingleton<DebugService>();
 
         if (Debugger.IsAttached)
         {

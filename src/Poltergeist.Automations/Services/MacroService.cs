@@ -17,6 +17,8 @@ public abstract class MacroService : IExtensionService, IServiceLogger, IDisposa
     private MacroLogger? _loggerProvider;
     private MacroLogger LoggerProvider => _loggerProvider ??= Processor.GetService<MacroLogger>();
 
+    public DebugService? Debugger => System.Diagnostics.Debugger.IsAttached ? Processor.GetService<DebugService>() : null;
+
     private string SenderName { get; }
 
     protected MacroService(MacroProcessor processor)
