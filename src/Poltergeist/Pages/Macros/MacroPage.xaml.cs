@@ -15,7 +15,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
     {
         Key = "macro",
         Glyph = "\uF259",
-        CreateContent = args =>
+        CreateContent = (args, obj) =>
         {
             if (args.Length == 0)
             {

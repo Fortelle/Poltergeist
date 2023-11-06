@@ -14,7 +14,7 @@ public sealed partial class MacroGroupPage : Page
     {
         Key = "group",
         Glyph = "\uE838",
-        CreateContent = args =>
+        CreateContent = (args, obj) =>
         {
             if (args.Length == 0)
             {

@@ -49,7 +49,7 @@ public class NavigationService : INavigationService
                 return false;
             }
 
-            var content = info.CreateContent?.Invoke(keyparts[1..]);
+            var content = info.CreateContent?.Invoke(keyparts[1..], parameter);
             if (content is null)
             {
                 return false;
@@ -96,6 +96,6 @@ public class NavigationInfo
     public string? Glyph { get; set; }
     public bool IsFooter { get; set; }
 
-    public Func<string[], object?>? CreateContent { get; set; }
+    public Func<string[], object?, object?>? CreateContent { get; set; }
     public Func<object, object>? CreateHeader { get; set; }
 };

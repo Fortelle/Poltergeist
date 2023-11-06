@@ -332,21 +332,21 @@ public abstract class PoltergeistApplication : Application
             Key = "home",
             Header = "Home",
             Glyph = "\uE80F",
-            CreateContent = _ => App.GetService<MainPage>(),
+            CreateContent = (_, _) => App.GetService<MainPage>(),
         });
         navigationService.AddInfo(new()
         {
             Key = "settings",
             Header = "Settings",
             Glyph = "\uE713",
-            CreateContent = _ => new SettingsPage(),
+            CreateContent = (_, _) => new SettingsPage(),
         });
         navigationService.AddInfo(new()
         {
             Key = "about",
             Header = "About",
             Glyph = "\uE9CE",
-            CreateContent = _ => App.GetService<AboutPage>(),
+            CreateContent = (_, _) => App.GetService<AboutPage>(),
         });
         navigationService.AddInfo(new()
         {
@@ -371,7 +371,12 @@ public abstract class PoltergeistApplication : Application
 
     private async Task OnInteracting(InteractingEventArgs e)
     {
-        switch (e.Model)
+        await Interact(e.Model);
+    }
+
+    public static async Task Interact(InteractionModel model)
+    {
+        switch (model)
         {
             case TipModel tipModel:
                 TipService.Show(tipModel);
@@ -390,6 +395,9 @@ public abstract class PoltergeistApplication : Application
                 break;
             case FolderModel folderModel:
                 await DialogService.ShowFolderPickerAsync(folderModel);
+                break;
+            case NavigationModel navigationModel:
+                App.GetService<INavigationService>().NavigateTo(navigationModel.PageKey, navigationModel.Argumment);
                 break;
         }
     }
