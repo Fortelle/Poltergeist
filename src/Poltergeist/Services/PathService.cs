@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using System.Diagnostics;
+using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Services;
 
@@ -6,34 +7,42 @@ public class PathService
 {
     public const string ApplicationName = "Poltergeist";
 
-    public string AppFolder;
-    public string DocumentFolder;
-    public string LocalDataFolder;
-    public string LocalSettingsFile;
-    public string GlobalMacroOptionsFile;
-    public string SchedulerFile;
+    public string AppFolder { get; }
+    public string DocumentDataFolder { get; }
+    public string LocalDataFolder { get; }
+    public string LocalSettingsFile { get; }
+    public string GlobalMacroOptionsFile { get; }
+    public string SchedulerFile { get; }
 
-    public string SharedFolder;
-    public string MacroFolder;
-    public string GroupFolder;
+    public string SharedFolder { get; }
+    public string MacroFolder { get; }
+    public string GroupFolder { get; }
+
+    public string? SolutionFolder { get; }
+    public string? ProjectFolder { get; }
 
     public PathService()
     {
         AppFolder = AppDomain.CurrentDomain.BaseDirectory;
 
         var mydocPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        DocumentFolder = Path.Combine(mydocPath, ApplicationName);
+        DocumentDataFolder = Path.Combine(mydocPath, ApplicationName);
 
         LocalDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
+        MacroFolder = Path.Combine(DocumentDataFolder, "Macros");
+        SharedFolder = Path.Combine(DocumentDataFolder, "Shared");
+        GroupFolder = Path.Combine(DocumentDataFolder, "Groups");
 
-        MacroFolder = Path.Combine(DocumentFolder, "Macros");
-        SharedFolder = Path.Combine(DocumentFolder, "Shared");
-        GroupFolder = Path.Combine(DocumentFolder, "Groups");
+        LocalSettingsFile = Path.Combine(DocumentDataFolder, "LocalSettings.json");
+        GlobalMacroOptionsFile = Path.Combine(DocumentDataFolder, "GlobalOptions.json");
+        SchedulerFile = Path.Combine(DocumentDataFolder, "Scheduler.json");
 
-        LocalSettingsFile = Path.Combine(DocumentFolder, "LocalSettings.json");
-        GlobalMacroOptionsFile = Path.Combine(DocumentFolder, "GlobalOptions.json");
-        SchedulerFile = Path.Combine(DocumentFolder, "Scheduler.json");
+        if (Debugger.IsAttached)
+        {
+            ProjectFolder = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\.."));
+            SolutionFolder = Path.GetFullPath(Path.Combine(ProjectFolder, @".."));
+        }
 
     }
 

@@ -41,7 +41,7 @@ public class PluginService
         {
             path.AppFolder,
             Path.Combine(path.AppFolder, "Plugins"),
-            Path.Combine(path.DocumentFolder, "Plugins"),
+            Path.Combine(path.DocumentDataFolder, "Plugins"),
         };
         foreach (var folder in pluginFolders)
         {
