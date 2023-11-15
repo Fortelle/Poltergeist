@@ -15,25 +15,25 @@ public sealed partial class HotKeyOptionControl : UserControl
     private bool Ctrl
     {
         get => Item.Value.HasModifier(KeyModifiers.Control);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers | KeyModifiers.Control ^ (value ? 0 : KeyModifiers.Control));
+        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Control);
     }
 
     private bool Shift
     {
         get => Item.Value.HasModifier(KeyModifiers.Shift);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers | KeyModifiers.Shift ^ (value ? 0 : KeyModifiers.Shift));
+        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Shift);
     }
 
     private bool Alt
     {
         get => Item.Value.HasModifier(KeyModifiers.Alt);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers | KeyModifiers.Alt ^ (value ? 0 : KeyModifiers.Alt));
+        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Alt);
     }
 
     private bool Win
     {
         get => Item.Value.HasModifier(KeyModifiers.Win);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers | KeyModifiers.Win ^ (value ? 0 : KeyModifiers.Win));
+        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Win);
     }
 
     private VirtualKey KeyCode
