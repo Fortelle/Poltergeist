@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Processors;
@@ -143,7 +142,7 @@ public class LoopService : MacroService, IAutoloadable
             After.Invoke(args);
         }
 
-        Processor.SetStatistic<int>(LoopService.StatisticTotalIterationCountKey, old => old + IterationIndex + 1);
+        Processor.SetStatistic<int>(StatisticTotalIterationCountKey, old => old + IterationIndex + 1);
 
         Hooks.Raise(new LoopEndedHook());
 

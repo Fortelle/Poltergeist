@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Components.FlowBuilders;
+﻿namespace Poltergeist.Automations.Components.FlowBuilders;
 
 public class FlowBuilderItem
 {

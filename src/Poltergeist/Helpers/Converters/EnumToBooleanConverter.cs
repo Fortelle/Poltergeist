@@ -15,7 +15,7 @@ public class EnumToBooleanConverter : IValueConverter
         {
             if (!Enum.IsDefined(typeof(ElementTheme), value))
             {
-                throw new ArgumentException("ExceptionEnumToBooleanConverterValueMustBeAnEnum");
+                throw new ArgumentException();
             }
 
             var enumValue = Enum.Parse(typeof(ElementTheme), enumString);
@@ -23,7 +23,7 @@ public class EnumToBooleanConverter : IValueConverter
             return enumValue.Equals(value);
         }
 
-        throw new ArgumentException("ExceptionEnumToBooleanConverterParameterMustBeAnEnumName");
+        throw new ArgumentException();
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -33,6 +33,6 @@ public class EnumToBooleanConverter : IValueConverter
             return Enum.Parse(typeof(ElementTheme), enumString);
         }
 
-        throw new ArgumentException("ExceptionEnumToBooleanConverterParameterMustBeAnEnumName");
+        throw new ArgumentException();
     }
 }

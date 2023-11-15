@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Poltergeist.Automations.Components.Hooks;
+﻿namespace Poltergeist.Automations.Components.Hooks;
 
 public class MessageReceivedHook : MacroHook
 {
