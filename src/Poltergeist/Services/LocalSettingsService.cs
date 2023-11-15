@@ -34,6 +34,11 @@ public class LocalSettingsService
 
     public void Save()
     {
+        if (!Settings.HasChanged)
+        {
+            return;
+        }
+
         var filepath = App.GetService<PathService>().LocalSettingsFile;
         Settings.Save(filepath);
     }
