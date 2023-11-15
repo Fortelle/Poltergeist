@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Configs;
+﻿namespace Poltergeist.Automations.Configs;
 
 public class OptionItem<T> : IOptionItem 
 {

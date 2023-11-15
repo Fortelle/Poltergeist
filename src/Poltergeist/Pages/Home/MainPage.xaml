@@ -113,7 +113,7 @@
                                 Width="240"
                                 Background="#fff"
                                 Command="{Binding ViewModel.GroupButtonClickCommand, ElementName=Root, Mode=OneTime}"
-                                CommandParameter="{Binding Name, Mode=OneTime}"
+                                CommandParameter="{Binding Key, Mode=OneTime}"
                                 >
                                 <StackPanel>
                                     <FontIcon
@@ -129,7 +129,7 @@
                                         FontSize="18"
                                         >
                                         <Run
-                                            Text="{Binding Name, Mode=OneTime}"
+                                            Text="{Binding Title, Mode=OneTime}"
                                             FontWeight="SemiBold"
                                             />
                                         <Run Text="("/><Run Text="{Binding Macros.Count, Mode=OneTime}"/><Run Text=")"/>

@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.WindowsRuntime;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -11,7 +10,7 @@ public sealed partial class SliderChoiceOptionControl : UserControl
 {
     private IChoiceOptionItem Item { get; }
 
-    private object[] Choices { get; set; }
+    private ChoiceEntry[] Choices { get; set; }
 
     [ObservableProperty]
     private double _selectedIndex;
@@ -28,27 +27,31 @@ public sealed partial class SliderChoiceOptionControl : UserControl
 
         Item = item;
 
-        Choices = item.Choices.OfType<object>().ToArray();
+        Choices = item.GetChoices();
         Maximum = Choices.Length - 1;
 
-        if (Item is IIndexOptionItem)
+        if (Item is IIndexChoiceOptionItem)
         {
             var value = (int)item.Value!;
-            SelectedIndex = (double)value;
-            SelectedValue = Choices[value].ToString() ?? "";
+            SelectedIndex = value;
+            SelectedValue = Choices[value].Value?.ToString() ?? "";
+        }
+        else if (Item is IChoiceOptionItem)
+        {
+            var text = item.Value!.ToString();
+            SelectedIndex = Array.FindIndex(Choices, x => x.Value!.ToString() == text);
+            SelectedValue = text ?? "";
         }
         else
         {
-            var text = item.Value!.ToString();
-            SelectedIndex = Array.FindIndex(Choices, x => x.ToString() == text);
-            SelectedValue = text ?? "";
+            throw new NotSupportedException();
         }
     }
 
     private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var index = (int)e.NewValue;
-        if(Item is IIndexOptionItem)
+        if(Item is IIndexChoiceOptionItem)
         {
             if (index.ToString() == Item.Value!.ToString())
             {
@@ -57,16 +60,20 @@ public sealed partial class SliderChoiceOptionControl : UserControl
 
             Item.Value = index;
         }
-        else
+        else if (Item is IChoiceOptionItem)
         {
-            if (Choices[index].ToString() == Item.Value!.ToString())
+            if (Choices[index].Value!.ToString() == Item.Value!.ToString())
             {
                 return;
             }
 
-            Item.Value = Choices[index];
+            Item.Value = Choices[index].Value;
         }
-        
-        SelectedValue = Choices[index].ToString() ?? "";
+        else
+        {
+            throw new NotSupportedException();
+        }
+
+        SelectedValue = Choices[index].Value?.ToString() ?? "";
     }
 }

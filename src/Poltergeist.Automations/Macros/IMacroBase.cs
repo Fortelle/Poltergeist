@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
 
@@ -7,7 +6,7 @@ namespace Poltergeist.Automations.Macros;
 
 public interface IMacroBase
 {
-    public string Name { get; }
+    public string Key { get; }
 
     public string Title { get; }
 

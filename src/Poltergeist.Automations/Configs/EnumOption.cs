@@ -1,14 +1,23 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Poltergeist.Automations.Configs;
 
-public class EnumOption<T> : OptionItem<T?>, IEnumOptionItem where T : Enum
+public class EnumOption<T> : OptionItem<T>, IChoiceOptionItem, IEnumOptionItem where T : Enum
 {
+    public Func<T, string>? GetText { get; set; }
+
+    public ChoiceOptionMode Mode { get; set; }
+
     public EnumOption(string key) : base(key, default)
     {
     }
 
-    public EnumOption(string key, T? defaultValue = default) : base(key, defaultValue)
+    public EnumOption(string key, T defaultValue = default) : base(key, defaultValue)
     {
+    }
+
+    public ChoiceEntry[] GetChoices()
+    {
+        return Enum.GetValues(typeof(T)).OfType<T>().Select(x => new ChoiceEntry(x, GetText?.Invoke(x) ?? x.ToString())).ToArray();
     }
 }

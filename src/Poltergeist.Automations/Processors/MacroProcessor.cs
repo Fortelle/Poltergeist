@@ -367,7 +367,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
         var summary = new ProcessSummary()
         {
-            MacroKey = Macro.Name,
+            MacroKey = Macro.Key,
             ProcessId = ProcessId,
             StartTime = StartTime,
             EndTime = EndTime,

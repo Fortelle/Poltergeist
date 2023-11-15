@@ -97,9 +97,9 @@ public class MacroManager
         }
     }
 
-    public IMacroBase? GetMacro(string name)
+    public IMacroBase? GetMacro(string key)
     {
-        return Macros.FirstOrDefault(x => x.Name == name);
+        return Macros.FirstOrDefault(x => x.Key == key);
     }
 
     public void TryStart(MacroProcessor processor)
@@ -117,7 +117,7 @@ public class MacroManager
 
         processor.Launch();
 
-        UpdateSummary(processor.Macro.Name, x =>
+        UpdateSummary(processor.Macro.Key, x =>
         {
             x.LastRunTime = processor.GetStatistic<DateTime>("last_run_time");
             x.RunCount = processor.GetStatistic<int>("total_run_count");
@@ -168,7 +168,7 @@ public class MacroManager
         {
             return;
         }
-        if (message.MacroKey != processor.Macro.Name)
+        if (message.MacroKey != processor.Macro.Key)
         {
             return;
         }

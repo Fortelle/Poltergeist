@@ -9,7 +9,7 @@ public class CompleteModule : MacroModule
 
     public override void OnMacroInitialized(IMacroInitializer macro)
     {
-        macro.UserOptions.Add(new OptionItem<CompletionAction>("aftercompletion.action", CompletionAction.None)
+        macro.UserOptions.Add(new EnumOption<CompletionAction>("aftercompletion.action", CompletionAction.None)
         {
             DisplayLabel = "Action",
             Category = "After Completion",

@@ -80,22 +80,19 @@ public partial class TestGroup
                 ValueFormat = "P0",
             },
 
-            new ChoiceOption<string>("choice_string", "Item1")
+            new ChoiceOption<string>("choice_string", new string[] { "Item1", "Item2", "Item3" })
             {
                 Category = "Choices",
-                Choices = new string[] { "Item1", "Item2", "Item3" },
             },
-            new ChoiceOption<int>("choice_int", 100)
+            new ChoiceOption<int>("choice_int", new int[] { 100, 200, 300 })
             {
                 Category = "Choices",
-                Choices = new int[] { 100, 200, 300 },
             },
 
-            new ChoiceOption<string>("choice_slider", "Item2")
+            new ChoiceOption<string>("choice_slider", new string[] { "Item1", "Item2", "Long Item3" }, "Item2")
             {
                 Category = "Choices",
                 Mode = ChoiceOptionMode.Slider,
-                Choices = new string[] { "Item1", "Item2", "Long Item3" },
             },
 
             new PathOption("file_open")

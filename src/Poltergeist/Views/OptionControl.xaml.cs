@@ -27,11 +27,11 @@ public sealed partial class OptionControl : UserControl
     {
         Content = item switch
         {
-            IIndexOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
-            IIndexOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
+            IIndexChoiceOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
+            IIndexChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
             IChoiceOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
             IChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
-            IEnumOptionItem => new ComboBoxOptionControl(item),
+            //IEnumOptionItem => new ComboBoxOptionControl(item),
             { BaseType.IsEnum: true } => new ComboBoxOptionControl(item),
 
             BoolOption { Mode: BoolOptionMode.ToggleSwitch } => new SwitchOptionControl(item),

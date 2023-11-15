@@ -11,8 +11,9 @@
     <ComboBox
         HorizontalAlignment="Stretch"
         ItemsSource="{x:Bind Choices, Mode=OneTime}"
-        SelectedItem="{x:Bind Value, Mode=OneTime}"
-        SelectionChanged="ComboBox_SelectionChanged"
+        SelectedValue="{x:Bind SelectedValue, Mode=TwoWay}"
+        SelectedValuePath="Value"
+        DisplayMemberPath="Text"
         >
     </ComboBox>
 </UserControl>

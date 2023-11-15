@@ -29,7 +29,7 @@ internal static class ActionHelper
         {
             var savedialog = new FileSaveModel()
             {
-                SuggestedFileName = $"{args.Macro.Name}.lnk",
+                SuggestedFileName = $"{args.Macro.Key}.lnk",
                 Filters = new()
                 {
                     ["Desktop shortcut(*.lnk)"] = new[] {
@@ -79,7 +79,7 @@ internal static class ActionHelper
             var autoclose = (bool)optiondialog.Values![1]!;
             var singlemode = (bool)optiondialog.Values![2]!;
 
-            var arguments = $"--macro={args.Macro.Name}";
+            var arguments = $"--macro={args.Macro.Key}";
             if (autostart)
             {
                 arguments += " --autostart";

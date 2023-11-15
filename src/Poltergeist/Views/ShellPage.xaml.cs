@@ -39,8 +39,8 @@ public sealed partial class ShellPage : Page
                 var groupInfo = navigationService.GetInfo("group")!;
                 var nvi = new NavigationViewItem()
                 {
-                    Content = $"{group.Name} ({group.Macros.Count})",
-                    Tag = "group:" + group.Name,
+                    Content = $"{group.Key} ({group.Macros.Count})",
+                    Tag = "group:" + group.Key,
                     //IsExpanded = true,
                     Icon = new FontIcon()
                     {
@@ -54,7 +54,7 @@ public sealed partial class ShellPage : Page
                     nvi.MenuItems.Add(new NavigationViewItem()
                     {
                         Content = macro.Title,
-                        Tag = "macro:" + macro.Name,
+                        Tag = "macro:" + macro.Key,
                         IsEnabled = macro.IsAvailable,
                         Icon = new FontIcon()
                         {

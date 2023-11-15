@@ -31,7 +31,7 @@
             <StackPanel
                 >
                 <TextBlock
-                    Text="{x:Bind ViewModel.Group.Name, Mode=OneTime}"
+                    Text="{x:Bind ViewModel.Group.Title, Mode=OneTime}"
                     Style="{StaticResource Header1Style}"
                     />
                 <TextBlock
@@ -69,7 +69,7 @@
                             HorizontalContentAlignment="Stretch"
                             IsEnabled="{Binding IsAvailable, Mode=OneTime}"
                             Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
-                            CommandParameter="{Binding Name, Mode=OneTime}"
+                            CommandParameter="{Binding Key, Mode=OneTime}"
                             >
                             <Grid
                                 Margin="8"

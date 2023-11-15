@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Activation;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Configs;
@@ -277,7 +278,7 @@ public abstract class PoltergeistApplication : Application
             return false;
         }
 
-        SingleMacroMode = macro.Name;
+        SingleMacroMode = macro.Key;
         return true;
     }
 
@@ -329,28 +330,24 @@ public abstract class PoltergeistApplication : Application
         navigationService.AddInfo(new()
         {
             Key = "home",
-            Header = "Home",
             Glyph = "\uE80F",
             CreateContent = (_, _) => App.GetService<MainPage>(),
         });
         navigationService.AddInfo(new()
         {
             Key = "settings",
-            Header = "Settings",
             Glyph = "\uE713",
             CreateContent = (_, _) => new SettingsPage(),
         });
         navigationService.AddInfo(new()
         {
             Key = "about",
-            Header = "About",
             Glyph = "\uE9CE",
             CreateContent = (_, _) => App.GetService<AboutPage>(),
         });
         navigationService.AddInfo(new()
         {
             Key = "debug",
-            Header = "Debug",
             Glyph = "\uEBE8",
         });
         navigationService.AddInfo(MacroGroupPage.NavigationInfo);
@@ -401,4 +398,8 @@ public abstract class PoltergeistApplication : Application
         }
     }
 
+    public static string Localize(string resourceKey, params object?[] args)
+    {
+        return ResourceHelper.Localize(resourceKey, args);
+    }
 }

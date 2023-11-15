@@ -8,13 +8,11 @@ using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Thumbnails;
 using Poltergeist.Automations.Configs;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Macros.Instruments;
-using Poltergeist.Notifications;
 using Poltergeist.Pages.Macros.Instruments;
 using Poltergeist.Services;
 
@@ -77,13 +75,13 @@ public partial class MacroViewModel : ObservableRecipient
         get
         {
             var macroManager = App.GetService<MacroManager>();
-            var summary = macroManager.GetSummary(Macro.Name);
+            var summary = macroManager.GetSummary(Macro.Key);
             return summary?.IsFavorite ?? false;
         }
         set
         {
             var macroManager = App.GetService<MacroManager>();
-            macroManager.UpdateSummary(Macro.Name, x =>
+            macroManager.UpdateSummary(Macro.Key, x =>
             {
                 x.IsFavorite = value;
             });
@@ -95,7 +93,7 @@ public partial class MacroViewModel : ObservableRecipient
     public void Start()
     {
         Start(new MacroStartArguments() {
-            MacroKey = Macro.Name,
+            MacroKey = Macro.Key,
             Reason = LaunchReason.ByUser,
         });
     }

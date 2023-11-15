@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Common.Structures;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
@@ -11,7 +12,7 @@ namespace Poltergeist.Automations.Macros;
 /// </summary>
 public abstract class MacroBase : IMacroBase, IMacroInitializer
 {
-    public string Name { get; }
+    public string Key { get; }
     public string? Category { get; set; }
     public string? Description { get; set; }
     public string[]? Details { get; set; }
@@ -29,7 +30,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     public Action<MacroProcessor>? Process { get; set; }
 
     private string? _title;
-    public string Title { get => _title ?? Name; set => _title = value; }
+    public string Title { get => _title ?? Key; set => _title = value; }
 
     MacroGroup? IMacroBase.Group { get; set; }
 
@@ -69,12 +70,12 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     public MacroBase()
     {
-        Name = GetType().Name;
+        Key = GetType().Name;
     }
 
     public MacroBase(string name)
     {
-        Name = string.Join(null, name.Select(c => InvalidKeyChars.Contains(c) ? '_' : c));
+        Key = string.Join(null, name.Select(c => InvalidKeyChars.Contains(c) ? '_' : c));
     }
 
     public T As<T>() where T : MacroBase
@@ -310,7 +311,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     public IMacroBase CreateDuplicate()
     {
-        var macrokey = Name.Split('@')[0];
+        var macrokey = Key.Split('@')[0];
         var cloneGuid = Guid.NewGuid().ToString();
         var cloneKey = $"{macrokey}@{cloneGuid}";
 

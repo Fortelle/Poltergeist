@@ -48,12 +48,12 @@ public class PathService
 
     public string GetMacroFolder(IMacroBase macro)
     {
-        return Path.Combine(MacroFolder, macro.Name);
+        return Path.Combine(MacroFolder, macro.Key);
     }
 
     public string GetGroupFolder(MacroGroup group)
     {
-        return Path.Combine(GroupFolder, group.Name);
+        return Path.Combine(GroupFolder, group.Key);
     }
 
 }

@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Poltergeist.Automations.Configs;
 
 public class ChoiceOption<T> : OptionItem<T>, IChoiceOptionItem
 {
-    public required T[] Choices { get; init; }
+    public required ChoiceEntry[] Choices { get; init; }
 
     public ChoiceOptionMode Mode { get; set; }
-
-    IEnumerable IChoiceOptionItem.Choices => Choices;
 
     public ChoiceOption(string key, T defaultValue) : base(key, defaultValue)
     {
@@ -18,12 +15,20 @@ public class ChoiceOption<T> : OptionItem<T>, IChoiceOptionItem
     [SetsRequiredMembers]
     public ChoiceOption(string key, T[] choices) : base(key, choices[0])
     {
-        Choices = choices;
+        Choices = choices.Select(x => new ChoiceEntry(x)).ToArray();
     }
 
     [SetsRequiredMembers]
     public ChoiceOption(string key, T[] choices, T defaultValue) : base(key, defaultValue)
     {
-        Choices = choices;
+        Choices = choices.Select(x => new ChoiceEntry(x)).ToArray();
     }
+
+    [SetsRequiredMembers]
+    public ChoiceOption(string key, Dictionary<T, string> choices, T defaultValue) : base(key, defaultValue)
+    {
+        Choices = choices.Select(x => new ChoiceEntry(x.Key, x.Value)).ToArray();
+    }
+
+    public ChoiceEntry[] GetChoices() => Choices;
 }

@@ -18,7 +18,7 @@ public partial class MacroGroupViewModel : ObservableRecipient
 
         var macroManager = App.GetService<MacroManager>();
         Macros = group.Macros
-            .OrderByDescending(x => macroManager.GetSummary(x.Name)?.IsFavorite == true)
+            .OrderByDescending(x => macroManager.GetSummary(x.Key)?.IsFavorite == true)
             .ThenBy(x => x.Title)
             .ToArray();
     }

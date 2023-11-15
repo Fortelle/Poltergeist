@@ -13,8 +13,8 @@
         HorizontalAlignment="Stretch"
         >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="auto" MaxWidth="32"/>
+            <ColumnDefinition Width=".75*"/>
+            <ColumnDefinition Width=".25*"/>
         </Grid.ColumnDefinitions>
         <Slider
             Grid.Column="0"
@@ -36,18 +36,5 @@
             Text="{x:Bind SelectedValue, Mode=OneWay}" 
             Margin="8, 0"
             />
-        <ItemsControl
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            ItemsSource="{x:Bind Choices, Mode=OneTime}"
-            Margin="8, 0"
-            Foreground="Transparent"
-            >
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
     </Grid>
 </UserControl>

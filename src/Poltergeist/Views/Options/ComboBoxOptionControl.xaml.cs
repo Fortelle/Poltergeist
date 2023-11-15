@@ -12,8 +12,7 @@ public sealed partial class ComboBoxOptionControl : UserControl
 {
     public static readonly DependencyProperty ItemProperty = DependencyProperty.RegisterAttached("Item", typeof(IOptionItem), typeof(ComboBoxOptionControl), new PropertyMetadata(null));
 
-    private object? Value { get; set; }
-    private object[]? Choices { get; set; }
+    private ChoiceEntry[]? Choices { get; set; }
 
     public IOptionItem? Item
     {
@@ -21,15 +20,39 @@ public sealed partial class ComboBoxOptionControl : UserControl
         set
         {
             SetValue(ItemProperty, value);
-            if (value is null) return;
 
-            Value = value.Value;
+            if (value is null)
+            {
+                return;
+            }
+
             Choices = value switch
             {
-                IChoiceOptionItem choiceoption => choiceoption.Choices.OfType<object>().ToArray(),
-                { BaseType.IsEnum: true } or IEnumOptionItem => Enum.GetValues(value.BaseType).OfType<object>().ToArray(),
+                IChoiceOptionItem choiceoption => choiceoption.GetChoices(),
+                { BaseType.IsEnum: true } => Enum.GetValues(value.BaseType).OfType<object>().Select(x => new ChoiceEntry(x)).ToArray(),
                 _ => throw new NotSupportedException(),
             };
+        }
+    }
+
+    private object? SelectedValue
+    {
+        get => Choices?.FirstOrDefault(x => x.Value?.Equals(Item?.Value) ?? false)?.Value;
+        set
+        {
+            if (Item is null)
+            {
+                return;
+            }
+
+            if (value is ChoiceEntry entry)
+            {
+                Item.Value = entry.Value;
+            }
+            else
+            {
+                Item.Value = value;
+            }
         }
     }
 
@@ -43,14 +66,4 @@ public sealed partial class ComboBoxOptionControl : UserControl
         Item = item;
     }
 
-    private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        var value = e.AddedItems[0];
-        if (Item.Value?.ToString() == value.ToString())
-        {
-            return;
-        }
-
-        Item.Value = value;
-    }
 }

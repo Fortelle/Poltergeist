@@ -67,7 +67,7 @@ public class ActionService
         else
         {
             macroPage.ViewModel.Start(new(){
-                MacroKey = macroPage.ViewModel.Macro.Name,
+                MacroKey = macroPage.ViewModel.Macro.Key,
                 Reason = reason,
             });
         }

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Configs;
@@ -10,17 +6,19 @@ namespace Poltergeist.Automations.Macros;
 
 public abstract class MacroGroup
 {
-    public string Name { get; init; }
+    public string Key { get; init; }
     public string? Description { get; init; }
     public MacroOptions Options { get; init; } = new();
 
     public string? GroupFolder { get; set; }
     public List<IMacroBase> Macros { get; } = new();
 
+    private string? _title;
+    public string Title { get => _title ?? Key; set => _title = value; }
 
-    protected MacroGroup(string name)
+    protected MacroGroup(string key)
     {
-        Name = name;
+        Key = key;
 
         LoadMacroFields();
         LoadMacroFunctions();

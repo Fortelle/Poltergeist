@@ -23,7 +23,7 @@ public sealed partial class MacroGroupPage : Page
 
             var groupkey = args[0];
             var macroManager = App.GetService<MacroManager>();
-            var group = macroManager.Groups.FirstOrDefault(x => x.Name == groupkey);
+            var group = macroManager.Groups.FirstOrDefault(x => x.Key == groupkey);
             if (group is null)
             {
                 App.ShowTeachingTip($"Group \"{groupkey}\" does not exist.");
@@ -33,7 +33,7 @@ public sealed partial class MacroGroupPage : Page
             var groupPage = new MacroGroupPage(new(group));
             return groupPage;
         },
-        CreateHeader = obj => ((MacroGroupPage)obj)!.ViewModel.Group!.Name,
+        CreateHeader = obj => ((MacroGroupPage)obj)!.ViewModel.Group!.Key,
     };
 
     public MacroGroupViewModel ViewModel { get; }
@@ -50,7 +50,7 @@ public sealed partial class MacroGroupPage : Page
         if (((FrameworkElement)e.OriginalSource).DataContext is MacroBase macro)
         {
             var nav = App.GetService<INavigationService>();
-            nav.NavigateTo("macro:" + macro.Name);
+            nav.NavigateTo("macro:" + macro.Key);
         }
     }
 }

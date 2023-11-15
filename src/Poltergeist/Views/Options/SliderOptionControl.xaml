@@ -13,8 +13,8 @@
         HorizontalAlignment="Stretch"
         >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="auto" MaxWidth="32"/>
+            <ColumnDefinition Width=".75*"/>
+            <ColumnDefinition Width=".25*"/>
         </Grid.ColumnDefinitions>
         <Slider
             Grid.Column="0"
