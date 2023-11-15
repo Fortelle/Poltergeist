@@ -1,5 +1,4 @@
-﻿using System;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Windows.Media.Core;
 using Windows.Media.Playback;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
@@ -23,20 +24,23 @@ public class LoopModule : MacroModule
 
     public override void OnMacroInitialized(IMacroInitializer macro)
     {
-        macro.Statistics.Add(new(LoopService.StatisticTotalIterationCountKey, 0));
+        macro.Statistics.Add(new(LoopService.StatisticTotalIterationCountKey, 0)
+        {
+            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
+        });
 
         macro.UserOptions.Add(new OptionItem<bool>(LoopService.ConfigEnableKey, true)
         {
-            DisplayLabel = "Enable",
-            Category = "Loops",
+            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Enable"),
+            Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
         });
 
         if (Options?.IsCountLimitable == true)
         {
             macro.UserOptions.Add(new OptionItem<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
             {
-                DisplayLabel = "Count",
-                Category = "Loops",
+                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Count"),
+                Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
             });
         }
 
@@ -44,8 +48,8 @@ public class LoopModule : MacroModule
         {
             macro.UserOptions.Add(new OptionItem<int>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? 0)
             {
-                DisplayLabel = "Duration (seconds)",
-                Category = "Loops",
+                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Duration"),
+                Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
             });
         }
 

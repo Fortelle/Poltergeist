@@ -74,7 +74,7 @@ public sealed partial class HotKeyOptionControl : UserControl
             }
             if (s.Length == 0)
             {
-                s = "Modifiers";
+                s = App.Localize("Poltergeist/Resources/HotKeyOption_Modifiers");
             }
             else
             {

@@ -297,20 +297,20 @@ public abstract class PoltergeistApplication : Application
         // Macro
         localsettingsService.Add(new OptionItem<bool>("macro.usestatistics", true)
         {
-            Category = "Macro",
-            DisplayLabel = "Use statistics",
+            Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
+            DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_UseStatistics"),
         });
 
         localsettingsService.Add(new OptionItem<LogLevel>("logger.tofile", LogLevel.All)
         {
-            Category = "Macro",
-            DisplayLabel = "Log to file",
+            Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
+            DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToFile"),
         });
 
         localsettingsService.Add(new OptionItem<LogLevel>("logger.toconsole", LogLevel.Information)
         {
-            Category = "Macro",
-            DisplayLabel = "Log to console",
+            Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
+            DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToConsole"),
         });
     }
 

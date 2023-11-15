@@ -14,12 +14,12 @@ public class DateTimeToAgoConverter : IValueConverter
         var timespan = DateTime.Now - datetime;
         return timespan switch
         {
-            { TotalMinutes: <= 1 } => $"a minute ago",
-            { TotalMinutes: < 60 } => $"{timespan.TotalMinutes:#} minutes ago",
-            { TotalHours: <= 1 } => $"an hour ago",
-            { TotalHours: < 24 } => $"{timespan.TotalHours:#} hours ago",
-            { TotalDays: <= 1 } => $"yesterday",
-            { TotalDays: < 30 } => $"{timespan.TotalDays:#} days ago",
+            { TotalMinutes: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_1"),
+            { TotalMinutes: < 60 } => App.Localize("Poltergeist/Home/DateTimeToAgo_2", timespan.TotalMinutes),
+            { TotalHours: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_3"),
+            { TotalHours: < 24 } => App.Localize("Poltergeist/Home/DateTimeToAgo_4", timespan.TotalHours),
+            { TotalDays: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_5"),
+            { TotalDays: < 30 } => App.Localize("Poltergeist/Home/DateTimeToAgo_6", timespan.TotalDays),
             _ => datetime.ToLocalTime(),
         };
     }

@@ -117,58 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="DateTimeToAgo_1" xml:space="preserve">
+    <value>a minute ago</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="DateTimeToAgo_2" xml:space="preserve">
+    <value>{0} minutes ago</value>
   </data>
-  <data name="NavigationViewItem_About.Content" xml:space="preserve">
-    <value>About</value>
+  <data name="DateTimeToAgo_3" xml:space="preserve">
+    <value>an hour ago</value>
   </data>
-  <data name="NavigationViewItem_Debug.Content" xml:space="preserve">
-    <value>Debug</value>
+  <data name="DateTimeToAgo_4" xml:space="preserve">
+    <value>{0} hours</value>
   </data>
-  <data name="NavigationViewItem_Home.Content" xml:space="preserve">
-    <value>Home</value>
+  <data name="DateTimeToAgo_5" xml:space="preserve">
+    <value>yesterday</value>
   </data>
-  <data name="NavigationViewItem_Settings.Content" xml:space="preserve">
-    <value>Settings</value>
+  <data name="DateTimeToAgo_6" xml:space="preserve">
+    <value>{0} days ago</value>
   </data>
-  <data name="TabHeader_About" xml:space="preserve">
-    <value>About</value>
+  <data name="FavoriteTextBlock.Text" xml:space="preserve">
+    <value>Favorite macros</value>
   </data>
-  <data name="TabHeader_Debug" xml:space="preserve">
-    <value>Debug</value>
+  <data name="GroupTextBlock.Text" xml:space="preserve">
+    <value>Groups</value>
   </data>
-  <data name="TabHeader_Home" xml:space="preserve">
-    <value>Home</value>
+  <data name="PopularTextBlock.Text" xml:space="preserve">
+    <value>Popular macros</value>
   </data>
-  <data name="TabHeader_Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
-    <value>Macros</value>
-  </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
-    <value>Macro</value>
-  </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
-  </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
-  </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
-    <value>Use statistics</value>
-  </data>
-  <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
-  </data>
-  <data name="HotKeyOption_Modifiers" xml:space="preserve">
-    <value>Modifiers</value>
-  </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
-    <value>Start Macro HotKey</value>
+  <data name="RecentTextBlock.Text" xml:space="preserve">
+    <value>Recent macros</value>
   </data>
 </root>

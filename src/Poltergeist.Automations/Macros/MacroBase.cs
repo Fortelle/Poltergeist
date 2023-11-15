@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Common.Structures;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
@@ -98,15 +99,15 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         
         Statistics.Add(new("total_run_count", 0)
         {
-            Title = "Total run count",
+            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
         });
         Statistics.Add(new("total_run_duration", default(TimeSpan))
         {
-            Title = "Total run duration",
+            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
         });
         Statistics.Add(new("last_run_time", default(DateTime))
         {
-            Title = "Last run time",
+            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
         });
 
         OnInitialize();

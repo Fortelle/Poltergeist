@@ -117,58 +117,130 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="AfterCompletion_Category" xml:space="preserve">
+    <value>After Completion</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="AfterCompletion_CompletionAction_ExitApplication" xml:space="preserve">
+    <value>Exit application</value>
   </data>
-  <data name="NavigationViewItem_About.Content" xml:space="preserve">
-    <value>About</value>
+  <data name="AfterCompletion_CompletionAction_HibernateSystem" xml:space="preserve">
+    <value>Hibernate system</value>
   </data>
-  <data name="NavigationViewItem_Debug.Content" xml:space="preserve">
-    <value>Debug</value>
+  <data name="AfterCompletion_CompletionAction_LockScreen" xml:space="preserve">
+    <value>Lock screen</value>
   </data>
-  <data name="NavigationViewItem_Home.Content" xml:space="preserve">
-    <value>Home</value>
+  <data name="AfterCompletion_CompletionAction_LogOffSystem" xml:space="preserve">
+    <value>Log off system</value>
   </data>
-  <data name="NavigationViewItem_Settings.Content" xml:space="preserve">
-    <value>Settings</value>
+  <data name="AfterCompletion_CompletionAction_None" xml:space="preserve">
+    <value>None</value>
   </data>
-  <data name="TabHeader_About" xml:space="preserve">
-    <value>About</value>
+  <data name="AfterCompletion_CompletionAction_RestoreApplication" xml:space="preserve">
+    <value>Restore application</value>
   </data>
-  <data name="TabHeader_Debug" xml:space="preserve">
-    <value>Debug</value>
+  <data name="AfterCompletion_CompletionAction_ShutdownSystem" xml:space="preserve">
+    <value>Shutdown system</value>
   </data>
-  <data name="TabHeader_Home" xml:space="preserve">
-    <value>Home</value>
+  <data name="AfterCompletion_Option_Action" xml:space="preserve">
+    <value>Action</value>
   </data>
-  <data name="TabHeader_Settings" xml:space="preserve">
-    <value>Settings</value>
+  <data name="AfterCompletion_Option_AllowError" xml:space="preserve">
+    <value>Allow error</value>
   </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
-    <value>Macros</value>
+  <data name="AfterCompletion_Option_AllowError_Description" xml:space="preserve">
+    <value>Always execute the action even if the macro ends with an error.</value>
   </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
-    <value>Macro</value>
+  <data name="AfterCompletion_Option_MinimumTime" xml:space="preserve">
+    <value>Minimum run time (seconds)</value>
   </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
+  <data name="AfterCompletion_Option_MinimumTime_Description" xml:space="preserve">
+    <value>Do not execute the action if the run time of the macro is less than the minimum value.</value>
   </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
+  <data name="CreateShortcut_Description" xml:space="preserve">
+    <value>Creates a desktop shortcut (*.lnk) for launching the macro directly.</value>
   </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
-    <value>Use statistics</value>
+  <data name="CreateShortcut_Dialog_AutoClose" xml:space="preserve">
+    <value>Exit the application on complete</value>
   </data>
-  <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
+  <data name="CreateShortcut_Dialog_AutoStart" xml:space="preserve">
+    <value>Run the macro on startup</value>
   </data>
-  <data name="HotKeyOption_Modifiers" xml:space="preserve">
-    <value>Modifiers</value>
+  <data name="CreateShortcut_Dialog_SingleMode" xml:space="preserve">
+    <value>Use the single macro layout</value>
   </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
-    <value>Start Macro HotKey</value>
+  <data name="CreateShortcut_Dialog_Title" xml:space="preserve">
+    <value>Create Shortcut</value>
+  </data>
+  <data name="CreateShortcut_Filter" xml:space="preserve">
+    <value>Desktop shortcut(*.lnk)</value>
+  </data>
+  <data name="CreateShortcut_Title" xml:space="preserve">
+    <value>Create shortcut</value>
+  </data>
+  <data name="Dashboard_Header" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="DialogButton_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DialogButton_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="DialogButton_Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="DialogButton_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Log_Header" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="Loops_Category" xml:space="preserve">
+    <value>Loops</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_ProgressText" xml:space="preserve">
+    <value>Iteration {0}</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_Subtext" xml:space="preserve">
+    <value>running...</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_SuccessText" xml:space="preserve">
+    <value>complete</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_Text" xml:space="preserve">
+    <value>Loop</value>
+  </data>
+  <data name="Loops_Instrument_Title" xml:space="preserve">
+    <value>Loops:</value>
+  </data>
+  <data name="Loops_Option_Count" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Loops_Option_Duration" xml:space="preserve">
+    <value>Duration (seconds)</value>
+  </data>
+  <data name="Loops_Option_Enable" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="OpenMacroFolder_Description" xml:space="preserve">
+    <value>Opens the macro folder in Windows Explorer.</value>
+  </data>
+  <data name="OpenMacroFolder_Title" xml:space="preserve">
+    <value>Open macro folder</value>
+  </data>
+  <data name="Statistic_LastRunTime" xml:space="preserve">
+    <value>Last run time</value>
+  </data>
+  <data name="Statistic_TotalIterationCount" xml:space="preserve">
+    <value>Total iteration count</value>
+  </data>
+  <data name="Statistic_TotalRunCount" xml:space="preserve">
+    <value>Total run count</value>
+  </data>
+  <data name="Statistic_TotalRunDuration" xml:space="preserve">
+    <value>Total run duration</value>
+  </data>
+  <data name="Terminal_Header" xml:space="preserve">
+    <value>Terminal</value>
   </data>
 </root>

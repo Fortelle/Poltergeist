@@ -117,58 +117,130 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="AfterCompletion_Category" xml:space="preserve">
+    <value>完成后</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="AfterCompletion_CompletionAction_ExitApplication" xml:space="preserve">
+    <value>退出程序</value>
   </data>
-  <data name="NavigationViewItem_About.Content" xml:space="preserve">
-    <value>About</value>
+  <data name="AfterCompletion_CompletionAction_HibernateSystem" xml:space="preserve">
+    <value>睡眠</value>
   </data>
-  <data name="NavigationViewItem_Debug.Content" xml:space="preserve">
-    <value>Debug</value>
+  <data name="AfterCompletion_CompletionAction_LockScreen" xml:space="preserve">
+    <value>锁定屏幕</value>
   </data>
-  <data name="NavigationViewItem_Home.Content" xml:space="preserve">
-    <value>Home</value>
+  <data name="AfterCompletion_CompletionAction_LogOffSystem" xml:space="preserve">
+    <value>注销</value>
   </data>
-  <data name="NavigationViewItem_Settings.Content" xml:space="preserve">
-    <value>Settings</value>
+  <data name="AfterCompletion_CompletionAction_None" xml:space="preserve">
+    <value>无</value>
   </data>
-  <data name="TabHeader_About" xml:space="preserve">
-    <value>About</value>
+  <data name="AfterCompletion_CompletionAction_RestoreApplication" xml:space="preserve">
+    <value>回到程序</value>
   </data>
-  <data name="TabHeader_Debug" xml:space="preserve">
-    <value>Debug</value>
+  <data name="AfterCompletion_CompletionAction_ShutdownSystem" xml:space="preserve">
+    <value>关机</value>
   </data>
-  <data name="TabHeader_Home" xml:space="preserve">
-    <value>Home</value>
+  <data name="AfterCompletion_Option_Action" xml:space="preserve">
+    <value>操作</value>
   </data>
-  <data name="TabHeader_Settings" xml:space="preserve">
-    <value>Settings</value>
+  <data name="AfterCompletion_Option_AllowError" xml:space="preserve">
+    <value>允许错误</value>
   </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
-    <value>Macros</value>
+  <data name="AfterCompletion_Option_AllowError_Description" xml:space="preserve">
+    <value>即使宏运行出错依然执行操作</value>
   </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
-    <value>Macro</value>
+  <data name="AfterCompletion_Option_MinimumTime" xml:space="preserve">
+    <value>最低运行时间（秒）</value>
   </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
+  <data name="AfterCompletion_Option_MinimumTime_Description" xml:space="preserve">
+    <value>如果宏的运行时间低于一定值则不执行操作</value>
   </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
+  <data name="CreateShortcut_Description" xml:space="preserve">
+    <value>创建一个直接启动宏的桌面快捷方式（*.lnk）。</value>
   </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
-    <value>Use statistics</value>
+  <data name="CreateShortcut_Dialog_AutoClose" xml:space="preserve">
+    <value>宏完成时退出程序</value>
   </data>
-  <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
+  <data name="CreateShortcut_Dialog_AutoStart" xml:space="preserve">
+    <value>程序启动时直接运行宏</value>
   </data>
-  <data name="HotKeyOption_Modifiers" xml:space="preserve">
-    <value>Modifiers</value>
+  <data name="CreateShortcut_Dialog_SingleMode" xml:space="preserve">
+    <value>界面采用单宏模式</value>
   </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
-    <value>Start Macro HotKey</value>
+  <data name="CreateShortcut_Dialog_Title" xml:space="preserve">
+    <value>创建快捷方式</value>
+  </data>
+  <data name="CreateShortcut_Filter" xml:space="preserve">
+    <value>桌面快捷方式 (*.lnk)</value>
+  </data>
+  <data name="CreateShortcut_Title" xml:space="preserve">
+    <value>创建快捷方式</value>
+  </data>
+  <data name="Dashboard_Header" xml:space="preserve">
+    <value>仪表板</value>
+  </data>
+  <data name="DialogButton_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DialogButton_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="DialogButton_Ok" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="DialogButton_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Log_Header" xml:space="preserve">
+    <value>日志</value>
+  </data>
+  <data name="Loops_Category" xml:space="preserve">
+    <value>循环</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_ProgressText" xml:space="preserve">
+    <value>第{0}次</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_Subtext" xml:space="preserve">
+    <value>运行中...</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_SuccessText" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="Loops_Instrument_ProgressBar_Text" xml:space="preserve">
+    <value>循环</value>
+  </data>
+  <data name="Loops_Instrument_Title" xml:space="preserve">
+    <value>循环：</value>
+  </data>
+  <data name="Loops_Option_Count" xml:space="preserve">
+    <value>次数</value>
+  </data>
+  <data name="Loops_Option_Duration" xml:space="preserve">
+    <value>持续时间（秒）</value>
+  </data>
+  <data name="Loops_Option_Enable" xml:space="preserve">
+    <value>启用</value>
+  </data>
+  <data name="OpenMacroFolder_Description" xml:space="preserve">
+    <value>在资源管理器中打开宏文件夹。</value>
+  </data>
+  <data name="OpenMacroFolder_Title" xml:space="preserve">
+    <value>打开宏文件夹</value>
+  </data>
+  <data name="Statistic_LastRunTime" xml:space="preserve">
+    <value>上次运行时间</value>
+  </data>
+  <data name="Statistic_TotalIterationCount" xml:space="preserve">
+    <value>总计循环次数</value>
+  </data>
+  <data name="Statistic_TotalRunCount" xml:space="preserve">
+    <value>总计运行次数</value>
+  </data>
+  <data name="Statistic_TotalRunDuration" xml:space="preserve">
+    <value>总计运行时长</value>
+  </data>
+  <data name="Terminal_Header" xml:space="preserve">
+    <value>终端</value>
   </data>
 </root>

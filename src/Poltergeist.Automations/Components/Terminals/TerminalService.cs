@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -10,7 +11,7 @@ namespace Poltergeist.Automations.Components.Terminals;
 // todo: move to default transient
 public class TerminalService : MacroService
 {
-    public string PanelHeader { get; set; } = "Terminal";
+    public string PanelHeader { get; set; } = ResourceHelper.Localize("Poltergeist.Automations/Resources/Terminal_Header");
     public string PanelName { get; set; } = "poltergeist-terminal";
     public string? WorkingDirectory { get; set; }
 

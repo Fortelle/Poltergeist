@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -11,7 +10,7 @@ public class DashboardService : MacroService
 
     public DashboardService(MacroProcessor processor, PanelService panelService) : base(processor)
     {
-        Panel = panelService.Create(new("poltergeist-dashboard", "Dashboard")
+        Panel = panelService.Create(new("poltergeist-dashboard", ResourceHelper.Localize("Poltergeist.Automations/Resources/Dashboard_Header"))
         {
             ToLeft = true,
         });

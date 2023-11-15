@@ -41,7 +41,7 @@
                     />
 
                 <TextBlock
-                    Text="Options"
+                    x:Uid="/Poltergeist/Groups/OptionsTextBlock"
                     Style="{StaticResource Header3Style}"
                     />
 

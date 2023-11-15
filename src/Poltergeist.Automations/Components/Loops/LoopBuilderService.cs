@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Components.Panels;
+﻿using Poltergeist.Automations.Common;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Processors;
@@ -276,15 +277,15 @@ public class LoopBuilderService : MacroService
                 {
                     var listInstrument = dashboard.Create<ProgressListInstrument>(instrument =>
                     {
-                        instrument.Title = Title ?? "Loops:";
+                        instrument.Title = Title ?? ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_Title");
                         instrument.IsSticky = IsSticky;
                     });
 
                     listInstrument.Add(new(ProgressStatus.Busy)
                     {
-                        Text = $"Loop",
+                        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_Text"),
                         Progress = MaxCount <= 0 ? 1 : 0,
-                        Subtext = "running...",
+                        Subtext = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_Subtext"),
                     });
 
                     IterationStarted += () =>
@@ -309,7 +310,7 @@ public class LoopBuilderService : MacroService
                     {
                         listInstrument.Update(1, new()
                         {
-                            Text = $"Iteration {IterationIndex + 1}",
+                            Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1),
                             Progress = GetProgress(current, max),
                         });
                     };
@@ -320,7 +321,7 @@ public class LoopBuilderService : MacroService
                         {
                             listInstrument.Update(0, new(ProgressStatus.Success)
                             {
-                                Subtext = "complete",
+                                Subtext = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_SuccessText"),
                             });
                         }
                         else
@@ -338,7 +339,7 @@ public class LoopBuilderService : MacroService
                 {
                     var gridInstrument = dashboard.Create<ProgressGridInstrument>(instrument =>
                     {
-                        instrument.Title = Title ?? "Loops:";
+                        instrument.Title = Title ?? ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_Title");
                         instrument.IsSticky = IsSticky;
                     });
 
@@ -374,7 +375,7 @@ public class LoopBuilderService : MacroService
                 {
                     var listInstrument = dashboard.Create<ProgressListInstrument>(instrument =>
                     {
-                        instrument.Title = Title ?? "Loops:";
+                        instrument.Title = Title ?? ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_Title");
                         instrument.IsSticky = IsSticky;
                     });
 
@@ -384,7 +385,7 @@ public class LoopBuilderService : MacroService
                         {
                             listInstrument.Add(new(ProgressStatus.Idle)
                             {
-                                Text = $"Iteration {i + 1}",
+                                Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", i + 1),
                             });
                         }
                     }
@@ -393,7 +394,7 @@ public class LoopBuilderService : MacroService
                     {
                         listInstrument.Update(IterationIndex, new(ProgressStatus.Busy)
                         {
-                            Text = $"Iteration {IterationIndex + 1}",
+                            Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1),
                         });
                     };
 
@@ -401,7 +402,7 @@ public class LoopBuilderService : MacroService
                     {
                         listInstrument.Update(IterationIndex, new()
                         {
-                            Text = $"Iteration {IterationIndex + 1}",
+                            Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1),
                             Progress = GetProgress(current, max),
                         });
                     };

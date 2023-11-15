@@ -16,8 +16,8 @@
         <StackPanel>
 
             <TextBlock
-            Text="Settings"
-            Style="{StaticResource Header1Style}"
+                x:Uid="/Poltergeist/Settings/HeaderTextBlock"
+                Style="{StaticResource Header1Style}"
             />
 
             <Grid
@@ -32,7 +32,7 @@
                     Grid.Column="0"
                     >
                     <TextBlock
-                        Text="Local Settings"
+                        x:Uid="/Poltergeist/Settings/LocalSettingsTextBlock"
                         Style="{StaticResource Header2Style}"
                         />
 
@@ -45,7 +45,7 @@
                     Grid.Column="1"
                     >
                     <TextBlock
-                        Text="Global Options"
+                        x:Uid="/Poltergeist/Settings/GlobalOptionsTextBlock"
                         Style="{StaticResource Header2Style}"
                         />
 

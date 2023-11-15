@@ -13,6 +13,7 @@ namespace Poltergeist.Views;
 public sealed partial class OptionListView : UserControl
 {
     public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(MacroOptions), typeof(OptionListView), new PropertyMetadata(null));
+    public static string UncategorizedGroupLabel = App.Localize("Poltergeist/Resources/Options_Uncategorized");
 
     public MacroOptions Options
     {
@@ -23,7 +24,7 @@ public sealed partial class OptionListView : UserControl
 
             OptionCVS = new CollectionViewSource()
             {
-                Source = value.Where(x => x.IsBrowsable).GroupBy(x => x.Category),
+                Source = value.Where(x => x.IsBrowsable).GroupBy(x => string.IsNullOrEmpty(x.Category) ? UncategorizedGroupLabel : x.Category),
                 IsSourceGrouped = true,
             };
         }

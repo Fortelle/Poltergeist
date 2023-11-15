@@ -117,58 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="DescriptionTextBlock.Text" xml:space="preserve">
+    <value>Poltergeist是一个基于.NET开发的桌面自动化框架。</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="GitHubTextBlock.Text" xml:space="preserve">
+    <value>GitHub：</value>
   </data>
-  <data name="NavigationViewItem_About.Content" xml:space="preserve">
-    <value>About</value>
+  <data name="HeaderTextBlock.Text" xml:space="preserve">
+    <value>关于Poltergeist</value>
   </data>
-  <data name="NavigationViewItem_Debug.Content" xml:space="preserve">
-    <value>Debug</value>
+  <data name="LicenseTextBlock.Text" xml:space="preserve">
+    <value>许可协议：</value>
   </data>
-  <data name="NavigationViewItem_Home.Content" xml:space="preserve">
-    <value>Home</value>
+  <data name="TabHeader" xml:space="preserve">
+    <value>关于</value>
   </data>
-  <data name="NavigationViewItem_Settings.Content" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="TabHeader_About" xml:space="preserve">
-    <value>About</value>
-  </data>
-  <data name="TabHeader_Debug" xml:space="preserve">
-    <value>Debug</value>
-  </data>
-  <data name="TabHeader_Home" xml:space="preserve">
-    <value>Home</value>
-  </data>
-  <data name="TabHeader_Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
-    <value>Macros</value>
-  </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
-    <value>Macro</value>
-  </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
-  </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
-  </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
-    <value>Use statistics</value>
-  </data>
-  <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
-  </data>
-  <data name="HotKeyOption_Modifiers" xml:space="preserve">
-    <value>Modifiers</value>
-  </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
-    <value>Start Macro HotKey</value>
+  <data name="VersionTextBlock.Text" xml:space="preserve">
+    <value>版本：</value>
   </data>
 </root>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Configs;
 
 namespace Poltergeist.Automations.Components.Interactions;
@@ -7,6 +8,10 @@ public class DialogModel : InteractionModel
 {
     public const string DialogResultKey = "dialog_result";
     public const string DialogValueKey = "dialog_value_{0}";
+    private static readonly string YesButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Yes");
+    private static readonly string NoButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_No");
+    private static readonly string OkButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Ok");
+    private static readonly string CancelButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Cancel");
 
     public string? Title { get; set; }
     public string? Text { get; set; }
@@ -30,11 +35,11 @@ public class DialogModel : InteractionModel
     {
         return Type switch
         {
-            DialogType.None => (null, null, "OK"),
-            DialogType.Ok => (null, null, "OK"),
-            DialogType.OkCancel => ("OK", null, "Cancel"),
-            DialogType.YesNo => ("Yes", null, "No"),
-            DialogType.YesNoCancel => ("Yes", "No", "Cancel"),
+            DialogType.None => (null, null, OkButtonText),
+            DialogType.Ok => (null, null, OkButtonText),
+            DialogType.OkCancel => (OkButtonText, null, CancelButtonText),
+            DialogType.YesNo => (YesButtonText, null, NoButtonText),
+            DialogType.YesNoCancel => (YesButtonText, NoButtonText, CancelButtonText),
             _ => (null, null, null),
         };
     }

@@ -41,7 +41,7 @@
             <StackPanel>
 
                 <TextBlock
-                    Text="Favorite macros" 
+                    x:Uid="/Poltergeist/Home/FavoriteTextBlock"
                     Style="{StaticResource Header2Style}"
                     />
 
@@ -91,9 +91,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                
+
                 <TextBlock
-                    Text="Groups" 
+                    x:Uid="/Poltergeist/Home/GroupTextBlock"
                     Style="{StaticResource Header2Style}"
                     />
 
@@ -132,7 +132,7 @@
                                             Text="{Binding Title, Mode=OneTime}"
                                             FontWeight="SemiBold"
                                             />
-                                        <Run Text="("/><Run Text="{Binding Macros.Count, Mode=OneTime}"/><Run Text=")"/>
+                                        <Run Text="(" FontSize="12" Foreground="Gray" /><Run Text="{Binding Macros.Count, Mode=OneTime}" FontSize="12" Foreground="Gray"/><Run Text=")" FontSize="12" Foreground="Gray"/>
                                     </TextBlock>
                                 </StackPanel>
                             </Button>
@@ -154,7 +154,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock
-                Text="Recent macros" 
+                x:Uid="/Poltergeist/Home/RecentTextBlock"
                 Style="{StaticResource Header2Style}"
                 />
 
@@ -217,7 +217,7 @@
 
             <TextBlock
                 Grid.Row="2"
-                Text="Popular macros" 
+                x:Uid="/Poltergeist/Home/PopularTextBlock"
                 Style="{StaticResource Header2Style}"
                 />
 

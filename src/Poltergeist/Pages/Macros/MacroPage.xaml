@@ -20,6 +20,7 @@
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:TypeNameConverter x:Key="TypeNameConverter"/>
         <converters:TimeSpanToHhhmmssConverter x:Key="TimeSpanToHhhmmssConverter"/>
+        <local:EndReasonToTextConverter x:Key="EndReasonToTextConverter"/>
     </Page.Resources>
     
     <Grid
@@ -55,7 +56,9 @@
                     <Thickness x:Key="PivotItemMargin">16</Thickness>
                 </Pivot.Resources>
 
-                <PivotItem Header="Information">
+                <PivotItem
+                    x:Uid="/Poltergeist/Macros/InformationPivotItem"
+                    >
                     <ScrollViewer
                         Style="{StaticResource VerticalScrollViewerStyle}"
                         >
@@ -108,15 +111,19 @@
                         </StackPanel>
                     </ScrollViewer>
                 </PivotItem>
-            
-                <PivotItem Header="Options">
+
+                <PivotItem
+                    x:Uid="/Poltergeist/Macros/OptionsPivotItem"
+                    >
                     <local1:OptionListView
                         Options="{x:Bind ViewModel.UserOptions, Mode=OneTime}"
                         IsLocked="{x:Bind ViewModel.IsRunning, Mode=OneWay}" 
                         />
                 </PivotItem>
 
-                <PivotItem Header="Actions">
+                <PivotItem
+                    x:Uid="/Poltergeist/Macros/ActionsPivotItem"
+                    >
                     <ScrollViewer
                         >
                         <ItemsControl
@@ -170,9 +177,9 @@
                                                     Text="{Binding Description, Mode=OneTime}"
                                                     />
                                                 <Button
+                                                    x:Uid="/Poltergeist/Macros/ActionExecuteButton"
                                                     Grid.Row="1"
                                                     HorizontalAlignment="Right"
-                                                    Content="Execute"
                                                     Style="{StaticResource AccentButtonStyle}"
                                                     Click="HyperlinkButton_Click"
                                                     />
@@ -183,47 +190,11 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer> 
-                    <!--<ItemsControl
-                        ItemsSource="{x:Bind ViewModel.Macro.Actions, Mode=OneTime}"
-                        >
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <HyperlinkButton
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0, 0, 0, 8"
-                                    HorizontalContentAlignment="Stretch"
-                                    Click="HyperlinkButton_Click"
-                                    >
-                                    <Grid
-                                        Margin="0, 4"
-                                        >
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="48" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <FontIcon
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            Margin="0"
-                                            Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
-                                            HorizontalAlignment="Center"
-                                            />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            TextTrimming="CharacterEllipsis"
-                                            HorizontalAlignment="Stretch"
-                                            TextAlignment="Left"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Text, Mode=OneTime}"
-                                            />
-                                    </Grid>
-                                </HyperlinkButton>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>-->
                 </PivotItem>
 
-                <PivotItem Header="Statistics">
+                <PivotItem
+                    x:Uid="/Poltergeist/Macros/StatisticsPivotItem"
+                    >
                     <ListView
                         ItemsSource="{x:Bind ViewModel.Statistics, Mode=OneWay}"
                         Margin="0"
@@ -246,7 +217,9 @@
                     </ListView>
                 </PivotItem>
 
-                <PivotItem Header="History">
+                <PivotItem
+                    x:Uid="/Poltergeist/Macros/HistoryPivotItem"
+                    >
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
@@ -261,22 +234,22 @@
                                 <ColumnDefinition Width=".3*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
+                                x:Uid="/Poltergeist/Macros/HistoryStartTimeTextBlock"
                                 Grid.Column="0"
                                 Margin="0"
-                                Text="Start Time"
                                 FontWeight="SemiBold"
                                 Padding="16, 0"
                                 />
                             <TextBlock
+                                x:Uid="/Poltergeist/Macros/HistoryDurationTextBlock"
                                 Grid.Column="1"
                                 TextAlignment="Center"
-                                Text="Duration"
                                 FontWeight="SemiBold"
                                 />
                             <TextBlock
+                                x:Uid="/Poltergeist/Macros/HistoryResultTextBlock"
                                 Grid.Column="2"
                                 TextAlignment="Center"
-                                Text="Result"
                                 FontWeight="SemiBold"
                                 />
                         </Grid>
@@ -313,7 +286,7 @@
                                                 Grid.Column="2"
                                                 TextAlignment="Center"
                                                 VerticalAlignment="Center"
-                                                Text="{Binding EndReason, Mode=OneTime}"
+                                                Text="{Binding EndReason, Converter={StaticResource EndReasonToTextConverter}, Mode=OneTime}"
                                                 />
                                         </Grid>
                                     </DataTemplate>
@@ -348,15 +321,15 @@
                     IsOpen="False"
                     >
                     <AppBarButton
+                        x:Uid="/Poltergeist/Macros/RunAppBarButton"
                         IsCompact="True"
                         Icon="Play"
-                        Label="Run"
                         Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
                         IsEnabled="{x:Bind ViewModel.IsRunning, Converter={StaticResource NotConverter}, Mode=OneWay}"
                         />
                     <AppBarButton
+                        x:Uid="/Poltergeist/Macros/StopAppBarButton"
                         Icon="Stop"
-                        Label="Stop"
                         Command="{x:Bind ViewModel.StopCommand, Mode=OneTime}"
                         IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
                         />
@@ -364,8 +337,8 @@
                     <AppBarSeparator />
 
                     <AppBarButton 
+                        x:Uid="/Poltergeist/Macros/FavoriteAppBarButton"
                         Icon="OutlineStar"
-                        Label="Favorite"
                         Command="{x:Bind ViewModel.FavoriteCommand, Mode=OneTime}"
                         >
                         <interactivity:Interaction.Behaviors>

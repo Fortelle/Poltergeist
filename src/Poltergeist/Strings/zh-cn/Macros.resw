@@ -117,58 +117,67 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDisplayName" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="ActionExecuteButton.Content" xml:space="preserve">
+    <value>执行</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
-    <value>Poltergeist</value>
+  <data name="ActionsPivotItem.Header" xml:space="preserve">
+    <value>操作</value>
   </data>
-  <data name="NavigationViewItem_About.Content" xml:space="preserve">
-    <value>About</value>
+  <data name="EndReason_Complete" xml:space="preserve">
+    <value>完成</value>
   </data>
-  <data name="NavigationViewItem_Debug.Content" xml:space="preserve">
-    <value>Debug</value>
+  <data name="EndReason_ErrorOccurred" xml:space="preserve">
+    <value>发生错误</value>
   </data>
-  <data name="NavigationViewItem_Home.Content" xml:space="preserve">
-    <value>Home</value>
+  <data name="EndReason_None" xml:space="preserve">
+    <value>未知</value>
   </data>
-  <data name="NavigationViewItem_Settings.Content" xml:space="preserve">
-    <value>Settings</value>
+  <data name="EndReason_Purposed" xml:space="preserve">
+    <value>部分完成</value>
   </data>
-  <data name="TabHeader_About" xml:space="preserve">
-    <value>About</value>
+  <data name="EndReason_SystemShutdown" xml:space="preserve">
+    <value>系统关机</value>
   </data>
-  <data name="TabHeader_Debug" xml:space="preserve">
-    <value>Debug</value>
+  <data name="EndReason_UserAborted" xml:space="preserve">
+    <value>用户中止</value>
   </data>
-  <data name="TabHeader_Home" xml:space="preserve">
-    <value>Home</value>
+  <data name="FavoriteAppBarButton.Label" xml:space="preserve">
+    <value>收藏</value>
   </data>
-  <data name="TabHeader_Settings" xml:space="preserve">
-    <value>Settings</value>
+  <data name="HistoryDurationTextBlock.Text" xml:space="preserve">
+    <value>时长</value>
   </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
-    <value>Macros</value>
+  <data name="HistoryPivotItem.Header" xml:space="preserve">
+    <value>历史记录</value>
   </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
-    <value>Macro</value>
+  <data name="HistoryResultTextBlock.Text" xml:space="preserve">
+    <value>结果</value>
   </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
+  <data name="HistoryStartTimeTextBlock.Text" xml:space="preserve">
+    <value>开始时间</value>
   </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
+  <data name="InformationPivotItem.Header" xml:space="preserve">
+    <value>常规</value>
   </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
-    <value>Use statistics</value>
+  <data name="LogNotExist" xml:space="preserve">
+    <value>记录文件不存在。</value>
   </data>
-  <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
+  <data name="MacroNotExist" xml:space="preserve">
+    <value>宏“{0}”不存在。</value>
   </data>
-  <data name="HotKeyOption_Modifiers" xml:space="preserve">
-    <value>Modifiers</value>
+  <data name="MacroUnavailable" xml:space="preserve">
+    <value>宏“{0}”不可用。</value>
   </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
-    <value>Start Macro HotKey</value>
+  <data name="OptionsPivotItem.Header" xml:space="preserve">
+    <value>参数设置</value>
+  </data>
+  <data name="RunAppBarButton.Label" xml:space="preserve">
+    <value>运行</value>
+  </data>
+  <data name="StatisticsPivotItem.Header" xml:space="preserve">
+    <value>统计</value>
+  </data>
+  <data name="StopAppBarButton.Label" xml:space="preserve">
+    <value>停止</value>
   </data>
 </root>

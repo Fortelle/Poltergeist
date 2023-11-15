@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Configs;
+﻿using Poltergeist.Automations.Common;
+using Poltergeist.Automations.Configs;
 using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Services;
@@ -13,8 +14,8 @@ public class HotKeyManager
         {
             settings.Add(new OptionItem<HotKey>(StartKey)
             {
-                Category = "Macro",
-                DisplayLabel = "Start Macro HotKey",
+                Category = ResourceHelper.Localize("Poltergeist/Resources/LocalSettings_Macro"),
+                DisplayLabel = ResourceHelper.Localize("Poltergeist/Resources/LocalSettings_Macro_StartMacroHotKey"),
             });
         };
 

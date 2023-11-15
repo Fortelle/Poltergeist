@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Concurrent;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.UI;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -64,7 +61,7 @@ public class MacroLogger : KernelService
             });
         }
 
-        panelService.Create(new("poltergeist-logger", "Log", LogInstrument)
+        panelService.Create(new("poltergeist-logger", ResourceHelper.Localize("Poltergeist.Automations/Resources/Log_Header"), LogInstrument)
         {
             IsFilled = true,
         });

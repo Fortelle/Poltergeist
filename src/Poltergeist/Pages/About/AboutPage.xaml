@@ -17,21 +17,21 @@
         </Grid.RowDefinitions>
 
         <TextBlock
-            Text="About Poltergeist"
+            x:Uid="/Poltergeist/About/HeaderTextBlock"
             Style="{StaticResource Header1Style}"
             Grid.Row="0"
             />
-
+        
         <ScrollViewer
             Style="{StaticResource VerticalScrollViewerStyle}"
             Grid.Row="1"
             >
             <StackPanel>
                 <TextBlock
+                    x:Uid="/Poltergeist/About/DescriptionTextBlock"
                     Style="{StaticResource BodyTextStyle}"
                     Margin="0, 0, 0, 32"
                     >
-                    <Run Text="{x:Bind ViewModel.Description, Mode=OneTime}"/>
                 </TextBlock>
 
                 <Grid Width="300" HorizontalAlignment="Left">
@@ -45,10 +45,10 @@
                         <RowDefinition Height="32"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Version:" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" x:Uid="/Poltergeist/About/VersionTextBlock" />
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.Version, Mode=OneTime}" />
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="License:" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" x:Uid="/Poltergeist/About/LicenseTextBlock" />
                     <TextBlock Grid.Row="1" Grid.Column="1">
                         <Hyperlink 
                             NavigateUri="{x:Bind ViewModel.LicenseUrl, Mode=OneTime}"
@@ -58,7 +58,7 @@
                         </Hyperlink>
                     </TextBlock>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="GitHub:" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" x:Uid="/Poltergeist/About/GitHubTextBlock" />
                     <TextBlock Grid.Row="2" Grid.Column="1">
                         <Hyperlink
                             NavigateUri="{x:Bind ViewModel.GitHubUrl, Mode=OneTime}">

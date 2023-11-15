@@ -1,6 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
 
@@ -10,20 +9,24 @@ internal static class ActionHelper
 {
     public static readonly MacroAction OpenLocalFolder = new()
     {
-        Text = "Open macro folder",
-        Description = "Opens the macro folder in Windows Explorer.",
+        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/OpenMacroFolder_Title"),
+        Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/OpenMacroFolder_Description"),
         Glyph = "\uED25",
         Execute = args =>
         {
-            if (!Directory.Exists(args.Macro.PrivateFolder)) return;
+            if (!Directory.Exists(args.Macro.PrivateFolder))
+            {
+                return;
+            }
+
             System.Diagnostics.Process.Start("explorer.exe", args.Macro.PrivateFolder);
         },
     };
 
     public static readonly MacroAction CreateShortcut = new()
     {
-        Text = "Create shortcut",
-        Description = "Creates a desktop shortcut (*.lnk) for launching the macro directly.",
+        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Title"),
+        Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Description"),
         Glyph = "\uE8E5",
         Execute = async args =>
         {
@@ -47,7 +50,7 @@ internal static class ActionHelper
 
             var optiondialog = new DialogModel()
             {
-                Title = "Create shortcut",
+                Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_Title"),
                 Type = DialogType.OkCancel,
                 Text = path,
                 Inputs = new[]
@@ -55,17 +58,17 @@ internal static class ActionHelper
                     new BoolOption("autostart")
                     {
                         Mode = BoolOptionMode.CheckBox,
-                        Text = "Run the macro on startup",
+                        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_AutoStart"),
                     },
                     new BoolOption("autoclose")
                     {
                         Mode = BoolOptionMode.CheckBox,
-                        Text = "Exit the application on complete",
+                        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_AutoClose"),
                     },
                     new BoolOption("singlemode")
                     {
                         Mode = BoolOptionMode.CheckBox,
-                        Text = "Use the single macro layout",
+                        Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_SingleMode"),
                     },
                 },
             };

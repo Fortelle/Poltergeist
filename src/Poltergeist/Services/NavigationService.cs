@@ -1,5 +1,4 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-
 using Poltergeist.Contracts.Services;
 
 namespace Poltergeist.Services;
@@ -55,7 +54,13 @@ public class NavigationService : INavigationService
                 return false;
             }
 
-            var header = info.CreateHeader?.Invoke(content) ?? info.Header;
+            var header = info.CreateHeader?.Invoke(content);
+            header ??= info.Header;
+            header ??= App.Localize($"Poltergeist/Resources/TabHeader_{info.Key}");
+            if (header is null || (header is string s && string.IsNullOrEmpty(s)))
+            {
+                header = " ";
+            }
 
             tab = new TabViewItem
             {
@@ -88,14 +93,3 @@ public class NavigationService : INavigationService
     }
 
 }
-
-public class NavigationInfo
-{
-    public required string Key { get; set; }
-    public string? Header { get; set; }
-    public string? Glyph { get; set; }
-    public bool IsFooter { get; set; }
-
-    public Func<string[], object?, object?>? CreateContent { get; set; }
-    public Func<object, object>? CreateHeader { get; set; }
-};

@@ -27,15 +27,15 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             var macro = macroManager.GetMacro(macrokey);
             if (macro is null)
             {
-                App.ShowTeachingTip($"Macro \"{macrokey}\" does not exist.");
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroNotExist", macrokey));
                 return null;
             }
             if (!macro.IsAvailable)
             {
-                App.ShowTeachingTip($"Macro \"{macrokey}\" is unavailable.");
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroUnavailable", macrokey));
                 return null;
             }
-
+            
             var macroPage = new MacroPage(new(macro));
             return macroPage;
         },
@@ -146,7 +146,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             var logFile = Path.Combine(ViewModel.Macro.PrivateFolder, "Logs", summary.ProcessId + ".log");
             if(!File.Exists(logFile))
             {
-                App.ShowTeachingTip("Log file not exists");
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));
                 return;
             }
 
@@ -159,5 +159,19 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             };
             process.Start();
         }
+    }
+
+}
+
+internal class EndReasonToTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        return App.Localize($"Poltergeist/Macros/EndReason_{value}");
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
     }
 }

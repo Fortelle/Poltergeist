@@ -57,7 +57,7 @@
             <NavigationView.MenuItems>
 
                 <NavigationViewItem
-                    Content="{x:Bind ViewModel.HomeInfo.Header, Mode=OneTime}"
+                    x:Uid="NavigationViewItem_Home"
                     Tag="{x:Bind ViewModel.HomeInfo.Key, Mode=OneTime}"
                     >
                     <NavigationViewItem.Icon>
@@ -70,7 +70,9 @@
 
                 <NavigationViewItemSeparator />
 
-                <NavigationViewItemHeader>Macros</NavigationViewItemHeader>
+                <NavigationViewItemHeader
+                    x:Uid="MacroNavigationViewItemHeader"
+                    />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <StackPanel>
@@ -78,19 +80,19 @@
             </NavigationView.PaneFooter>
             <NavigationView.FooterMenuItems>
 
-                    <NavigationViewItem
-                        Content="{x:Bind ViewModel.DebugInfo.Header, Mode=OneTime}"
-                        Visibility="{x:Bind ViewModel.IsDebug, Mode=OneTime}"
-                        SelectsOnInvoked="False"
-                        Tapped="DebugNavigationViewItem_Tapped"
-                        >
-                        <NavigationViewItem.Icon>
-                            <FontIcon
-                                FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                Glyph="{x:Bind ViewModel.DebugInfo.Glyph, Mode=OneTime}"
-                                />
-                        </NavigationViewItem.Icon>
-                    </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="NavigationViewItem_Debug"
+                    Visibility="{x:Bind ViewModel.IsDebug, Mode=OneTime}"
+                    SelectsOnInvoked="False"
+                    Tapped="DebugNavigationViewItem_Tapped"
+                    >
+                    <NavigationViewItem.Icon>
+                        <FontIcon
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            Glyph="{x:Bind ViewModel.DebugInfo.Glyph, Mode=OneTime}"
+                            />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem
                     Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource EmptyToVisibilityConverter}}"
                     >
@@ -133,7 +135,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem
-                    Content="{x:Bind ViewModel.AboutInfo.Header, Mode=OneTime}"
+                    x:Uid="NavigationViewItem_About"
                     Tag="{x:Bind ViewModel.AboutInfo.Key, Mode=OneTime}"
                     >
                     <NavigationViewItem.Icon>
@@ -145,7 +147,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem
-                    Content="{x:Bind ViewModel.SettingsInfo.Header, Mode=OneTime}"
+                    x:Uid="NavigationViewItem_Settings"
                     Tag="{x:Bind ViewModel.SettingsInfo.Key, Mode=OneTime}"
                     >
                     <NavigationViewItem.Icon>
