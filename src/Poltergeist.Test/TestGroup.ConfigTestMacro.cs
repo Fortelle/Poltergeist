@@ -111,6 +111,11 @@ public partial class TestGroup
                 Mode = PathOptionMode.FolderOpen
             },
 
+            new PasswordOption("password")
+            {
+                Category = "Others",
+            },
+
             new OptionItem<int>("test_option_a", 2),
             new OptionItem<int>("test_option_d", 2),
         };

@@ -62,6 +62,7 @@ public sealed partial class OptionControl : UserControl
 
             PathOption pathOption => new PickerOptionControl(pathOption),
 
+            PasswordOption passwordOption => new PasswordOptionControl(passwordOption),
             TextOption or OptionItem<string> => new TextBoxOptionControl(item),
 
             _ => new TextBlock()
