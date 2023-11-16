@@ -126,6 +126,9 @@
   <data name="EndReason_Complete" xml:space="preserve">
     <value>完成</value>
   </data>
+  <data name="EndReason_Empty" xml:space="preserve">
+    <value>无内容</value>
+  </data>
   <data name="EndReason_ErrorOccurred" xml:space="preserve">
     <value>发生错误</value>
   </data>

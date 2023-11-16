@@ -126,6 +126,9 @@
   <data name="EndReason_Complete" xml:space="preserve">
     <value>Complete</value>
   </data>
+  <data name="EndReason_Empty" xml:space="preserve">
+    <value>Empty</value>
+  </data>
   <data name="EndReason_ErrorOccurred" xml:space="preserve">
     <value>ErrorOccurred</value>
   </data>

@@ -43,7 +43,7 @@ public class WorkingService : KernelService
     {
         if(WorkProc == null && AsyncWorkProc == null)
         {
-            WorkProc = () => EndReason.Complete;
+            WorkProc = () => EndReason.Empty;
         }
 
         if(WorkProc != null)

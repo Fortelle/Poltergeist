@@ -8,5 +8,6 @@ public enum EndReason
     UserAborted,
     SystemShutdown,// todo
     ErrorOccurred,
+    Empty,
     Complete,
 }
