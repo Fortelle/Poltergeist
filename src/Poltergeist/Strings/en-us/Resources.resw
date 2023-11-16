@@ -163,7 +163,7 @@
     <value>Use statistics</value>
   </data>
   <data name="Options_Uncategorized" xml:space="preserve">
-    <value>Uncategorized</value>
+    <value>Default</value>
   </data>
   <data name="HotKeyOption_Modifiers" xml:space="preserve">
     <value>Modifiers</value>

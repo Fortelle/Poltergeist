@@ -37,6 +37,11 @@ public partial class TestGroup
             {
                 Category = "Basic",
             },
+            new OptionItem<string[]>("string_array")
+            {
+                DisplayLabel = "string[]",
+                Category = "Basic",
+            },
 
             new BoolOption("bool_switch")
             {
@@ -116,8 +121,14 @@ public partial class TestGroup
                 Category = "Others",
             },
 
-            new OptionItem<int>("test_option_a", 2),
-            new OptionItem<int>("test_option_d", 2),
+            new OptionItem<int>("test_option_a", 2)
+            {
+                Category = "Test",
+            },
+            new OptionItem<int>("test_option_d", 2)
+            {
+                Category = "Test",
+            },
         };
 
         public OptionTestMacro() : base("test_macrooptions")

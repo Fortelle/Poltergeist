@@ -23,7 +23,7 @@ public sealed partial class SwitchOptionControl : UserControl
         InitializeComponent();
 
         Item = item;
-        OnContent = "";
-        OffContent = "";
+        OnContent = null;
+        OffContent = null;
     }
 }

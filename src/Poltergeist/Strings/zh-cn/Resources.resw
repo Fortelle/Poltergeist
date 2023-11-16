@@ -163,7 +163,7 @@
     <value>启用统计</value>
   </data>
   <data name="Options_Uncategorized" xml:space="preserve">
-    <value>未分组</value>
+    <value>默认</value>
   </data>
   <data name="HotKeyOption_Modifiers" xml:space="preserve">
     <value>修饰键</value>

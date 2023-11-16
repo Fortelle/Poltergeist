@@ -50,7 +50,7 @@ public sealed partial class StringArrayOptionControl : UserControl
         {
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            Text = string.Join("\r", Item.Value),
+            Text = Item.Value is not null ? string.Join("\r", Item.Value) : "",
             Height = 200,
             Width = 600,
         };
@@ -77,7 +77,14 @@ public sealed partial class StringArrayOptionControl : UserControl
             return;
         }
 
-        Item.Value = textbox.Text.Split("\r");
+        if (string.IsNullOrEmpty(textbox.Text))
+        {
+            Item.Value = null;
+        }
+        else
+        {
+            Item.Value = textbox.Text.Replace("\n", "").TrimEnd('\r').Split("\r");
+        }
         UpdateText();
     }
 }

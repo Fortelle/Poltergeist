@@ -24,7 +24,7 @@ public sealed partial class OptionListView : UserControl
 
             OptionCVS = new CollectionViewSource()
             {
-                Source = value.Where(x => x.IsBrowsable).GroupBy(x => string.IsNullOrEmpty(x.Category) ? UncategorizedGroupLabel : x.Category),
+                Source = value.Where(x => x.IsBrowsable).OrderBy(x => string.IsNullOrEmpty(x.Category) ? 0 : 1).GroupBy(x => string.IsNullOrEmpty(x.Category) ? UncategorizedGroupLabel : x.Category),
                 IsSourceGrouped = true,
             };
         }

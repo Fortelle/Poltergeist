@@ -13,8 +13,8 @@
         HorizontalAlignment="Stretch"
         >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width=".75*"/>
-            <ColumnDefinition Width=".25*"/>
+            <ColumnDefinition Width=".7*"/>
+            <ColumnDefinition Width=".3*"/>
         </Grid.ColumnDefinitions>
         <Slider
             Grid.Column="0"
@@ -27,6 +27,7 @@
             SmallChange="1"
             TickFrequency="1"
             TickPlacement="Outside"
+            IsThumbToolTipEnabled="False"
             >
         </Slider>
         <TextBlock

@@ -11,62 +11,71 @@
     x:Name="Root"
     >
 
-        <ListView
-            ItemsSource="{x:Bind OptionCVS.View, Mode=OneWay}"
-            IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
-            >
-            <!--IsEnabled binding works here, but not in datatemplate-->
-        
-            <ItemsControl.GroupStyle>
-                <GroupStyle>
-                    <GroupStyle.HeaderTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                FontWeight="SemiBold"
-                                Text="{Binding Key, Mode=OneTime, TargetNullValue=Uncategorized}"
-                                FontSize="12"
-                                Foreground="{StaticResource SystemColorDisabledTextColor}"
-                                Margin="0, 16, 0, 0"
-                                />
-                        </DataTemplate>
-                    </GroupStyle.HeaderTemplate>
-                </GroupStyle>
-            </ItemsControl.GroupStyle>
-            
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid 
-                        HorizontalAlignment="Stretch"
-                        Margin="0, 12"
+    <ListView
+        ItemsSource="{x:Bind OptionCVS.View, Mode=OneWay}"
+        IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+        >
+        <!--IsEnabled binding works here, but not in datatemplate-->
+
+        <ItemsControl.GroupStyle>
+            <GroupStyle>
+                <GroupStyle.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock
+                            FontWeight="SemiBold"
+                            Text="{Binding Key, Mode=OneTime, TargetNullValue=Uncategorized}"
+                            FontSize="12"
+                            Foreground="{StaticResource SystemColorDisabledTextColor}"
+                            Margin="0, 16, 0, 0"
+                            />
+                    </DataTemplate>
+                </GroupStyle.HeaderTemplate>
+            </GroupStyle>
+        </ItemsControl.GroupStyle>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Grid 
+                    HorizontalAlignment="Stretch"
+                    Margin="0, 12, 4, 12"
+                    >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="240" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock 
+                        Grid.Column="0"
+                        Text="{Binding DisplayLabel}"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"
+                        />
+
+                    <TextBlock 
+                        Grid.Column="0"
+                        Text="{Binding Key}"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding DisplayLabel, Converter={StaticResource EmptyToVisibilityConverter}, ConverterParameter=True}"
+                        />
+
+                    <FontIcon 
+                        Grid.Column="1"
+                        Glyph="&#xE9CE;"
+                        Foreground="Gray"
+                        FontSize="14"
+                        VerticalAlignment="Center"
                         ToolTipService.ToolTip="{Binding Description}"
-                        >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="240" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock 
-                            Grid.Column="0"
-                            Text="{Binding DisplayLabel}"
-                            FontWeight="SemiBold"
-                            VerticalAlignment="Center"
-                            />
-
-                        <TextBlock 
-                            Grid.Column="0"
-                            Text="{Binding Key}"
-                            FontWeight="SemiBold"
-                            VerticalAlignment="Center"
-                            Visibility="{Binding DisplayLabel, Converter={StaticResource EmptyToVisibilityConverter}, ConverterParameter=True}"
-                            />
-
-                        <local:OptionControl
-                            Grid.Column="1"
-                            HorizontalContentAlignment="Right"
-                            />
-                        <!--IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"-->
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ListView>
+                        Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
+                        />
+                    
+                    <local:OptionControl
+                        Grid.Column="2"
+                        HorizontalContentAlignment="Right"
+                        />
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ListView>
 </UserControl>
