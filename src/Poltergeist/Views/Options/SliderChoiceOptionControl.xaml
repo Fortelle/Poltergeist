@@ -13,11 +13,11 @@
         HorizontalAlignment="Stretch"
         >
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width=".7*"/>
             <ColumnDefinition Width=".3*"/>
+            <ColumnDefinition Width=".7*"/>
         </Grid.ColumnDefinitions>
         <Slider
-            Grid.Column="0"
+            Grid.Column="1"
             ValueChanged="Slider_ValueChanged"
             VerticalAlignment="Center"
             Minimum="{x:Bind Minimum, Mode=OneTime}"
@@ -31,7 +31,7 @@
             >
         </Slider>
         <TextBlock
-            Grid.Column="1"
+            Grid.Column="0"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Text="{x:Bind SelectedValue, Mode=OneWay}" 

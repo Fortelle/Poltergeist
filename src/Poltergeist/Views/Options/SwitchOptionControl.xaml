@@ -6,16 +6,25 @@
     xmlns:local="using:Poltergeist.Views.Options"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
+    mc:Ignorable="d"
+    >
     <UserControl.Resources>
-        <x:Double x:Key="ToggleSwitchPreContentMargin">6</x:Double>
-        <x:Double x:Key="ToggleSwitchPostContentMargin">6</x:Double>
+        <x:Double x:Key="ToggleSwitchPreContentMargin">8</x:Double>
+        <x:Double x:Key="ToggleSwitchPostContentMargin">8</x:Double>
     </UserControl.Resources>
-    <ToggleSwitch
-        OnContent="{x:Bind OnContent, Mode=OneTime}"
-        OffContent="{x:Bind OffContent, Mode=OneTime}"
-        IsOn="{x:Bind IsChecked, Mode=TwoWay}"
+    <StackPanel
+        Tapped="StackPanel_Tapped"
+        Background="Transparent" 
         >
-    </ToggleSwitch>
+        <ToggleSwitch
+            x:Name="ToggleSwitch1"
+            OnContent="{x:Bind OnContent, Mode=OneTime}"
+            OffContent="{x:Bind OffContent, Mode=OneTime}"
+            IsOn="{x:Bind IsChecked, Mode=TwoWay}"
+            FlowDirection="RightToLeft"
+            HorizontalAlignment="Stretch"
+            Background="Transparent" 
+            >
+        </ToggleSwitch>
+    </StackPanel>
 </UserControl>

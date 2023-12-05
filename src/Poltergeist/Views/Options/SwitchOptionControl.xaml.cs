@@ -23,7 +23,16 @@ public sealed partial class SwitchOptionControl : UserControl
         InitializeComponent();
 
         Item = item;
-        OnContent = null;
-        OffContent = null;
+
+        if (item is BoolOption boolOption)
+        {
+            OnContent = boolOption.OnText ?? null;
+            OffContent = boolOption.OffText ?? null;
+        }
+    }
+
+    private void StackPanel_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        ToggleSwitch1.IsOn = !ToggleSwitch1.IsOn;
     }
 }

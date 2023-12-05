@@ -13,7 +13,7 @@ namespace Poltergeist.Views;
 public sealed partial class OptionListView : UserControl
 {
     public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(MacroOptions), typeof(OptionListView), new PropertyMetadata(null));
-    public static string UncategorizedGroupLabel = App.Localize("Poltergeist/Resources/Options_Uncategorized");
+    private static readonly string UncategorizedGroupLabel = App.Localize("Poltergeist/Resources/Options_Uncategorized");
 
     public MacroOptions Options
     {
@@ -22,11 +22,16 @@ public sealed partial class OptionListView : UserControl
         {
             SetValue(OptionsProperty, value);
 
-            OptionCVS = new CollectionViewSource()
-            {
-                Source = value.Where(x => x.IsBrowsable).OrderBy(x => string.IsNullOrEmpty(x.Category) ? 0 : 1).GroupBy(x => string.IsNullOrEmpty(x.Category) ? UncategorizedGroupLabel : x.Category),
-                IsSourceGrouped = true,
-            };
+            Groups = value
+                .Where(x => x.IsBrowsable)
+                .GroupBy(x => x.Category)
+                .OrderBy(x => x.Key is null ? 0 : 1)
+                .Select(x => new OptionGroup
+                {
+                    Title = x.Key ?? UncategorizedGroupLabel,
+                    Options = x.ToArray(),
+                })
+                .ToArray();
         }
     }
 
@@ -39,11 +44,17 @@ public sealed partial class OptionListView : UserControl
     }
 
     [ObservableProperty]
-    private CollectionViewSource? _optionCVS;
+    private OptionGroup[]? _groups;
 
     public OptionListView()
     {
         this.InitializeComponent();
+    }
+
+    public class OptionGroup
+    {
+        public required string Title { get; set; }
+        public required IOptionItem[] Options { get; set; }
     }
 
 }

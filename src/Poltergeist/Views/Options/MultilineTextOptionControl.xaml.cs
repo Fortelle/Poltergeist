@@ -10,38 +10,35 @@ using Poltergeist.Services;
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
-public sealed partial class StringArrayOptionControl : UserControl
+public sealed partial class MultilineTextOptionControl : UserControl
 {
-    private OptionItem<string[]> Item { get; }
+    private TextOption Item { get; }
 
     [ObservableProperty]
     private string? _text;
 
-    [ObservableProperty]
-    private string? _tooltip;
+    private const int MaxLength = 100;
 
-    public StringArrayOptionControl(OptionItem<string[]> item)
+    public MultilineTextOptionControl(TextOption item)
     {
         Item = item;
 
         this.InitializeComponent();
 
-        UpdateText();
+        Text = Truncate(item.Value);
     }
 
-    private void UpdateText()
+    private static string Truncate(string? value)
     {
-        if (Item.Value is null)
+        if(value is null)
         {
-            Text = "(null)";
-            Tooltip = null;
+            return "";
         }
-        else
-        {
-            //Text = $"System.String[{Item.Value.Length}]";
-            Text = string.Join(", ", Item.Value);
-            Tooltip = string.Join("\n", Item.Value);
-        }
+
+        value = value.Length < MaxLength ? value : value[..MaxLength];
+        value = value.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+
+        return value;
     }
 
     private async void Button_Click(object sender, RoutedEventArgs e)
@@ -50,7 +47,7 @@ public sealed partial class StringArrayOptionControl : UserControl
         {
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            Text = Item.Value is not null ? string.Join("\n", Item.Value) : "",
+            Text = Item.Value ?? "",
             Height = 200,
             Width = 600,
         };
@@ -58,18 +55,18 @@ public sealed partial class StringArrayOptionControl : UserControl
         var stackPanel = new StackPanel();
         stackPanel.Children.Add(new TextBlock()
         {
-            Text = App.Localize($"Poltergeist/Resources/Options_StringArrayOption_Dialog_Text"),
+            Text = App.Localize($"Poltergeist/Resources/Options_MultilineTextOption_Dialog_Text"),
         });
         stackPanel.Children.Add(textbox);
 
         var contentDialog = new ContentDialog()
         {
-            Title = App.Localize($"Poltergeist/Resources/Options_StringArrayOption_Dialog_Title"),
+            Title = App.Localize($"Poltergeist/Resources/Options_MultilineTextOption_Dialog_Title"),
             Content = stackPanel,
             PrimaryButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Ok"),
             CloseButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Cancel"),
         };
-        
+
         var dialogResult = await DialogService.ShowAsync(contentDialog);
 
         if(dialogResult == ContentDialogResult.None)
@@ -83,8 +80,9 @@ public sealed partial class StringArrayOptionControl : UserControl
         }
         else
         {
-            Item.Value = textbox.Text.Replace("\n\r", "\n").Replace("\r", "").TrimEnd('\n').Split("\r");
+            Item.Value = textbox.Text.Replace("\n\r", "\n").Replace("\r", "").TrimEnd('\n');
         }
-        UpdateText();
+
+        Text = Truncate(Item.Value);
     }
 }

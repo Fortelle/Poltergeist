@@ -4,4 +4,5 @@ public enum ChoiceOptionMode
 {
     ComboBox,
     Slider,
+    ToggleButtons,
 }

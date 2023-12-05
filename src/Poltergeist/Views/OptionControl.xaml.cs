@@ -31,11 +31,14 @@ public sealed partial class OptionControl : UserControl
             IIndexChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
             IChoiceOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
             IChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
-            //IEnumOptionItem => new ComboBoxOptionControl(item),
+            IChoiceOptionItem { Mode: ChoiceOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
+
             { BaseType.IsEnum: true } => new ComboBoxOptionControl(item),
 
             BoolOption { Mode: BoolOptionMode.ToggleSwitch } => new SwitchOptionControl(item),
             BoolOption { Mode: BoolOptionMode.CheckBox } => new CheckBoxOptionControl(item),
+            BoolOption { Mode: BoolOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
+            BoolOption { Mode: BoolOptionMode.LeftRightSwitch } => new LeftRightSwitchOptionControl(item),
             OptionItem<bool> => new SwitchOptionControl(item),
 
             OptionItem<string[]> x => new StringArrayOptionControl(x),
@@ -63,6 +66,8 @@ public sealed partial class OptionControl : UserControl
             PathOption pathOption => new PickerOptionControl(pathOption),
 
             PasswordOption passwordOption => new PasswordOptionControl(passwordOption),
+
+            TextOption { Multiline: true } x => new MultilineTextOptionControl(x),
             TextOption or OptionItem<string> => new TextBoxOptionControl(item),
 
             _ => new TextBlock()

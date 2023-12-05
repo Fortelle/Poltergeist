@@ -11,71 +11,74 @@
     x:Name="Root"
     >
 
-    <ListView
-        ItemsSource="{x:Bind OptionCVS.View, Mode=OneWay}"
-        IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+    <ScrollViewer
+        Padding="0, 0, 16, 0"
         >
-        <!--IsEnabled binding works here, but not in datatemplate-->
-
-        <ItemsControl.GroupStyle>
-            <GroupStyle>
-                <GroupStyle.HeaderTemplate>
-                    <DataTemplate>
+        <ItemsControl
+            ItemsSource="{x:Bind Groups, Mode=OneTime}"
+            >
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
                         <TextBlock
                             FontWeight="SemiBold"
-                            Text="{Binding Key, Mode=OneTime, TargetNullValue=Uncategorized}"
-                            FontSize="12"
-                            Foreground="{StaticResource SystemColorDisabledTextColor}"
-                            Margin="0, 16, 0, 0"
+                            Text="{Binding Title, Mode=OneTime}"
+                            Margin="8"
                             />
-                    </DataTemplate>
-                </GroupStyle.HeaderTemplate>
-            </GroupStyle>
-        </ItemsControl.GroupStyle>
+                        <ItemsControl
+                            ItemsSource="{Binding Options, Mode=OneTime}"
+                            Margin="0, 8, 0, 16"
+                            >
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid 
+                                        HorizontalAlignment="Stretch"
+                                        Padding="16"
+                                        Margin="0, 0, 0, 8"
+                                        BorderThickness="1"
+                                        MinHeight="72"
+                                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="240" />
+                                        </Grid.ColumnDefinitions>
 
-        <ItemsControl.ItemTemplate>
-            <DataTemplate>
-                <Grid 
-                    HorizontalAlignment="Stretch"
-                    Margin="0, 12, 4, 12"
-                    >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="40" />
-                        <ColumnDefinition Width="240" />
-                    </Grid.ColumnDefinitions>
+                                        <StackPanel
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            >
+                                            
+                                            <TextBlock 
+                                                Grid.Column="0"
+                                                Text="{Binding DisplayLabel}"
+                                                />
+                                            <TextBlock
+                                                Opacity=".5"
+                                                FontSize="12"
+                                                Text="{Binding Description}"
+                                                TextWrapping="Wrap"
+                                                Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
+                                                />
+                                        </StackPanel>
 
-                    <TextBlock 
-                        Grid.Column="0"
-                        Text="{Binding DisplayLabel}"
-                        FontWeight="SemiBold"
-                        VerticalAlignment="Center"
-                        />
-
-                    <TextBlock 
-                        Grid.Column="0"
-                        Text="{Binding Key}"
-                        FontWeight="SemiBold"
-                        VerticalAlignment="Center"
-                        Visibility="{Binding DisplayLabel, Converter={StaticResource EmptyToVisibilityConverter}, ConverterParameter=True}"
-                        />
-
-                    <FontIcon 
-                        Grid.Column="1"
-                        Glyph="&#xE9CE;"
-                        Foreground="Gray"
-                        FontSize="14"
-                        VerticalAlignment="Center"
-                        ToolTipService.ToolTip="{Binding Description}"
-                        Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
-                        />
-                    
-                    <local:OptionControl
-                        Grid.Column="2"
-                        HorizontalContentAlignment="Right"
-                        />
-                </Grid>
-            </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ListView>
+                                        <local:OptionControl
+                                            Grid.Column="2"
+                                            HorizontalContentAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+                                            />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+    
 </UserControl>

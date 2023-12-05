@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Configs;
 
@@ -6,6 +7,7 @@ using Poltergeist.Automations.Configs;
 
 namespace Poltergeist.Views.Options;
 
+[ObservableObject]
 public sealed partial class TextBoxOptionControl : UserControl
 {
     private IOptionItem Item { get; }
@@ -15,8 +17,19 @@ public sealed partial class TextBoxOptionControl : UserControl
     private string? Value
     {
         get => Item.Value as string;
-        set => Item.Value = string.IsNullOrEmpty(value) ? null : value;
+        set
+        {
+            Item.Value = string.IsNullOrEmpty(value) ? null : value;
+
+            if (Item is TextOption textOption && textOption.Valid is not null)
+            {
+                HasError = !textOption.IsValid;
+            }
+        }
     }
+
+    [ObservableProperty]
+    private bool _hasError;
 
     public TextBoxOptionControl(IOptionItem item)
     {
@@ -28,6 +41,7 @@ public sealed partial class TextBoxOptionControl : UserControl
         {
             Placeholder = textOption.Placeholder;
             MaxLenght = textOption.MaxLenght;
+            HasError = !textOption.IsValid;
         }
     }
 

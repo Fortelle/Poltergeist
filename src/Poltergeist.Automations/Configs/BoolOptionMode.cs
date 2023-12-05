@@ -4,5 +4,6 @@ public enum BoolOptionMode
 {
     ToggleSwitch,
     CheckBox,
-    RadioButtons,
+    ToggleButtons,
+    LeftRightSwitch,
 }

@@ -21,7 +21,12 @@ public class OptionItem<T> : IOptionItem
 
     private T? DefaultValue { get; }
 
-    public string? DisplayLabel { get; set; }
+    private string? _displayLabel;
+    public string DisplayLabel {
+        get => _displayLabel ?? Key;
+        set => _displayLabel = value;
+    }
+
     public string? Category { get; set; }
     public string? Description { get; set; }
     public bool IsReadonly { get; set; }

@@ -171,4 +171,16 @@
   <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
     <value>Start Macro HotKey</value>
   </data>
+  <data name="Options_MultilineTextOption_Dialog_Text" xml:space="preserve">
+    <value>Enter the string:</value>
+  </data>
+  <data name="Options_MultilineTextOption_Dialog_Title" xml:space="preserve">
+    <value>String Editor</value>
+  </data>
+  <data name="Options_StringArrayOption_Dialog_Text" xml:space="preserve">
+    <value>Enter the strings in the array:</value>
+  </data>
+  <data name="Options_StringArrayOption_Dialog_Title" xml:space="preserve">
+    <value>String Array Editor</value>
+  </data>
 </root>

@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Attributes;
+﻿using System.Text.RegularExpressions;
+using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Input.Windows;
@@ -43,6 +44,19 @@ public partial class TestGroup
                 Category = "Basic",
             },
 
+            new TextOption("string_valid")
+            {
+                Category = "Basic",
+                DisplayLabel = "^\\d+$",
+                Valid = s => Regex.IsMatch(s, @"^\d+$"),
+            },
+
+            new TextOption("string_multiline")
+            {
+                Category = "Basic",
+                Multiline = true,
+            },
+
             new BoolOption("bool_switch")
             {
                 Category = "Booleans",
@@ -52,6 +66,16 @@ public partial class TestGroup
             {
                 Category = "Booleans",
                 Mode = BoolOptionMode.CheckBox,
+            },
+            new BoolOption("bool_buttons")
+            {
+                Category = "Booleans",
+                Mode = BoolOptionMode.ToggleButtons,
+            },
+            new BoolOption("bool_leftright")
+            {
+                Category = "Booleans",
+                Mode = BoolOptionMode.LeftRightSwitch,
             },
 
             new NumberOption<int>("int_numberbox")
@@ -94,10 +118,16 @@ public partial class TestGroup
                 Category = "Choices",
             },
 
-            new ChoiceOption<string>("choice_slider", new string[] { "Item1", "Item2", "Long Item3" }, "Item2")
+            new ChoiceOption<string>("choice_slider", new string[] { "Item1", "Item2", "Too long item3" }, "Item2")
             {
                 Category = "Choices",
                 Mode = ChoiceOptionMode.Slider,
+            },
+
+            new ChoiceOption<string>("choice_buttons", new string[] { "Item1", "Item2", "Too long item3" }, "Item2")
+            {
+                Category = "Choices",
+                Mode = ChoiceOptionMode.ToggleButtons,
             },
 
             new PathOption("file_open")

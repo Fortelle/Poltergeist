@@ -171,4 +171,16 @@
   <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
     <value>运行快捷键</value>
   </data>
+  <data name="Options_MultilineTextOption_Dialog_Text" xml:space="preserve">
+    <value>输入字符串：</value>
+  </data>
+  <data name="Options_MultilineTextOption_Dialog_Title" xml:space="preserve">
+    <value>字符串编辑器</value>
+  </data>
+  <data name="Options_StringArrayOption_Dialog_Text" xml:space="preserve">
+    <value>输入字符串集合：</value>
+  </data>
+  <data name="Options_StringArrayOption_Dialog_Title" xml:space="preserve">
+    <value>字符串集合编辑器</value>
+  </data>
 </root>
