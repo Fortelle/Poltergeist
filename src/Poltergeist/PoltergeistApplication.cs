@@ -393,7 +393,16 @@ public abstract class PoltergeistApplication : Application
                 await DialogService.ShowFolderPickerAsync(folderModel);
                 break;
             case NavigationModel navigationModel:
-                App.GetService<INavigationService>().NavigateTo(navigationModel.PageKey, navigationModel.Argumment);
+                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    App.GetService<INavigationService>().NavigateTo(navigationModel.PageKey, navigationModel.Argumment);
+                });
+                break;
+            case ProgressModel progressModel:
+                App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    DialogService.ShowProgress(progressModel);
+                });
                 break;
         }
     }

@@ -125,67 +125,65 @@
                     x:Uid="/Poltergeist/Macros/ActionsPivotItem"
                     >
                     <ScrollViewer
+                        Padding="0, 0, 16, 0"
                         >
                         <ItemsControl
                             ItemsSource="{x:Bind ViewModel.Macro.Actions, Mode=OneTime}"
                             >
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Expander
-                                        HorizontalAlignment="Stretch" 
-                                        ExpandDirection="Down"
-                                        VerticalAlignment="Top"
-                                        HorizontalContentAlignment="Stretch"
+                                    <Grid 
+                                        HorizontalAlignment="Stretch"
+                                        Padding="16"
                                         Margin="0, 0, 0, 8"
+                                        BorderThickness="1"
+                                        MinHeight="72"
+                                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                         >
-                                        <Expander.Header>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="36" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <FontIcon
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0"
-                                                    Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
-                                                    HorizontalAlignment="Left"
-                                                    />
-                                                <TextBlock
-                                                    Grid.Column="1"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    HorizontalAlignment="Stretch"
-                                                    TextAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding Text, Mode=OneTime}"
-                                                    />
-                                            </Grid>
-                                        </Expander.Header>
-                                        <Expander.Content>
-                                            <Grid
-                                                RowSpacing="16"
-                                                >
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="*" />
-                                                    <RowDefinition Height="*" />
-                                                </Grid.RowDefinitions>
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    HorizontalAlignment="Stretch"
-                                                    TextAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding Description, Mode=OneTime}"
-                                                    />
-                                                <Button
-                                                    x:Uid="/Poltergeist/Macros/ActionExecuteButton"
-                                                    Grid.Row="1"
-                                                    HorizontalAlignment="Right"
-                                                    Style="{StaticResource AccentButtonStyle}"
-                                                    Click="HyperlinkButton_Click"
-                                                    />
-                                            </Grid>
-                                        </Expander.Content>
-                                    </Expander>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="36" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <FontIcon
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            Margin="0"
+                                            Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
+                                            HorizontalAlignment="Left"
+                                            />
+                                        
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            >
+
+                                            <TextBlock
+                                                Text="{Binding Text, Mode=OneTime}"
+                                                />
+                                            
+                                            <TextBlock
+                                                Opacity=".5"
+                                                FontSize="12"
+                                                TextWrapping="Wrap"
+                                                Margin="0, 2, 0, 0"
+                                                Text="{Binding Description}"
+                                                Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
+                                                />
+                                            
+                                        </StackPanel>
+                                        
+                                        <Button
+                                            x:Uid="/Poltergeist/Macros/ActionExecuteButton"
+                                            Grid.Column="3"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Click="HyperlinkButton_Click"
+                                            />
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

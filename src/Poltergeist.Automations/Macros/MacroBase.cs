@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Common.Structures;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Processors;
@@ -252,7 +251,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         OnProcess(processor);
     }
 
-    void IMacroBase.ExecuteAction(MacroAction action, Dictionary<string, object?>? options, Dictionary<string, object?>? environments)
+    void IMacroBase.ExecuteAction(MacroAction action, Dictionary<string, object?> options, Dictionary<string, object?> environments)
     {
         if (!IsInitialized)
         {
@@ -281,19 +280,9 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         };
         if (action.Execute is not null)
         {
-            action.Execute(args);
-            if (!string.IsNullOrEmpty(args.Message))
+            try
             {
-                _ = InteractionService.UIShowAsync(new TipModel()
-                {
-                    Text = args.Message,
-                });
-            }
-        }
-        else if(action.ExecuteAsync is not null)
-        {
-            Task.Run(async () => {
-                await action.ExecuteAsync(args);
+                action.Execute(args);
 
                 if (!string.IsNullOrEmpty(args.Message))
                 {
@@ -302,6 +291,59 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
                         Text = args.Message,
                     });
                 }
+            }
+            catch (Exception exception)
+            {
+                _ = InteractionService.UIShowAsync(new TipModel()
+                {
+                    Text = exception.Message,
+                });
+            }
+        }
+        else if(action.ExecuteAsync is not null)
+        {
+            Task.Run(async () => {
+                CancellationTokenSource? cts = null;
+
+                if (action.IsCancellable)
+                {
+                    cts = new();
+                    args.CancellationToken = cts.Token;
+                }
+
+                _ = InteractionService.UIShowAsync(new ProgressModel()
+                {
+                    IsOn = true,
+                    Title = action.ProgressTitle ?? action.Text,
+                    CancellationTokenSource = cts,
+                });
+
+                try
+                {
+                    await action.ExecuteAsync(args);
+
+                    if (!string.IsNullOrEmpty(args.Message))
+                    {
+                        _ = InteractionService.UIShowAsync(new TipModel()
+                        {
+                            Text = args.Message,
+                        });
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _ = InteractionService.UIShowAsync(new TipModel()
+                    {
+                        Text = exception.Message,
+                    });
+                }
+
+                _ = InteractionService.UIShowAsync(new ProgressModel()
+                {
+                    IsOn = false,
+                });
+
+                cts?.Dispose();
             });
         }
         else
@@ -324,4 +366,3 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
 
 }
- 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Views;
 using Windows.Storage.Pickers;
@@ -204,6 +205,44 @@ public class DialogService
     public static async Task ShowMessage(string message, string title = "")
     {
         await App.MainWindow.ShowMessageDialogAsync(message, title);
+    }
+
+    private static ContentDialog? ProgressDialog { get; set; }
+
+    public static void ShowProgress(ProgressModel model)
+    {
+        // there is a bug on ProgressRing with initialized IsActive
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/5925
+
+        if(model.IsOn == false)
+        {
+            ProgressDialog?.Hide();
+            return;
+        }
+
+        var progressBar = new ProgressBar()
+        {
+            IsIndeterminate = true,
+            HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+            VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+        };
+
+        ProgressDialog = new ContentDialog()
+        {
+            Name = model.Id,
+            Title = model.Title,
+            Content = progressBar,
+        };
+
+        if(model.CancellationTokenSource is not null)
+        {
+            ProgressDialog.PrimaryButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Cancel");
+            ProgressDialog.PrimaryButtonClick += (s, e) =>
+            {
+                model.CancellationTokenSource.Cancel();
+            };
+        }
+        _ = ShowAsync(ProgressDialog);
     }
 
     private static void SetWindow(object picker)

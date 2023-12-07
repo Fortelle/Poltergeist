@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Poltergeist.Automations.Macros;
+﻿namespace Poltergeist.Automations.Macros;
 
 public class MacroAction
 {
@@ -11,4 +8,7 @@ public class MacroAction
     public Action<MacroActionArguments>? Execute { get; set; }
     public Func<MacroActionArguments, Task>? ExecuteAsync { get; set; }
     public string? Glyph { get; set; }
+
+    public string? ProgressTitle { get; set; }
+    public bool IsCancellable { get; set; }
 }

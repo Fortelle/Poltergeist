@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Poltergeist.Automations.Components.Interactions;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -10,7 +10,7 @@ public class MacroActionArguments
 
     public required Dictionary<string, object?> Environments { get; init; }
 
-    //public nint Hwnd { get; set; }
+    public CancellationToken CancellationToken { get; set; }
 
     public string? Message { get; set; }
 
@@ -19,4 +19,11 @@ public class MacroActionArguments
         Macro = macro;
     }
 
+    public void ShowTooltip(string message)
+    {
+        _ = InteractionService.UIShowAsync(new TipModel()
+        {
+            Text = message,
+        });
+    }
 }
