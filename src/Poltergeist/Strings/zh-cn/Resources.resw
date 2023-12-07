@@ -183,4 +183,13 @@
   <data name="Options_StringArrayOption_Dialog_Title" xml:space="preserve">
     <value>字符串集合编辑器</value>
   </data>
+  <data name="Navigation_CannotCreateContent" xml:space="preserve">
+    <value>无法创建页面内容：{0}</value>
+  </data>
+  <data name="Navigation_CannotSwitch" xml:space="preserve">
+    <value>在单宏模式下无法切换页面</value>
+  </data>
+  <data name="Navigation_UnknownPageKey" xml:space="preserve">
+    <value>未知页面：{0}</value>
+  </data>
 </root>

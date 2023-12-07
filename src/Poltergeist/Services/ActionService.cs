@@ -60,7 +60,7 @@ public class ActionService
             }
             else
             {
-                App.ShowTeachingTip($"Macro '{macroPage.ViewModel.Macro.Title}' is already running.");
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Macro.Title));
                 return;
             }
         }
@@ -96,7 +96,7 @@ public class ActionService
         }
         if (macroPage.ViewModel!.IsRunning)
         {
-            App.ShowTeachingTip($"Macro '{macroPage.ViewModel.Macro.Title}' is already running.");
+            App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Macro.Title));
             return;
         }
         else

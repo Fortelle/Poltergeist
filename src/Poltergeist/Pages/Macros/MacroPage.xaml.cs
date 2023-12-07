@@ -51,6 +51,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
                 Glyph = "\uEDB5",
                 Visibility = Visibility.Collapsed,
                 DataContext = page.ViewModel,
+                FontSize = 12,
             };
             var binding = new Binding()
             {

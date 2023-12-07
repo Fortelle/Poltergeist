@@ -13,48 +13,63 @@
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
     <Grid>
-        <StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
 
-            <TextBlock
-                x:Uid="/Poltergeist/Settings/HeaderTextBlock"
-                Style="{StaticResource Header1Style}"
+        <TextBlock
+            Grid.Row="0"
+            x:Uid="/Poltergeist/Settings/HeaderTextBlock"
+            Style="{StaticResource Header1Style}"
             />
 
-            <Grid
-                ColumnSpacing="{StaticResource TabPageColumnSpacing}"
-                >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width=".5*" />
-                    <ColumnDefinition Width=".5*" />
-                </Grid.ColumnDefinitions>
+        <Grid
+            Grid.Row="1"
+            ColumnSpacing="{StaticResource TabPageColumnSpacing}"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width=".5*" />
+                <ColumnDefinition Width=".5*" />
+            </Grid.ColumnDefinitions>
 
-                <StackPanel
-                    Grid.Column="0"
-                    >
-                    <TextBlock
-                        x:Uid="/Poltergeist/Settings/LocalSettingsTextBlock"
-                        Style="{StaticResource Header2Style}"
-                        />
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
 
-                    <local:OptionListView
-                        Options="{x:Bind ViewModel.LocalSettings, Mode=OneWay}"
-                        />
-                </StackPanel>
+            <TextBlock
+                Grid.Column="0"
+                Grid.Row="0"
+                x:Uid="/Poltergeist/Settings/LocalSettingsTextBlock"
+                Style="{StaticResource Header2Style}"
+                />
 
-                <StackPanel
-                    Grid.Column="1"
-                    >
-                    <TextBlock
-                        x:Uid="/Poltergeist/Settings/GlobalOptionsTextBlock"
-                        Style="{StaticResource Header2Style}"
-                        />
+            <local:OptionListView
+                Grid.Column="0"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Options="{x:Bind ViewModel.LocalSettings, Mode=OneWay}"
+                />
 
-                    <local:OptionListView
-                        Options="{x:Bind ViewModel.GlobalOptions, Mode=OneWay}"
-                        />
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-        
+            <TextBlock
+                Grid.Column="1"
+                Grid.Row="0"
+                x:Uid="/Poltergeist/Settings/GlobalOptionsTextBlock"
+                Style="{StaticResource Header2Style}"
+                />
+
+            <local:OptionListView
+                Grid.Column="1"
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Options="{x:Bind ViewModel.GlobalOptions, Mode=OneWay}"
+                />
+
+        </Grid>
     </Grid>
 </Page>

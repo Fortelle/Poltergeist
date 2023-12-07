@@ -26,7 +26,7 @@ public sealed partial class MacroGroupPage : Page
             var group = macroManager.Groups.FirstOrDefault(x => x.Key == groupkey);
             if (group is null)
             {
-                App.ShowTeachingTip($"Group \"{groupkey}\" does not exist.");
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Group/GroupNotExist", groupkey));
                 return null;
             }
 

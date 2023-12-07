@@ -163,13 +163,16 @@
     <value>常规</value>
   </data>
   <data name="LogNotExist" xml:space="preserve">
-    <value>记录文件不存在。</value>
+    <value>记录文件不存在</value>
+  </data>
+  <data name="MacroAlreadyRunning" xml:space="preserve">
+    <value>宏“{0}”正在运行中</value>
   </data>
   <data name="MacroNotExist" xml:space="preserve">
-    <value>宏“{0}”不存在。</value>
+    <value>宏“{0}”不存在</value>
   </data>
   <data name="MacroUnavailable" xml:space="preserve">
-    <value>宏“{0}”不可用。</value>
+    <value>宏“{0}”不可用</value>
   </data>
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>参数设置</value>

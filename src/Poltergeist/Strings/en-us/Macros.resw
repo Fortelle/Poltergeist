@@ -163,13 +163,16 @@
     <value>General</value>
   </data>
   <data name="LogNotExist" xml:space="preserve">
-    <value>Log file not exists.</value>
+    <value>Log file not exists</value>
+  </data>
+  <data name="MacroAlreadyRunning" xml:space="preserve">
+    <value>Macro "{0}" is already running</value>
   </data>
   <data name="MacroNotExist" xml:space="preserve">
-    <value>Macro "{0}" does not exist.</value>
+    <value>Macro "{0}" does not exist</value>
   </data>
   <data name="MacroUnavailable" xml:space="preserve">
-    <value>Macro "{0}" is unavailable.</value>
+    <value>Macro "{0}" is unavailable</value>
   </data>
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>Options</value>

@@ -33,13 +33,4 @@
 
     <Thickness x:Key="SettingsPageHyperlinkButtonMargin">-12,4,0,0</Thickness>
 
-    <Style x:Key="VerticalScrollViewerStyle" TargetType="ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}">
-        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
-        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Margin" Value="0, 0, -16, 0" />
-        <Setter Property="Padding" Value="0, 0, 16, 0" />
-    </Style>
-
 </ResourceDictionary>

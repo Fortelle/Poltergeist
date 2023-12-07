@@ -12,7 +12,7 @@
     >
 
     <ScrollViewer
-        Padding="0, 0, 16, 0"
+        Style="{StaticResource VerticalScrollViewerStyle}"
         >
         <ItemsControl
             ItemsSource="{x:Bind Groups, Mode=OneTime}"
@@ -32,18 +32,10 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid 
-                                        HorizontalAlignment="Stretch"
-                                        Padding="16"
-                                        Margin="0, 0, 0, 8"
-                                        BorderThickness="1"
-                                        MinHeight="72"
-                                        CornerRadius="{ThemeResource ControlCornerRadius}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        Style="{StaticResource CardGridStyle}"
                                         >
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="40" />
                                             <ColumnDefinition Width="240" />
                                         </Grid.ColumnDefinitions>
 
@@ -59,14 +51,15 @@
                                             <TextBlock
                                                 Opacity=".5"
                                                 FontSize="12"
-                                                Text="{Binding Description}"
+                                                Margin="0, 2, 0, 0"
                                                 TextWrapping="Wrap"
+                                                Text="{Binding Description}"
                                                 Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
                                                 />
                                         </StackPanel>
 
                                         <local:OptionControl
-                                            Grid.Column="2"
+                                            Grid.Column="1"
                                             HorizontalContentAlignment="Right"
                                             VerticalAlignment="Center"
                                             IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"

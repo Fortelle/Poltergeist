@@ -125,7 +125,7 @@
                     x:Uid="/Poltergeist/Macros/ActionsPivotItem"
                     >
                     <ScrollViewer
-                        Padding="0, 0, 16, 0"
+                        Style="{StaticResource VerticalScrollViewerStyle}"
                         >
                         <ItemsControl
                             ItemsSource="{x:Bind ViewModel.Macro.Actions, Mode=OneTime}"
@@ -133,14 +133,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid 
-                                        HorizontalAlignment="Stretch"
-                                        Padding="16"
-                                        Margin="0, 0, 0, 8"
-                                        BorderThickness="1"
-                                        MinHeight="72"
-                                        CornerRadius="{ThemeResource ControlCornerRadius}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        Style="{StaticResource CardGridStyle}"
                                         >
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="36" />
@@ -153,7 +146,7 @@
                                             VerticalAlignment="Center"
                                             Margin="0"
                                             Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Center"
                                             />
                                         
                                         <StackPanel
@@ -197,6 +190,9 @@
                         ItemsSource="{x:Bind ViewModel.Statistics, Mode=OneWay}"
                         Margin="0"
                         >
+                        <ListView.Resources>
+                            <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
+                        </ListView.Resources>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid 
@@ -251,14 +247,14 @@
                                 FontWeight="SemiBold"
                                 />
                         </Grid>
-                        <ScrollViewer
+                        <ListView
                             Grid.Row="1"
-                            Style="{StaticResource VerticalScrollViewerStyle}"
-                            >
-                            <ListView
                                 ItemsSource="{x:Bind ViewModel.Summaries, Mode=OneWay}"
                                 DoubleTapped="SummariesListView_DoubleTapped"
                                 >
+                            <ListView.Resources>
+                                <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
+                            </ListView.Resources>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid
@@ -290,7 +286,6 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ListView>
-                        </ScrollViewer>
                     </Grid>
                 </PivotItem>
             </Pivot>

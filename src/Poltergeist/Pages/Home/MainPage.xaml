@@ -171,15 +171,16 @@
                             <HyperlinkButton
                                 HorizontalAlignment="Stretch"
                                 IsEnabled="{Binding IsAvailable, Mode=OneTime}"
-                                Padding="0, 8"
                                 HorizontalContentAlignment="Stretch"
                                 Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
                                 CommandParameter="{Binding MacroKey, Mode=OneTime}"
                                 >
                                 <Grid
+                                    Margin="2"
+                                    ColumnSpacing="16"
                                     >
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
@@ -235,14 +236,15 @@
                                 HorizontalAlignment="Stretch"
                                 IsEnabled="{Binding IsAvailable, Mode=OneTime}"
                                 HorizontalContentAlignment="Stretch"
-                                Padding="0, 8"
                                 Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
                                 CommandParameter="{Binding MacroKey, Mode=OneTime}"
                                 >
                                 <Grid
+                                    Margin="2"
+                                    ColumnSpacing="16"
                                     >
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>

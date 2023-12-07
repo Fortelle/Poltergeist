@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Contracts.Services;
+using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Services;
 
@@ -31,26 +32,29 @@ public class NavigationService : INavigationService
         {
             return false;
         }
-        if(App.SingleMacroMode is not null && pageKey != "macro:" + App.SingleMacroMode)
+        if (App.SingleMacroMode is not null && pageKey != "macro:" + App.SingleMacroMode)
         {
+            App.ShowTeachingTip(App.Localize($"Poltergeist/Resources/Navigation_CannotSwitch"));
             return false;
         }
 
         var keyparts = pageKey.Split(":");
 
         var tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
-        
+
         if (tab is null)
         {
             var info = GetInfo(keyparts[0]);
-            if(info is null)
+            if (info is null)
             {
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Resources/Navigation_UnknownPageKey", keyparts[0]));
                 return false;
             }
 
             var content = info.CreateContent?.Invoke(keyparts[1..], parameter);
             if (content is null)
             {
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Resources/Navigation_CannotCreateContent", pageKey));
                 return false;
             }
 
@@ -66,7 +70,7 @@ public class NavigationService : INavigationService
             {
                 Header = header,
                 Content = content,
-                
+
                 IconSource = new FontIconSource()
                 {
                     Glyph = info.Glyph,
@@ -74,7 +78,7 @@ public class NavigationService : INavigationService
                 Tag = pageKey
             };
 
-            if(pageKey == "home")
+            if (pageKey == "home")
             {
                 TabView.TabItems.Insert(0, tab);
             }
