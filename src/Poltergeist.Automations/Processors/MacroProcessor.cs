@@ -290,7 +290,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         Hooks?.Raise(new ProcessHistoryCreatedHook(history));
         Macro.History.Add(history);
 
-        if (Options.Get(MacroBase.UseStatisticsKey, true))
+        if (Environments.Get(MacroBase.UseStatisticsKey, true))
         {
             var macroStatistics = Statistics.ToValueDictionary(ParameterSource.Macro);
             if (macroStatistics.Any())

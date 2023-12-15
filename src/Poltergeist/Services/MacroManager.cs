@@ -120,7 +120,7 @@ public class MacroManager
         var macro = processor.Macro;
         InRunningProcesses.Remove(processor);
 
-        if (processor.Options.Get(MacroBase.UseStatisticsKey, true))
+        if (processor.Environments.Get(MacroBase.UseStatisticsKey, true))
         {
             var globalStatistics = processor.Statistics.ToValueDictionary(ParameterSource.Global);
             if (globalStatistics.Any())
