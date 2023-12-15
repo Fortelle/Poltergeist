@@ -24,9 +24,8 @@ public class LoopBuilderService : MacroService
     public LoopStatus Status { get; set; } = LoopStatus.None;
 
     public Exception? Exception { get; set; }
-    public int IteratedCount => IterationIndex;
 
-    private int IterationIndex;
+    public int IterationIndex { get; set; }
     private event Action? LoopStarted;
     private event Action? LoopEnded;
     private event Action? IterationStarted;

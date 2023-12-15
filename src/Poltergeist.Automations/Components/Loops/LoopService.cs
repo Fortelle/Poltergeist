@@ -22,8 +22,6 @@ public class LoopService : MacroService, IAutoloadable
     public Action<LoopCheckContinueArguments>? CheckContinue { get; set; }
     public Action<ArgumentService>? After { get; set; }
 
-    public int IterationIndex { get; set; }
-
     private int MaxCount;
     private TimeSpan MaxDuration;
 
@@ -86,6 +84,7 @@ public class LoopService : MacroService, IAutoloadable
         var usesLoop = Processor.Options.Get<bool>(ConfigEnableKey);
         if (!usesLoop)
         {
+            MaxCount = 1;
             return;
         }
 
@@ -142,7 +141,8 @@ public class LoopService : MacroService, IAutoloadable
             After.Invoke(args);
         }
 
-        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationIndex + 1);
+        var iterationCount = LoopHelper.IterationIndex + 1;
+        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + iterationCount);
 
         Hooks.Raise(new LoopEndedHook());
 
