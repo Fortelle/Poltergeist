@@ -7,8 +7,8 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Thumbnails;
-using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Helpers.Converters;
@@ -34,13 +34,13 @@ public partial class MacroViewModel : ObservableRecipient
     private bool _isRunning;
 
     [ObservableProperty]
-    private MacroOptions _userOptions;
+    private OptionCollection _userOptions;
 
     [ObservableProperty]
-    private VariableItem[]? _statistics;
+    private IParameterEntry[]? _statistics;
 
     [ObservableProperty]
-    private ProcessSummary[]? _summaries;
+    private ProcessHistoryEntry[]? _history;
 
     [ObservableProperty]
     private ImageSource? _thumbnail;
@@ -58,8 +58,8 @@ public partial class MacroViewModel : ObservableRecipient
         Macro.Load();
 
         UserOptions = macro.UserOptions;
-        Statistics = macro.Statistics.ToArray();
-        Summaries = macro.Summaries.OrderByDescending(x => x.StartTime).ToArray();
+        UpdateStatistics();
+        UpdateHistory();
 
         var thumbfile = macro.GetThumbnailFile();
         if (thumbfile is not null)
@@ -112,22 +112,27 @@ public partial class MacroViewModel : ObservableRecipient
 
         IsRunning = true;
 
-        Macro.SaveOptions();
+        Macro.UserOptions.Save();
 
-        var options = GetOptions();
-        if(args.OptionOverrides?.Count > 0)
+        var macroManager = App.GetService<MacroManager>();
+
+        Processor = macroManager.CreateProcessor(Macro, args.Reason);
+
+        if (args.OptionOverrides?.Count > 0)
         {
-            foreach(var (key, value) in args.OptionOverrides)
+            foreach (var (key, value) in args.OptionOverrides)
             {
-                options[key] = value;
+                if (Processor.Options.Contains(key))
+                {
+                    Processor.Options[key].Value = value;
+                    Processor.Options[key].Source = ParameterSource.MacroOverride;
+                }
+                else
+                {
+                    Processor.Options.Add(key, value, ParameterSource.MacroOverride);
+                }
             }
         }
-
-        Processor = new MacroProcessor(Macro, args.Reason)
-        {
-            Options = options,
-            Environments = GetEnvironments(),
-        };
 
         Processor.Starting += Processor_Starting;
         Processor.Started += Processor_Started;
@@ -135,7 +140,6 @@ public partial class MacroViewModel : ObservableRecipient
         Processor.PanelCreated += Processor_PanelCreated;
         Processor.Interacting += Processor_Interacting;
 
-        var macroManager = App.GetService<MacroManager>();
         macroManager.TryStart(Processor);
 
         Duration = TimeSpanToHhhmmssConverter.ToString(default);
@@ -158,43 +162,6 @@ public partial class MacroViewModel : ObservableRecipient
         IsFavorite = !IsFavorite;
     }
 
-    public Dictionary<string, object?> GetOptions()
-    {
-        var macroManager = App.GetService<MacroManager>();
-
-        var globalOptions = macroManager.GlobalOptions.ToDictionary();
-        var groupOptions = Macro.Group?.Options.ToDictionary();
-        var macroOptions = Macro.UserOptions.ToDictionary();
-
-        if (groupOptions != null)
-        {
-            foreach (var (key, value) in groupOptions)
-            {
-                if (!macroOptions.ContainsKey(key))
-                {
-                    macroOptions.Add(key, value);
-                }
-            }
-        }
-
-        foreach (var (key, value) in globalOptions)
-        {
-            if (!macroOptions.ContainsKey(key))
-            {
-                macroOptions.Add(key, value);
-            }
-        }
-
-        return macroOptions;
-    }
-
-    public Dictionary<string, object?> GetEnvironments()
-    {
-        var localSettings = App.GetService<LocalSettingsService>();
-        var dict = localSettings.Settings.ToDictionary();
-        return dict;
-    }
-
     private void Processor_Completed(object? sender, MacroCompletedEventArgs e)
     {
         Processor!.Starting -= Processor_Starting;
@@ -206,10 +173,8 @@ public partial class MacroViewModel : ObservableRecipient
 
         IsRunning = false;
 
-        Statistics = null;
-        Statistics = Macro.Statistics.ToArray();
-        Summaries = null;
-        Summaries = Macro.Summaries.OrderByDescending(x => x.StartTime).ToArray();
+        UpdateStatistics();
+        UpdateHistory();
 
         if (e.CompleteAction != CompletionAction.None)
         {
@@ -223,6 +188,18 @@ public partial class MacroViewModel : ObservableRecipient
 
         Timer?.Stop();
         Timer = null;
+    }
+
+    private void UpdateStatistics()
+    {
+        Statistics = null;
+        Statistics = Macro.Statistics.ToArray();
+    }
+
+    private void UpdateHistory()
+    {
+        History = null;
+        History = Macro.History.Take(100);
     }
 
     private void Processor_Starting(object? sender, MacroStartingEventArgs e)

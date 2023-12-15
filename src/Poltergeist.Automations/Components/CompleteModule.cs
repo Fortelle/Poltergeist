@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Components.Loops;

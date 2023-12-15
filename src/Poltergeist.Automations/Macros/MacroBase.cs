@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -12,15 +11,17 @@ namespace Poltergeist.Automations.Macros;
 /// </summary>
 public abstract class MacroBase : IMacroBase, IMacroInitializer
 {
+    public const string UseStatisticsKey = "macro.usestatistics";
+
     public string Key { get; }
     public string? Category { get; set; }
     public string? Description { get; set; }
     public string[]? Details { get; set; }
     public string[]? Tags { get; set; }
 
-    public MacroOptions UserOptions { get; } = new();
-    public VariableCollection Statistics { get; } = new();
-    public List<ProcessSummary> Summaries { get; } = new();
+    public OptionCollection UserOptions { get; } = new();
+    public ParameterCollection Statistics { get; } = new();
+    public ProcessHistoryCollection History { get; } = new();
 
     public List<MacroAction> Actions { get; } = new();
     public List<MacroModule> Modules { get; } = new();
@@ -32,7 +33,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     private string? _title;
     public string Title { get => _title ?? Key; set => _title = value; }
 
-    MacroGroup? IMacroBase.Group { get; set; }
+    public MacroGroup? Group { get; set; }
 
     private bool _requiresAdmin;
     public bool RequiresAdmin { get => _requiresAdmin; set => _requiresAdmin |= value; }
@@ -54,11 +55,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     private bool IsInitialized { get; set; }
     private bool IsLoaded { get; set; }
 
-    private static readonly char[] InvalidKeyChars;
-
-    static MacroBase()
-    {
-        InvalidKeyChars = new[]
+    private static readonly char[] InvalidKeyChars = new[]
         {
             ' ',
             '@',
@@ -66,7 +63,6 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         }
         .Concat(Path.GetInvalidFileNameChars())
         .ToArray();
-    }
 
     public MacroBase()
     {
@@ -96,17 +92,19 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         }
         Actions.Add(ActionHelper.CreateShortcut);
         
-        Statistics.Add(new("total_run_count", 0)
+        Statistics.Add(new ParameterEntry<int>("total_run_count")
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
+            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
         });
-        Statistics.Add(new("total_run_duration", default(TimeSpan))
+        Statistics.Add(new ParameterEntry<TimeSpan>("total_run_duration")
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
+            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
+            Format = x => $"{x.TotalHours:00}:{x.Minutes:00}:{x.Seconds:00}",
         });
-        Statistics.Add(new("last_run_time", default(DateTime))
+        Statistics.Add(new ParameterEntry<DateTime?>("last_run_time")
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
+            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
+            Format = x => x?.ToString() ?? "-",
         });
 
         OnInitialize();
@@ -131,112 +129,64 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
             return;
         }
 
-        LoadOptions();
-        LoadStatistics();
-        LoadSummaries();
+        if (!string.IsNullOrEmpty(PrivateFolder))
+        {
+            UserOptions.Load(Path.Combine(PrivateFolder, "useroptions.json"));
+
+            Statistics.Load(Path.Combine(PrivateFolder, "statistics.json"));
+
+            History.Load(Path.Combine(PrivateFolder, "history.json"));
+        }
 
         IsLoaded = true;
     }
 
-    private void LoadOptions()
+    VariableCollection IMacroBase.GetOptionCollection()
     {
-        if (string.IsNullOrEmpty(PrivateFolder))
+        var vc = new VariableCollection();
+
+        foreach (var item in UserOptions)
         {
-            return;
+            vc.Add(item.Key, item.Value, ParameterSource.Macro);
         }
 
-        var path = Path.Combine(PrivateFolder, "useroptions.json");
-        if (!File.Exists(path))
+        if (Group is not null)
         {
-            return;
+            foreach (var item in Group.Options)
+            {
+                if (vc.Contains(item.Key))
+                {
+                    continue;
+                }
+                vc.Add(item.Key, item.Value, ParameterSource.Group);
+            }
         }
 
-        UserOptions.Load(path);
+        return vc;
     }
 
-    void IMacroBase.SaveOptions()
+    VariableCollection IMacroBase.GetStatisticCollection()
     {
-        if (!IsInitialized)
+        var vc = new VariableCollection();
+
+        foreach (var item in Statistics)
         {
-            return;
+            vc.Add(item.Key, item.Value, ParameterSource.Macro);
         }
 
-        if (string.IsNullOrEmpty(PrivateFolder))
+        if (Group is not null)
         {
-            return;
+            foreach (var item in Group.Statistics)
+            {
+                if (vc.Contains(item.Key))
+                {
+                    continue;
+                }
+                vc.Add(item.Key, item.Value, ParameterSource.Group);
+            }
         }
 
-        if (!UserOptions.HasChanged)
-        {
-            return;
-        }
-
-        var path = Path.Combine(PrivateFolder, "useroptions.json");
-        UserOptions.Save(path);
-    }
-
-    private void LoadStatistics()
-    {
-        if (string.IsNullOrEmpty(PrivateFolder))
-        {
-            return;
-        }
-
-        var path = Path.Combine(PrivateFolder, "statistics.json");
-        if (!File.Exists(path))
-        {
-            return;
-        }
-
-        Statistics.Load(path);
-    }
-
-    void IMacroBase.SaveStatistics()
-    {
-        if (!IsInitialized)
-        {
-            return;
-        }
-
-        if (string.IsNullOrEmpty(PrivateFolder))
-        {
-            return;
-        }
-
-        var path = Path.Combine(PrivateFolder, "statistics.json");
-        Statistics.Save(path);
-    }
-
-    private void LoadSummaries()
-    {
-        if (string.IsNullOrEmpty(PrivateFolder))
-        {
-            return;
-        }
-
-        var path = Path.Combine(PrivateFolder, "summaries.json");
-        if (!File.Exists(path))
-        {
-            return;
-        }
-
-        SerializationUtil.JsonPopulate(path, Summaries);
-    }
-
-    void IMacroBase.SaveSummaries()
-    {
-        if (!IsInitialized)
-        {
-            return;
-        }
-
-        if (string.IsNullOrEmpty(PrivateFolder))
-        {
-            return;
-        }
-
-        var path = Path.Combine(PrivateFolder, "summaries.json");
-        SerializationUtil.JsonSave(path, Summaries);
+        return vc;
     }
 
     void IMacroBase.ConfigureServices(ServiceCollection services, IConfigureProcessor processor)
@@ -251,7 +201,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         OnProcess(processor);
     }
 
-    void IMacroBase.ExecuteAction(MacroAction action, Dictionary<string, object?> options, Dictionary<string, object?> environments)
+    void IMacroBase.ExecuteAction(MacroAction action, IReadOnlyDictionary<string, object?> options, IReadOnlyDictionary<string, object?> environments)
     {
         if (!IsInitialized)
         {

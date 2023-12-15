@@ -1,10 +1,10 @@
-﻿using Poltergeist.Automations.Configs;
+﻿using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Services;
 
 public class LocalSettingsService
 {
-    public MacroOptions Settings = new();
+    public OptionCollection Settings = new();
     public event Action<string, object>? Changed;
 
     public LocalSettingsService()
@@ -34,13 +34,7 @@ public class LocalSettingsService
 
     public void Save()
     {
-        if (!Settings.HasChanged)
-        {
-            return;
-        }
-
-        var filepath = App.GetService<PathService>().LocalSettingsFile;
-        Settings.Save(filepath);
+        Settings.Save();
     }
 
     public void OnChanged(string key, object value)

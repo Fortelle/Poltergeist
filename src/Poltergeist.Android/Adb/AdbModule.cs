@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Android.Emulators;
 using Poltergeist.Automations.Components.Terminals;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
@@ -9,6 +9,21 @@ namespace Poltergeist.Android.Adb;
 
 public class AdbModule : MacroModule
 {
+    static AdbModule()
+    {
+        GlobalOptions.Add(new OptionItem<string>(AdbService.IpAddressKey)
+        {
+            DisplayLabel = "IP Address",
+            Category = "ADB",
+        });
+
+        GlobalOptions.Add(new PathOption(AdbService.ExePathKey)
+        {
+            DisplayLabel = "Exe file",
+            Category = "ADB",
+        });
+    }
+
     public AdbModule()
     {
 
@@ -23,7 +38,6 @@ public class AdbModule : MacroModule
         });
     }
 
-
     public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
     {
         services.AddSingleton<TerminalService>();
@@ -32,20 +46,4 @@ public class AdbModule : MacroModule
         services.AddSingleton<AdbService>();
     }
 
-    public override void SetGlobalOptions(MacroOptions options)
-    {
-        base.SetGlobalOptions(options);
-
-        options.Add(new OptionItem<string>(AdbService.IpAddressKey)
-        {
-            DisplayLabel = "IP Address",
-            Category = "ADB",
-        });
-
-        options.Add(new PathOption(AdbService.ExePathKey)
-        {
-            DisplayLabel = "Exe file",
-            Category = "ADB",
-        });
-    }
 }

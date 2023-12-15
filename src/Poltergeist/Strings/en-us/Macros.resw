@@ -147,6 +147,9 @@
   <data name="FavoriteAppBarButton.Label" xml:space="preserve">
     <value>Favorite</value>
   </data>
+  <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
+    <value>Comment</value>
+  </data>
   <data name="HistoryDurationTextBlock.Text" xml:space="preserve">
     <value>Duration</value>
   </data>

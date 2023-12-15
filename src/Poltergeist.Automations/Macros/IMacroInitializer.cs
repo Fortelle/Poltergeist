@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Poltergeist.Automations.Common.Structures;
-using Poltergeist.Automations.Configs;
+﻿using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -9,8 +7,8 @@ public interface IMacroInitializer
     public string Key { get; }
     public MacroStorage Storage { get; }
     public List<MacroAction> Actions { get; }
-    public MacroOptions UserOptions { get; }
-    public VariableCollection Statistics { get; }
+    public OptionCollection UserOptions { get; }
+    public ParameterCollection Statistics { get; }
 
     public string? PrivateFolder { get; }
     public string? SharedFolder { get; }

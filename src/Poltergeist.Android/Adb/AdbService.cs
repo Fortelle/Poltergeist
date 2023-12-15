@@ -39,7 +39,7 @@ public class AdbService : MacroService
 
         if (string.IsNullOrEmpty(WorkingDirectory))
         {
-            var path = Processor.GetOption(ExePathKey, "");
+            var path = Processor.Options.Get(ExePathKey, "");
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentException($"{nameof(ExePathKey)} is not set.");
@@ -55,7 +55,7 @@ public class AdbService : MacroService
 
         if (string.IsNullOrEmpty(Address))
         {
-            Address = Processor.GetOption(IpAddressKey, "");
+            Address = Processor.Options.Get(IpAddressKey, "");
         }
 
         if (string.IsNullOrEmpty(WorkingDirectory))
@@ -97,7 +97,7 @@ public class AdbService : MacroService
             Initialize();
         }
 
-        var keepalive = Processor.GetOption(KeepAliveKey, false);
+        var keepalive = Processor.Options.Get(KeepAliveKey, false);
 
         Logger.Debug($"Connecting to adb server {Address}.", new { Address, keepalive });
 

@@ -83,7 +83,7 @@ public class LoopService : MacroService, IAutoloadable
 
     private void CheckLimit()
     {
-        var usesLoop = Processor.GetOption<bool>(ConfigEnableKey);
+        var usesLoop = Processor.Options.Get<bool>(ConfigEnableKey);
         if (!usesLoop)
         {
             return;
@@ -91,11 +91,11 @@ public class LoopService : MacroService, IAutoloadable
 
         if (Options.IsCountLimitable == true)
         {
-            MaxCount = Processor.GetOption<int>(ConfigCountKey);
+            MaxCount = Processor.Options.Get<int>(ConfigCountKey);
         }
         if (Options.IsDurationLimitable == true)
         {
-            var seconds = Processor.GetOption<int>(ConfigDurationKey);
+            var seconds = Processor.Options.Get<int>(ConfigDurationKey);
             MaxDuration = TimeSpan.FromSeconds(seconds);
         }
 
@@ -122,7 +122,7 @@ public class LoopService : MacroService, IAutoloadable
                 canBegin = false;
             }
             MaxCount = args.CountLimit;
-            Processor.Summary = args.Summary;
+            Processor.Comment = args.Comment;
         }
 
         Hooks.Raise(new LoopStartedHook());
@@ -142,12 +142,11 @@ public class LoopService : MacroService, IAutoloadable
             After.Invoke(args);
         }
 
-        Processor.SetStatistic<int>(StatisticTotalIterationCountKey, old => old + IterationIndex + 1);
+        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationIndex + 1);
 
         Hooks.Raise(new LoopEndedHook());
 
         Logger.Debug($"Finished running the after-loop procedure.");
     }
-
 
 }

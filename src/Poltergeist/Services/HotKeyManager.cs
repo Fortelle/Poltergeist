@@ -1,5 +1,5 @@
 ﻿using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Services;

@@ -1,18 +1,18 @@
 ﻿using Newtonsoft.Json;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Common.Utilities.Cryptology;
 
 namespace Poltergeist.Services;
 
 public class MacroManager
 {
-    private const string MacroSummariesKey = "app.macrosummaries";
-
     public List<IMacroBase> Macros { get; } = new();
     public List<MacroGroup> Groups { get; } = new();
-    public MacroOptions GlobalOptions { get; set; } = new();
+    public OptionCollection GlobalOptions { get; set; } = new();
+    public ParameterCollection GlobalStatistics { get; set; } = new();
 
     public List<MacroProcessor> InRunningProcesses { get; set; } = new();
 
@@ -28,30 +28,12 @@ public class MacroManager
         PathService = path;
         LocalSettings = localSettings;
 
-        App.SettingsLoading += (settings) =>
-        {
-            settings.Add(new OptionItem<MacroSummaryEntry[]>(MacroSummariesKey, Array.Empty<MacroSummaryEntry>())
-            {
-                IsBrowsable = false,
-            });
-        };
-
-        App.ContentLoading += () =>
-        {
-            var summaries = LocalSettings.Get<MacroSummaryEntry[]>(MacroSummariesKey);
-            if(summaries?.Length > 0)
-            {
-                foreach (var summary in summaries)
-                {
-                    Summaries.Add(summary.MacroKey, summary);
-                }
-            }
-        };
-
         App.ContentLoaded += () =>
         {
             LoadGlobalOptions();
+            LoadGlobalStatistics();
 
+            LoadSummary();
             var macroManager = App.GetService<MacroManager>();
             foreach(var summary in Summaries.Values)
             {
@@ -86,7 +68,7 @@ public class MacroManager
     public void AddGroup(MacroGroup group)
     {
         group.GroupFolder = PathService.GetGroupFolder(group);
-        group.LoadOptions();
+        group.Load();
 
         Groups.Add(group);
 
@@ -95,6 +77,11 @@ public class MacroManager
             macro.Group = group;
             AddMacro(macro);
         }
+    }
+
+    public void AddGroup<T>() where T : MacroGroup, new()
+    {
+        AddGroup(new T());
     }
 
     public IMacroBase? GetMacro(string key)
@@ -119,8 +106,8 @@ public class MacroManager
 
         UpdateSummary(processor.Macro.Key, x =>
         {
-            x.LastRunTime = processor.GetStatistic<DateTime>("last_run_time");
-            x.RunCount = processor.GetStatistic<int>("total_run_count");
+            x.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
+            x.RunCount = processor.Statistics.Get<int>("total_run_count");
         });
     }
 
@@ -132,33 +119,41 @@ public class MacroManager
 
         var macro = processor.Macro;
         InRunningProcesses.Remove(processor);
-    }
 
-    public void AddGlobalOption(IOptionItem option)
-    {
-        GlobalOptions.Add(option);
-    }
-
-    public void LoadGlobalOptions()
-    {
-        foreach(var group in Groups)
+        if (processor.Options.Get(MacroBase.UseStatisticsKey, true))
         {
-            group.SetGlobalOptions(GlobalOptions);
+            var globalStatistics = processor.Statistics.ToValueDictionary(ParameterSource.Global);
+            if (globalStatistics.Any())
+            {
+                foreach (var (key, value) in globalStatistics)
+                {
+                    GlobalStatistics.Update(key, value);
+                }
+                GlobalStatistics.Save();
+            }
         }
+    }
 
-        foreach (var module in Macros.SelectMany(x=>x.Modules))
+    private void LoadGlobalOptions()
+    {
+        foreach (var item in MacroModule.GlobalOptions)
         {
-            module.SetGlobalOptions(GlobalOptions);
+            GlobalOptions.Add(item);
         }
 
         var filepath = PathService.GlobalMacroOptionsFile;
         GlobalOptions.Load(filepath);
     }
 
-    public void SaveGlobalOptions()
+    private void LoadGlobalStatistics()
     {
-        var filepath = PathService.GlobalMacroOptionsFile;
-        GlobalOptions.Save(filepath);
+        foreach (var item in MacroModule.GlobalStatistics)
+        {
+            GlobalStatistics.Add(item);
+        }
+
+        var filepath = PathService.GlobalMacroStatisticsFile;
+        GlobalStatistics.Load(filepath);
     }
 
     public void SendMessage(InteractionMessage message)
@@ -174,6 +169,30 @@ public class MacroManager
         }
 
         processor.ReceiveMessage(message.ToDictionary());
+    }
+
+    private void LoadSummary()
+    {
+        Summaries.Clear();
+
+        var summaryPath = PathService.SummariesFile;
+        if (!File.Exists(summaryPath))
+        {
+            return;
+        }
+
+        try
+        {
+            SerializationUtil.JsonLoad<MacroSummaryEntry[]>(summaryPath, out var list);
+            foreach(var summary in list)
+            {
+                Summaries.Add(summary.MacroKey, summary);
+            }
+        }
+        catch
+        {
+
+        }
     }
 
     public MacroSummaryEntry? GetSummary(string macroKey)
@@ -202,8 +221,61 @@ public class MacroManager
 
         action?.Invoke(entry);
 
-        LocalSettings.Set(MacroSummariesKey, Summaries.Values.ToArray());
-        LocalSettings.Save();
+        var summaryPath = PathService.SummariesFile;
+        SerializationUtil.JsonSave(summaryPath, Summaries.Values);
+    }
+
+    public MacroProcessor CreateProcessor(IMacroBase macro, LaunchReason reason)
+    {
+        var processor = new MacroProcessor(macro, reason);
+
+        PushEnvironments(processor.Environments);
+        PushGlobalOptions(processor.Options);
+        PushGlobalStatistics(processor.Statistics);
+
+        return processor;
+    }
+
+    public void PushEnvironments(VariableCollection vc)
+    {
+        vc.Add("application_name", PathService.ApplicationName, ParameterSource.Global);
+
+        var localSettings = App.GetService<LocalSettingsService>();
+        var dict = localSettings.Settings.ToDictionary();
+
+        vc.AddRange(dict, ParameterSource.Global);
+
+        var pathService = App.GetService<PathService>();
+        vc.Add("document_data_folder", pathService.DocumentDataFolder, ParameterSource.Global);
+        vc.Add("shared_folder", pathService.SharedFolder, ParameterSource.Global);
+        vc.Add("macro_folder", pathService.MacroFolder, ParameterSource.Global);
+        vc.Add("group_folder", pathService.GroupFolder, ParameterSource.Global);
+    }
+
+    public void PushGlobalOptions(VariableCollection vc)
+    {
+        var globalOptions = GlobalOptions.ToDictionary();
+        foreach (var (key, value) in globalOptions)
+        {
+            if (vc.Contains(key))
+            {
+                continue;
+            }
+            vc.Add(key, value, ParameterSource.Global);
+        }
+    }
+
+    private void PushGlobalStatistics(VariableCollection vc)
+    {
+        var globalStatistics = GlobalOptions.ToDictionary();
+        foreach (var (key, value) in globalStatistics)
+        {
+            if (vc.Contains(key))
+            {
+                continue;
+            }
+            vc.Add(key, value, ParameterSource.Global);
+        }
     }
 
 }

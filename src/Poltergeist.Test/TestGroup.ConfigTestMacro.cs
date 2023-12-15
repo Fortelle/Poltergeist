@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Poltergeist.Automations.Attributes;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Input.Windows;
 
@@ -181,7 +181,7 @@ public partial class TestGroup
                     args.Outputer.NewGroup(group.Key!);
                     foreach (var option in group)
                     {
-                        var value = args.Processor.GetOption(option.Key, option.BaseType)!;
+                        var value = args.Processor.Options.Get(option.Key)!;
                         args.Outputer.Write(option.Key, $"{value}");
                     }
                 }

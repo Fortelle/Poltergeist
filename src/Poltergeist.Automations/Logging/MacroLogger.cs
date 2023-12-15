@@ -12,6 +12,9 @@ namespace Poltergeist.Automations.Logging;
 
 public class MacroLogger : KernelService
 {
+    public const string FileLogLevelKey = "logger.tofile";
+    public const string FrontLogLevelKey = "logger.toconsole";
+
     private readonly LoggerOptions Options;
 
     private readonly Stream? LogFileStream;

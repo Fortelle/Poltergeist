@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Components.Interactions;
 

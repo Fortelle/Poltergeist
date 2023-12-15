@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Windows.Storage.Pickers;
 
 // To learn more about WinUI, the WinUI project structure,

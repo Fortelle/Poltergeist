@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Common.Structures.Colors;
 
@@ -295,8 +295,6 @@ public partial class ExampleGroup
         UserOptions =
         {
             new OptionItem<bool>("countdown"),
-            // todo: toast
-            //new OptionItem<bool>("toast"),
         },
 
         AsyncExecution = async (args) =>
@@ -309,8 +307,7 @@ public partial class ExampleGroup
 
             var loop = true;
             var i = 0;
-            var useCountdown = args.Processor.GetOption<bool>("countdown");
-            var useToast = args.Processor.GetOption<bool>("toast");
+            var useCountdown = args.Processor.Options.Get<bool>("countdown");
 
             while (loop)
             {

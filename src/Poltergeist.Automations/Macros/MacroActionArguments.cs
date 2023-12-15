@@ -6,9 +6,9 @@ public class MacroActionArguments
 {
     public IMacroBase Macro { get; init; }
 
-    public required Dictionary<string, object?> Options { get; init; }
+    public required IReadOnlyDictionary<string, object?> Options { get; init; }
 
-    public required Dictionary<string, object?> Environments { get; init; }
+    public required IReadOnlyDictionary<string, object?> Environments { get; init; }
 
     public CancellationToken CancellationToken { get; set; }
 

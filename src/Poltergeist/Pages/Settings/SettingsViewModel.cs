@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using Microsoft.UI.Xaml;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Contracts.Services;
 using Poltergeist.Helpers;
 using Poltergeist.Services;
@@ -23,12 +23,12 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private string _versionDescription;
 
-    public MacroOptions LocalSettings
+    public OptionCollection LocalSettings
     {
         get; set;
     }
 
-    public MacroOptions GlobalOptions
+    public OptionCollection GlobalOptions
     {
         get; set;
     }

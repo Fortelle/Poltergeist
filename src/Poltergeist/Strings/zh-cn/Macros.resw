@@ -147,8 +147,11 @@
   <data name="FavoriteAppBarButton.Label" xml:space="preserve">
     <value>收藏</value>
   </data>
+  <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
+    <value>备注</value>
+  </data>
   <data name="HistoryDurationTextBlock.Text" xml:space="preserve">
-    <value>时长</value>
+    <value>持续时间</value>
   </data>
   <data name="HistoryPivotItem.Header" xml:space="preserve">
     <value>历史记录</value>
@@ -157,7 +160,7 @@
     <value>结果</value>
   </data>
   <data name="HistoryStartTimeTextBlock.Text" xml:space="preserve">
-    <value>开始时间</value>
+    <value>启动时间</value>
   </data>
   <data name="InformationPivotItem.Header" xml:space="preserve">
     <value>常规</value>

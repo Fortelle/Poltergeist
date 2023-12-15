@@ -148,7 +148,7 @@
                                             Glyph="{Binding Glyph, Mode=OneTime, TargetNullValue=&#xE90F;}"
                                             HorizontalAlignment="Center"
                                             />
-                                        
+
                                         <StackPanel
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
@@ -157,7 +157,7 @@
                                             <TextBlock
                                                 Text="{Binding Text, Mode=OneTime}"
                                                 />
-                                            
+
                                             <TextBlock
                                                 Opacity=".5"
                                                 FontSize="12"
@@ -166,9 +166,9 @@
                                                 Text="{Binding Description}"
                                                 Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
                                                 />
-                                            
+
                                         </StackPanel>
-                                        
+
                                         <Button
                                             x:Uid="/Poltergeist/Macros/ActionExecuteButton"
                                             Grid.Column="3"
@@ -180,7 +180,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer> 
+                    </ScrollViewer>
                 </PivotItem>
 
                 <PivotItem
@@ -203,8 +203,8 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Title, Mode=OneTime}" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Value, Mode=OneTime}" />
+                                    <TextBlock Grid.Column="0" Text="{Binding DisplayLabel, Mode=OneTime}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayValue, Mode=OneTime}" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -220,11 +220,12 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid
-                            Margin="16, 0, 8, 8"
+                            Margin="16, 0, 12, 8"
                             >
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width=".4*" />
                                 <ColumnDefinition Width=".3*" />
+                                <ColumnDefinition Width=".2*" />
+                                <ColumnDefinition Width=".2*" />
                                 <ColumnDefinition Width=".3*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock
@@ -232,6 +233,7 @@
                                 Grid.Column="0"
                                 Margin="0"
                                 FontWeight="SemiBold"
+                                TextAlignment="Center"
                                 Padding="16, 0"
                                 />
                             <TextBlock
@@ -246,46 +248,58 @@
                                 TextAlignment="Center"
                                 FontWeight="SemiBold"
                                 />
+                            <TextBlock
+                                x:Uid="/Poltergeist/Macros/HistoryCommentTextBlock"
+                                Grid.Column="3"
+                                TextAlignment="Center"
+                                FontWeight="SemiBold"
+                                />
                         </Grid>
                         <ListView
                             Grid.Row="1"
-                                ItemsSource="{x:Bind ViewModel.Summaries, Mode=OneWay}"
-                                DoubleTapped="SummariesListView_DoubleTapped"
-                                >
+                            ItemsSource="{x:Bind ViewModel.History, Mode=OneWay}"
+                            DoubleTapped="HistoryListView_DoubleTapped"
+                            >
                             <ListView.Resources>
                                 <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
                             </ListView.Resources>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid
-                                            Margin="0, 16"
-                                            >
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width=".4*" />
-                                                <ColumnDefinition Width=".3*" />
-                                                <ColumnDefinition Width=".3*" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock
-                                                Grid.Column="0"
-                                                Margin="0"
-                                                Text="{Binding StartTime, Mode=OneTime}"
-                                                />
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                TextAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding Duration, Converter={StaticResource TimeSpanToHhhmmssConverter}, ConverterParameter='hh\\:mm\\:ss', Mode=OneTime}"
-                                                />
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                TextAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{Binding EndReason, Converter={StaticResource EndReasonToTextConverter}, Mode=OneTime}"
-                                                />
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ListView>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid
+                                        Margin="0, 16"
+                                        >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width=".3*" />
+                                            <ColumnDefinition Width=".2*" />
+                                            <ColumnDefinition Width=".2*" />
+                                            <ColumnDefinition Width=".3*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Margin="0"
+                                            Text="{Binding StartTime, Mode=OneTime}"
+                                            />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            TextAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding Duration, Converter={StaticResource TimeSpanToHhhmmssConverter}, ConverterParameter='hh\\:mm\\:ss', Mode=OneTime}"
+                                            />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            TextAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Text="{Binding EndReason, Converter={StaticResource EndReasonToTextConverter}, Mode=OneTime}"
+                                            />
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            Margin="0"
+                                            Text="{Binding Comment, Mode=OneTime}"
+                                            />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </PivotItem>
             </Pivot>

@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -12,12 +12,12 @@ namespace Poltergeist.Views;
 [INotifyPropertyChanged]
 public sealed partial class OptionListView : UserControl
 {
-    public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(MacroOptions), typeof(OptionListView), new PropertyMetadata(null));
+    public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(OptionCollection), typeof(OptionListView), new PropertyMetadata(null));
     private static readonly string UncategorizedGroupLabel = App.Localize("Poltergeist/Resources/Options_Uncategorized");
 
-    public MacroOptions Options
+    public OptionCollection Options
     {
-        get => (MacroOptions)GetValue(OptionsProperty);
+        get => (OptionCollection)GetValue(OptionsProperty);
         set
         {
             SetValue(OptionsProperty, value);

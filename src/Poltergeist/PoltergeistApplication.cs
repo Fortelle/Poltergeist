@@ -7,8 +7,9 @@ using Poltergeist.Activation;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Configs;
 using Poltergeist.Automations.Logging;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities;
 using Poltergeist.Contracts.Services;
@@ -295,19 +296,19 @@ public abstract class PoltergeistApplication : Application
     protected virtual void OnSettingsLoading(LocalSettingsService localsettingsService)
     {
         // Macro
-        localsettingsService.Add(new OptionItem<bool>("macro.usestatistics", true)
+        localsettingsService.Add(new OptionItem<bool>(MacroBase.UseStatisticsKey, true)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_UseStatistics"),
         });
 
-        localsettingsService.Add(new OptionItem<LogLevel>("logger.tofile", LogLevel.All)
+        localsettingsService.Add(new OptionItem<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.All)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToFile"),
         });
 
-        localsettingsService.Add(new OptionItem<LogLevel>("logger.toconsole", LogLevel.Information)
+        localsettingsService.Add(new OptionItem<LogLevel>(MacroLogger.FrontLogLevelKey, LogLevel.Information)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToConsole"),

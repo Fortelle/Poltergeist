@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Android.Adb;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Terminals;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Maths;
@@ -18,6 +18,27 @@ namespace Poltergeist.Android.Emulators;
 public class EmulatorModule : MacroModule
 {
     public const string InputModeKey = "adb.inputmode";
+
+    static EmulatorModule()
+    {
+        GlobalOptions.Add(new OptionItem<string>(AdbService.IpAddressKey)
+        {
+            DisplayLabel = "IP Address",
+            Category = "ADB",
+        });
+
+        GlobalOptions.Add(new PathOption(AdbService.ExePathKey)
+        {
+            DisplayLabel = "Exe file",
+            Category = "ADB",
+        });
+
+        GlobalOptions.Add(new OptionItem<bool>(CapturingProvider.PreviewCaptureKey)
+        {
+            DisplayLabel = "Preview captured image",
+            Category = "Debug",
+        });
+    }
 
     public EmulatorModule()
     {
@@ -54,7 +75,7 @@ public class EmulatorModule : MacroModule
         services.AddSingleton<RandomEx>();
         services.AddSingleton<DistributionService>();
 
-        var inputMode = processor.GetOption<InputMode>(InputModeKey);
+        var inputMode = processor.Options.Get<InputMode>(InputModeKey);
 
         switch (inputMode)
         {
@@ -103,7 +124,7 @@ public class EmulatorModule : MacroModule
 
         repeats.Before += (e) =>
         {
-            var inputMode = e.Processor.GetOption<InputMode>(InputModeKey);
+            var inputMode = e.Processor.Options.Get<InputMode>(InputModeKey);
 
             if (inputMode is InputMode.ADB or InputMode.ADB_Background)
             {
@@ -126,29 +147,6 @@ public class EmulatorModule : MacroModule
                 }
             }
         };
-    }
-
-    public override void SetGlobalOptions(MacroOptions options)
-    {
-        base.SetGlobalOptions(options);
-
-        options.Add(new OptionItem<string>(AdbService.IpAddressKey)
-        {
-            DisplayLabel = "IP Address",
-            Category = "ADB",
-        });
-
-        options.Add(new PathOption(AdbService.ExePathKey)
-        {
-            DisplayLabel = "Exe file",
-            Category = "ADB",
-        });
-
-        options.Add(new OptionItem<bool>(CapturingProvider.PreviewCaptureKey)
-        {
-            DisplayLabel = "Preview captured image",
-            Category = "Debug",
-        });
     }
 
     public static readonly MacroAction KillServerAction = new()

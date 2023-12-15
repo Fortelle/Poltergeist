@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Test;
@@ -31,7 +31,7 @@ public partial class TestGroup
         AsyncExecution = async (args) =>
         {
             var interactionService = args.Processor.GetService<InteractionService>();
-            var dialogType = args.Processor.GetOption("dialog_type", "");
+            var dialogType = args.Processor.Options.Get("dialog_type", "");
             var dialog = dialogType switch
             {
                 "Ok" => new DialogModel()

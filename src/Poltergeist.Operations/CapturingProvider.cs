@@ -18,7 +18,7 @@ public abstract class CapturingProvider : MacroService
 
     public CapturingProvider(MacroProcessor processor) : base(processor)
     {
-        var isPreviewable = Processor.GetOption<bool>(PreviewCaptureKey);
+        var isPreviewable = Processor.Options.Get<bool>(PreviewCaptureKey);
         if (isPreviewable)
         {
             var inst = processor.GetService<DashboardService>();

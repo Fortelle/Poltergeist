@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;

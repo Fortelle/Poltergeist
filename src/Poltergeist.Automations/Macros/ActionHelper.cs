@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 

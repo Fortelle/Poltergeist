@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Diagnostics;
-using System.Linq;
 using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;

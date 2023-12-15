@@ -1,5 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Views.Options;
 

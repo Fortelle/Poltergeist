@@ -12,6 +12,8 @@ public class PathService
     public string LocalDataFolder { get; }
     public string LocalSettingsFile { get; }
     public string GlobalMacroOptionsFile { get; }
+    public string GlobalMacroStatisticsFile { get; }
+    public string SummariesFile { get; }
     public string SchedulerFile { get; }
 
     public string SharedFolder { get; }
@@ -36,11 +38,13 @@ public class PathService
 
         LocalSettingsFile = Path.Combine(DocumentDataFolder, "LocalSettings.json");
         GlobalMacroOptionsFile = Path.Combine(DocumentDataFolder, "GlobalOptions.json");
+        GlobalMacroStatisticsFile = Path.Combine(DocumentDataFolder, "GlobalStatistics.json");
+        SummariesFile = Path.Combine(DocumentDataFolder, "Summaries.json");
         SchedulerFile = Path.Combine(DocumentDataFolder, "Scheduler.json");
 
         if (Debugger.IsAttached)
         {
-            ProjectFolder = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\.."));
+            ProjectFolder = AppDomain.CurrentDomain.BaseDirectory[..AppDomain.CurrentDomain.BaseDirectory.IndexOf("\\bin\\")];
             SolutionFolder = Path.GetFullPath(Path.Combine(ProjectFolder, @".."));
         }
 

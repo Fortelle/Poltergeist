@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Macros;
@@ -14,9 +14,9 @@ public interface IMacroBase
     public string? Description { get; }
     public string[]? Details { get; }
     public string[]? Tags { get; }
-    public MacroOptions UserOptions { get; }
-    public VariableCollection Statistics { get; }
-    public List<ProcessSummary> Summaries { get; }
+    public OptionCollection UserOptions { get; }
+    public ParameterCollection Statistics { get; }
+    public ProcessHistoryCollection History { get; }
 
     public List<MacroAction> Actions { get; }
     public List<MacroModule> Modules { get; }
@@ -32,13 +32,12 @@ public interface IMacroBase
 
     public void Initialize();
     public void Load();
-    public void SaveOptions();
-    public void SaveStatistics();
-    public void SaveSummaries();
     public void ConfigureServices(ServiceCollection services, IConfigureProcessor processor);
     public void Process(MacroProcessor processor);
-    public void ExecuteAction(MacroAction action, Dictionary<string, object?> options, Dictionary<string, object?> environments);
+    public void ExecuteAction(MacroAction action, IReadOnlyDictionary<string, object?> options, IReadOnlyDictionary<string, object?> environments);
 
     public T As<T>() where T : MacroBase;
 
+    public VariableCollection GetOptionCollection();
+    public VariableCollection GetStatisticCollection();
 }

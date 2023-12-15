@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Components.FlowBuilders;
 using Poltergeist.Automations.Components.Hooks;
@@ -12,6 +11,7 @@ using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Exceptions;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors.Events;
 
 namespace Poltergeist.Automations.Processors;
@@ -24,7 +24,7 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
     public event EventHandler<PanelCreatedEventArgs>? PanelCreated;
     public event EventHandler<InteractingEventArgs>? Interacting;
 
-    public string ProcessId { get; set; }
+    public string ProcessId { get; }
 
     public IMacroBase Macro { get; }
 
@@ -36,8 +36,10 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     public bool IsCancelled { get; set; }
 
-    public required Dictionary<string, object?> Options { get; set; }
-    public required Dictionary<string, object?> Environments { get; set; }
+    public VariableCollection Options { get; } = new();
+    public VariableCollection Environments { get; } = new();
+    public VariableCollection Statistics { get; } = new();
+    public VariableCollection SessionStorage { get; } = new();
 
     private HookService? Hooks { get; set; }
     private WorkingService? Workflow { get; set; }
@@ -48,13 +50,11 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     public LaunchReason Reason { get; set; }
 
-    public CacheStorage Caches { get; } = new();
-
     private readonly SynchronizationContext? OriginalContext = SynchronizationContext.Current;
 
     CancellationToken? IUserProcessor.CancellationToken => Workflow?.GetCancellationToken();
 
-    public string? Summary { get; set; }
+    public string? Comment { get; set; }
 
     public MacroProcessor(IMacroBase data, LaunchReason reason)
     {
@@ -76,6 +76,11 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             {
                 CheckAdmin();
             }
+
+            Options.AddRange(Macro.GetOptionCollection());
+
+            Statistics.AddRange(Macro.GetStatisticCollection());
+
         }
         catch (Exception e)
         {
@@ -85,9 +90,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
 
     private void InitializeProcessor()
     {
-        Options ??= Macro.UserOptions.ToDictionary();
-        Environments ??= new();
-
         ServiceCollection = new();
         InitializeBasicServices(ServiceCollection);
         InitializeExtraServices(ServiceCollection);
@@ -112,8 +114,8 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         services.AddOptions<LoggerOptions>();
         services.Configure<LoggerOptions>(options =>
         {
-            options.FileLogLevel = GetEnvironment("logger.tofile", LogLevel.All);
-            options.FrontLogLevel = GetEnvironment("logger.toconsole", LogLevel.All);
+            options.FileLogLevel = Environments.Get(MacroLogger.FileLogLevelKey, LogLevel.All);
+            options.FrontLogLevel = Environments.Get(MacroLogger.FrontLogLevelKey, LogLevel.All);
             options.Filename = Macro.PrivateFolder is null ? null : Path.Combine(Macro.PrivateFolder, "Logs", $"{ProcessId}.log");
         });
         services.AddSingleton<MacroLogger>();
@@ -127,6 +129,8 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         services.AddSingleton<InteractionService>();
         services.AddSingleton<OutputService>();
         services.AddSingleton<DebugService>();
+        services.AddSingleton<FileStorageService>();
+        services.AddSingleton<LocalStorageService>();
 
         if (Debugger.IsAttached)
         {
@@ -143,7 +147,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         services.AddTransient<ImageInstrument>();
 
         services.AddTransient<ArgumentService>();
-
 
         services.AddTransient<FlowBuilderService>();
         services.AddTransient<LoopBuilderService>();
@@ -181,101 +184,13 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             return;
         }
 
-        var identity = WindowsIdentity.GetCurrent();
+        using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
         var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
         if (!isAdmin)
         {
             throw new Exception("This macro requires administrator privileges to run.");
         }
-    }
-
-    public T? GetOption<T>(string key, T? def = default)
-    {
-        var value = GetOption(key, typeof(T));
-
-        if (value is null)
-        {
-            return def;
-        }
-
-        return (T)value;
-    }
-
-    public object? GetOption(string key, Type type)
-    {
-        if (Options.TryGetValue(key, out var value))
-        {
-            if (value is JToken jt)
-            {
-                return jt.ToObject(type)!;
-            }
-            else
-            {
-                return value;
-            }
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    void IConfigureProcessor.SetOption(string key, object value)
-    {
-        if (Options.ContainsKey(key))
-        {
-            Options[key] = value;
-        }
-        else
-        {
-            Options.Add(key, value);
-        }
-    }
-
-    public T? GetEnvironment<T>(string key, T? def = default)
-    {
-        if (Environments.TryGetValue(key, out var value))
-        {
-            return (T?)value;
-        }
-        else
-        {
-            return def;
-        }
-    }
-
-    public void SetStatistic<T>(string key, T value) where T : notnull
-    {
-        if (!GetEnvironment<bool>("macro.usestatistics"))
-        {
-            return;
-        }
-
-        Macro.Statistics.Set(key, value!);
-        //Log(LogLevel.Debug, $"Set statistic {key} = {value}.");
-    }
-
-    public void SetStatistic<T>(string key, Func<T, T> action) where T : notnull
-    {
-        if (!GetEnvironment<bool>("macro.usestatistics"))
-        {
-            return;
-        }
-
-        Macro.Statistics.Set(key, action);
-        //Log(LogLevel.Debug, $"Set statistic {key} = {newValue}.");
-    }
-
-    public T GetStatistic<T>(string key) where T : notnull
-    {
-        var item = Macro.Statistics.FirstOrDefault(x => x.Key == key);
-        if (item is null)
-        {
-            throw new KeyNotFoundException();
-        }
-
-        return (T)item.Value;
     }
 
     public T GetService<T>() where T : class
@@ -307,8 +222,8 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             Macro.Process(this);
         }
 
-        SetStatistic<int>("total_run_count", old => old + 1);
-        SetStatistic("last_run_time", StartTime);
+        Statistics.Set("total_run_count", (int x) => x + 1);
+        Statistics.Set("last_run_time", StartTime);
 
         Workflow!.Start();
     }
@@ -335,21 +250,21 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         EndTime = DateTime.Now;
         var duration = EndTime - StartTime;
 
-        SetStatistic<TimeSpan>("total_run_duration", old => old + duration);
+        Statistics.Set<TimeSpan>("total_run_duration", old => old + duration);
 
-        var completeAction = GetOption("aftercompletion.action", CompletionAction.None);
+        var completeAction = Options.Get("aftercompletion.action", CompletionAction.None);
         if (e.Reason == EndReason.UserAborted)
         {
             completeAction = CompletionAction.None;
         }
 
-        var completeAllowerror = GetOption("aftercompletion.allowerror", false);
+        var completeAllowerror = Options.Get("aftercompletion.allowerror", false);
         if (!completeAllowerror && e.Reason != EndReason.Complete)
         {
             completeAction = CompletionAction.None;
         }
 
-        var completeMinimumSeconds = GetOption("aftercompletion.minimumseconds", 0);
+        var completeMinimumSeconds = Options.Get("aftercompletion.minimumseconds", 0);
         if (completeMinimumSeconds > 0 && completeMinimumSeconds < duration.TotalSeconds)
         {
             completeAction = CompletionAction.None;
@@ -363,27 +278,59 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
             }
         }
 
-        Macro.SaveStatistics();
-
-        var summary = new ProcessSummary()
+        var history = new ProcessHistoryEntry()
         {
             MacroKey = Macro.Key,
             ProcessId = ProcessId,
             StartTime = StartTime,
             EndTime = EndTime,
             EndReason = e.Reason,
-            Comment = Summary,
+            Comment = Comment,
         };
-        Hooks?.Raise(new ProcessSummaryCreatedHook(summary));
+        Hooks?.Raise(new ProcessHistoryCreatedHook(history));
+        Macro.History.Add(history);
 
-        var args = new MacroCompletedEventArgs(e.Reason, summary)
+        if (Options.Get(MacroBase.UseStatisticsKey, true))
+        {
+            var macroStatistics = Statistics.ToValueDictionary(ParameterSource.Macro);
+            if (macroStatistics.Any())
+            {
+                foreach (var (key, value) in macroStatistics)
+                {
+                    if (Macro.Statistics.Contains(key))
+                    {
+                        Macro.Statistics.Update(key, value);
+                    }
+                    else
+                    {
+                        Log(LogLevel.Warning, $"The key \"{key}\" is not present in the macro statistics.");
+                    }
+                }
+                Macro.Statistics.Save();
+            }
+
+            var groupStatistics = Statistics.ToValueDictionary(ParameterSource.Group);
+            if (Macro.Group is not null && groupStatistics.Any())
+            {
+                foreach (var (key, value) in groupStatistics)
+                {
+                    if (Macro.Group.Statistics.Contains(key))
+                    {
+                        Macro.Group.Statistics.Update(key, value);
+                    }
+                    else
+                    {
+                        Log(LogLevel.Warning, $"The key \"{key}\" is not present in the group statistics.");
+                    }
+                }
+                Macro.Group.Statistics.Save();
+            }
+        }
+
+        var args = new MacroCompletedEventArgs(e.Reason, history)
         {
              CompleteAction = completeAction,
         };
-
-        Macro.Summaries.Add(summary);
-        Macro.SaveSummaries();
-
         RaiseEvent(MacroEventType.ProcessCompleted, args);
     }
 
@@ -455,14 +402,16 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigureProcessor, IUs
         Hooks?.Raise(new MessageReceivedHook(paramaters));
     }
 
-
     public void Dispose()
     {
         ServiceProvider!.Dispose();
 
-        foreach(var item in Caches.GetAll<IDisposable>())
+        foreach(var item in SessionStorage)
         {
-            item.Dispose();
+            if(item.Value is IDisposable idis)
+            {
+                idis.Dispose();
+            }
         }
     }
 }

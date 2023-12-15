@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
 
@@ -11,8 +10,7 @@ public class ArgumentService : IDisposable, IUserLogger
     public IMacroBase Macro { get; }
     public IUserLogger Logger { get; }
     public OutputService Outputer => Processor.GetService<OutputService>();
-    public string? Summary { get; set; }
-    public CacheStorage Caches => Processor.Caches;
+    public string? Comment { get; set; }
 
     private string SenderName { get; }
 
@@ -29,7 +27,6 @@ public class ArgumentService : IDisposable, IUserLogger
     {
         Processor.GetService<MacroLogger>().Log(LogLevel.Information, SenderName, message);
     }
-
 
     void IDisposable.Dispose()
     {

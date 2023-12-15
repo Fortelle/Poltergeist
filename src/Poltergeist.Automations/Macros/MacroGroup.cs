@@ -1,6 +1,6 @@
 using System.Reflection;
 using Poltergeist.Automations.Attributes;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -8,13 +8,16 @@ public abstract class MacroGroup
 {
     public string Key { get; init; }
     public string? Description { get; init; }
-    public MacroOptions Options { get; init; } = new();
+    public OptionCollection Options { get; } = new();
+    public ParameterCollection Statistics { get; } = new();
 
     public string? GroupFolder { get; set; }
     public List<IMacroBase> Macros { get; } = new();
 
     private string? _title;
     public string Title { get => _title ?? Key; set => _title = value; }
+
+    private bool IsLoaded { get; set; }
 
     protected MacroGroup(string key)
     {
@@ -25,31 +28,22 @@ public abstract class MacroGroup
         LoadMacroClasses();
     }
 
-    public virtual void SetGlobalOptions(MacroOptions options)
+    public void Load()
     {
-
-    }
-
-    public void LoadOptions()
-    {
-        if (string.IsNullOrEmpty(GroupFolder))
+        if (IsLoaded)
         {
             return;
         }
 
-        var filepath = Path.Combine(GroupFolder, "config.json");
-        Options.Load(filepath);
-    }
-
-    public void SaveOptions()
-    {
-        if (string.IsNullOrEmpty(GroupFolder))
+        if (!string.IsNullOrEmpty(GroupFolder))
         {
-            return;
+            Options.Load(Path.Combine(GroupFolder, "useroptions.json"));
+
+            Statistics.Load(Path.Combine(GroupFolder, "statistics.json"));
         }
 
-        var filepath = Path.Combine(GroupFolder, "config.json");
-        Options.Save(filepath);
+
+        IsLoaded = true;
     }
 
     private void LoadMacroFields()

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
@@ -60,14 +57,14 @@ public class BackgroundService : MacroService, IAutoloadable
             return s;
         }).ToArray();
 
-        var processer = (MacroProcessor)Processor; // ???
+        var processer = (MacroProcessor)Processor;
 
         var optionList = processer.Options
-            .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}")
+            .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
 
         var envList = processer.Environments
-            .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"})  = {x.Value}")
+            .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
 
         var moduleList = Processor.Macro.Modules

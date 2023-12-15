@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Services;
@@ -99,10 +100,15 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
     {
         if(((FrameworkElement)sender).DataContext is MacroAction action)
         {
-            var options = ViewModel.GetOptions();
-            var environments = ViewModel.GetEnvironments();
+            var macroManager = App.GetService<MacroManager>();
 
-            ViewModel.Macro.ExecuteAction(action, options, environments);
+            var options = ViewModel.Macro.GetOptionCollection();
+            macroManager.PushGlobalOptions(options);
+
+            var environments = new VariableCollection();
+            macroManager.PushEnvironments(environments);
+
+            ViewModel.Macro.ExecuteAction(action, options.ToValueDictionary(), environments.ToValueDictionary());
         }
     }
 
@@ -118,7 +124,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return false;
         }
 
-        ViewModel.Macro.SaveOptions();
+        ViewModel.Macro.UserOptions.Save();
 
         return true;
     }
@@ -130,21 +136,21 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return true;
         }
 
-        ViewModel.Macro.SaveOptions();
+        ViewModel.Macro.UserOptions.Save();
 
         return true;
     }
 
-    private void SummariesListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    private void HistoryListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        if (((FrameworkElement)e.OriginalSource).DataContext is ProcessSummary summary)
+        if (((FrameworkElement)e.OriginalSource).DataContext is ProcessHistoryEntry historyEntry)
         {
             if(ViewModel.Macro.PrivateFolder is null)
             {
                 return;
             }
 
-            var logFile = Path.Combine(ViewModel.Macro.PrivateFolder, "Logs", summary.ProcessId + ".log");
+            var logFile = Path.Combine(ViewModel.Macro.PrivateFolder, "Logs", historyEntry.ProcessId + ".log");
             if(!File.Exists(logFile))
             {
                 App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));

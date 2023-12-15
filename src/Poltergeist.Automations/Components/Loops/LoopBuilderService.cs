@@ -110,7 +110,7 @@ public class LoopBuilderService : MacroService
 
                 Execution.Invoke(args);
                 status = args.Result;
-                Processor.Summary = args.Summary;
+                Processor.Comment = args.Comment;
             }
             catch (UserAbortException e)
             {
@@ -208,7 +208,7 @@ public class LoopBuilderService : MacroService
             args.Result = CheckContinueResult.NotSet;
             CheckContinue.Invoke(args);
             var state = args.Result;
-            Processor.Summary = args.Summary;
+            Processor.Comment = args.Comment;
             shouldContinue = state switch
             {
                 CheckContinueResult.Continue => true,

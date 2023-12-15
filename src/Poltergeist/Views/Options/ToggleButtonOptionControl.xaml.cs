@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Views.Options;
 

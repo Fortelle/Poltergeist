@@ -1,5 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Input.Windows;
 
 // To learn more about WinUI, the WinUI project structure,

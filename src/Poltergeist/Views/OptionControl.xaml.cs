@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Input.Windows;
 using Poltergeist.Views.Options;
 
@@ -72,7 +72,7 @@ public sealed partial class OptionControl : UserControl
 
             _ => new TextBlock()
             {
-                Text = item.ToString(),
+                Text = item.DisplayValue,
                 HorizontalAlignment = HorizontalAlignment.Right,
             },
         };

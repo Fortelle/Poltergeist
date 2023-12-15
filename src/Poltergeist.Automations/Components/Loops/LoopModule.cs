@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Repetitions;
-using Poltergeist.Automations.Configs;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
@@ -24,9 +24,9 @@ public class LoopModule : MacroModule
 
     public override void OnMacroInitialized(IMacroInitializer macro)
     {
-        macro.Statistics.Add(new(LoopService.StatisticTotalIterationCountKey, 0)
+        macro.Statistics.Add(new ParameterEntry<int>(LoopService.StatisticTotalIterationCountKey)
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
+            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
         });
 
         macro.UserOptions.Add(new OptionItem<bool>(LoopService.ConfigEnableKey, true)
