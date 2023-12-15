@@ -91,6 +91,10 @@ public partial class TestGroup
                 Maximum = 100,
                 Layout = NumberOptionLayout.Slider,
             },
+            new RatingOption("rating")
+            {
+                Category = "Numbers",
+            },
 
             new NumberOption<double>("double_numberbox")
             {

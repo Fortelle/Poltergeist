@@ -33,6 +33,8 @@ public sealed partial class OptionControl : UserControl
             IChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
             IChoiceOptionItem { Mode: ChoiceOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
 
+            RatingOption x => new RatingOptionControl(x),
+
             { BaseType.IsEnum: true } => new ComboBoxOptionControl(item),
 
             BoolOption { Mode: BoolOptionMode.ToggleSwitch } => new SwitchOptionControl(item),
