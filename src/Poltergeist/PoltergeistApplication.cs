@@ -157,11 +157,13 @@ public abstract class PoltergeistApplication : Application
                         {
                             MacroKey = option.Value,
                             Reason = LaunchReason.ByCommandLine,
-                            OptionOverrides = new(),
+                            Variation = new(),
                         };
                         if (autoclose)
                         {
-                            args.OptionOverrides["aftercompletion.action"] = CompletionAction.ExitApplication;
+                            args.Variation.Options = new() {
+                                ["aftercompletion.action"] = CompletionAction.ExitApplication,
+                            };
                         }
                         ActionService.RunMacro(args);
                     }

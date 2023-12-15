@@ -183,6 +183,15 @@
   <data name="RunAppBarButton.Label" xml:space="preserve">
     <value>运行</value>
   </data>
+  <data name="RunAppBarButtonTextBlock.Text" xml:space="preserve">
+    <value>运行</value>
+  </data>
+  <data name="RunDefaultMenuFlyoutItem.Text" xml:space="preserve">
+    <value>默认配置</value>
+  </data>
+  <data name="Run_Variation" xml:space="preserve">
+    <value>配置{0}</value>
+  </data>
   <data name="StatisticsPivotItem.Header" xml:space="preserve">
     <value>统计</value>
   </data>

@@ -327,22 +327,48 @@
                     HorizontalAlignment="Left"
                     IsOpen="False"
                     >
-                    <AppBarButton
-                        x:Uid="/Poltergeist/Macros/RunAppBarButton"
-                        IsCompact="True"
-                        Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
-                        IsEnabled="{x:Bind ViewModel.IsRunnable, Mode=OneWay}"
-                        >
-                        <AppBarButton.Icon>
-                            <FontIcon Glyph="&#xE768;">
-                                <interactivity:Interaction.Behaviors>
-                                    <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsValid, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
-                                        <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xF140;"/>
-                                    </interactions:DataTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </FontIcon>
-                        </AppBarButton.Icon>
-                    </AppBarButton>
+
+                    <AppBarElementContainer>
+                        <SplitButton
+                            Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
+                            IsEnabled="{x:Bind ViewModel.IsRunnable, Mode=OneWay}"
+                            >
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    Glyph="&#xE768;"
+                                    FontSize="16"
+                                    >
+                                    <interactivity:Interaction.Behaviors>
+                                        <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsValid, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
+                                            <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xF140;"/>
+                                        </interactions:DataTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </FontIcon>
+                                <TextBlock
+                                    x:Uid="/Poltergeist/Macros/RunAppBarButtonTextBlock"
+                                    Margin="8, 0, 0, 0"
+                                    Grid.Column="1"
+                                    />
+                            </Grid>
+                            <SplitButton.Flyout>
+                                <MenuFlyout
+                                    x:Name="RunMenuFlyout"
+                                    Placement="RightEdgeAlignedTop"
+                                    >
+                                    <MenuFlyoutItem
+                                        x:Uid="/Poltergeist/Macros/RunDefaultMenuFlyoutItem"
+                                        Icon="Play"
+                                        Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
+                                        />
+                                </MenuFlyout>
+                            </SplitButton.Flyout>
+                        </SplitButton>
+                    </AppBarElementContainer>
+                    
                     <AppBarButton
                         x:Uid="/Poltergeist/Macros/StopAppBarButton"
                         Icon="Stop"

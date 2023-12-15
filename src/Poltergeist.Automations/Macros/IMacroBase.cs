@@ -21,6 +21,7 @@ public interface IMacroBase
     public List<MacroAction> Actions { get; }
     public List<MacroModule> Modules { get; }
     public MacroStorage Storage { get; }
+    public List<ConfigVariation> ConfigVariations { get; }
 
     public MacroGroup? Group { get; set; }
     public string? PrivateFolder { get; set; }

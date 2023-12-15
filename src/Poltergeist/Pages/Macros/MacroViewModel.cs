@@ -104,15 +104,7 @@ public partial class MacroViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    public void Start()
-    {
-        Start(new MacroStartArguments() {
-            MacroKey = Macro.Key,
-            Reason = LaunchReason.ByUser,
-        });
-    }
-
-    public void Start(MacroStartArguments args)
+    public void Start(MacroStartArguments? args = null)
     {
         if (Macro is null)
         {
@@ -134,22 +126,47 @@ public partial class MacroViewModel : ObservableRecipient
 
         Macro.UserOptions.Save();
 
+        args ??= new MacroStartArguments()
+        {
+            MacroKey = Macro.Key,
+            Reason = LaunchReason.ByUser,
+        };
+
         var macroManager = App.GetService<MacroManager>();
 
         Processor = macroManager.CreateProcessor(Macro, args.Reason);
 
-        if (args.OptionOverrides?.Count > 0)
+        if (args.Variation is not null)
         {
-            foreach (var (key, value) in args.OptionOverrides)
+            if (args.Variation.Normalized)
             {
-                if (Processor.Options.Contains(key))
+                foreach (var option in Macro.UserOptions)
                 {
-                    Processor.Options[key].Value = value;
-                    Processor.Options[key].Source = ParameterSource.MacroOverride;
+                    Processor.Options.Set(option.Key, option.Default);
                 }
-                else
+            }
+
+            if (args.Variation.Options?.Count > 0)
+            {
+                foreach (var (key, value) in args.Variation.Options)
                 {
-                    Processor.Options.Add(key, value, ParameterSource.MacroOverride);
+                    Processor.Options.Set(key, value, ParameterSource.MacroOverride);
+                }
+            }
+
+            if (args.Variation.Environments?.Count > 0)
+            {
+                foreach (var (key, value) in args.Variation.Environments)
+                {
+                    Processor.Environments.Set(key, value, ParameterSource.MacroOverride);
+                }
+            }
+
+            if (args.Variation.SessionStorage?.Count > 0)
+            {
+                foreach (var (key, value) in args.Variation.SessionStorage)
+                {
+                    Processor.SessionStorage.Set(key, value, ParameterSource.MacroOverride);
                 }
             }
         }

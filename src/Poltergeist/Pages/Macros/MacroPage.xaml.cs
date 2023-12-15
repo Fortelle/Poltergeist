@@ -94,8 +94,41 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
         ViewModel = viewModel;
 
         InitializeComponent();
+
+        LoadConfigVariations();
     }
 
+    private void LoadConfigVariations()
+    {
+        if (!ViewModel.Macro.ConfigVariations.Any())
+        {
+            return;
+        }
+
+        RunMenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+        for (var i = 0; i < ViewModel.Macro.ConfigVariations.Count; i++)
+        {
+            var variation = ViewModel.Macro.ConfigVariations[i];
+            var mfi = new MenuFlyoutItem()
+            {
+                Text = variation.Title ?? App.Localize($"Poltergeist/Macros/Run_Variation", i + 1),
+                Command = ViewModel.StartCommand,
+                CommandParameter = new MacroStartArguments()
+                {
+                    MacroKey = ViewModel.Macro.Key,
+                    Reason = LaunchReason.ByUser,
+                    Variation = variation,
+                },
+                Icon = new FontIcon()
+                {
+                    Glyph = variation.Glyph ?? "\uE768",
+                },
+        };
+            RunMenuFlyout.Items.Add(mfi);
+        }
+    }
+    
     private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
     {
         if(((FrameworkElement)sender).DataContext is MacroAction action)
