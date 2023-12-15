@@ -330,17 +330,26 @@
                     <AppBarButton
                         x:Uid="/Poltergeist/Macros/RunAppBarButton"
                         IsCompact="True"
-                        Icon="Play"
                         Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
-                        IsEnabled="{x:Bind ViewModel.IsRunning, Converter={StaticResource NotConverter}, Mode=OneWay}"
-                        />
+                        IsEnabled="{x:Bind ViewModel.IsRunnable, Mode=OneWay}"
+                        >
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE768;">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsValid, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
+                                        <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xF140;"/>
+                                    </interactions:DataTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </FontIcon>
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarButton
                         x:Uid="/Poltergeist/Macros/StopAppBarButton"
                         Icon="Stop"
                         Command="{x:Bind ViewModel.StopCommand, Mode=OneTime}"
                         IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
                         />
-
+                    
                     <AppBarSeparator />
 
                     <AppBarButton 
@@ -373,7 +382,7 @@
                         VerticalAlignment="Center"
                         >
                         <TextBlock
-                            Text="{x:Bind ViewModel.Duration, Mode=TwoWay}"
+                            Text="{x:Bind ViewModel.Duration, Mode=OneWay}"
                             VerticalAlignment="Center"
                             Margin="8, 0"
                         />
@@ -396,6 +405,18 @@
                 </CommandBar>
             </Grid>
 
+            <Grid
+                Grid.Row="1"
+                Visibility="{x:Bind ViewModel.IsValid, Converter={StaticResource EmptyToVisibilityConverter}, ConverterParameter=True, Mode=OneTime}"
+                >
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{StaticResource SecondaryTextColor}"
+                    Text="{x:Bind ViewModel.InvalidationMessage, Mode=OneTime}"
+                    />
+            </Grid>
+            
             <Pivot
                 Grid.Row="1"
                 ItemsSource="{x:Bind ViewModel.Panels, Mode=OneTime}"

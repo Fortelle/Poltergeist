@@ -243,4 +243,10 @@
   <data name="Terminal_Header" xml:space="preserve">
     <value>Terminal</value>
   </data>
+  <data name="Validation_BasicMacro_EmptyExecutions" xml:space="preserve">
+    <value>This macro is unable to run because neither {1} nor {2} is set.</value>
+  </data>
+  <data name="Validation_RequiresAdmin" xml:space="preserve">
+    <value>This macro requires administrator privileges to run.</value>
+  </data>
 </root>

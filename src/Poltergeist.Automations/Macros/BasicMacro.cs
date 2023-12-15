@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
@@ -93,5 +94,21 @@ public class BasicMacro : MacroBase
                 Text = e.Reason.ToString(),
             });
         });
+    }
+
+    public override string? CheckValidity()
+    {
+        var baseValue = base.CheckValidity();
+        if(baseValue is not null)
+        {
+            return baseValue;
+        }
+
+        if (Execution is null && AsyncExecution is null)
+        {
+            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execution), nameof(AsyncExecution));
+        }
+        
+        return null;
     }
 }

@@ -51,15 +51,19 @@ public partial class MacroViewModel : ObservableRecipient
     private DispatcherTimer? Timer;
     private DateTime StartTime;
 
+    public string? InvalidationMessage { get; }
+    public bool IsValid => string.IsNullOrEmpty(InvalidationMessage);
+    public bool IsRunnable => IsValid && !IsRunning;
+
     public MacroViewModel(IMacroBase macro)
     {
         Macro = macro;
         Macro.Initialize();
         Macro.Load();
 
+        InvalidationMessage = macro.CheckValidity();
+
         UserOptions = macro.UserOptions;
-        UpdateStatistics();
-        UpdateHistory();
 
         var thumbfile = macro.GetThumbnailFile();
         if (thumbfile is not null)
@@ -68,6 +72,8 @@ public partial class MacroViewModel : ObservableRecipient
             var bmp = new BitmapImage(uri);
             Thumbnail = bmp;
         }
+
+        Refresh();
     }
 
     public bool IsFavorite
@@ -87,6 +93,14 @@ public partial class MacroViewModel : ObservableRecipient
             });
             OnPropertyChanged(nameof(IsFavorite));
         }
+    }
+
+    public void Refresh()
+    {
+        UpdateStatistics();
+        UpdateHistory();
+
+        OnPropertyChanged(nameof(IsRunnable));
     }
 
     [RelayCommand]
@@ -110,7 +124,13 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
+        if (!IsRunnable)
+        {
+            return;
+        }
+
         IsRunning = true;
+        OnPropertyChanged(nameof(IsRunnable));
 
         Macro.UserOptions.Save();
 
@@ -173,8 +193,7 @@ public partial class MacroViewModel : ObservableRecipient
 
         IsRunning = false;
 
-        UpdateStatistics();
-        UpdateHistory();
+        Refresh();
 
         if (e.CompleteAction != CompletionAction.None)
         {

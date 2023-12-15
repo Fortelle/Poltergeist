@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Security.Principal;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Parameters;
@@ -314,5 +315,20 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         return clone;
     }
 
+    public virtual string? CheckValidity()
+    {
+        if (RequiresAdmin)
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            if (!isAdmin)
+            {
+                return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
+            }
+        }
+
+        return null;
+    }
 
 }

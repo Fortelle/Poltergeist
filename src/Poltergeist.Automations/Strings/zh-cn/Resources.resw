@@ -243,4 +243,10 @@
   <data name="Terminal_Header" xml:space="preserve">
     <value>终端</value>
   </data>
+  <data name="Validation_BasicMacro_EmptyExecutions2" xml:space="preserve">
+    <value>{0}的{1}与{2}为空，这个宏无法运行。</value>
+  </data>
+  <data name="Validation_RequiresAdmin" xml:space="preserve">
+    <value>这个宏需要在管理员身份下运行。</value>
+  </data>
 </root>

@@ -35,6 +35,7 @@ public interface IMacroBase
     public void ConfigureServices(ServiceCollection services, IConfigureProcessor processor);
     public void Process(MacroProcessor processor);
     public void ExecuteAction(MacroAction action, IReadOnlyDictionary<string, object?> options, IReadOnlyDictionary<string, object?> environments);
+    public string? CheckValidity();
 
     public T As<T>() where T : MacroBase;
 
