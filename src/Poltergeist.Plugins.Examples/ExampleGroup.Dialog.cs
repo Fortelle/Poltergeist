@@ -14,7 +14,7 @@ public partial class ExampleGroup
         Title = "Dialog Example",
         Description = "This example shows how to create a dialog.",
 
-        AsyncExecution = async (args) =>
+        ExecuteAsync = async (args) =>
         {
             var li = args.Processor.GetService<DashboardService>().Create<ProgressListInstrument>(inst =>
             {

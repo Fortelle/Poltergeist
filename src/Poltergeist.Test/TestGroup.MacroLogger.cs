@@ -11,7 +11,7 @@ public partial class TestGroup
     {
         Title = "Log Test",
         Description = "This macro is used for testing the MacroLogger service.",
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var logger = args.Processor.GetService<MacroLogger>();
             foreach (var level in Enum.GetValues<LogLevel>())

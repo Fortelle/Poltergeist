@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Exceptions;
+﻿namespace Poltergeist.Automations.Processors;
 
 public class UserAbortException : Exception
 {

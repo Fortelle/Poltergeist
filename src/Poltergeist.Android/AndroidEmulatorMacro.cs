@@ -1,6 +1,5 @@
 ﻿using Poltergeist.Android.Emulators;
 using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
@@ -8,10 +7,8 @@ namespace Poltergeist.Operations.Macros;
 
 public class AndroidEmulatorMacro : MacroBase
 {
-    private AndroidEmulatorOperator? Operator { get; set; }
-
     public Action<LoopBeforeArguments, AndroidEmulatorOperator>? Before;
-    public Action<LoopExecutionArguments, AndroidEmulatorOperator>? Execution;
+    public Action<LoopExecuteArguments, AndroidEmulatorOperator>? Execute;
     public Action<LoopCheckContinueArguments, AndroidEmulatorOperator>? CheckContinue;
     public Action<ArgumentService, AndroidEmulatorOperator>? After;
 
@@ -24,41 +21,36 @@ public class AndroidEmulatorMacro : MacroBase
 
     public AndroidEmulatorMacro(string name) : base(name)
     {
-    }
-
-    protected override void OnInitialize()
-    {
         Modules.Add(new LoopModule(LoopOptions));
         Modules.Add(new EmulatorModule());
         Modules.Add(new InputOptionsModule());
     }
 
-    protected override void OnProcess(MacroProcessor processor)
+    protected override void OnPrepare(IPreparableProcessor processor)
     {
-        base.OnProcess(processor);
+        base.OnPrepare(processor);
 
         var repeat = processor.GetService<LoopService>();
-        repeat.Before += OnBegin;
-        if (Execution != null)
+
+        if (Before != null)
         {
-            repeat.Execution = (e) => Execution.Invoke(e, Operator!);
+            repeat.Before = (e) => Before.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
+        }
+
+        if (Execute != null)
+        {
+            repeat.Execute = (e) => Execute.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
 
         if (CheckContinue != null)
         {
-            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, Operator!);
+            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
 
         if (After != null)
         {
-            repeat.After = (e) => After.Invoke(e, Operator!);
+            repeat.After = (e) => After.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
     }
 
-    private void OnBegin(LoopBeforeArguments e)
-    {
-        Operator = e.Processor.GetService<AndroidEmulatorOperator>();
-
-        Before?.Invoke(e, Operator);
-    }
 }

@@ -11,14 +11,8 @@ public partial class TestGroup
         public GlitchMacro() : base("test_glitch")
         {
             Title = nameof(GlitchMacro);
-            Description = "This is a glitch macro that can never be accessed.";
-        }
-
-        protected override void OnInitialize()
-        {
-            base.OnInitialize();
-
-            throw new Exception();
+            Description = "This is a glitch macro.";
+            Exception = new Exception("This is a glitch exception.");
         }
     }
 }

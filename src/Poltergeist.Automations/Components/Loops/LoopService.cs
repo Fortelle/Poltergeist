@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -18,7 +17,7 @@ public class LoopService : MacroService, IAutoloadable
     public const string StatisticTotalIterationCountKey = "loop-totaliterationcount";
 
     public Action<LoopBeforeArguments>? Before { get; set; }
-    public Action<LoopExecutionArguments>? Execution { get; set; }
+    public Action<LoopExecuteArguments>? Execute { get; set; }
     public Action<LoopCheckContinueArguments>? CheckContinue { get; set; }
     public Action<ArgumentService>? After { get; set; }
 
@@ -32,7 +31,6 @@ public class LoopService : MacroService, IAutoloadable
     private EndReason Status = EndReason.None;
 
     public LoopService(MacroProcessor processor,
-        WorkingService work,
         HookService hooks,
         IOptions<LoopOptions> options,
         LoopBuilderService loophelper
@@ -42,27 +40,27 @@ public class LoopService : MacroService, IAutoloadable
         Options = options.Value;
         LoopHelper = loophelper;
 
-        work.WorkProc = WorkProc;
+        processor.WorkProc = WorkProc;
     }
 
-    private EndReason WorkProc()
+    private void WorkProc()
     {
         CheckLimit();
 
         if (!DoBefore())
         {
-            return EndReason.Unstarted;
+            return;
         }
 
         LoopHelper.MaxCount = MaxCount;
         LoopHelper.MaxDuration = MaxDuration;
-        LoopHelper.Execution = Execution;
+        LoopHelper.Execute = Execute;
         LoopHelper.CheckContinue = CheckContinue;
         LoopHelper.InstrumentType = Options.Instrument;
         LoopHelper.MaxIterationLimit = Options.MaxIterationLimit;
         LoopHelper.IsSticky = true;
 
-        LoopHelper.Execute();
+        LoopHelper.Run();
 
         if(LoopHelper.Exception is not null)
         {
@@ -75,8 +73,6 @@ public class LoopService : MacroService, IAutoloadable
         {
             Status = EndReason.Complete;
         }
-
-        return Status;
     }
 
     private void CheckLimit()

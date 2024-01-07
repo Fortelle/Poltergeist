@@ -24,7 +24,7 @@ public partial class TestGroup
             ParameterSource.Macro),
         },
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var source = args.Processor.Options.Get<ParameterSource>("ParameterSource");
 
@@ -59,7 +59,7 @@ public partial class TestGroup
             new EnumOption<FileStorageSource>("FileStorageSource", FileStorageSource.Macro),
         },
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var source = args.Processor.Options.Get<FileStorageSource>("FileStorageSource");
 

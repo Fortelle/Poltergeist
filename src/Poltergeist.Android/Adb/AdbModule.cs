@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Android.Emulators;
 using Poltergeist.Automations.Components.Terminals;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Android.Adb;
@@ -29,8 +29,10 @@ public class AdbModule : MacroModule
 
     }
 
-    public override void OnMacroInitialized(IMacroInitializer macro)
+    public override void OnMacroInitialize(IInitializableMacro macro)
     {
+        base.OnMacroInitialize(macro);
+
         macro.UserOptions.Add(new OptionItem<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Auto close adb",
@@ -38,12 +40,14 @@ public class AdbModule : MacroModule
         });
     }
 
-    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
+    public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
-        services.AddSingleton<TerminalService>();
-        services.AddTransient<EmulatorAdbService>();
+        base.OnProcessorConfigure(processor);
 
-        services.AddSingleton<AdbService>();
+        processor.Services.AddSingleton<TerminalService>();
+        processor.Services.AddTransient<EmulatorAdbService>();
+
+        processor.Services.AddSingleton<AdbService>();
     }
 
 }

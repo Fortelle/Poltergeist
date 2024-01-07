@@ -14,14 +14,14 @@ public partial class ExampleGroup : MacroGroup
         Title = "Terminal Example",
         Description = "This example shows how to create a terminal panel and execute commands.",
 
-        Configure = (services, _) =>
+        Configure = (processor) =>
         {
-            services.AddSingleton<TerminalService>();
+            processor.Services.AddSingleton<TerminalService>();
         },
 
-        Execution = (e) =>
+        Execute = (args) =>
         {
-            var cmd = e.Processor.GetService<TerminalService>();
+            var cmd = args.Processor.GetService<TerminalService>();
             cmd.Start();
             cmd.Execute("cd");
             cmd.Execute("cd /d c:/");

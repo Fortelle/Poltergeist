@@ -22,7 +22,7 @@ public partial class ExampleGroup : MacroGroup
             Instrument = LoopInstrumentType.ProgressBar,
         },
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             Thread.Sleep(500);
             if (NumericUtil.IsPrime(args.Index))

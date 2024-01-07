@@ -10,7 +10,6 @@ using Poltergeist.Automations.Components.Thumbnails;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Processors.Events;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Macros.Instruments;
 using Poltergeist.Pages.Macros.Instruments;
@@ -47,6 +46,9 @@ public partial class MacroViewModel : ObservableRecipient
 
     [ObservableProperty]
     private string? _duration;
+
+    [ObservableProperty]
+    private string? _exceptionMessage;
 
     private DispatcherTimer? Timer;
     private DateTime StartTime;
@@ -121,9 +123,6 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
-        IsRunning = true;
-        OnPropertyChanged(nameof(IsRunnable));
-
         Macro.UserOptions.Save();
 
         args ??= new MacroStartArguments()
@@ -133,8 +132,18 @@ public partial class MacroViewModel : ObservableRecipient
         };
 
         var macroManager = App.GetService<MacroManager>();
+        var processor = macroManager.CreateProcessor(Macro, args.Reason);
 
-        Processor = macroManager.CreateProcessor(Macro, args.Reason);
+        if (processor.Exception is not null)
+        {
+            App.ShowTeachingTip(processor.Exception.Message);
+            return;
+        }
+
+        Processor = processor;
+
+        IsRunning = true;
+        OnPropertyChanged(nameof(IsRunnable));
 
         if (args.Variation is not null)
         {
@@ -171,7 +180,7 @@ public partial class MacroViewModel : ObservableRecipient
             }
         }
 
-        Processor.Starting += Processor_Starting;
+        Processor.Launched += Processor_Launched;
         Processor.Started += Processor_Started;
         Processor.Completed += Processor_Completed;
         Processor.PanelCreated += Processor_PanelCreated;
@@ -199,9 +208,9 @@ public partial class MacroViewModel : ObservableRecipient
         IsFavorite = !IsFavorite;
     }
 
-    private void Processor_Completed(object? sender, MacroCompletedEventArgs e)
+    private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        Processor!.Starting -= Processor_Starting;
+        Processor!.Launched -= Processor_Launched;
         Processor.Started -= Processor_Started;
         Processor.Completed -= Processor_Completed;
         Processor.PanelCreated -= Processor_PanelCreated;
@@ -219,11 +228,12 @@ public partial class MacroViewModel : ObservableRecipient
 
         if(e.Exception != null)
         {
-            _ = DialogService.ShowMessage(e.Exception.Message, Macro.Title);
+            ExceptionMessage = e.Exception.Message;
         }
 
         Timer?.Stop();
         Timer = null;
+        Processor = null;
     }
 
     private void UpdateStatistics()
@@ -238,10 +248,11 @@ public partial class MacroViewModel : ObservableRecipient
         History = Macro.History.Take(100);
     }
 
-    private void Processor_Starting(object? sender, MacroStartingEventArgs e)
+    private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
         // There is an error of about 1 second.
         // It can be avoided by changing interval to .1s, but it's not necessary.
+        ExceptionMessage = null;
         StartTime = e.StartTime;
         Timer = new()
         {
@@ -255,9 +266,9 @@ public partial class MacroViewModel : ObservableRecipient
         Timer.Start();
     }
 
-    private void Processor_Started(object? sender, MacroStartedEventArgs e)
+    private void Processor_Started(object? sender, ProcessorStartedEventArgs e)
     {
-        if (e.Started && e.StartedActions != null)
+        if (e.StartedActions?.Length > 0)
         {
             foreach (var action in e.StartedActions)
             {

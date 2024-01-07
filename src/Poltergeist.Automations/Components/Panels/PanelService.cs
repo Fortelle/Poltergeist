@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Components.Panels;
@@ -24,7 +21,7 @@ public class PanelService : KernelService
         Panels.Add(panel);
 
         var args = new PanelCreatedEventArgs(panel);
-        Processor.RaiseEvent(MacroEventType.PanelCreated, args);
+        Processor.RaiseEvent(ProcessorEvent.PanelCreated, args);
 
         return panel;
     }

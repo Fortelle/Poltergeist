@@ -1,12 +1,10 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Poltergeist.Automations.Components.Loops;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Poltergeist.Automations.Processors;
 
-namespace Poltergeist.Automations.Components.Repetitions;
+namespace Poltergeist.Automations.Components.Loops;
 
 [ObservableObject]
-public partial class LoopExecutionArguments : ArgumentService
+public partial class LoopExecuteArguments : ArgumentService
 {
     public int Index { get; internal set; }
     public DateTime StartTime { get; internal set; }
@@ -18,8 +16,7 @@ public partial class LoopExecutionArguments : ArgumentService
     [ObservableProperty]
     private int _progressValue;
 
-    public LoopExecutionArguments(MacroProcessor processor) : base(processor)
+    public LoopExecuteArguments(MacroProcessor processor) : base(processor)
     {
     }
-
 }

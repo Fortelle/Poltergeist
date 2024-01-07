@@ -1,6 +1,5 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Parameters;
 
@@ -92,7 +91,7 @@ public partial class ExampleGroup
             args.Outputer.NewGroup($"Counting:");
         },
 
-        Execution = (LoopExecutionArguments args) =>
+        Execute = (LoopExecuteArguments args) =>
         {
             var counter = args.Processor.Statistics.Get<int>("counter");
 

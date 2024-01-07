@@ -8,17 +8,19 @@ namespace Poltergeist.Operations.Foreground;
 
 public class ForegroundModule : MacroModule
 {
-    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
+    public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
-        services.AddSingleton<ForegroundOperator>();
+        base.OnProcessorConfigure(processor);
 
-        services.AddSingleton<ForegroundLocatingService>();
-        services.AddSingleton<ForegroundCapturingService>();
-        services.AddSingleton<ForegroundMouseService>();
-        services.AddSingleton<ForegroundKeyboardService>();
-        services.AddSingleton<TimerService>();
+        processor.Services.AddSingleton<ForegroundOperator>();
 
-        services.AddSingleton<RandomEx>();
-        services.AddSingleton<DistributionService>();
+        processor.Services.AddSingleton<ForegroundLocatingService>();
+        processor.Services.AddSingleton<ForegroundCapturingService>();
+        processor.Services.AddSingleton<ForegroundMouseService>();
+        processor.Services.AddSingleton<ForegroundKeyboardService>();
+        processor.Services.AddSingleton<TimerService>();
+
+        processor.Services.AddSingleton<RandomEx>();
+        processor.Services.AddSingleton<DistributionService>();
     }
 }

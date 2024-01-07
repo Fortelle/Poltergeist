@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -9,8 +9,11 @@ public sealed class HookService : KernelService
 {
     private Dictionary<Type, ConcurrentBag<Delegate>> Hooks { get; } = new();
 
-    public HookService(MacroProcessor processor) : base(processor)
+    private MacroLogger Logger { get; }
+
+    public HookService(MacroProcessor processor, MacroLogger logger) : base(processor)
     {
+        Logger = logger;
     }
 
     public void Register<T>(Action handler) where T : MacroHook
@@ -23,7 +26,7 @@ public sealed class HookService : KernelService
         Register(typeof(T), handler);
     }
 
-    public void Register<T>(Action<T, MacroProcessor> handler) where T : MacroHook
+    public void Register<T>(Action<T, IServiceProcessor> handler) where T : MacroHook
     {
         Register(typeof(T), handler);
     }
@@ -37,18 +40,33 @@ public sealed class HookService : KernelService
         }
 
         hook.Add(handler);
-        Debug.WriteLine($"A method is registered to hook \"{type.Name}\".");
+        Logger.Log(LogLevel.Debug, nameof(HookService), $"A method is attached to hook <{type.Name}>.");
     }
 
     public void Raise<T>(T hook) where T : MacroHook
     {
+        InternalRaise(hook);
+    }
+
+    public void RaiseUntil<T>(T hook, Func<T, bool> predicate) where T : MacroHook
+    {
+        InternalRaise(hook, predicate);
+    }
+
+    public void Raise<T>() where T : MacroHook, new()
+    {
+        InternalRaise(new T());
+    }
+
+    private void InternalRaise<T>(T hook, Func<T, bool>? untilPredicate = null) where T : MacroHook
+    {
         var type = typeof(T);
 
-        Debug.WriteLine($"Triggered \"{type.Name}\".");
+        Logger.Log(LogLevel.Debug, nameof(HookService), $"Hook <{type.Name}> is triggered.");
 
         if (Hooks.TryGetValue(type, out var delegates))
         {
-            foreach(var del in delegates)
+            foreach (var del in delegates)
             {
                 // TODO: improve performance
                 var paramCount = del.GetType().GetMethod("Invoke")!.GetParameters().Length;
@@ -66,13 +84,12 @@ public sealed class HookService : KernelService
                     default:
                         throw new NotSupportedException();
                 }
+
+                if (untilPredicate?.Invoke(hook) == true)
+                {
+                    break;
+                }
             }
         }
     }
-
-    public void Raise<T>() where T : MacroHook, new()
-    {
-        Raise(new T());
-    }
-
 }

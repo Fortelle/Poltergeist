@@ -16,7 +16,7 @@ public partial class ExampleGroup : MacroGroup
 
         Description = "Opens a notepad and inputs text.",
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             Process? notepad = null;
 

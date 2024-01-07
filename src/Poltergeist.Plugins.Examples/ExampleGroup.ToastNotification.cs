@@ -20,7 +20,7 @@ public partial class ExampleGroup : MacroGroup
             Instrument = LoopInstrumentType.List,
         },
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             Thread.Sleep(15000);
         },

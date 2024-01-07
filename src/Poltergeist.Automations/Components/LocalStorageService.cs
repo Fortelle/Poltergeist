@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Poltergeist.Automations.Components.Hooks;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -17,7 +16,7 @@ public class LocalStorageService : MacroService
 
     public LocalStorageService(MacroProcessor processor, HookService hook) : base(processor)
     {
-        hook.Register<ProcessExitingHook>(_ => OnExit());
+        hook.Register<ProcessorEndingHook>(OnEnding);
     }
 
     public T Get<T>(string key, T defaultValue, ParameterSource source = ParameterSource.Macro)
@@ -138,7 +137,7 @@ public class LocalStorageService : MacroService
         }
     }
 
-    private void OnExit()
+    private void OnEnding()
     {
         if (MacroStorage is not null && (MacroStorage.Count == 0 || MacroStorage.Any(x => x.HasChanged)))
         {

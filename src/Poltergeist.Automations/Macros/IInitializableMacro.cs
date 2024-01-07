@@ -2,9 +2,10 @@
 
 namespace Poltergeist.Automations.Macros;
 
-public interface IMacroInitializer
+public interface IInitializableMacro
 {
     public string Key { get; }
+
     public MacroStorage Storage { get; }
     public List<MacroAction> Actions { get; }
     public OptionCollection UserOptions { get; }

@@ -45,8 +45,10 @@ public class EmulatorModule : MacroModule
 
     }
 
-    public override void OnMacroInitialized(IMacroInitializer macro)
+    public override void OnMacroInitialize(IInitializableMacro macro)
     {
+        base.OnMacroInitialize(macro);
+
         macro.UserOptions.Add(new OptionItem<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Keep adb server alive",
@@ -65,15 +67,14 @@ public class EmulatorModule : MacroModule
         macro.Actions.Add(KillServerAction);
     }
 
-
-    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
+    public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
-        base.OnMacroConfiguring(services, processor);
+        base.OnProcessorConfigure(processor);
 
-        services.AddSingleton<TimerService>();
-        services.AddSingleton<AndroidEmulatorOperator>();
-        services.AddSingleton<RandomEx>();
-        services.AddSingleton<DistributionService>();
+        processor.Services.AddSingleton<TimerService>();
+        processor.Services.AddSingleton<AndroidEmulatorOperator>();
+        processor.Services.AddSingleton<RandomEx>();
+        processor.Services.AddSingleton<DistributionService>();
 
         var inputMode = processor.Options.Get<InputMode>(InputModeKey);
 
@@ -81,44 +82,44 @@ public class EmulatorModule : MacroModule
         {
             case InputMode.ADB:
                 {
-                    services.AddSingleton<TerminalService>();
-                    services.AddSingleton<AdbService>();
-                    services.AddSingleton<AdbInputService>();
+                    processor.Services.AddSingleton<TerminalService>();
+                    processor.Services.AddSingleton<AdbService>();
+                    processor.Services.AddSingleton<AdbInputService>();
 
-                    services.AddSingleton<CapturingProvider, AdbCapturingService>();
+                    processor.Services.AddSingleton<CapturingProvider, AdbCapturingService>();
 
-                    services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
+                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
                 }
                 break;
             case InputMode.ADB_Background:
                 {
-                    services.AddSingleton<TerminalService>();
-                    services.AddSingleton<AdbService>();
-                    services.AddSingleton<AdbInputService>();
+                    processor.Services.AddSingleton<TerminalService>();
+                    processor.Services.AddSingleton<AdbService>();
+                    processor.Services.AddSingleton<AdbInputService>();
 
-                    services.AddSingleton<BackgroundLocatingService>();
-                    services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<BackgroundLocatingService>());
-                    services.AddSingleton<CapturingProvider, BackgroundCapturingService>();
+                    processor.Services.AddSingleton<BackgroundLocatingService>();
+                    processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<BackgroundLocatingService>());
+                    processor.Services.AddSingleton<CapturingProvider, BackgroundCapturingService>();
 
-                    services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
+                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
                 }
                 break;
             case InputMode.Mouse:
                 {
-                    services.AddSingleton<ForegroundLocatingService>();
-                    services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<ForegroundLocatingService>());
-                    services.AddSingleton<ForegroundMouseService>();
+                    processor.Services.AddSingleton<ForegroundLocatingService>();
+                    processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<ForegroundLocatingService>());
+                    processor.Services.AddSingleton<ForegroundMouseService>();
 
-                    services.AddSingleton<CapturingProvider, ForegroundCapturingService>();
-                    services.AddSingleton<IEmulatorInputProvider, EmulatorMouseService>();
+                    processor.Services.AddSingleton<CapturingProvider, ForegroundCapturingService>();
+                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorMouseService>();
                 }
                 break;
         }
     }
 
-    public override void OnMacroProcessing(MacroProcessor processor)
+    public override void OnProcessorPrepare(IPreparableProcessor processor)
     {
-        base.OnMacroProcessing(processor);
+        base.OnProcessorPrepare(processor);
 
         var repeats = processor.GetService<LoopService>();
 

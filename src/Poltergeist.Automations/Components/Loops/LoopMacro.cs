@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Components.Repetitions;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Components.Loops;
@@ -17,33 +15,29 @@ public class LoopMacro : MacroBase
     };
 
     public Action<LoopBeforeArguments>? Before;
-    public Action<LoopExecutionArguments>? Execution;
+    public Action<LoopExecuteArguments>? Execute;
     public Action<LoopCheckContinueArguments>? CheckContinue;
     public Action<ArgumentService>? After;
 
     public LoopMacro(string name) : base(name)
     {
-    }
-
-    protected override void OnInitialize()
-    {
         Modules.Add(new LoopModule(LoopOptions));
         Modules.Add(new CompleteModule());
     }
 
-    protected override void OnConfigure(ServiceCollection services, IConfigureProcessor processor)
+    protected override void OnConfigure(IConfigurableProcessor processor)
     {
-        base.OnConfigure(services, processor);
+        base.OnConfigure(processor);
 
-        services.Configure<LoopOptions>(options =>
+        processor.Services.Configure<LoopOptions>(options =>
         {
             options.Instrument = LoopInstrumentType.List;
         });
     }
 
-    protected override void OnProcess(MacroProcessor processor)
+    protected override void OnPrepare(IPreparableProcessor processor)
     {
-        base.OnProcess(processor);
+        base.OnPrepare(processor);
 
         var loopService = processor.GetService<LoopService>();
 
@@ -52,9 +46,9 @@ public class LoopMacro : MacroBase
             loopService.Before += Before;
         }
 
-        if (Execution != null)
+        if (Execute != null)
         {
-            loopService.Execution += Execution;
+            loopService.Execute += Execute;
         }
 
         if (CheckContinue != null)

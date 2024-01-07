@@ -10,9 +10,11 @@ namespace Poltergeist.Operations;
 public class InputOptionsModule : MacroModule
 {
     // todo: global options
-    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
+    public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
-        services.Configure<DelayOptions>(options =>
+        base.OnProcessorConfigure(processor);
+
+        processor.Services.Configure<DelayOptions>(options =>
         {
             options.Floating = true;
             options.FloatingRange = (1d, 1.5d);
@@ -20,7 +22,7 @@ public class InputOptionsModule : MacroModule
             options.RangeDistribution = RangeDistributionType.Uniform;
             options.FloatDistribution = RangeDistributionType.Uniform;
         });
-        services.Configure<MouseInputOptions>(options =>
+        processor.Services.Configure<MouseInputOptions>(options =>
         {
             options.ClickTime = (50, 150);
             options.DoubleClickTime = (80, 110);
@@ -31,7 +33,7 @@ public class InputOptionsModule : MacroModule
             options.VerticalWheelInterval = (50, 150);
             options.HorizonWheelInterval = (50, 150);
         });
-        services.Configure<KeyboardInputOptions>(options =>
+        processor.Services.Configure<KeyboardInputOptions>(options =>
         {
             options.PressTime = (50, 100);
             options.PressInterval = (50, 100);

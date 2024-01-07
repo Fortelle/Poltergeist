@@ -3,10 +3,11 @@
 public enum EndReason
 {
     None,
+    InitializationFailed, // not be accessible
+    LoadFailed,
     Unstarted,
-    Purposed,
     UserAborted,
-    SystemShutdown,// todo
+    SystemShutdown, // todo
     ErrorOccurred,
     Empty,
     Complete,

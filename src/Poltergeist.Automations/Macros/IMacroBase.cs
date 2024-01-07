@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Parameters;
+﻿using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Macros;
@@ -29,14 +28,16 @@ public interface IMacroBase
 
     public bool RequiresAdmin { get; }
     public bool MinimizeApplication { get; }
-    public bool IsAvailable { get; }
+    public MacroStatus Status { get; }
+    public Exception? Exception { get; }
 
     public void Initialize();
     public void Load();
-    public void ConfigureServices(ServiceCollection services, IConfigureProcessor processor);
-    public void Process(MacroProcessor processor);
-    public void ExecuteAction(MacroAction action, IReadOnlyDictionary<string, object?> options, IReadOnlyDictionary<string, object?> environments);
     public string? CheckValidity();
+    public void OnConfigure(IConfigurableProcessor processor);
+    public void OnPrepare(IPreparableProcessor processor);
+
+    public void ExecuteAction(MacroAction action, MacroActionArguments arguments);
 
     public T As<T>() where T : MacroBase;
 

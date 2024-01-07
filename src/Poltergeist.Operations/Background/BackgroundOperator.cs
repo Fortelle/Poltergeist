@@ -1,10 +1,10 @@
-﻿using Poltergeist.Automations.Components.Repetitions;
+﻿using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Operations.Background;
 
-public class BackgroundOperator : LoopExecutionArguments
+public class BackgroundOperator : LoopExecuteArguments
 {
     public BackgroundLocatingService Locating { get; }
     public BackgroundCapturingService Capture { get; }

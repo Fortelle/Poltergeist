@@ -21,10 +21,10 @@ public class BackgroundService : MacroService, IAutoloadable
             IsFilled = true,
         });
 
-        hooks.Register<ProcessStartedHook>(Create);
+        hooks.Register<ProcessorStartedHook>(Create);
     }
 
-    private void Create(ProcessStartedHook args)
+    private void Create(ProcessorStartedHook args)
     {
         var classes = new List<Type>
         {

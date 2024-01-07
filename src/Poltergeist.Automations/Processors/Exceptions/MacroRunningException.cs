@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Poltergeist.Automations.Exceptions;
+namespace Poltergeist.Automations.Processors;
 
 public class MacroRunningException : Exception
 {

@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System.Diagnostics;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
@@ -10,7 +11,7 @@ namespace Poltergeist.Automations.Macros;
 /// <summary>
 /// Provides the base class of a macro.
 /// </summary>
-public abstract class MacroBase : IMacroBase, IMacroInitializer
+public abstract class MacroBase : IMacroBase, IInitializableMacro
 {
     public const string UseStatisticsKey = "macro.usestatistics";
 
@@ -29,9 +30,6 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     public MacroStorage Storage { get; } = new();
     public List<ConfigVariation> ConfigVariations { get; } = new();
 
-    public Action<ServiceCollection, IConfigureProcessor>? Configure { get; set; }
-    public Action<MacroProcessor>? Process { get; set; }
-
     private string? _title;
     public string Title { get => _title ?? Key; set => _title = value; }
 
@@ -45,17 +43,14 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
     public string? PrivateFolder { get; set; }
     public string? SharedFolder { get; set; }
 
-    public bool IsAvailable => IsInitialized;
+    protected virtual void OnConfigure(IConfigurableProcessor processor) { }
+    void IMacroBase.OnConfigure(IConfigurableProcessor processor) => OnConfigure(processor);
 
-    private bool UseFile => !string.IsNullOrEmpty(PrivateFolder);
+    protected virtual void OnPrepare(IPreparableProcessor processor) { }
+    void IMacroBase.OnPrepare(IPreparableProcessor processor) => OnPrepare(processor);
 
-    protected virtual void OnInitialize() { }
-    protected virtual void OnLoad() { }
-    protected virtual void OnConfigure(ServiceCollection services, IConfigureProcessor processor) { }
-    protected virtual void OnProcess(MacroProcessor processor) { }
-
-    private bool IsInitialized { get; set; }
-    private bool IsLoaded { get; set; }
+    public MacroStatus Status { get; set; }
+    public Exception? Exception { get; set; }
 
     private static readonly char[] InvalidKeyChars = new[]
         {
@@ -83,64 +78,123 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
     void IMacroBase.Initialize()
     {
-        if (IsInitialized)
+        if (Status != MacroStatus.Uninitialized)
         {
             return;
         }
 
-        if (UseFile)
+        if (Exception is not null)
         {
-            Actions.Add(ActionHelper.OpenLocalFolder);
-        }
-        Actions.Add(ActionHelper.CreateShortcut);
-        
-        Statistics.Add(new ParameterEntry<int>("total_run_count")
-        {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
-        });
-        Statistics.Add(new ParameterEntry<TimeSpan>("total_run_duration")
-        {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
-            Format = x => $"{x.TotalHours:00}:{x.Minutes:00}:{x.Seconds:00}",
-        });
-        Statistics.Add(new ParameterEntry<DateTime?>("last_run_time")
-        {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
-            Format = x => x?.ToString() ?? "-",
-        });
-
-        OnInitialize();
-
-        foreach (var module in Modules)
-        {
-            module.OnMacroInitialized(this);
+            Status = MacroStatus.InitializationFailed;
+            return;
         }
 
-        IsInitialized = true;
+        try
+        {
+            if (!string.IsNullOrEmpty(PrivateFolder))
+            {
+                Actions.Add(ActionHelper.OpenLocalFolder);
+            }
+            Actions.Add(ActionHelper.CreateShortcut);
+
+            Statistics.Add(new ParameterEntry<int>("total_run_count")
+            {
+                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
+            });
+            Statistics.Add(new ParameterEntry<TimeSpan>("total_run_duration")
+            {
+                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
+                Format = x => $"{x.TotalHours:00}:{x.Minutes:00}:{x.Seconds:00}",
+            });
+            Statistics.Add(new ParameterEntry<DateTime?>("last_run_time")
+            {
+                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
+                Format = x => x?.ToString() ?? "-",
+            });
+
+            foreach (var module in Modules)
+            {
+                module.OnMacroInitialize(this);
+            }
+
+            Status = MacroStatus.Initialized;
+        }
+        catch (Exception ex)
+        {
+            Status = MacroStatus.InitializationFailed;
+            Exception = ex;
+            if (Debugger.IsAttached)
+            {
+                throw;
+            }
+        }
     }
 
     void IMacroBase.Load()
     {
-        if (!IsInitialized)
+        if (Status == MacroStatus.Uninitialized)
         {
-            throw new InvalidOperationException();
+            ((IMacroBase)this).Initialize();
         }
 
-        if (IsLoaded)
+        if (Status != MacroStatus.Initialized)
         {
             return;
         }
 
-        if (!string.IsNullOrEmpty(PrivateFolder))
+        try
         {
-            UserOptions.Load(Path.Combine(PrivateFolder, "useroptions.json"));
+            if (!string.IsNullOrEmpty(PrivateFolder))
+            {
+                UserOptions.Load(Path.Combine(PrivateFolder, "useroptions.json"));
 
-            Statistics.Load(Path.Combine(PrivateFolder, "statistics.json"));
+                Statistics.Load(Path.Combine(PrivateFolder, "statistics.json"));
 
-            History.Load(Path.Combine(PrivateFolder, "history.json"));
+                History.Load(Path.Combine(PrivateFolder, "history.json"));
+            }
+
+            Status = MacroStatus.Loaded;
+        }
+        catch (Exception ex)
+        {
+            Status = MacroStatus.LoadFailed;
+            Exception = ex;
+            if (Debugger.IsAttached)
+            {
+                throw;
+            }
+        }
+    }
+
+    public virtual string? CheckValidity()
+    {
+        if (Status == MacroStatus.Uninitialized)
+        {
+            ((IMacroBase)this).Initialize();
         }
 
-        IsLoaded = true;
+        if (Status == MacroStatus.Initialized)
+        {
+            ((IMacroBase)this).Load();
+        }
+
+        if (Exception is not null)
+        {
+            return Exception.Message;
+        }
+
+        if (RequiresAdmin)
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            if (!isAdmin)
+            {
+                return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
+            }
+        }
+
+        return null;
     }
 
     VariableCollection IMacroBase.GetOptionCollection()
@@ -191,26 +245,9 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         return vc;
     }
 
-    void IMacroBase.ConfigureServices(ServiceCollection services, IConfigureProcessor processor)
+    void IMacroBase.ExecuteAction(MacroAction action, MacroActionArguments arguments)
     {
-        Configure?.Invoke(services, processor);
-        OnConfigure(services, processor);
-    }
-
-    void IMacroBase.Process(MacroProcessor processor)
-    {
-        Process?.Invoke(processor);
-        OnProcess(processor);
-    }
-
-    void IMacroBase.ExecuteAction(MacroAction action, IReadOnlyDictionary<string, object?> options, IReadOnlyDictionary<string, object?> environments)
-    {
-        if (!IsInitialized)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (!IsLoaded)
+        if (Status <= MacroStatus.Loaded)
         {
             throw new InvalidOperationException();
         }
@@ -225,22 +262,17 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
             throw new ArgumentException();
         }
 
-        var args = new MacroActionArguments(this)
-        {
-            Options = options,
-            Environments = environments,
-        };
         if (action.Execute is not null)
         {
             try
             {
-                action.Execute(args);
+                action.Execute(arguments);
 
-                if (!string.IsNullOrEmpty(args.Message))
+                if (!string.IsNullOrEmpty(arguments.Message))
                 {
                     _ = InteractionService.UIShowAsync(new TipModel()
                     {
-                        Text = args.Message,
+                        Text = arguments.Message,
                     });
                 }
             }
@@ -260,7 +292,7 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
                 if (action.IsCancellable)
                 {
                     cts = new();
-                    args.CancellationToken = cts.Token;
+                    arguments.CancellationToken = cts.Token;
                 }
 
                 _ = InteractionService.UIShowAsync(new ProgressModel()
@@ -272,13 +304,13 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
 
                 try
                 {
-                    await action.ExecuteAsync(args);
+                    await action.ExecuteAsync(arguments);
 
-                    if (!string.IsNullOrEmpty(args.Message))
+                    if (!string.IsNullOrEmpty(arguments.Message))
                     {
                         _ = InteractionService.UIShowAsync(new TipModel()
                         {
-                            Text = args.Message,
+                            Text = arguments.Message,
                         });
                     }
                 }
@@ -314,22 +346,6 @@ public abstract class MacroBase : IMacroBase, IMacroInitializer
         var clone = (MacroBase)Activator.CreateInstance(type, cloneKey)!;
 
         return clone;
-    }
-
-    public virtual string? CheckValidity()
-    {
-        if (RequiresAdmin)
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
-            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-            if (!isAdmin)
-            {
-                return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
-            }
-        }
-
-        return null;
     }
 
 }

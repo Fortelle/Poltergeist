@@ -416,16 +416,25 @@
                     
                     <AppBarElementContainer
                         VerticalAlignment="Center"
-                        HorizontalAlignment="Right"
-                        HorizontalContentAlignment="Right"
                         >
-                        <ProgressRing
-                            IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
-                            Width="24"
-                            Height="24"
-                            VerticalAlignment="Center"
-                            Margin="8, 0"
-                        />
+                        <Grid>
+                            <ProgressRing
+                                IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
+                                Width="24"
+                                Height="24"
+                                VerticalAlignment="Center"
+                                Margin="8, 0"
+                            />
+                            <FontIcon
+                                Glyph="&#xEB90;"
+                                VerticalAlignment="Center"
+                                Margin="8, 0"
+                                HorizontalAlignment="Center"
+                                Foreground="Red"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay, Converter={StaticResource EmptyToVisibilityConverter}}"
+                                />
+                        </Grid>
                     </AppBarElementContainer>
 
                 </CommandBar>

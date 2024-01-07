@@ -103,7 +103,7 @@ public class AdbService : MacroService
 
         if (!keepalive)
         {
-            Processor.GetService<HookService>().Register<ProcessExitingHook>(_ => Close());
+            Processor.GetService<HookService>().Register<ProcessorEndingHook>(_ => Close());
         }
 
         var output = Execute($"connect {Address}");

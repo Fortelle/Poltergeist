@@ -13,7 +13,7 @@ public partial class TestGroup
         Title = "OutputService Test",
         Description = "This macro is used for testing the OutputService.",
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var values = Enum.GetValues<OutputLevel>();
 

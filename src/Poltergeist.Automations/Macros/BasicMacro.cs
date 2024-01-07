@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 
@@ -10,9 +9,13 @@ public class BasicMacro : MacroBase
 {
     public bool ShowStatusBar { get; set; }
 
-    public Action<BasicMacroExecutionArguments>? Execution;
+    public Action<IConfigurableProcessor>? Configure { get; set; }
 
-    public Func<BasicMacroExecutionArguments, Task>? AsyncExecution;
+    public Func<bool>? Validate { get; set; }
+
+    public Action<BasicMacroExecutionArguments>? Execute;
+
+    public Func<BasicMacroExecutionArguments, Task>? ExecuteAsync;
 
     public BasicMacro() : base()
     {
@@ -22,45 +25,44 @@ public class BasicMacro : MacroBase
     {
     }
 
-    protected override void OnConfigure(ServiceCollection services, IConfigureProcessor processor)
+    protected override void OnConfigure(IConfigurableProcessor processor)
     {
-        base.OnConfigure(services, processor);
+        base.OnConfigure(processor);
 
-        services.AddTransient<BasicMacroExecutionArguments>();
+        Configure?.Invoke(processor);
+
+        processor.Services.AddTransient<BasicMacroExecutionArguments>();
     }
 
-    protected override void OnProcess(MacroProcessor processor)
+    protected override void OnPrepare(IPreparableProcessor processor)
     {
-        base.OnProcess(processor);
+        base.OnPrepare(processor);
 
         if (ShowStatusBar)
         {
             InstallStatusBar(processor);
         }
 
-        var work = processor.GetService<WorkingService>();
-        if(Execution != null)
+        if(Execute != null)
         {
-            work.WorkProc = () =>
+            processor.WorkProc = () =>
             {
                 var args = processor.GetService<BasicMacroExecutionArguments>();
-                Execution(args);
-                return EndReason.Complete;
+                Execute(args);
             };
         }
-        else if (AsyncExecution != null)
+        else if (ExecuteAsync != null)
         {
-            work.AsyncWorkProc = async () =>
+            processor.AsyncWorkProc = async () =>
             {
                 var args = processor.GetService<BasicMacroExecutionArguments>();
-                await AsyncExecution(args);
-                return EndReason.Complete;
+                await ExecuteAsync(args);
             };
         }
 
     }
 
-    private static void InstallStatusBar(MacroProcessor processor)
+    private static void InstallStatusBar(IPreparableProcessor processor)
     {
         var ph = processor.GetService<ProgressListInstrument>();
         ph.Title = "Status:";
@@ -70,9 +72,7 @@ public class BasicMacro : MacroBase
         });
         processor.GetService<DashboardService>().Add(ph);
 
-        var hooks = processor.GetService<HookService>();
-
-        hooks.Register<ProcessStartedHook>(_ =>
+        processor.Hooks.Register<ProcessorStartedHook>(_ =>
         {
             ph.Update(0, new(ProgressStatus.Busy)
             {
@@ -80,12 +80,12 @@ public class BasicMacro : MacroBase
             });
         });
 
-        hooks.Register<ProcessExitingHook>(e =>
+        processor.Hooks.Register<ProcessorEndingHook>(e =>
         {
             var status = e.Reason switch
             {
-                EndReason.Complete or EndReason.Purposed => ProgressStatus.Success,
-                EndReason.Unstarted or EndReason.UserAborted => ProgressStatus.Warning,
+                EndReason.Complete or EndReason.UserAborted => ProgressStatus.Success,
+                EndReason.Unstarted => ProgressStatus.Warning,
                 EndReason.ErrorOccurred => ProgressStatus.Failure,
                 _ => ProgressStatus.Idle,
             };
@@ -98,15 +98,19 @@ public class BasicMacro : MacroBase
 
     public override string? CheckValidity()
     {
-        var baseValue = base.CheckValidity();
-        if(baseValue is not null)
+        if (base.CheckValidity() is string baseValue)
         {
             return baseValue;
         }
 
-        if (Execution is null && AsyncExecution is null)
+        if (Validate?.Invoke() == false)
         {
-            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execution), nameof(AsyncExecution));
+            return "Failed to validate.";
+        }
+
+        if (Execute is null && ExecuteAsync is null)
+        {
+            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
         }
         
         return null;

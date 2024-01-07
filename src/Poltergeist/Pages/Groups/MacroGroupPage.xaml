@@ -67,7 +67,6 @@
                         <HyperlinkButton
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            IsEnabled="{Binding IsAvailable, Mode=OneTime}"
                             Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
                             CommandParameter="{Binding Key, Mode=OneTime}"
                             >

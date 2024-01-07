@@ -11,7 +11,7 @@ public partial class TestGroup
         Title = "RequiresAdmin Test",
         Description = "This macro is used for testing the RequiresAdmin property.",
         RequiresAdmin = true,
-        Execution = (args) =>
+        Execute = (args) =>
         {
             args.Outputer.Write($"Hello world!");
         }

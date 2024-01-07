@@ -13,7 +13,7 @@ public partial class ExampleGroup
         Title = "FlowBuilderService Example",
         Description = "This example shows how to create flow executors by using the FlowBuilderService.",
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
 
             var flow1 = args.Processor.GetService<FlowBuilderService>();

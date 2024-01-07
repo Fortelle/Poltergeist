@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Poltergeist.Automations.Components.Interactions;
+﻿using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
@@ -41,11 +40,6 @@ public class MacroManager
                 if (macro is not null)
                 {
                     summary.Title = macro.Title;
-                    summary.IsAvailable = true;
-                }
-                else
-                {
-                    summary.IsAvailable = false;
                 }
             }
         };
@@ -55,12 +49,7 @@ public class MacroManager
     {
         macro.PrivateFolder = PathService.GetMacroFolder(macro);
         macro.SharedFolder = PathService.SharedFolder;
-        try
-        {
-            macro.Initialize();
-        } catch (Exception)
-        {
-        }
+        macro.Initialize();
 
         Macros.Add(macro);
     }
@@ -111,7 +100,7 @@ public class MacroManager
         });
     }
 
-    private void Processor_Completed(object? sender, Automations.Processors.Events.MacroCompletedEventArgs e)
+    private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
         var processor = (MacroProcessor)sender!;
 
@@ -214,7 +203,6 @@ public class MacroManager
             {
                 MacroKey = key,
                 Title = macro.Title,
-                IsAvailable = macro.IsAvailable,
             };
             Summaries.Add(key, entry);
         }
@@ -228,6 +216,11 @@ public class MacroManager
     public MacroProcessor CreateProcessor(IMacroBase macro, LaunchReason reason)
     {
         var processor = new MacroProcessor(macro, reason);
+
+        if (processor.Exception is not null)
+        {
+            return processor;
+        }
 
         PushEnvironments(processor.Environments);
         PushGlobalOptions(processor.Options);
@@ -278,16 +271,4 @@ public class MacroManager
         }
     }
 
-}
-
-public class MacroSummaryEntry
-{
-    public required string MacroKey { get; set; }
-    public required string Title { get; set; }
-    public bool IsFavorite { get; set; }
-    public DateTime LastRunTime { get; set; }
-    public int RunCount { get; set; }
-
-    [JsonIgnore]
-    public bool IsAvailable { get; set; }
 }

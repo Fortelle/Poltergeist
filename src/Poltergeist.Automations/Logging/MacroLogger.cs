@@ -22,7 +22,9 @@ public class MacroLogger : KernelService
     private readonly BlockingCollection<string>? WritingQueue;
     //private readonly Task WritingTask;
 
-    private readonly TextInstrument LogInstrument;
+    private TextInstrument? LogInstrument;
+
+    private bool IsReady = false;
 
     private readonly Dictionary<LogLevel, Color> LogColors = new()
     {
@@ -54,6 +56,14 @@ public class MacroLogger : KernelService
             /* WritingTask = */
             Task.Factory.StartNew(WriteFile, this, TaskCreationOptions.LongRunning);
         }
+    }
+
+    internal void Load()
+    {
+        if (IsReady)
+        {
+            return;
+        }
 
         LogInstrument = Processor.GetService<TextInstrument>();
         foreach (var (level, color) in LogColors)
@@ -64,14 +74,24 @@ public class MacroLogger : KernelService
             });
         }
 
-        panelService.Create(new("poltergeist-logger", ResourceHelper.Localize("Poltergeist.Automations/Resources/Log_Header"), LogInstrument)
+        Processor.GetService<PanelService>().Create(new("poltergeist-logger", ResourceHelper.Localize("Poltergeist.Automations/Resources/Log_Header"), LogInstrument)
         {
             IsFilled = true,
         });
+
+        IsReady = true;
+
+        Log(LogLevel.Debug, nameof(MacroLogger), $"<{nameof(MacroLogger)}> is launched.");
+
     }
 
     public void Log(LogLevel logLevel, string sender, string message)
     {
+        if (!IsReady)
+        {
+            return;
+        }
+
         if (!IsEnabled(logLevel))
         {
             return;
@@ -131,7 +151,7 @@ public class MacroLogger : KernelService
             TemplateKey = entry.Level.ToString(),
         };
 
-        LogInstrument.WriteLine(line);
+        LogInstrument?.WriteLine(line);
     }
 
     private static string ToShortLevel(LogLevel level)

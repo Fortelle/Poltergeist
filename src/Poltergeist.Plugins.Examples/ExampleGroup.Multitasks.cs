@@ -12,7 +12,7 @@ public partial class ExampleGroup
         Title = "Multitasks Example",
         Description = "This example shows how to create a multi task indicator by using the ProgressGridInstrument.",
 
-        Execution = (args) =>
+        ExecuteAsync = async (args) =>
         {
             var count = 50;
             var rnd = new Random();
@@ -23,11 +23,16 @@ public partial class ExampleGroup
                 gi.AddPlaceholders(count, new(ProgressStatus.Idle));
             });
 
-            void action(int i)
+            var options = new ParallelOptions {
+                CancellationToken = (CancellationToken)args.Processor.CancellationToken,
+                MaxDegreeOfParallelism = 5,
+            };
+            await Parallel.ForEachAsync(Enumerable.Range(0, count), options, async (i, c) =>
             {
+                args.Logger.Log(i.ToString());
                 gi.Update(i, new(ProgressStatus.Busy));
 
-                Thread.Sleep(rnd.Next(500, 5000));
+                await Task.Delay(rnd.Next(500, 5000), c);
 
                 if (args.Processor.IsCancelled)
                 {
@@ -36,20 +41,7 @@ public partial class ExampleGroup
 
                 var result = rnd.NextDouble() < .8 ? ProgressStatus.Success : ProgressStatus.Failure;
                 gi.Update(i, new(result));
-            }
-
-            var tasks = Enumerable.Range(0, count)
-                .Select(i => (Action)(() =>
-                {
-                    action(i);
-                }))
-                .ToArray();
-
-            var options = new ParallelOptions {
-                CancellationToken = (CancellationToken)args.Processor.CancellationToken,
-                MaxDegreeOfParallelism = 5,
-            };
-            Parallel.Invoke(options, tasks);
+            });
         }
 
     };

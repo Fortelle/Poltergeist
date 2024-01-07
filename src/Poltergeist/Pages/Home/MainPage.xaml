@@ -170,7 +170,6 @@
                         <DataTemplate>
                             <HyperlinkButton
                                 HorizontalAlignment="Stretch"
-                                IsEnabled="{Binding IsAvailable, Mode=OneTime}"
                                 HorizontalContentAlignment="Stretch"
                                 Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
                                 CommandParameter="{Binding MacroKey, Mode=OneTime}"
@@ -234,7 +233,6 @@
                         <DataTemplate>
                             <HyperlinkButton
                                 HorizontalAlignment="Stretch"
-                                IsEnabled="{Binding IsAvailable, Mode=OneTime}"
                                 HorizontalContentAlignment="Stretch"
                                 Command="{Binding ViewModel.MacroButtonClickCommand, ElementName=Root, Mode=OneTime}"
                                 CommandParameter="{Binding MacroKey, Mode=OneTime}"

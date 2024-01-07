@@ -11,9 +11,9 @@ public interface IServiceProcessor : IProcessor
     public DateTime EndTime { get; }
     public bool IsCancelled { get; }
 
-    public void RaiseEvent(MacroEventType type, EventArgs eventArgs);
+    public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
     public void RaiseAction(Action action);
     public Task Pause();
     public void Resume();
-
+    public void CheckCancel();
 }

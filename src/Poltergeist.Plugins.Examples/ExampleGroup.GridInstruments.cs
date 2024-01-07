@@ -15,7 +15,7 @@ public partial class ExampleGroup
         Description = "This example shows how to use the GridInstrument.",
         ShowStatusBar = false,
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var dashboard = args.Processor.GetService<DashboardService>();
 
@@ -89,7 +89,7 @@ public partial class ExampleGroup
         Description = "This example shows how to customize the GridInstrument.",
         ShowStatusBar = false,
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var dashboard = args.Processor.GetService<DashboardService>();
 

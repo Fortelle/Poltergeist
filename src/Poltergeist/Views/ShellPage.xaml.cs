@@ -55,7 +55,6 @@ public sealed partial class ShellPage : Page
                     {
                         Content = macro.Title,
                         Tag = "macro:" + macro.Key,
-                        IsEnabled = macro.IsAvailable,
                         Icon = new FontIcon()
                         {
                             Glyph = macroInfo.Glyph,

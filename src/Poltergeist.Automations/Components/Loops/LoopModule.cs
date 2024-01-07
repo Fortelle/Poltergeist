@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
@@ -22,8 +21,10 @@ public class LoopModule : MacroModule
         Options = options;
     }
 
-    public override void OnMacroInitialized(IMacroInitializer macro)
+    public override void OnMacroInitialize(IInitializableMacro macro)
     {
+        base.OnMacroInitialize(macro);
+
         macro.Statistics.Add(new ParameterEntry<int>(LoopService.StatisticTotalIterationCountKey)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
@@ -55,16 +56,16 @@ public class LoopModule : MacroModule
 
     }
 
-    public override void OnMacroConfiguring(ServiceCollection services, IConfigureProcessor processor)
+    public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
-        base.OnMacroConfiguring(services, processor);
+        base.OnProcessorConfigure(processor);
 
-        services.AddSingleton<IOptions<LoopOptions>>(new OptionsWrapper<LoopOptions>(Options));
+        processor.Services.AddSingleton<IOptions<LoopOptions>>(new OptionsWrapper<LoopOptions>(Options));
 
-        services.AddTransient<LoopBeforeArguments>();
-        services.AddTransient<LoopExecutionArguments>();
-        services.AddTransient<LoopCheckContinueArguments>();
-        services.AddSingleton<LoopService>();
+        processor.Services.AddTransient<LoopBeforeArguments>();
+        processor.Services.AddTransient<LoopExecuteArguments>();
+        processor.Services.AddTransient<LoopCheckContinueArguments>();
+        processor.Services.AddSingleton<LoopService>();
     }
 
 }

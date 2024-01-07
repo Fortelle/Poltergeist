@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Poltergeist.Automations.Components.Hooks;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -29,7 +25,7 @@ public class InteractionService : MacroService
         Models.Add(model);
 
         var args = new InteractingEventArgs(model);
-        Processor.RaiseEvent(MacroEventType.Interacting, args);
+        Processor.RaiseEvent(ProcessorEvent.Interacting, args);
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
 
@@ -45,7 +41,7 @@ public class InteractionService : MacroService
         {
             Suspended = true
         };
-        Processor.RaiseEvent(MacroEventType.Interacting, args);
+        Processor.RaiseEvent(ProcessorEvent.Interacting, args);
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
 

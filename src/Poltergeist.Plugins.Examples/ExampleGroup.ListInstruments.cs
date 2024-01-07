@@ -15,7 +15,7 @@ public partial class ExampleGroup
         Title = "ListInstrument Example",
         Description = "This example shows how to use the ListInstrument.",
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var count = 3;
             var duration = 1000;
@@ -151,7 +151,7 @@ public partial class ExampleGroup
         Description = "This example shows how to customize the ListInstrument.",
         ShowStatusBar = false,
 
-        Execution = (args) =>
+        Execute = (args) =>
         {
             var dashboard = args.Processor.GetService<DashboardService>();
 
@@ -297,7 +297,7 @@ public partial class ExampleGroup
             new OptionItem<bool>("countdown"),
         },
 
-        AsyncExecution = async (args) =>
+        ExecuteAsync = async (args) =>
         {
             var li = args.Processor.GetService<ProgressListInstrument>();
             li.Title = "Tasks:";

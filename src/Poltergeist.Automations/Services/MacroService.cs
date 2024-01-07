@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
@@ -25,6 +26,8 @@ public abstract class MacroService : IExtensionService, IServiceLogger, IDisposa
         Logger = this;
 
         SenderName = GetType().Name;
+
+        Logger.Debug($"Service <{SenderName}> is activated.");
     }
 
     void IServiceLogger.Trace(string message)

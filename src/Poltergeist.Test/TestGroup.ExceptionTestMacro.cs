@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Attributes;
+﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Exceptions;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Test;
@@ -16,69 +15,73 @@ public partial class TestGroup
             Title = "Exception Test";
             Description = "This macro throws exceptions in different stages.";
 
-            UserOptions.Add("In processor initialization", false);
-            UserOptions.Add("In workflow beginning", false);
-            UserOptions.Add("In workflow ending", false);
-            UserOptions.Add("In loop begining", false);
-            UserOptions.Add("In loop iteration", false);
-            UserOptions.Add("In loop ending", false);
+            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnConfigure)}", false);
+            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnPrepare)}", false);
+            UserOptions.Add($"{nameof(ProcessorCheckStartHook)}", false);
+            UserOptions.Add($"{nameof(IterationStartedHook)}", false);
+            UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.Before)}", false);
+            UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.Execute)}", false);
+            UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.After)}", false);
 
             Before = _ =>
             {
-                if (UserOptions.Get<bool>("In loop begining"))
+                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Before)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the beginning of the loop.");
                 }
             };
             After = _ =>
             {
-                if (UserOptions.Get<bool>("In loop ending"))
+                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.After)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the ending of the loop.");
                 }
             };
-            Execution = _ =>
+            Execute = _ =>
             {
-                if (UserOptions.Get<bool>("In loop iteration"))
+                Thread.Sleep(1000);
+                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Execute)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the iteration of the loop.");
                 }
             };
         }
 
-        protected override void OnConfigure(ServiceCollection services, IConfigureProcessor processor)
+        protected override void OnConfigure(IConfigurableProcessor processor)
         {
-            base.OnConfigure(services, processor);
+            base.OnConfigure(processor);
 
-            if (UserOptions.Get<bool>("In processor initialization"))
+            if (UserOptions.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnConfigure)}"))
             {
-                throw new MacroRunningException("This exception is thrown in the initialization of the processor.");
+                throw new MacroRunningException("This exception is thrown in the configuration of the processor.");
             }
         }
 
-        protected override void OnProcess(MacroProcessor processor)
+        protected override void OnPrepare(IPreparableProcessor processor)
         {
-            base.OnProcess(processor);
+            base.OnPrepare(processor);
 
-            var work = processor.GetService<WorkingService>();
-
-            if (UserOptions.Get<bool>("In workflow beginning"))
+            if (UserOptions.Get<bool>($"{nameof(ProcessorCheckStartHook)}"))
             {
-                work.Beginning += (s, e) =>
+                processor.Hooks.Register<ProcessorCheckStartHook>(() =>
                 {
-                    throw new MacroRunningException("This exception is thrown in the beginning of the workflow.");
-                };
+                    throw new MacroRunningException($"This exception is thrown by <{nameof(ProcessorCheckStartHook)}>.");
+                });
             }
 
-            if (UserOptions.Get<bool>("In workflow ending"))
+            if (UserOptions.Get<bool>($"{nameof(IterationStartedHook)}"))
             {
-                work.Ending += (s, e) =>
+                processor.Hooks.Register<ProcessorStartedHook>(() =>
                 {
-                    throw new MacroRunningException("This exception is thrown in the ending of the workflow.");
-                };
+                    throw new MacroRunningException($"This exception is thrown by <{nameof(ProcessorStartedHook)}>.");
+                });
+            }
+
+            if (UserOptions.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnPrepare)}"))
+            {
+                throw new MacroRunningException("This exception is thrown in the preparation of the processor.");
             }
         }
-
     }
 
 }

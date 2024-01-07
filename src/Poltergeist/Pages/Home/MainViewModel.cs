@@ -40,24 +40,26 @@ public partial class MainViewModel : ObservableRecipient
         nav.NavigateTo("group:" + groupkey);
     }
 
-    public void UpdatetMacros()
+    public void UpdateMacros()
     {
         var macroManager = App.GetService<MacroManager>();
 
         FavoriteMacros = macroManager.Summaries.Values
             .Where(x => x.IsFavorite)
-            .Where(x => x.IsAvailable)
+            .Where(x => macroManager.GetMacro(x.MacroKey) != null)
             .ToArray();
 
         RecentMacros = macroManager.Summaries.Values
             .Where(x => x.LastRunTime != default)
             .OrderByDescending(x => x.LastRunTime)
+            .Where(x => macroManager.GetMacro(x.MacroKey) != null)
             .Take(MaxItemCount)
             .ToArray();
 
         PopularMacros = macroManager.Summaries.Values
             .Where(x => x.RunCount != default)
             .OrderByDescending(x => x.RunCount)
+            .Where(x => macroManager.GetMacro(x.MacroKey) != null)
             .Take(MaxItemCount)
             .ToArray();
     }

@@ -9,17 +9,14 @@ public class TimerService : MacroService
 {
     private DelayOptions DefaultOptions { get; }
     private DistributionService Distribution { get; }
-    private WorkingService Workflow { get; }
 
     public TimerService(
         MacroProcessor processor,
         DistributionService random,
-        WorkingService workflow,
         IOptions<DelayOptions> options
         )
         : base(processor)
     {
-        Workflow = workflow;
         Distribution = random;
         DefaultOptions = options.Value;
 
@@ -79,7 +76,7 @@ public class TimerService : MacroService
         }
         //Logger.Debug($"Delayed for {timeout} ms.");
 
-        Workflow.CheckCancel();
+        Processor.CheckCancel();
     }
 
     private async Task DoDelayAsync(int timeout)
@@ -90,7 +87,7 @@ public class TimerService : MacroService
         }
         //Logger.Debug($"Delayed for {timeout} ms.");
 
-        Workflow.CheckCancel();
+        Processor.CheckCancel();
     }
 
     private int GetTimeout(int milliseconds, DelayOptions? options)

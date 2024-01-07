@@ -28,7 +28,7 @@ public partial class TestGroup
             }, "Ok")
         },
 
-        AsyncExecution = async (args) =>
+        ExecuteAsync = async (args) =>
         {
             var interactionService = args.Processor.GetService<InteractionService>();
             var dialogType = args.Processor.Options.Get("dialog_type", "");

@@ -177,7 +177,7 @@ public partial class TestGroup
                 UserOptions.Add(option);
             }
 
-            Execution = (args) =>
+            Execute = (args) =>
             {
                 var groups = CustomOptions.GroupBy(x => x.Category);
                 foreach (var group in groups)

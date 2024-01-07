@@ -31,11 +31,11 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
                 App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroNotExist", macrokey));
                 return null;
             }
-            if (!macro.IsAvailable)
-            {
-                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroUnavailable", macrokey));
-                return null;
-            }
+            //if (!macro.Status.IsInitialized())
+            //{
+            //    App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroUnavailable", macrokey));
+            //    return null;
+            //}
             
             var macroPage = new MacroPage(new(macro));
             return macroPage;
@@ -141,7 +141,12 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             var environments = new VariableCollection();
             macroManager.PushEnvironments(environments);
 
-            ViewModel.Macro.ExecuteAction(action, options.ToValueDictionary(), environments.ToValueDictionary());
+            var args = new MacroActionArguments(ViewModel.Macro)
+            {
+                Options = options.ToValueDictionary(),
+                Environments = environments.ToValueDictionary(),
+            };
+            ViewModel.Macro.ExecuteAction(action, args);
         }
     }
 

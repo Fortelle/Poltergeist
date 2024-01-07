@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Components.Repetitions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Input.Windows;
@@ -25,30 +24,26 @@ public class ForegroundMacro : MacroBase
     public string? Arguments { get; set; }
 
     public Action<LoopBeforeArguments, ForegroundOperator>? Begin;
-    public Action<LoopExecutionArguments, ForegroundOperator>? Iteration;
+    public Action<LoopExecuteArguments, ForegroundOperator>? Iterate;
     public Action<LoopCheckContinueArguments, ForegroundOperator>? CheckContinue;
     public Action<ArgumentService, ForegroundOperator>? End;
 
     public ForegroundMacro(string name) : base(name)
-    {
-    }
-
-    protected override void OnInitialize()
     {
         Modules.Add(new InputOptionsModule());
         Modules.Add(new LoopModule(LoopOptions));
         Modules.Add(new ForegroundModule());
     }
 
-    protected override void OnProcess(MacroProcessor processor)
+    protected override void OnPrepare(IPreparableProcessor processor)
     {
-        base.OnProcess(processor);
+        base.OnPrepare(processor);
 
         var repeat = processor.GetService<LoopService>();
-        repeat.Before = OnBegin;
-        if (Iteration != null)
+        repeat.Before = OnBefore;
+        if (Iterate != null)
         {
-            repeat.Execution = (e) => Iteration.Invoke(e, Operator!);
+            repeat.Execute = (e) => Iterate.Invoke(e, Operator!);
         }
 
         if (CheckContinue != null)
@@ -62,7 +57,7 @@ public class ForegroundMacro : MacroBase
         }
     }
 
-    private void OnBegin(LoopBeforeArguments e)
+    private void OnBefore(LoopBeforeArguments e)
     {
         Operator = e.Processor.GetService<ForegroundOperator>();
 

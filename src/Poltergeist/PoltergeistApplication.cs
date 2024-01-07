@@ -276,7 +276,7 @@ public abstract class PoltergeistApplication : Application
 
         var macroManager = App.GetService<MacroManager>();
         var macro = macroManager.GetMacro(macroOption.Value);
-        if (macro is null || !macro.IsAvailable)
+        if (macro is null)
         {
             return false;
         }
