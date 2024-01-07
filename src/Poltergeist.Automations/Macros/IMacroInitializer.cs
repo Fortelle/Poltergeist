@@ -9,6 +9,7 @@ public interface IMacroInitializer
     public List<MacroAction> Actions { get; }
     public OptionCollection UserOptions { get; }
     public ParameterCollection Statistics { get; }
+    public List<ConfigVariation> ConfigVariations { get; }
 
     public string? PrivateFolder { get; }
     public string? SharedFolder { get; }

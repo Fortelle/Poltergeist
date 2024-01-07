@@ -141,6 +141,9 @@
   <data name="EndReason_SystemShutdown" xml:space="preserve">
     <value>系统关机</value>
   </data>
+  <data name="EndReason_Unstarted" xml:space="preserve">
+    <value>未启动</value>
+  </data>
   <data name="EndReason_UserAborted" xml:space="preserve">
     <value>用户中止</value>
   </data>

@@ -9,7 +9,7 @@ public class ProgressListInstrument : ListInstrument<ProgressListInstrumentItem>
     public static Dictionary<ProgressStatus, ListInstrumentItem> ProgressTemplates { get; set; } = new()
     {
         [ProgressStatus.Idle] = new() { Color = ThemeColor.Gray, Glyph = "\uE9AE" },
-        [ProgressStatus.Busy] = new() { Color = ThemeColor.Yellow, Glyph = "\uE9F5" },
+        [ProgressStatus.Busy] = new() { Color = ThemeColor.Yellow, Glyph = "\uF16A" },
         [ProgressStatus.Success] = new() { Color = ThemeColor.Green, Glyph = "\uE930" },
         [ProgressStatus.Failure] = new() { Color = ThemeColor.Red, Glyph = "\uEA39" },
         [ProgressStatus.Warning] = new() { Color = ThemeColor.Orange, Glyph = "\uE7BA" },

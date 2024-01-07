@@ -13,7 +13,7 @@ public partial class LoopExecutionArguments : ArgumentService
     public IterationStatus Result { get; set; }
 
     [ObservableProperty]
-    public int _progressMax;
+    private int _progressMax;
 
     [ObservableProperty]
     private int _progressValue;

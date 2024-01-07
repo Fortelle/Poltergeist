@@ -71,6 +71,7 @@ public sealed partial class MainWindow : WindowEx
         }
 
         App.GetService<LocalSettingsService>().Save();
+        App.GetService<MacroManager>().GlobalOptions.Save();
     }
 
     // this handles updating the caption button colors correctly when windows system theme is changed

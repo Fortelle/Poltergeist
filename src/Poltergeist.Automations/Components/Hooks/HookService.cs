@@ -13,16 +13,30 @@ public sealed class HookService : KernelService
     {
     }
 
+    public void Register<T>(Action handler) where T : MacroHook
+    {
+        Register(typeof(T), handler);
+    }
+
     public void Register<T>(Action<T> handler) where T : MacroHook
     {
-        var type = typeof(T);
+        Register(typeof(T), handler);
+    }
 
-        if (!Hooks.ContainsKey(type))
+    public void Register<T>(Action<T, MacroProcessor> handler) where T : MacroHook
+    {
+        Register(typeof(T), handler);
+    }
+
+    private void Register(Type type, Delegate handler)
+    {
+        if (!Hooks.TryGetValue(type, out var hook))
         {
-            Hooks.Add(type, new());
+            hook = new();
+            Hooks.Add(type, hook);
         }
 
-        Hooks[type].Add(handler);
+        hook.Add(handler);
         Debug.WriteLine($"A method is registered to hook \"{type.Name}\".");
     }
 
@@ -36,7 +50,22 @@ public sealed class HookService : KernelService
         {
             foreach(var del in delegates)
             {
-                del.DynamicInvoke(hook);
+                // TODO: improve performance
+                var paramCount = del.GetType().GetMethod("Invoke")!.GetParameters().Length;
+                switch (paramCount)
+                {
+                    case 0:
+                        del.DynamicInvoke();
+                        break;
+                    case 1:
+                        del.DynamicInvoke(hook);
+                        break;
+                    case 2:
+                        del.DynamicInvoke(hook, Processor);
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
             }
         }
     }

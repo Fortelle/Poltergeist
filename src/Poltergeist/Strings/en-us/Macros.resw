@@ -141,6 +141,9 @@
   <data name="EndReason_SystemShutdown" xml:space="preserve">
     <value>SystemShutdown</value>
   </data>
+  <data name="EndReason_Unstarted" xml:space="preserve">
+    <value>Unstarted</value>
+  </data>
   <data name="EndReason_UserAborted" xml:space="preserve">
     <value>UserAborted</value>
   </data>
