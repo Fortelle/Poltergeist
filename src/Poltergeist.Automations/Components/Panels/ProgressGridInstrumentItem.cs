@@ -10,4 +10,14 @@ public class ProgressGridInstrumentItem : GridInstrumentItem
     {
         TemplateKey = status.ToString();
     }
+
+    public ProgressGridInstrumentItem(ProgressInstrumentInfo info)
+    {
+        TemplateKey = info.Status?.ToString();
+        Text = info.Text;
+        Tooltip = info.Tooltip;
+        Glyph = info.Glyph;
+        Emoji = info.Emoji;
+        Color = info.Color;
+    }
 }

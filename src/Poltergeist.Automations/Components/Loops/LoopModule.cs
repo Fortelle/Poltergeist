@@ -47,13 +47,12 @@ public class LoopModule : MacroModule
 
         if (Options?.IsDurationLimitable == true)
         {
-            macro.UserOptions.Add(new OptionItem<int>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? 0)
+            macro.UserOptions.Add(new OptionItem<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
             {
                 DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Duration"),
                 Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
             });
         }
-
     }
 
     public override void OnProcessorConfigure(IConfigurableProcessor processor)
@@ -63,8 +62,6 @@ public class LoopModule : MacroModule
         processor.Services.AddSingleton<IOptions<LoopOptions>>(new OptionsWrapper<LoopOptions>(Options));
 
         processor.Services.AddTransient<LoopBeforeArguments>();
-        processor.Services.AddTransient<LoopExecuteArguments>();
-        processor.Services.AddTransient<LoopCheckContinueArguments>();
         processor.Services.AddSingleton<LoopService>();
     }
 

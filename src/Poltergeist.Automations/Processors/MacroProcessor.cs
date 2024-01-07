@@ -204,7 +204,6 @@ public sealed class MacroProcessor : IServiceProcessor, IConfigurableProcessor, 
 
         services.AddTransient<FlowBuilderService>();
         services.AddTransient<LoopBuilderService>();
-        services.AddTransient<LoopBeforeArguments>();
         services.AddTransient<LoopExecuteArguments>();
         services.AddTransient<LoopCheckContinueArguments>();
     }

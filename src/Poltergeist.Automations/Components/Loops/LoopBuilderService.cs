@@ -2,6 +2,7 @@
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Poltergeist.Common.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Loops;
 
@@ -11,24 +12,26 @@ public class LoopBuilderService : MacroService
 
     public Action<LoopExecuteArguments>? Execute;
     public Action<LoopCheckContinueArguments>? CheckContinue;
+    public Func<int, ProgressInstrumentInfo>? InitializeInfo;
 
-    public bool IsSticky { get; set; }
-
-    public LoopInstrumentType InstrumentType { get; set; }
     public bool ContinuesOnError { get; set; }
+    public bool ExcludesIncompleteIteration { get; set; }
+    public LoopInstrumentType InstrumentType { get; set; }
     public int MaxCount { get; set; }
     public TimeSpan MaxDuration { get; set; }
     public int MaxIterationLimit { get; set; }
-    public LoopStatus Status { get; set; } = LoopStatus.None;
+    public LoopStatus Status { get; private set; } = LoopStatus.None;
+    public int IterationCount { get; private set; }
+    public bool IsSticky { get; set; }
 
     public Exception? Exception { get; set; }
 
-    public int IterationIndex { get; set; }
+    private int IterationIndex { get; set; }
     private event Action? LoopStarted;
     private event Action? LoopEnded;
     private event Action? IterationStarted;
     private event Action<IterationResult>? IterationEnded;
-    private event Action<int, int>? IterationProgressChanged;
+    private event Action<ProgressInstrumentInfo>? IterationReported;
 
     public LoopBuilderService(MacroProcessor processor) : base(processor)
     {
@@ -54,6 +57,13 @@ public class LoopBuilderService : MacroService
             var iterationResult = DoIterate();
 
             IterationEnded?.Invoke(iterationResult);
+
+            IterationCount += iterationResult.Status switch
+            {
+                IterationStatus.Error when ExcludesIncompleteIteration => 0,
+                IterationStatus.UserAborted when ExcludesIncompleteIteration => 0,
+                _ => 1,
+            };
 
             var shouldContinue = DoCheckContinue(iterationResult);
 
@@ -88,26 +98,19 @@ public class LoopBuilderService : MacroService
                 args.Index = IterationIndex;
                 args.StartTime = startTime;
                 args.Result = IterationStatus.Continue;
-                var max = 0;
-                var current = 0;
 
-                args.PropertyChanged += (sender, e) =>
+                void onReported(ProgressInstrumentInfo info)
                 {
-                    switch (e.PropertyName)
-                    {
-                        case nameof(LoopExecuteArguments.ProgressMax):
-                            max = args.ProgressMax;
-                            break;
-                        case nameof(LoopExecuteArguments.ProgressValue):
-                            current = args.ProgressValue;
-                            break;
+                    info.ProgressMax ??= args.ProgressMax;
+                    IterationReported?.Invoke(info);
                 }
-                    IterationProgressChanged?.Invoke(current, max);
-                };
+                args.Reported += onReported;
 
                 Execute.Invoke(args);
                 status = args.Result;
                 Processor.Comment = args.Comment;
+
+                args.Reported -= onReported;
             }
             catch (UserAbortException e)
             {
@@ -153,13 +156,14 @@ public class LoopBuilderService : MacroService
         else if (iterationResult.Status == IterationStatus.Error && !ContinuesOnError)
         {
             shouldContinue = false;
-            Logger.Debug($"The loop will be stopped because an error has occurred.");
+            Status = LoopStatus.ErrorOccurred;
+            Logger.Debug($"The loop will be stopped because an error has occurred in the previous iteration.");
         }
         else if (iterationResult.Status == IterationStatus.UserAborted || Processor.IsCancelled)
         {
             shouldContinue = false;
             Status = LoopStatus.UserAborted;
-            Logger.Debug($"The loop will be stopped due to user abort.");
+            Logger.Debug($"The loop will be stopped due to user aborting.");
         }
         else if (CheckTimeout())
         {
@@ -180,6 +184,7 @@ public class LoopBuilderService : MacroService
         else if (CheckCount())
         {
             shouldContinue = false;
+            Logger.Debug($"The loop will be stopped because the number of iterations has reached the specified count.", new { IterationIndex, MaxCount });
         }
         else if (MaxIterationLimit > 0 && IterationIndex >= MaxIterationLimit - 1)
         {
@@ -205,23 +210,30 @@ public class LoopBuilderService : MacroService
             CheckContinue.Invoke(args);
             var state = args.Result;
             Processor.Comment = args.Comment;
-            shouldContinue = state switch
+            switch (state)
             {
-                CheckContinueResult.Continue => true,
-                CheckContinueResult.Break => false,
-                _ => true,
-            };
-            if (shouldContinue)
-            {
+                case CheckContinueResult.Break:
+                    shouldContinue = false;
+                    Logger.Debug($"The loop will be stopped because the {nameof(CheckContinue)} returns {state}.");
+                    break;
+                case CheckContinueResult.RestartLoop:
+                    shouldContinue = true;
+                    IterationIndex = -1;
+                    Logger.Debug($"The loop will be restarted because the {nameof(CheckContinue)} returns {state}.");
+                    break;
+                case CheckContinueResult.RestartIteration:
+                    shouldContinue = true;
+                    IterationIndex--;
+                    Logger.Debug($"The iteration will be restarted because the {nameof(CheckContinue)} returns {state}.");
+                    break;
+                default:
+                    shouldContinue = true;
                     Logger.Debug($"The loop will be continued because the {nameof(CheckContinue)} returns {state}.");
+                    break;
             }
-            else
-            {
-                Logger.Debug($"The loop will be stopped because the {nameof(CheckContinue)} returns {state}.");
-        }
         }
 
-        Logger.Debug($"Finished running the check-continue procedure.", new { shouldContinue });
+        Logger.Debug($"Finished running the check-continue procedure.");
 
         return shouldContinue;
     }
@@ -235,7 +247,6 @@ public class LoopBuilderService : MacroService
 
         if (IterationIndex >= MaxCount - 1)
         {
-            Logger.Debug($"The loop will be stopped because the number of iterations has reached the specified count.", new { IterationIndex, MaxCount });
             return true;
         }
 
@@ -244,7 +255,7 @@ public class LoopBuilderService : MacroService
 
     private bool CheckTimeout()
     {
-        if (MaxDuration == TimeSpan.Zero)
+        if (MaxDuration == default)
         {
             return false;
         }
@@ -302,13 +313,11 @@ public class LoopBuilderService : MacroService
                         }
                     };
 
-                    IterationProgressChanged += (current, max) =>
+                    IterationReported += (info) =>
                     {
-                        listInstrument.Update(1, new()
-                        {
-                            Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1),
-                            Progress = GetProgress(current, max),
-                        });
+                        var item = new ProgressListInstrumentItem(info);
+                        item.Text ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1);
+                        listInstrument.Update(1, item);
                     };
 
                     LoopEnded += () =>
@@ -343,17 +352,16 @@ public class LoopBuilderService : MacroService
                     {
                         for (var i = 0; i < MaxCount; i++)
                         {
+                            var info = InitializeInfo?.Invoke(i) ?? new();
                             gridInstrument.Add(new(ProgressStatus.Idle)
                             {
                             });
                         }
                     }
 
-                    IterationStarted += () =>
+                    IterationReported += (info) =>
                     {
-                        gridInstrument.Update(IterationIndex, new(ProgressStatus.Busy)
-                        {
-                        });
+                        gridInstrument.Update(IterationIndex, new(info));
                     };
 
                     IterationEnded += (result) =>
@@ -379,10 +387,10 @@ public class LoopBuilderService : MacroService
                     {
                         for (var i = 0; i < MaxCount; i++)
                         {
-                            listInstrument.Add(new(ProgressStatus.Idle)
-                            {
-                                Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", i + 1),
-                            });
+                            var info = InitializeInfo?.Invoke(i) ?? new();
+                            info.Status ??= ProgressStatus.Idle;
+                            info.Text ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", i + 1);
+                            listInstrument.Add(new(info));
                         }
                     }
 
@@ -394,13 +402,9 @@ public class LoopBuilderService : MacroService
                         });
                     };
 
-                    IterationProgressChanged += (current, max) =>
+                    IterationReported += (info) =>
                     {
-                        listInstrument.Update(IterationIndex, new()
-                    {
-                            Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Instrument_ProgressBar_ProgressText", IterationIndex + 1),
-                            Progress = GetProgress(current, max),
-                        });
+                        listInstrument.Update(IterationIndex, new(info));
                     };
 
                     IterationEnded += (result) =>
@@ -416,19 +420,6 @@ public class LoopBuilderService : MacroService
 
                 }
                 break;
-        }
-
-    }
-
-    private static double GetProgress(int current, int max)
-    {
-        if (max > 0)
-        {
-            return (double)current / max;
-        }
-        else
-        {
-            return 1;
         }
     }
 }

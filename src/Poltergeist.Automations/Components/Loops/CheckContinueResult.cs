@@ -3,6 +3,10 @@
 public enum CheckContinueResult
 {
     NotSet,
+
     Continue,
     Break,
+
+    RestartLoop,
+    RestartIteration,
 }

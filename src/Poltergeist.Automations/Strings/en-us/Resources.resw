@@ -198,6 +198,9 @@
   <data name="Loops_Category" xml:space="preserve">
     <value>Loops</value>
   </data>
+  <data name="Loops_Comment" xml:space="preserve">
+    <value>Looped {0} times</value>
+  </data>
   <data name="Loops_Instrument_ProgressBar_ProgressText" xml:space="preserve">
     <value>Iteration {0}</value>
   </data>
@@ -217,7 +220,7 @@
     <value>Count</value>
   </data>
   <data name="Loops_Option_Duration" xml:space="preserve">
-    <value>Duration (seconds)</value>
+    <value>Duration</value>
   </data>
   <data name="Loops_Option_Enable" xml:space="preserve">
     <value>Enable</value>

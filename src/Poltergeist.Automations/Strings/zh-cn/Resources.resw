@@ -198,6 +198,9 @@
   <data name="Loops_Category" xml:space="preserve">
     <value>循环</value>
   </data>
+  <data name="Loops_Comment" xml:space="preserve">
+    <value>循环{0}次</value>
+  </data>
   <data name="Loops_Instrument_ProgressBar_ProgressText" xml:space="preserve">
     <value>第{0}次</value>
   </data>
@@ -217,7 +220,7 @@
     <value>次数</value>
   </data>
   <data name="Loops_Option_Duration" xml:space="preserve">
-    <value>持续时间（秒）</value>
+    <value>持续时间</value>
   </data>
   <data name="Loops_Option_Enable" xml:space="preserve">
     <value>启用</value>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Components.Loops;
@@ -18,6 +19,7 @@ public class LoopMacro : MacroBase
     public Action<LoopExecuteArguments>? Execute;
     public Action<LoopCheckContinueArguments>? CheckContinue;
     public Action<ArgumentService>? After;
+    public Func<int, ProgressInstrumentInfo>? InitializeInfo;
 
     public LoopMacro(string name) : base(name)
     {
@@ -59,6 +61,11 @@ public class LoopMacro : MacroBase
         if (After != null)
         {
             loopService.After += After;
+        }
+
+        if (InitializeInfo != null)
+        {
+            loopService.InitializeInfo += InitializeInfo;
         }
     }
 

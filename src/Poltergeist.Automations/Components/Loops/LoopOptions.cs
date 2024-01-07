@@ -12,11 +12,12 @@ public class LoopOptions
 
     public bool IsCountLimitable { get; set; } = true;
     public bool IsDurationLimitable { get; set; }
+    public bool ExcludesIncompleteIteration { get; set; }
 
     public bool ContinuesOnError { get; set; }
 
     public int DefaultCount { get; set; } = 1;
-    public int DefaultDuration { get; set; }
+    public TimeOnly DefaultDuration { get; set; }
 
     public LoopInstrumentType Instrument { get; set; }
 }

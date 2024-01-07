@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -9,36 +11,32 @@ namespace Poltergeist.Automations.Components.Loops;
 // If both are set to default, the loop will only iterate once.
 // To enable infinite looping, set LoopOptions.IsInfiniteLoopable = true.
 
-public class LoopService : MacroService, IAutoloadable
+public class LoopService : LoopBuilderService, IAutoloadable
 {
     public const string ConfigEnableKey = "loop-enable";
     public const string ConfigCountKey = "loop-count";
     public const string ConfigDurationKey = "loop-duration";
     public const string StatisticTotalIterationCountKey = "loop-totaliterationcount";
 
-    public Action<LoopBeforeArguments>? Before { get; set; }
-    public Action<LoopExecuteArguments>? Execute { get; set; }
-    public Action<LoopCheckContinueArguments>? CheckContinue { get; set; }
-    public Action<ArgumentService>? After { get; set; }
-
-    private int MaxCount;
-    private TimeSpan MaxDuration;
+    public Action<LoopBeforeArguments>? Before;
+    public Action<ArgumentService>? After;
 
     private readonly LoopOptions Options;
     private readonly HookService Hooks;
-    private readonly LoopBuilderService LoopHelper;
-
-    private EndReason Status = EndReason.None;
 
     public LoopService(MacroProcessor processor,
         HookService hooks,
-        IOptions<LoopOptions> options,
-        LoopBuilderService loophelper
+        IOptions<LoopOptions> options
         ) : base(processor)
     {
         Hooks = hooks;
         Options = options.Value;
-        LoopHelper = loophelper;
+
+        ContinuesOnError = Options.ContinuesOnError;
+        InstrumentType = Options.Instrument;
+        MaxIterationLimit = Options.MaxIterationLimit;
+        ExcludesIncompleteIteration = Options.ExcludesIncompleteIteration;
+        IsSticky = true;
 
         processor.WorkProc = WorkProc;
     }
@@ -52,27 +50,14 @@ public class LoopService : MacroService, IAutoloadable
             return;
         }
 
-        LoopHelper.MaxCount = MaxCount;
-        LoopHelper.MaxDuration = MaxDuration;
-        LoopHelper.Execute = Execute;
-        LoopHelper.CheckContinue = CheckContinue;
-        LoopHelper.InstrumentType = Options.Instrument;
-        LoopHelper.MaxIterationLimit = Options.MaxIterationLimit;
-        LoopHelper.IsSticky = true;
+        Run();
 
-        LoopHelper.Run();
-
-        if(LoopHelper.Exception is not null)
+        if(Exception is not null)
         {
-            throw LoopHelper.Exception;
+            throw Exception;
         }
 
         DoAfter();
-
-        if (Status == EndReason.None)
-        {
-            Status = EndReason.Complete;
-        }
     }
 
     private void CheckLimit()
@@ -90,8 +75,8 @@ public class LoopService : MacroService, IAutoloadable
         }
         if (Options.IsDurationLimitable == true)
         {
-            var seconds = Processor.Options.Get<int>(ConfigDurationKey);
-            MaxDuration = TimeSpan.FromSeconds(seconds);
+            var duration = Processor.Options.Get<TimeOnly>(ConfigDurationKey);
+            MaxDuration = duration.ToTimeSpan();
         }
 
         if (MaxCount == default && MaxDuration == default && !Options.IsInfiniteLoopable)
@@ -137,8 +122,8 @@ public class LoopService : MacroService, IAutoloadable
             After.Invoke(args);
         }
 
-        var iterationCount = LoopHelper.IterationIndex + 1;
-        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + iterationCount);
+        Processor.Comment ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", IterationCount);
+        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationCount);
 
         Hooks.Raise(new LoopEndedHook());
 
