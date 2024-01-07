@@ -247,7 +247,7 @@ public abstract class MacroBase : IMacroBase, IInitializableMacro
 
     void IMacroBase.ExecuteAction(MacroAction action, MacroActionArguments arguments)
     {
-        if (Status <= MacroStatus.Loaded)
+        if (Status < MacroStatus.Loaded)
         {
             throw new InvalidOperationException();
         }
