@@ -19,14 +19,14 @@ public class CompleteModule : MacroModule
             GetText = x => ResourceHelper.Localize($"Poltergeist.Automations/Resources/AfterCompletion_CompletionAction_{x}"),
         });
 
-        macro.UserOptions.Add(new OptionItem<int>("aftercompletion.minimumseconds", 0)
+        macro.UserOptions.Add(new OptionItem<TimeOnly>("aftercompletion.minimumtime")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
             Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime_Description"),
         });
 
-        macro.UserOptions.Add(new OptionItem<bool>("aftercompletion.allowerror", false)
+        macro.UserOptions.Add(new OptionItem<bool>("aftercompletion.allowerror")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_AllowError"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
@@ -43,24 +43,30 @@ public class CompleteModule : MacroModule
 
     private void OnProcessorEnding(ProcessorEndingHook hook, IServiceProcessor processor)
     {
-        var completeAction = processor.Options.Get("aftercompletion.action", hook.CompletionAction);
-        var completeAllowerror = processor.Options.Get("aftercompletion.allowerror", false);
-        var completeMinimumSeconds = processor.Options.Get("aftercompletion.minimumseconds", 0);
+        var completeAction = processor.Options.Get<CompletionAction>("aftercompletion.action");
+        var completeAllowerror = processor.Options.Get<bool>("aftercompletion.allowerror");
+        var completeMinimumTime = processor.Options.Get<TimeOnly>("aftercompletion.minimumtime");
 
-        if (hook.Reason is EndReason.UserAborted or EndReason.LoadFailed or EndReason.Unstarted)
+        if (hook.Reason is EndReason.None or EndReason.InitializationFailed or EndReason.LoadFailed or EndReason.Unstarted or EndReason.SystemShutdown)
         {
-            completeAction = CompletionAction.None;
+            hook.CompletionAction = CompletionAction.None;
+        }
+        else if (hook.Reason == EndReason.UserAborted)
+        {
+            hook.CompletionAction = CompletionAction.None;
         }
         else if (hook.Reason == EndReason.ErrorOccurred && !completeAllowerror)
         {
-            completeAction = CompletionAction.None;
+            hook.CompletionAction = CompletionAction.None;
         }
-        else if (completeMinimumSeconds > 0 && completeMinimumSeconds < hook.HistoryEntry.Duration.TotalSeconds)
+        else if (completeMinimumTime != default && completeMinimumTime.ToTimeSpan().Ticks < hook.HistoryEntry.Duration.Ticks)
         {
-            completeAction = CompletionAction.None;
+            hook.CompletionAction = CompletionAction.None;
         }
-
-        hook.CompletionAction = completeAction;
+        else
+        {
+            hook.CompletionAction = completeAction;
+        }
     }
 
 }

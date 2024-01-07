@@ -151,7 +151,7 @@
     <value>Always execute the action even if the macro ends with an error.</value>
   </data>
   <data name="AfterCompletion_Option_MinimumTime" xml:space="preserve">
-    <value>Minimum run time (seconds)</value>
+    <value>Minimum run time</value>
   </data>
   <data name="AfterCompletion_Option_MinimumTime_Description" xml:space="preserve">
     <value>Do not execute the action if the run time of the macro is less than the minimum value.</value>

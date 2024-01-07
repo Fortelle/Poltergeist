@@ -151,7 +151,7 @@
     <value>即使宏运行出错依然执行操作</value>
   </data>
   <data name="AfterCompletion_Option_MinimumTime" xml:space="preserve">
-    <value>最低运行时间（秒）</value>
+    <value>最低运行时间</value>
   </data>
   <data name="AfterCompletion_Option_MinimumTime_Description" xml:space="preserve">
     <value>如果宏的运行时间低于一定值则不执行操作</value>
