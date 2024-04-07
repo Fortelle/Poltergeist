@@ -6,11 +6,11 @@ namespace Poltergeist.Automations.Processors;
 
 public interface IPreparableProcessor
 {
-    public IMacroBase Macro { get; }
+    public IUserMacro Macro { get; }
 
-    public VariableCollection Options { get; }
-    public VariableCollection Environments { get; }
-    public VariableCollection Statistics { get; }
+    public ParameterValueCollection Options { get; }
+    public ParameterValueCollection Environments { get; }
+    public ParameterValueCollection Statistics { get; }
 
     public Action? WorkProc { set; }
     public Func<Task>? AsyncWorkProc { set; }

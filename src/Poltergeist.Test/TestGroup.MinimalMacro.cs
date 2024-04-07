@@ -13,6 +13,7 @@ public partial class TestGroup
         {
             Title = nameof(MinimalMacro);
             Description = "This is an empty macro with the minimum dependencies.";
+            IsSingleton = true;
         }
     }
 

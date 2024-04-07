@@ -15,6 +15,8 @@ public partial class ExampleGroup
         Title = "ListInstrument Example",
         Description = "This example shows how to use the ListInstrument.",
 
+        IsSingleton = true,
+
         Execute = (args) =>
         {
             var count = 3;
@@ -149,7 +151,9 @@ public partial class ExampleGroup
     {
         Title = "ListInstrument Customization Example",
         Description = "This example shows how to customize the ListInstrument.",
+
         ShowStatusBar = false,
+        IsSingleton = true,
 
         Execute = (args) =>
         {
@@ -292,9 +296,11 @@ public partial class ExampleGroup
         Title = "ListInstrument Button Example",
         Description = "This example shows how to interact with the user through the ListInstrument.",
 
+        IsSingleton = true,
+
         UserOptions =
         {
-            new OptionItem<bool>("countdown"),
+            new OptionDefinition<bool>("countdown"),
         },
 
         ExecuteAsync = async (args) =>

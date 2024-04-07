@@ -8,7 +8,7 @@
     },
     "Dev": {
       "commandName": "Project",
-      "commandLineArgs": "--macro=DevMacro --singlemode --autostart"
+      "commandLineArgs": "--macro=dev_macro --singlemode"
     }
   }
 }

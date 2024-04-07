@@ -1,18 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Services;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
 public sealed partial class StringArrayOptionControl : UserControl
 {
-    private OptionItem<string[]> Item { get; }
+    private ObservableParameterItem Item { get; }
 
     [ObservableProperty]
     private string? _text;
@@ -20,8 +18,13 @@ public sealed partial class StringArrayOptionControl : UserControl
     [ObservableProperty]
     private string? _tooltip;
 
-    public StringArrayOptionControl(OptionItem<string[]> item)
+    public StringArrayOptionControl(ObservableParameterItem item)
     {
+        if (item.Definition is not OptionDefinition<string[]>)
+        {
+            throw new NotSupportedException();
+        }
+
         Item = item;
 
         this.InitializeComponent();
@@ -38,7 +41,6 @@ public sealed partial class StringArrayOptionControl : UserControl
         }
         else
         {
-            //Text = $"System.String[{Item.Value.Length}]";
             Text = string.Join(", ", Item.Value);
             Tooltip = string.Join("\n", Item.Value);
         }
@@ -62,17 +64,15 @@ public sealed partial class StringArrayOptionControl : UserControl
         });
         stackPanel.Children.Add(textbox);
 
-        var contentDialog = new ContentDialog()
+        var contentDialog = new ContentDialogModel()
         {
             Title = App.Localize($"Poltergeist/Resources/Options_StringArrayOption_Dialog_Title"),
             Content = stackPanel,
-            PrimaryButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Ok"),
-            CloseButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Cancel"),
         };
         
-        var dialogResult = await DialogService.ShowAsync(contentDialog);
+        await DialogService.ShowAsync(contentDialog);
 
-        if(dialogResult == ContentDialogResult.None)
+        if (contentDialog.Result == DialogResult.Cancel)
         {
             return;
         }

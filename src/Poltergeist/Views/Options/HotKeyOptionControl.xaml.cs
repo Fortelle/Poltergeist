@@ -2,47 +2,49 @@ using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Input.Windows;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Poltergeist.Views.Options;
 
 public sealed partial class HotKeyOptionControl : UserControl
 {
-    private OptionItem<HotKey> Item { get; }
+    private ObservableParameterItem Item { get; }
     private VirtualKey[] VirtualKeys { get; }
+    private HotKey Value
+    {
+        get => Item.Value is HotKey x ? x : default;
+        set => Item.Value = value;
+    }
 
     private bool Ctrl
     {
-        get => Item.Value.HasModifier(KeyModifiers.Control);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Control);
+        get => Value.HasModifier(KeyModifiers.Control);
+        set => Value = new(Value.KeyCode, Value.Modifiers ^ KeyModifiers.Control);
     }
 
     private bool Shift
     {
-        get => Item.Value.HasModifier(KeyModifiers.Shift);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Shift);
+        get => Value.HasModifier(KeyModifiers.Shift);
+        set => Value = new(Value.KeyCode, Value.Modifiers ^ KeyModifiers.Shift);
     }
 
     private bool Alt
     {
-        get => Item.Value.HasModifier(KeyModifiers.Alt);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Alt);
+        get => Value.HasModifier(KeyModifiers.Alt);
+        set => Value = new(Value.KeyCode, Value.Modifiers ^ KeyModifiers.Alt);
     }
 
     private bool Win
     {
-        get => Item.Value.HasModifier(KeyModifiers.Win);
-        set => Item.Value = new(Item.Value.KeyCode, Item.Value.Modifiers ^ KeyModifiers.Win);
+        get => Value.HasModifier(KeyModifiers.Win);
+        set => Value = new(Value.KeyCode, Value.Modifiers ^ KeyModifiers.Win);
     }
 
     private VirtualKey KeyCode
     {
-        get => Item.Value.KeyCode;
+        get => Value.KeyCode;
         set
         {
-            var newValue = new HotKey(value, Item.Value.Modifiers);
-            if(Item.Value.ToString() == newValue.ToString())
+            var newValue = new HotKey(value, Value.Modifiers);
+            if(Value.ToString() == newValue.ToString())
             {
                 return;
             }
@@ -56,19 +58,19 @@ public sealed partial class HotKeyOptionControl : UserControl
         get
         {
             var s = "";
-            if (Item.Value.HasModifier(KeyModifiers.Win))
+            if (Value.HasModifier(KeyModifiers.Win))
             {
                 s += "Win+";
             }
-            if (Item.Value.HasModifier(KeyModifiers.Alt))
+            if (Value.HasModifier(KeyModifiers.Alt))
             {
                 s += "Alt+";
             }
-            if (Item.Value.HasModifier(KeyModifiers.Control))
+            if (Value.HasModifier(KeyModifiers.Control))
             {
                 s += "Ctrl+";
             }
-            if (Item.Value.HasModifier(KeyModifiers.Shift))
+            if (Value.HasModifier(KeyModifiers.Shift))
             {
                 s += "Shift+";
             }
@@ -84,13 +86,18 @@ public sealed partial class HotKeyOptionControl : UserControl
         }
     }
 
-    public HotKeyOptionControl(OptionItem<HotKey> item)
+    public HotKeyOptionControl(ObservableParameterItem item)
     {
+        if (item.Definition is not OptionDefinition<HotKey>)
+        {
+            throw new NotSupportedException();
+        }
+
         VirtualKeys = Enum.GetValues<VirtualKey>();
 
-        InitializeComponent();
-
         Item = item;
+
+        InitializeComponent();
     }
 
     private void MenuFlyout_Closed(object sender, object e)

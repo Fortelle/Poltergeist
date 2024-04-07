@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -39,6 +38,7 @@ public class LoopService : LoopBuilderService, IAutoloadable
         IsSticky = true;
 
         processor.WorkProc = WorkProc;
+        Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
     }
 
     private void WorkProc()
@@ -52,7 +52,7 @@ public class LoopService : LoopBuilderService, IAutoloadable
 
         Run();
 
-        if(Exception is not null)
+        if (Exception is not null)
         {
             throw Exception;
         }
@@ -122,12 +122,15 @@ public class LoopService : LoopBuilderService, IAutoloadable
             After.Invoke(args);
         }
 
-        Processor.Comment ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", IterationCount);
-        Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationCount);
-
         Hooks.Raise(new LoopEndedHook());
 
         Logger.Debug($"Finished running the after-loop procedure.");
+    }
+
+    private void OnProcessorEnding(ProcessorEndingHook hook, IUserProcessor processor)
+    {
+        hook.Comment ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", IterationCount);
+        processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationCount);
     }
 
 }

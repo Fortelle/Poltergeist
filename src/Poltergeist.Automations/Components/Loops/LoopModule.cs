@@ -25,12 +25,12 @@ public class LoopModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.Statistics.Add(new ParameterEntry<int>(LoopService.StatisticTotalIterationCountKey)
+        macro.Statistics.Add(new ParameterDefinition<int>(LoopService.StatisticTotalIterationCountKey)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
         });
 
-        macro.UserOptions.Add(new OptionItem<bool>(LoopService.ConfigEnableKey, true)
+        macro.UserOptions.Add(new OptionDefinition<bool>(LoopService.ConfigEnableKey, true)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Enable"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
@@ -38,7 +38,7 @@ public class LoopModule : MacroModule
 
         if (Options?.IsCountLimitable == true)
         {
-            macro.UserOptions.Add(new OptionItem<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
+            macro.UserOptions.Add(new OptionDefinition<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
             {
                 DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Count"),
                 Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
@@ -47,7 +47,7 @@ public class LoopModule : MacroModule
 
         if (Options?.IsDurationLimitable == true)
         {
-            macro.UserOptions.Add(new OptionItem<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
+            macro.UserOptions.Add(new OptionDefinition<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
             {
                 DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Duration"),
                 Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),

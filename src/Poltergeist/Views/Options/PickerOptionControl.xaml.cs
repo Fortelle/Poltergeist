@@ -3,15 +3,12 @@ using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Parameters;
 using Windows.Storage.Pickers;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
 public sealed partial class PickerOptionControl : UserControl
 {
-    private PathOption Item { get; }
+    private ObservableParameterItem Item { get; }
 
     [ObservableProperty]
     private string? _filepath;
@@ -19,22 +16,28 @@ public sealed partial class PickerOptionControl : UserControl
     [ObservableProperty]
     private string? _filename;
 
-    public PickerOptionControl(PathOption item)
+    public PickerOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
+        if (item.Definition is not PathOption)
+        {
+            throw new NotSupportedException();
+        }
 
         Item = item;
 
-        if(item.Value is string path)
+        if (item.Value is string path)
         {
             Filepath = path;
             Filename = Path.GetFileName(path);
         }
+
+        InitializeComponent();
     }
 
     private async void Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        switch (Item.Mode)
+        var pathOption = (PathOption)Item.Definition;
+        switch (pathOption.Mode)
         {
             case PathOptionMode.FileOpen:
                 {
@@ -42,9 +45,9 @@ public sealed partial class PickerOptionControl : UserControl
                     {
                         ViewMode = PickerViewMode.Thumbnail
                     };
-                    if(Item.Filters?.Count > 0)
+                    if(pathOption.Filters?.Count > 0)
                     {
-                        foreach(var value in Item.Filters.Values)
+                        foreach(var value in pathOption.Filters.Values)
                         {
                             openPicker.FileTypeFilter.Add(value.First());
                         }
@@ -68,9 +71,9 @@ public sealed partial class PickerOptionControl : UserControl
             case PathOptionMode.FileSave:
                 {
                     var savePicker = new FileSavePicker();
-                    if (Item.Filters?.Count > 0)
+                    if (pathOption.Filters?.Count > 0)
                     {
-                        foreach (var (key, value) in Item.Filters)
+                        foreach (var (key, value) in pathOption.Filters)
                         {
                             savePicker.FileTypeChoices.Add(key, value);
                         }

@@ -8,7 +8,7 @@ namespace Poltergeist.Views.Options;
 [ObservableObject]
 public sealed partial class SliderChoiceOptionControl : UserControl
 {
-    private IChoiceOptionItem Item { get; }
+    private ObservableParameterItem Item { get; }
 
     private ChoiceEntry[] Choices { get; set; }
 
@@ -21,57 +21,64 @@ public sealed partial class SliderChoiceOptionControl : UserControl
     private double Minimum { get; } = 0;
     private double Maximum { get; } = double.MaxValue;
 
-    public SliderChoiceOptionControl(IChoiceOptionItem item)
+    public SliderChoiceOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
+        switch (item.Definition)
+        {
+            case IIndexChoiceOption indexChoiceOption:
+                {
+                    Choices = indexChoiceOption.GetChoices();
+                    Maximum = Choices.Length - 1;
+
+                    var value = (int)item.Value!;
+                    SelectedIndex = value;
+                    SelectedValue = Choices[value].Value?.ToString() ?? "";
+                }
+                break;
+            case IChoiceOption choiceOption:
+                {
+                    Choices = choiceOption.GetChoices();
+                    Maximum = Choices.Length - 1;
+
+                    var text = item.Value!.ToString();
+                    SelectedIndex = Array.FindIndex(Choices, x => x.Value!.ToString() == text);
+                    SelectedValue = text ?? "";
+                }
+                break;
+            default:
+                throw new NotSupportedException();
+        }
 
         Item = item;
 
-        Choices = item.GetChoices();
-        Maximum = Choices.Length - 1;
-
-        if (Item is IIndexChoiceOptionItem)
-        {
-            var value = (int)item.Value!;
-            SelectedIndex = value;
-            SelectedValue = Choices[value].Value?.ToString() ?? "";
-        }
-        else if (Item is IChoiceOptionItem)
-        {
-            var text = item.Value!.ToString();
-            SelectedIndex = Array.FindIndex(Choices, x => x.Value!.ToString() == text);
-            SelectedValue = text ?? "";
-        }
-        else
-        {
-            throw new NotSupportedException();
-        }
+        InitializeComponent();
     }
 
     private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         var index = (int)e.NewValue;
-        if(Item is IIndexChoiceOptionItem)
+        switch (Item.Definition)
         {
-            if (index.ToString() == Item.Value!.ToString())
-            {
-                return;
-            }
-
-            Item.Value = index;
-        }
-        else if (Item is IChoiceOptionItem)
-        {
-            if (Choices[index].Value!.ToString() == Item.Value!.ToString())
-            {
-                return;
-            }
-
-            Item.Value = Choices[index].Value;
-        }
-        else
-        {
-            throw new NotSupportedException();
+            case IIndexChoiceOption:
+                {
+                    if (index.ToString() == Item.Value!.ToString())
+                    {
+                        return;
+                    }
+                    Item.Value = index;
+                }
+                break;
+            case IChoiceOption:
+                {
+                    if (Choices[index].Value!.ToString() == Item.Value!.ToString())
+                    {
+                        return;
+                    }
+                    Item.Value = Choices[index].Value;
+                }
+                break;
+            default:
+                throw new NotSupportedException();
         }
 
         SelectedValue = Choices[index].Value?.ToString() ?? "";

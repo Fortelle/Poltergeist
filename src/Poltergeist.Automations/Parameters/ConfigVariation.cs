@@ -6,13 +6,15 @@ public class ConfigVariation
 
     public string? Description { get; set; }
 
-    public string? Glyph { get; set; }
+    public string? Icon { get; set; }
 
-    public bool Normalized { get; set; }
+    public bool IgnoresUserOptions { get; set; }
 
-    public Dictionary<string, object?>? Options { get; set; }
+    public bool IsDevelopmentOnly { get; set; }
 
-    public Dictionary<string, object?>? Environments { get; set; }
+    public Dictionary<string, object?>? OptionOverrides { get; set; }
+
+    public Dictionary<string, object?>? EnvironmentOverrides { get; set; }
 
     public Dictionary<string, object?>? SessionStorage { get; set; }
 }

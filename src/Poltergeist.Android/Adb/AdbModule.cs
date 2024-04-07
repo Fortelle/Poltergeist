@@ -11,7 +11,7 @@ public class AdbModule : MacroModule
 {
     static AdbModule()
     {
-        GlobalOptions.Add(new OptionItem<string>(AdbService.IpAddressKey)
+        GlobalOptions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
         {
             DisplayLabel = "IP Address",
             Category = "ADB",
@@ -33,7 +33,7 @@ public class AdbModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new OptionItem<bool>(AdbService.KeepAliveKey, true)
+        macro.UserOptions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Auto close adb",
             Category = "ADB",

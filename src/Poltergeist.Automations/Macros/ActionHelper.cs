@@ -11,15 +11,20 @@ internal static class ActionHelper
     {
         Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/OpenMacroFolder_Title"),
         Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/OpenMacroFolder_Description"),
-        Glyph = "\uED25",
+        Icon = "\uED25",
         Execute = args =>
         {
-            if (!Directory.Exists(args.Macro.PrivateFolder))
+            if (!args.Environments.TryGetValue("private_folder", out var privateFolder))
+            {
+                return;
+            }
+                
+            if (!Directory.Exists((string)privateFolder!))
             {
                 return;
             }
 
-            System.Diagnostics.Process.Start("explorer.exe", args.Macro.PrivateFolder);
+            System.Diagnostics.Process.Start("explorer.exe", (string)privateFolder);
         },
     };
 
@@ -27,7 +32,7 @@ internal static class ActionHelper
     {
         Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Title"),
         Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Description"),
-        Glyph = "\uE8E5",
+        Icon = "\uE8E5",
         Execute = async args =>
         {
             var savedialog = new FileSaveModel()
@@ -48,10 +53,9 @@ internal static class ActionHelper
                 return;
             }
 
-            var optiondialog = new DialogModel()
+            var optiondialog = new InputDialogModel()
             {
                 Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_Title"),
-                Type = DialogType.OkCancel,
                 Text = path,
                 Inputs = new[]
                 {
@@ -78,7 +82,7 @@ internal static class ActionHelper
                 return;
             }
 
-            var autostart = (bool)optiondialog.Values![0];
+            var autostart = (bool)optiondialog.Values![0]!;
             var autoclose = (bool)optiondialog.Values![1]!;
             var singlemode = (bool)optiondialog.Values![2]!;
 
@@ -103,7 +107,7 @@ internal static class ActionHelper
             shortcut.WorkingDirectory = Environment.CurrentDirectory;
             shortcut.IconLocation = Assembly.GetAssembly(typeof(MacroBase))!.Location;
             shortcut.Save();
-            if (args.Macro.RequiresAdmin)
+            if (((MacroBase)args.Macro).RequiresAdmin)
             {
                 using var fs = new FileStream(path, FileMode.Open, FileAccess.ReadWrite);
                 fs.Seek(21, SeekOrigin.Begin);

@@ -13,6 +13,8 @@ public partial class ExampleGroup
         Title = "FlowBuilderService Example",
         Description = "This example shows how to create flow executors by using the FlowBuilderService.",
 
+        IsSingleton = true,
+
         Execute = (args) =>
         {
 

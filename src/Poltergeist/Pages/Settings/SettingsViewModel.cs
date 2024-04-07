@@ -23,20 +23,11 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private string _versionDescription;
 
-    public OptionCollection LocalSettings
-    {
-        get; set;
-    }
+    public ObservableParameterCollection LocalSettings { get; set; }
 
-    public OptionCollection GlobalOptions
-    {
-        get; set;
-    }
+    public ObservableParameterCollection GlobalOptions { get; set; }
 
-    public ICommand SwitchThemeCommand
-    {
-        get;
-    }
+    public ICommand SwitchThemeCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, LocalSettingsService localSettings, MacroManager macroManager)
     {
@@ -54,8 +45,8 @@ public partial class SettingsViewModel : ObservableRecipient
                 }
             });
 
-        LocalSettings = localSettings.Settings;
-        GlobalOptions = macroManager.GlobalOptions;
+        LocalSettings = new(localSettings.Settings);
+        GlobalOptions = new(macroManager.GlobalOptions);
     }
 
     private static string GetVersionDescription()

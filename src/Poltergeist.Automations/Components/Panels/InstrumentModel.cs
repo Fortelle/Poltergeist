@@ -17,7 +17,7 @@ public abstract class InstrumentModel : MacroService, IInstrumentModel
 
     public InstrumentModel(MacroProcessor processor) : base(processor)
     {
-        MacroKey = processor.Macro.Key;
-        ProcessId = processor.ProcessId;
+        MacroKey = Processor.Macro.Key;
+        ProcessId = Processor.ProcessId;
     }
 }

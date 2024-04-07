@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using Poltergeist.Automations.Parameters;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -12,19 +11,19 @@ namespace Poltergeist.Views;
 [INotifyPropertyChanged]
 public sealed partial class OptionListView : UserControl
 {
-    public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(OptionCollection), typeof(OptionListView), new PropertyMetadata(null));
+    public static readonly DependencyProperty OptionsProperty = DependencyProperty.RegisterAttached("Options", typeof(IEnumerable<ObservableParameterItem>), typeof(OptionListView), new PropertyMetadata(null));
     private static readonly string UncategorizedGroupLabel = App.Localize("Poltergeist/Resources/Options_Uncategorized");
 
-    public OptionCollection Options
+    public IEnumerable<ObservableParameterItem> Options
     {
-        get => (OptionCollection)GetValue(OptionsProperty);
+        get => (IEnumerable<ObservableParameterItem>)GetValue(OptionsProperty);
         set
         {
             SetValue(OptionsProperty, value);
 
-            Groups = value
-                .Where(x => x.IsBrowsable)
-                .GroupBy(x => x.Category)
+            Groups = value?
+                .Where(x => x.Definition.Status != ParameterStatus.Hidden)
+                .GroupBy(x => x.Definition.Category)
                 .OrderBy(x => x.Key is null ? 0 : 1)
                 .Select(x => new OptionGroup
                 {
@@ -54,7 +53,7 @@ public sealed partial class OptionListView : UserControl
     public class OptionGroup
     {
         public required string Title { get; set; }
-        public required IOptionItem[] Options { get; set; }
+        public required IEnumerable<ObservableParameterItem> Options { get; set; }
     }
 
 }

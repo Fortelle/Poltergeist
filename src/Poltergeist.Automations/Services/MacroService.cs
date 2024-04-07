@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using Newtonsoft.Json;
 using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
@@ -15,8 +14,6 @@ public abstract class MacroService : IExtensionService, IServiceLogger, IDisposa
 
     private MacroLogger? _loggerProvider;
     private MacroLogger LoggerProvider => _loggerProvider ??= Processor.GetService<MacroLogger>();
-
-    public DebugService? Debugger => System.Diagnostics.Debugger.IsAttached ? Processor.GetService<DebugService>() : null;
 
     private string SenderName { get; }
 

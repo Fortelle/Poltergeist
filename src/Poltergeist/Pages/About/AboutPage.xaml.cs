@@ -18,13 +18,4 @@ public sealed partial class AboutPage : Page
         this.InitializeComponent();
     }
 
-    private void Hyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
-    {
-        //var uri = sender.NavigateUri.ToString();
-        //Process.Start(new ProcessStartInfo(uri)
-        //{
-        //    UseShellExecute = true,
-        //    Verb = "open"
-        //});
-    }
 }

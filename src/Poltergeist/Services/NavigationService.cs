@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Contracts.Services;
-using Poltergeist.Pages.Macros;
+using Poltergeist.Pages;
 
 namespace Poltergeist.Services;
 
@@ -54,7 +54,7 @@ public class NavigationService : INavigationService
             var content = info.CreateContent?.Invoke(keyparts[1..], parameter);
             if (content is null)
             {
-                App.ShowTeachingTip(App.Localize($"Poltergeist/Resources/Navigation_CannotCreateContent", pageKey));
+                //App.ShowTeachingTip(App.Localize($"Poltergeist/Resources/Navigation_CannotCreateContent", pageKey));
                 return false;
             }
 
@@ -66,16 +66,15 @@ public class NavigationService : INavigationService
                 header = " ";
             }
 
+            var icon = info.CreateIcon?.Invoke(content);
+            icon ??= info.Icon?.ToIconSource();
+
             tab = new TabViewItem
             {
                 Header = header,
                 Content = content,
-
-                IconSource = new FontIconSource()
-                {
-                    Glyph = info.Glyph,
-                },
-                Tag = pageKey
+                Tag = pageKey,
+                IconSource = icon,
             };
 
             if (pageKey == "home")
@@ -86,11 +85,58 @@ public class NavigationService : INavigationService
             {
                 TabView.TabItems.Add(tab);
             }
+
+            if (App.IsDevelopment)
+            {
+                ToolTipService.SetToolTip(tab, $"PageKey: {pageKey}");
+            }
         }
 
         if (TabView.SelectedItem is not TabViewItem tvi || tvi != tab)
         {
             TabView.SelectedItem = tab;
+        }
+
+        return true;
+    }
+
+    public bool TryCloseTab(string pageKey)
+    {
+        if (TabView == null)
+        {
+            return true;
+        }
+
+        var tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
+
+        if (tab is null)
+        {
+            return true;
+        }
+
+        return TryCloseTab(tab);
+    }
+
+    public bool TryCloseTab(TabViewItem tab)
+    {
+        if (TabView == null)
+        {
+            return false;
+        }
+
+        if (tab.Content is IPageClosing pageclosing)
+        {
+            if (!pageclosing.OnPageClosing())
+            {
+                return false;
+            }
+        }
+
+        TabView.TabItems.Remove(tab);
+
+        if (tab.Content is IPageClosed pageclosed)
+        {
+            pageclosed.OnPageClosed();
         }
 
         return true;

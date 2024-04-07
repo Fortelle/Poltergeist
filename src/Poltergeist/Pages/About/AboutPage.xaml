@@ -10,7 +10,13 @@
     Style="{StaticResource TabPageStyle}"
     >
 
-    <Grid>
+    <Grid
+        ColumnSpacing="{StaticResource TabPageColumnSpacing}"
+        >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="6*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
@@ -34,10 +40,12 @@
                     >
                 </TextBlock>
 
-                <Grid Width="300" HorizontalAlignment="Left">
+                <Grid
+                    HorizontalAlignment="Stretch"
+                    >
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="6*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="32"/>

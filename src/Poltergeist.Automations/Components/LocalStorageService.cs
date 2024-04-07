@@ -9,150 +9,122 @@ namespace Poltergeist.Automations.Components;
 public class LocalStorageService : MacroService
 {
     private const string Filename = "LocalStorage.json";
-
-    private VariableCollection? GlobalStorage { get; set; }
-    private VariableCollection? GroupStorage { get; set; }
-    private VariableCollection? MacroStorage { get; set; }
+    private ParameterValueCollection? GlobalStorage { get; set; }
+    private ParameterValueCollection? MacroStorage { get; set; }
 
     public LocalStorageService(MacroProcessor processor, HookService hook) : base(processor)
     {
         hook.Register<ProcessorEndingHook>(OnEnding);
     }
 
-    public T Get<T>(string key, T defaultValue, ParameterSource source = ParameterSource.Macro)
+    public T? Get<T>(string key, T defaultValue)
     {
-        var storage = GetStorage(source);
-        if (storage.Contains(key))
-        {
-            return storage.Get<T>(key);
-        }
-        else
-        {
-            return defaultValue;
-        }
+        return GetMacroStorage().Get<T>(key, defaultValue);
     }
 
-    public T Get<T>(string key, ParameterSource source = ParameterSource.Macro)
+    public T? Get<T>(string key)
     {
-        return Get<T>(key, default, source);
+        return GetMacroStorage().Get<T>(key);
     }
 
-    public void Set<T>(string key, T value, ParameterSource source = ParameterSource.Macro)
+    public void Set(string key, object value)
     {
-        var storage = GetStorage(source);
-        storage.Set(key, value, source);
+        GetMacroStorage().Set(key, value);
     }
 
-    public void Remove(string key, ParameterSource source = ParameterSource.Macro)
+    public void Remove(string key)
     {
-        var storage = GetStorage(source);
-        if (storage.Contains(key))
+        GetMacroStorage().Remove(key);
+    }
+
+    public T? GlobalGet<T>(string key, T defaultValue)
+    {
+        return GetGlobalStorage().Get<T>(key, defaultValue);
+    }
+
+    public T? GlobalGet<T>(string key)
+    {
+        return GetGlobalStorage().Get<T>(key);
+    }
+
+    public void GlobalSet(string key, object value)
+    {
+        GetGlobalStorage().Set(key, value);
+    }
+
+    public void GlobalRemove(string key)
+    {
+        GetGlobalStorage().Remove(key);
+    }
+
+    private ParameterValueCollection GetMacroStorage()
+    {
+        if (MacroStorage is null)
         {
-            storage.Remove(key);
-        }
-    }
-
-    private VariableCollection GetStorage(ParameterSource scope)
-    {
-        switch (scope)
-        {
-            case ParameterSource.Macro:
-                if(MacroStorage is null)
+            var privateFolder = Processor.Environments.Get<string>("private_folder") ?? throw new Exception($"Private folder is not set.");
+            MacroStorage = new();
+            var filepath = Path.Combine(privateFolder, Filename);
+            if (File.Exists(filepath))
+            {
+                try
                 {
-                    if (Processor.Macro.PrivateFolder is null)
+                    SerializationUtil.JsonLoad<Dictionary<string, object?>>(filepath, out var dict);
+                    foreach (var (key, value) in dict!)
                     {
-                        throw new Exception($"The property \"{nameof(Processor.Macro)}.{nameof(Processor.Macro.PrivateFolder)}\" is not set.");
+                        MacroStorage.Add(key, value);
                     }
-                    MacroStorage = new();
-                    var filepath = Path.Combine(Processor.Macro.PrivateFolder, Filename);
-                    if(File.Exists(filepath))
-                    {
-                        try
-                        {
-                            SerializationUtil.JsonLoad<Dictionary<string, object?>>(filepath, out var dict);
-                            MacroStorage.AddRange(dict, ParameterSource.Macro);
-                            Logger.Debug($"Loaded json file \"{filepath}\".");
-                        }
-                        catch
-                        {
-                            Logger.Warn($"Can not load json file \"{filepath}\".");
-                        }
-                    }
+                    Logger.Debug($"Loaded json file \"{filepath}\".");
                 }
-                return MacroStorage;
-            case ParameterSource.Group:
-                if (GroupStorage is null)
+                catch
                 {
-                    if (Processor.Macro.Group is null)
-                    {
-                        throw new Exception("The macro does not belong to any group.");
-                    }
-                    if (Processor.Macro.Group.GroupFolder is null)
-                    {
-                        throw new Exception($"The property \"{nameof(Processor.Macro)}.{nameof(Processor.Macro.Group)}.{nameof(Processor.Macro.Group.GroupFolder)}\" is not set.");
-                    }
-                    GroupStorage = new();
-                    var filepath = Path.Combine(Processor.Macro.Group.GroupFolder, Filename);
-                    if (File.Exists(filepath))
-                    {
-                        try
-                        {
-                            SerializationUtil.JsonLoad<Dictionary<string, object?>>(filepath, out var dict);
-                            GroupStorage.AddRange(dict, ParameterSource.Group);
-                            Logger.Debug($"Loaded json file \"{filepath}\".");
-                        }
-                        catch
-                        {
-                            Logger.Warn($"Can not load json file \"{filepath}\".");
-                        }
-                    }
+                    Logger.Warn($"Can not load json file \"{filepath}\".");
                 }
-                return GroupStorage;
-            case ParameterSource.Global:
-                if (GlobalStorage is null)
-                {
-                    if (!Processor.Environments.Contains("document_data_folder"))
-                    {
-                        throw new Exception($"The environment variable \"document_data_folder\" does not exist.");
-                    }
-                    GlobalStorage = new();
-                    var filepath = Path.Combine(Processor.Environments.Get<string>("document_data_folder"), Filename);
-                    if (File.Exists(filepath))
-                    {
-                        try
-                        {
-                            SerializationUtil.JsonLoad<Dictionary<string, object?>>(filepath, out var dict);
-                            GlobalStorage.AddRange(dict, ParameterSource.Global);
-                            Logger.Debug($"Loaded json file \"{filepath}\".");
-                        }
-                        catch
-                        {
-                            Logger.Warn($"Can not load json file \"{filepath}\".");
-                        }
-                    }
-                }
-                return GlobalStorage;
-            default:
-                throw new NotSupportedException();
+            }
         }
+        return MacroStorage;
+    }
+    private ParameterValueCollection GetGlobalStorage()
+    {
+        if (GlobalStorage is null)
+        {
+            var globalFolder = Processor.Environments.Get<string>("document_data_folder") ?? throw new Exception($"Global folder is not set.");
+            GlobalStorage = new();
+            var filepath = Path.Combine(globalFolder, Filename);
+            if (File.Exists(filepath))
+            {
+                try
+                {
+                    SerializationUtil.JsonLoad<Dictionary<string, object?>>(filepath, out var dict);
+                    foreach (var (key, value) in dict!)
+                    {
+                        GlobalStorage.Add(key, value);
+                    }
+                    Logger.Debug($"Loaded json file \"{filepath}\".");
+                }
+                catch
+                {
+                    Logger.Warn($"Can not load json file \"{filepath}\".");
+                }
+            }
+        }
+        return GlobalStorage;
     }
 
     private void OnEnding()
     {
         if (MacroStorage is not null && (MacroStorage.Count == 0 || MacroStorage.Any(x => x.HasChanged)))
         {
-            var filepath = Path.Combine(Processor.Macro.PrivateFolder!, Filename);
-            SerializationUtil.JsonSave(filepath, MacroStorage.ToValueDictionary());
-        }
-        if (GroupStorage is not null && (GroupStorage.Count == 0 || GroupStorage.Any(x => x.HasChanged)))
-        {
-            var filepath = Path.Combine(Processor.Macro.Group!.GroupFolder!, Filename);
-            SerializationUtil.JsonSave(filepath, GroupStorage.ToValueDictionary());
+            var privateFolder = Processor.Environments.Get<string>("private_folder");
+            var filepath = Path.Combine(privateFolder!, Filename);
+            var dict = MacroStorage.ToDictionary(x => x.Key, x => x.Value);
+            SerializationUtil.JsonSave(filepath, dict);
         }
         if (GlobalStorage is not null && (GlobalStorage.Count == 0 || GlobalStorage.Any(x => x.HasChanged)))
         {
-            var filepath = Path.Combine(Processor.Environments.Get<string>("document_data_folder"), Filename);
-            SerializationUtil.JsonSave(filepath, GlobalStorage.ToValueDictionary());
+            var dataFolder = Processor.Environments.Get<string>("document_data_folder")!;
+            var filepath = Path.Combine(dataFolder, Filename);
+            var dict = GlobalStorage.ToDictionary(x => x.Key, x => x.Value);
+            SerializationUtil.JsonSave(filepath, dict);
         }
     }
 }

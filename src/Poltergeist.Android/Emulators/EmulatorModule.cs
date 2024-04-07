@@ -21,7 +21,7 @@ public class EmulatorModule : MacroModule
 
     static EmulatorModule()
     {
-        GlobalOptions.Add(new OptionItem<string>(AdbService.IpAddressKey)
+        GlobalOptions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
         {
             DisplayLabel = "IP Address",
             Category = "ADB",
@@ -33,7 +33,7 @@ public class EmulatorModule : MacroModule
             Category = "ADB",
         });
 
-        GlobalOptions.Add(new OptionItem<bool>(CapturingProvider.PreviewCaptureKey)
+        GlobalOptions.Add(new OptionDefinition<bool>(CapturingProvider.PreviewCaptureKey)
         {
             DisplayLabel = "Preview captured image",
             Category = "Debug",
@@ -49,7 +49,7 @@ public class EmulatorModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new OptionItem<bool>(AdbService.KeepAliveKey, true)
+        macro.UserOptions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Keep adb server alive",
             Description = "Skips killing the adb server when the macro is completed. " +
@@ -58,7 +58,7 @@ public class EmulatorModule : MacroModule
             Category = "ADB",
         });
 
-        macro.UserOptions.Add(new OptionItem<InputMode>(InputModeKey, InputMode.ADB)
+        macro.UserOptions.Add(new OptionDefinition<InputMode>(InputModeKey, InputMode.ADB)
         {
             DisplayLabel = "Input mode",
             Category = "ADB",
@@ -154,7 +154,7 @@ public class EmulatorModule : MacroModule
     {
         Text = "Kill ADB server",
         Description = "Runs \"adb kill-server\" via Command Prompt to kill the adb server.",
-        Glyph = "\uE756",
+        Icon = "\uE756",
         Execute = args =>
         {
             if (!args.Options.TryGetValue(AdbService.ExePathKey, out var value) || value is not string exepath || !File.Exists(exepath))

@@ -6,9 +6,10 @@ public class UnrunnableMacro : MacroBase
 {
     public UnrunnableMacro(string name) : base(name)
     {
+        IsSingleton = true;
     }
 
-    public override string? CheckValidity()
+    protected override string? OnValidating()
     {
         return $"This macro is unable to run.";
     }

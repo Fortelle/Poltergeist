@@ -180,6 +180,9 @@
   <data name="Dashboard_Header" xml:space="preserve">
     <value>仪表板</value>
   </data>
+  <data name="DebugModule_ConfigTitle" xml:space="preserve">
+    <value>Debug</value>
+  </data>
   <data name="DialogButton_Cancel" xml:space="preserve">
     <value>取消</value>
   </data>
@@ -246,8 +249,17 @@
   <data name="Terminal_Header" xml:space="preserve">
     <value>终端</value>
   </data>
-  <data name="Validation_BasicMacro_EmptyExecutions2" xml:space="preserve">
+  <data name="TrialModule_ConfigTitle" xml:space="preserve">
+    <value>试运行</value>
+  </data>
+  <data name="Validation_BasicMacro_EmptyExecutions" xml:space="preserve">
     <value>{0}的{1}与{2}为空，这个宏无法运行。</value>
+  </data>
+  <data name="Validation_ExceptionOccurred" xml:space="preserve">
+    <value>因为以下错误，这个宏无法运行：{0}</value>
+  </data>
+  <data name="Validation_Failed" xml:space="preserve">
+    <value>验证未通过，这个宏无法运行。</value>
   </data>
   <data name="Validation_RequiresAdmin" xml:space="preserve">
     <value>这个宏需要在管理员身份下运行。</value>

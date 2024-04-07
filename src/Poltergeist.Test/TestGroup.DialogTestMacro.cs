@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Test;
 
@@ -13,6 +13,8 @@ public partial class TestGroup
         Title = "Dialog Test",
 
         Description = "This macro is used for testing the dialog service.",
+
+        IsSingleton = true,
 
         UserOptions =
         {
@@ -61,28 +63,29 @@ public partial class TestGroup
                     SecondaryButtonText = "Retry",
                     CloseButtonText = "Ignore",
                 },
-                "Input" => new DialogModel()
+                "Input" => new InputDialogModel()
                 {
                     Text = "This is an OkCancel dialog, with an inputbox.",
-                    Type = DialogType.OkCancel,
-                    Inputs = new IOptionItem[] {
-                    new TextOption("")
+                    Inputs = new[]
                     {
-                        Placeholder = "Enter your name",
+                        new TextOption("")
+                        {
+                            Placeholder = "Enter your name",
+                        },
                     },
                 },
-                },
-                "Checkbox" => new DialogModel()
+                "Checkbox" => new InputDialogModel()
                 {
                     Text = "This is an Ok dialog, with a checkbox.",
                     Type = DialogType.Ok,
-                    Inputs = new IOptionItem[] {
-                    new BoolOption("")
+                    Inputs = new[]
                     {
-                        Mode = BoolOptionMode.CheckBox,
-                        Text = "Do not show this message again",
+                        new BoolOption("")
+                        {
+                            Mode = BoolOptionMode.CheckBox,
+                            Text = "Do not show this message again",
+                        },
                     },
-                },
                 },
                 _ => throw new NotImplementedException(),
             };

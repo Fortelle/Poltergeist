@@ -11,6 +11,8 @@ public partial class TestGroup
     {
         Title = "Log Test",
         Description = "This macro is used for testing the MacroLogger service.",
+        IsSingleton = true,
+
         Execute = (args) =>
         {
             var logger = args.Processor.GetService<MacroLogger>();

@@ -12,7 +12,7 @@ public class HotKeyManager
     {
         App.SettingsLoading += (settings) =>
         {
-            settings.Add(new OptionItem<HotKey>(StartKey)
+            settings.Add(new OptionDefinition<HotKey>(StartKey)
             {
                 Category = ResourceHelper.Localize("Poltergeist/Resources/LocalSettings_Macro"),
                 DisplayLabel = ResourceHelper.Localize("Poltergeist/Resources/LocalSettings_Macro_StartMacroHotKey"),

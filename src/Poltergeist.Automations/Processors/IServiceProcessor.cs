@@ -1,19 +1,12 @@
-﻿using Poltergeist.Automations.Macros;
+﻿namespace Poltergeist.Automations.Processors;
 
-namespace Poltergeist.Automations.Processors;
-
-public interface IServiceProcessor : IProcessor
+public interface IServiceProcessor : IUserProcessor
 {
-    public IMacroBase Macro { get; }
-    public string ProcessId { get; }
-
     public DateTime StartTime { get; }
     public DateTime EndTime { get; }
-    public bool IsCancelled { get; }
+    public string? Comment { get; set; }
 
     public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
     public void RaiseAction(Action action);
-    public Task Pause();
-    public void Resume();
     public void CheckCancel();
 }

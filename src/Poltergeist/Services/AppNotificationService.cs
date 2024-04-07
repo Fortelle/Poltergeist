@@ -61,13 +61,13 @@ public class AppNotificationService
     {
         var builder = new AppNotificationBuilder()
             .AddArgument("conversationId", model.Id)
-            .AddArgument(InteractionMessage.MacroKeyName, model.MacroKey)
+            .AddArgument(InteractionMessage.MacroKeyName, model.ShellKey)
             .AddArgument(InteractionMessage.ProcessIdName, model.ProcessId)
             ;
 
-        var macro = App.GetService<MacroManager>().GetMacro(model.MacroKey);
+        var macro = App.GetService<MacroManager>().GetShell(model.ShellKey!);
 
-        builder.AddText(model.Title ?? macro?.Title ?? model.MacroKey);
+        builder.AddText(model.Title ?? macro?.Title ?? model.ShellKey);
 
         if (model.Text != null)
         {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Components.Interactions;
 
@@ -15,7 +14,6 @@ public class DialogModel : InteractionModel
 
     public string? Title { get; set; }
     public string? Text { get; set; }
-    public IOptionItem[]? Inputs { get; set; }
     public DialogType Type { get; set; }
 
     public bool ShowsDefaultButton { get; set; }
@@ -24,7 +22,7 @@ public class DialogModel : InteractionModel
     public string? CloseButtonText { get; set; }
 
     public DialogResult Result { get; set; }
-    public object[]? Values { get; set; }
+    public object?[]? Values { get; set; }
 
     public override void Callback(InteractionCallbackArguments args)
     {

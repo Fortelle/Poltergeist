@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Parameters;
 
-public class DateOption : OptionItem<DateOnly>
+public class DateOption : OptionDefinition<DateOnly>
 {
     public DateOption(string key) : base(key, default)
     {

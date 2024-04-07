@@ -7,8 +7,8 @@ public abstract class MacroModule
 {
     public string Name => GetType().Name;
 
-    public static List<IOptionItem> GlobalOptions { get; } = new();
-    public static List<IParameterEntry> GlobalStatistics { get; } = new();
+    public static List<IParameterDefinition> GlobalOptions { get; } = new();
+    public static List<IParameterDefinition> GlobalStatistics { get; } = new();
 
     public virtual void OnMacroInitialize(IInitializableMacro macro)
     {

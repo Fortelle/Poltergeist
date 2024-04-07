@@ -8,50 +8,49 @@ namespace Poltergeist.Views.Options;
 [ObservableObject]
 public sealed partial class ToggleButtonOptionControl : UserControl
 {
-    private IOptionItem Item { get; }
+    private ObservableParameterItem Item { get; }
 
     private ChoiceEntry[] Choices { get; set; }
     private double SelectedIndex = 0;
 
-    public ToggleButtonOptionControl(IOptionItem item)
+    public ToggleButtonOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
-
-        switch (item)
+        switch (item.Definition)
         {
-            case IIndexChoiceOptionItem { Mode: ChoiceOptionMode.ToggleButtons } icoi:
+            case IIndexChoiceOption { Mode: ChoiceOptionMode.ToggleButtons } icoi:
                 {
-                    Item = icoi;
                     Choices = icoi.GetChoices();
-                    SelectedIndex = (int)item.Value!;
+                    SelectedIndex = item.Value is int x ? x : default;
                 }
                 break;
-            case IChoiceOptionItem { Mode: ChoiceOptionMode.ToggleButtons } coi:
+            case IChoiceOption { Mode: ChoiceOptionMode.ToggleButtons } coi:
                 {
-                    Item = coi;
                     Choices = coi.GetChoices();
-                    var text = item.Value!.ToString();
-                    SelectedIndex = Array.FindIndex(Choices, x => x.Value!.ToString() == text);
+                    var text = item.Value?.ToString();
+                    SelectedIndex = Array.FindIndex(Choices, x => x.Value?.ToString() == text);
                 }
                 break;
             case BoolOption { Mode: BoolOptionMode.ToggleButtons } boi:
                 {
-                    Item = boi;
                     Choices = new ChoiceEntry[] {
                         new(true, boi.OnText ?? boi.Text ?? "\u2713"),
                         new(false, boi.OffText ?? boi.Text ?? "\u2715"),
                     };
-                    var text = item.Value!.ToString();
-                    SelectedIndex = Array.FindIndex(Choices, x => x.Value!.ToString() == text);
+                    var text = item.Value?.ToString();
+                    SelectedIndex = Array.FindIndex(Choices, x => x.Value?.ToString() == text);
                 }
                 break;
             default:
                 throw new NotSupportedException();
         }
 
+        Item = item;
+
+        InitializeComponent();
+
         for (var i = 0; i < Choices.Length; i++)
         {
-            ButtonGroupGrid.ColumnDefinitions.Add(new() { Width = new (1, Microsoft.UI.Xaml.GridUnitType.Star) });
+            ButtonGroupGrid.ColumnDefinitions.Add(new() { Width = new(1, Microsoft.UI.Xaml.GridUnitType.Star) });
             var child = new ToggleButton()
             {
                 IsChecked = i == SelectedIndex,
@@ -81,9 +80,9 @@ public sealed partial class ToggleButtonOptionControl : UserControl
         }
         SelectedIndex = index;
 
-        switch (Item)
+        switch (Item.Definition)
         {
-            case IIndexChoiceOptionItem:
+            case IIndexChoiceOption:
                 {
                     if (index.ToString() == Item.Value!.ToString())
                     {
@@ -93,7 +92,7 @@ public sealed partial class ToggleButtonOptionControl : UserControl
                     Item.Value = index;
                 }
                 break;
-            case IChoiceOptionItem or BoolOption:
+            case IChoiceOption or BoolOption:
                 {
                     if (Choices[index].Value!.ToString() == Item.Value!.ToString())
                     {

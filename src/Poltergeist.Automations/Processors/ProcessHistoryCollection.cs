@@ -6,7 +6,7 @@ public class ProcessHistoryCollection
 {
     private List<ProcessHistoryEntry> Entries { get; } = new();
 
-    private string Filepath { get; set; }
+    private string? Filepath { get; set; }
 
     public void Load(string filepath)
     {
@@ -22,6 +22,11 @@ public class ProcessHistoryCollection
 
     public void Save()
     {
+        if (string.IsNullOrEmpty(Filepath))
+        {
+            return;
+        }
+
         SerializationUtil.JsonSave(Filepath, Entries);
     }
 

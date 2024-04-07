@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Poltergeist.Automations.Attributes;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Input.Windows;
 
 namespace Poltergeist.Test;
@@ -12,17 +12,17 @@ public partial class TestGroup
     [AutoLoad]
     public class OptionTestMacro : BasicMacro
     {
-        private readonly IOptionItem[] CustomOptions = new IOptionItem[]
+        private readonly IParameterDefinition[] CustomOptions = new IParameterDefinition[]
         {
-            new OptionItem<string>("string")
+            new OptionDefinition<string>("string")
             {
                 Category = "Basic",
             },
-            new OptionItem<int>("int")
+            new OptionDefinition<int>("int")
             {
                 Category = "Basic",
             },
-            new OptionItem<bool>("bool")
+            new OptionDefinition<bool>("bool")
             {
                 Category = "Basic",
             },
@@ -30,15 +30,15 @@ public partial class TestGroup
             {
                 Category = "Basic",
             },
-            new OptionItem<TimeOnly>("TimeOnly")
+            new OptionDefinition<TimeOnly>("TimeOnly")
             {
                 Category = "Basic",
             },
-            new OptionItem<HotKey>("HotKey")
+            new OptionDefinition<HotKey>("HotKey")
             {
                 Category = "Basic",
             },
-            new OptionItem<string[]>("string_array")
+            new OptionDefinition<string[]>("string_array")
             {
                 DisplayLabel = "string[]",
                 Category = "Basic",
@@ -155,13 +155,34 @@ public partial class TestGroup
                 Category = "Others",
             },
 
-            new OptionItem<int>("test_option_a", 2)
+            new OptionDefinition<int>("test_option_a", 2)
             {
                 Category = "Test",
             },
-            new OptionItem<int>("test_option_d", 2)
+            new OptionDefinition<int>("test_option_d", 2)
             {
                 Category = "Test",
+            },
+
+            new OptionDefinition<int>("ReadOnly", 0)
+            {
+                Category = "Type",
+                Status = ParameterStatus.ReadOnly,
+            },
+            new OptionDefinition<int>("Experimental", 0)
+            {
+                Category = "Type",
+                Status = ParameterStatus.Experimental,
+            },
+            new OptionDefinition<int>("DevelopmentOnly", 0)
+            {
+                Category = "Type",
+                Status = ParameterStatus.DevelopmentOnly,
+            },
+            new OptionDefinition<int>("Deprecated", 0)
+            {
+                Category = "Type",
+                Status = ParameterStatus.Deprecated,
             },
         };
 
@@ -169,7 +190,7 @@ public partial class TestGroup
         {
             Title = "Macro Options Test";
             Description = "This macro is used for testing macro options.";
-
+            IsSingleton = true;
             ShowStatusBar = false;
 
             foreach (var option in CustomOptions)

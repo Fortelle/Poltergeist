@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ChangeIconDialog_Title" xml:space="preserve">
+    <value>Change Icon</value>
+  </data>
+  <data name="ChangeIconMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Change Icon</value>
+  </data>
   <data name="DateTimeToAgo_1" xml:space="preserve">
     <value>a minute ago</value>
   </data>
@@ -135,16 +141,48 @@
   <data name="DateTimeToAgo_6" xml:space="preserve">
     <value>{0} days ago</value>
   </data>
-  <data name="FavoriteTextBlock.Text" xml:space="preserve">
-    <value>Favorite macros</value>
+  <data name="DeleteMacroDialog_Text" xml:space="preserve">
+    <value>Are you sure you want to delete the macro "{0}"?
+
+All data and files of this macro will be lost permanently.</value>
   </data>
-  <data name="GroupTextBlock.Text" xml:space="preserve">
-    <value>Groups</value>
+  <data name="DeleteMacroDialog_Title" xml:space="preserve">
+    <value>Delete Macro</value>
   </data>
-  <data name="PopularTextBlock.Text" xml:space="preserve">
-    <value>Popular macros</value>
+  <data name="DeleteMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Delete</value>
   </data>
-  <data name="RecentTextBlock.Text" xml:space="preserve">
-    <value>Recent macros</value>
+  <data name="LastRunTimeListViewHeader.Text" xml:space="preserve">
+    <value>Last run time</value>
+  </data>
+  <data name="MacroListViewHeader.Text" xml:space="preserve">
+    <value>Macros</value>
+  </data>
+  <data name="NewMacroButton.Label" xml:space="preserve">
+    <value>New Macro</value>
+  </data>
+  <data name="NewMacroDialog_Name.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="NewMacroDialog_Template.Text" xml:space="preserve">
+    <value>Template:</value>
+  </data>
+  <data name="NewMacroDialog_Title" xml:space="preserve">
+    <value>New Macro</value>
+  </data>
+  <data name="OpenMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="RenameMacroDialog_Title" xml:space="preserve">
+    <value>Rename Macro</value>
+  </data>
+  <data name="RenameMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="TemplateListViewHeader.Text" xml:space="preserve">
+    <value>Template</value>
+  </data>
+  <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
+    <value>Total run count</value>
   </data>
 </root>

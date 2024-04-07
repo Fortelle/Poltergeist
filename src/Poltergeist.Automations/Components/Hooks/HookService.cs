@@ -26,7 +26,7 @@ public sealed class HookService : KernelService
         Register(typeof(T), handler);
     }
 
-    public void Register<T>(Action<T, IServiceProcessor> handler) where T : MacroHook
+    public void Register<T>(Action<T, IUserProcessor> handler) where T : MacroHook
     {
         Register(typeof(T), handler);
     }

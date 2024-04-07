@@ -12,6 +12,8 @@ public partial class ExampleGroup
         Title = "Multitasks Example",
         Description = "This example shows how to create a multi task indicator by using the ProgressGridInstrument.",
 
+        IsSingleton = true,
+
         ExecuteAsync = async (args) =>
         {
             var count = 50;

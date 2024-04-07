@@ -10,25 +10,72 @@ public class PluginService
 
     public PluginService()
     {
-        App.ContentLoading += Load;
     }
 
-    private static void Load()
+    public void Load()
     {
         var manager = App.GetService<MacroManager>();
         var assemblies = GetAssemblies();
-        var groups = assemblies.SelectMany(GetGroups);
+        var groupType = typeof(MacroGroup);
+        var macroType = typeof(MacroBase);
 
-        foreach (var group in groups)
+        foreach (var assembly in assemblies)
         {
-            manager.AddGroup(group);
+            var name = assembly.GetName();
+            var assemblyName = name.Name;
+            var assemblyVersion = assembly.GetName().Version;
+            var assemblyLocation = assembly.Location;
+
+            void AddMacro(MacroBase macro)
+            {
+                macro.Properties.Add("assembly_name", assemblyName);
+                macro.Properties.Add("assembly_version", assemblyVersion);
+                macro.Properties.Add("assembly_location", assemblyLocation);
+                manager.AddMacro(macro);
+            }
+
+            foreach (var type in assembly.GetTypes())
+            {
+                if (type.IsAssignableTo(groupType))
+                {
+                    if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
+                    {
+                        continue;
+                    }
+                    var group = (MacroGroup)Activator.CreateInstance(type)!;
+                    foreach (var macro in group.ReadMacroFields())
+                    {
+                        AddMacro(macro);
+                    }
+                    foreach (var macro in group.ReadMacroFunctions())
+                    {
+                        AddMacro(macro);
+                    }
+                    foreach (var macro in group.ReadMacroClasses())
+                    {
+                        AddMacro(macro);
+                    }
+
+                }
+                else if (type.IsAssignableTo(macroType))
+                {
+                    if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
+                    {
+                        continue;
+                    }
+
+                    var macro = (MacroBase)Activator.CreateInstance(type)!;
+                    AddMacro(macro);
+                }
+            }
+
         }
     }
 
     private static IEnumerable<Assembly> GetAssemblies()
     {
         var exe = Assembly.GetExecutingAssembly();
-        yield return exe;
+        //yield return exe;
 
         var entry = Assembly.GetEntryAssembly();
         if(entry != null && entry != exe)
@@ -45,7 +92,10 @@ public class PluginService
         };
         foreach (var folder in pluginFolders)
         {
-            if (!Directory.Exists(folder)) continue;
+            if (!Directory.Exists(folder))
+            {
+                continue;
+            }
 
             var files = Directory.GetFiles(folder, FilenameFormat, SearchOption.TopDirectoryOnly);
             foreach (var file in files)
@@ -56,26 +106,4 @@ public class PluginService
         }
     }
 
-
-    private static IEnumerable<MacroGroup> GetGroups(Assembly assembly)
-    {
-        var groupType = typeof(MacroGroup);
-        foreach (var type in assembly.GetTypes())
-        {
-            if (!type.IsAssignableTo(groupType))
-            {
-                continue;
-            }
-            if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
-            {
-                continue;
-            }
-            if (Activator.CreateInstance(type) is not MacroGroup result)
-            {
-                continue;
-            }
-
-            yield return result;
-        }
-    }
 }

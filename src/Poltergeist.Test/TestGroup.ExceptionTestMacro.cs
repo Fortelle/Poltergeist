@@ -14,33 +14,34 @@ public partial class TestGroup
         {
             Title = "Exception Test";
             Description = "This macro throws exceptions in different stages.";
+            IsSingleton = true;
 
-            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnConfigure)}", false);
-            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnPrepare)}", false);
+            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IBackMacro.Configure)}", false);
+            UserOptions.Add($"{nameof(MacroProcessor)}.{nameof(IBackMacro.Prepare)}", false);
             UserOptions.Add($"{nameof(ProcessorCheckStartHook)}", false);
             UserOptions.Add($"{nameof(IterationStartedHook)}", false);
             UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.Before)}", false);
             UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.Execute)}", false);
             UserOptions.Add($"{nameof(LoopMacro)}.{nameof(LoopMacro.After)}", false);
 
-            Before = _ =>
+            Before = args =>
             {
-                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Before)}"))
+                if (args.Processor.Options.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Before)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the beginning of the loop.");
                 }
             };
-            After = _ =>
+            After = args =>
             {
-                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.After)}"))
+                if (args.Processor.Options.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.After)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the ending of the loop.");
                 }
             };
-            Execute = _ =>
+            Execute = args =>
             {
                 Thread.Sleep(1000);
-                if (UserOptions.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Execute)}"))
+                if (args.Processor.Options.Get<bool>($"{nameof(LoopMacro)}.{nameof(LoopMacro.Execute)}"))
                 {
                     throw new MacroRunningException("This exception is thrown in the iteration of the loop.");
                 }
@@ -51,7 +52,7 @@ public partial class TestGroup
         {
             base.OnConfigure(processor);
 
-            if (UserOptions.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnConfigure)}"))
+            if (processor.Options.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IBackMacro.Configure)}"))
             {
                 throw new MacroRunningException("This exception is thrown in the configuration of the processor.");
             }
@@ -61,7 +62,7 @@ public partial class TestGroup
         {
             base.OnPrepare(processor);
 
-            if (UserOptions.Get<bool>($"{nameof(ProcessorCheckStartHook)}"))
+            if (processor.Options.Get<bool>($"{nameof(ProcessorCheckStartHook)}"))
             {
                 processor.Hooks.Register<ProcessorCheckStartHook>(() =>
                 {
@@ -69,7 +70,7 @@ public partial class TestGroup
                 });
             }
 
-            if (UserOptions.Get<bool>($"{nameof(IterationStartedHook)}"))
+            if (processor.Options.Get<bool>($"{nameof(IterationStartedHook)}"))
             {
                 processor.Hooks.Register<ProcessorStartedHook>(() =>
                 {
@@ -77,7 +78,7 @@ public partial class TestGroup
                 });
             }
 
-            if (UserOptions.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IMacroBase.OnPrepare)}"))
+            if (processor.Options.Get<bool>($"{nameof(MacroProcessor)}.{nameof(IBackMacro.Prepare)}"))
             {
                 throw new MacroRunningException("This exception is thrown in the preparation of the processor.");
             }

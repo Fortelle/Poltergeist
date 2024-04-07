@@ -11,8 +11,9 @@
     <RatingControl
         x:Name="RatingControl1"
         HorizontalAlignment="Left"
-        IsClearEnabled="{x:Bind Item.AllowsEmpty, Mode=OneTime}" 
-        MaxRating="{x:Bind Item.MaxRating, Mode=OneTime}"
+        IsClearEnabled="{x:Bind IsClearEnabled, Mode=OneTime}" 
+        MaxRating="{x:Bind MaxRating, Mode=OneTime}"
+        Caption="{x:Bind Caption, Mode=OneTime}"
         Value="{x:Bind Value, Mode=TwoWay}"
         ValueChanged="RatingControl_ValueChanged"
         >

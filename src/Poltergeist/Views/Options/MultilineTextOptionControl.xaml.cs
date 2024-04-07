@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Services;
 
@@ -12,25 +13,24 @@ namespace Poltergeist.Views.Options;
 [ObservableObject]
 public sealed partial class MultilineTextOptionControl : UserControl
 {
-    private TextOption Item { get; }
+    private ObservableParameterItem Item { get; }
 
     [ObservableProperty]
     private string? _text;
 
     private const int MaxLength = 100;
 
-    public MultilineTextOptionControl(TextOption item)
+    public MultilineTextOptionControl(ObservableParameterItem item)
     {
+        Text = Truncate(item.Value as string);
         Item = item;
 
         this.InitializeComponent();
-
-        Text = Truncate(item.Value);
     }
 
     private static string Truncate(string? value)
     {
-        if(value is null)
+        if (value is null)
         {
             return "";
         }
@@ -47,7 +47,7 @@ public sealed partial class MultilineTextOptionControl : UserControl
         {
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            Text = Item.Value ?? "",
+            Text = (Item.Value as string) ?? "",
             Height = 200,
             Width = 600,
         };
@@ -59,17 +59,15 @@ public sealed partial class MultilineTextOptionControl : UserControl
         });
         stackPanel.Children.Add(textbox);
 
-        var contentDialog = new ContentDialog()
+        var contentDialog = new ContentDialogModel()
         {
             Title = App.Localize($"Poltergeist/Resources/Options_MultilineTextOption_Dialog_Title"),
             Content = stackPanel,
-            PrimaryButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Ok"),
-            CloseButtonText = App.Localize($"Poltergeist.Automations/Resources/DialogButton_Cancel"),
         };
 
-        var dialogResult = await DialogService.ShowAsync(contentDialog);
+        await DialogService.ShowAsync(contentDialog);
 
-        if(dialogResult == ContentDialogResult.None)
+        if (contentDialog.Result == DialogResult.Cancel)
         {
             return;
         }
@@ -83,6 +81,6 @@ public sealed partial class MultilineTextOptionControl : UserControl
             Item.Value = textbox.Text.Replace("\n\r", "\n").Replace("\r", "").TrimEnd('\n');
         }
 
-        Text = Truncate(Item.Value);
+        Text = Truncate(Item.Value as string);
     }
 }

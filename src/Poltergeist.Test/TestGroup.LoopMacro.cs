@@ -11,6 +11,7 @@ public partial class TestGroup
     {
         Title = "LoopMacro Test",
         Description = "This macro is used for testing the LoopMacro.",
+        IsSingleton = true,
 
         LoopOptions =
         {

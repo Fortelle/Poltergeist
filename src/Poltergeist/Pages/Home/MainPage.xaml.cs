@@ -16,6 +16,5 @@ public sealed partial class MainPage : Page, IPageNavigating
 
     public void OnNavigating()
     {
-        ViewModel.UpdateMacros();
     }
 }

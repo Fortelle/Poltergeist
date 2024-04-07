@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Parameters;
 
-public class RatingOption : OptionItem<int>
+public class RatingOption : OptionDefinition<int>
 {
     public int MaxRating { get; set; }
 

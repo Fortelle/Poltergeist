@@ -9,11 +9,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>Assets\macro.ico</ApplicationIcon>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Remove="Assets\macro.ico" />
-  </ItemGroup>
   <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
       <WrapperTool>tlbimp</WrapperTool>

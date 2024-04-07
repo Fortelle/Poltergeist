@@ -4,11 +4,10 @@ namespace Poltergeist.Automations.Processors;
 
 public interface IProcessor
 {
-    public string? Comment { get; set; }
+    public string ProcessId { get; }
 
-    public VariableCollection Options { get; }
-    public VariableCollection Environments { get; }
-    public VariableCollection Statistics { get; }
-
-    public T GetService<T>() where T : class;
+    public ParameterValueCollection Options { get; }
+    public ParameterValueCollection Environments { get; }
+    public ParameterValueCollection Statistics { get; }
+    public ParameterValueCollection SessionStorage { get; }
 }

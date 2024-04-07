@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Parameters;
 
-public class BoolOption : OptionItem<bool>
+public class BoolOption : OptionDefinition<bool>
 {
     public BoolOptionMode Mode { get; set; }
     public string? Text { get; set; }

@@ -20,7 +20,7 @@ public class InteractionService : MacroService
 
     public void Show(InteractionModel model)
     {
-        model.MacroKey = Processor.Macro.Key;
+        model.ShellKey = Processor.Macro.Key;
         model.ProcessId = Processor.ProcessId;
         Models.Add(model);
 
@@ -33,7 +33,7 @@ public class InteractionService : MacroService
 
     public async Task ShowAsync(InteractionModel model)
     {
-        model.MacroKey = Processor.Macro.Key;
+        model.ShellKey = Processor.Macro.Key;
         model.ProcessId = Processor.ProcessId;
         Models.Add(model);
 

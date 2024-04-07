@@ -10,6 +10,8 @@ public partial class TestGroup
     {
         Title = "RequiresAdmin Test",
         Description = "This macro is used for testing the RequiresAdmin property.",
+        IsSingleton = true,
+
         RequiresAdmin = true,
         Execute = (args) =>
         {

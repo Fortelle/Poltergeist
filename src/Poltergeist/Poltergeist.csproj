@@ -12,7 +12,7 @@
 	  <Nullable>enable</Nullable>
 	  <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <Version>0.6.0</Version>
+    <Version>0.7.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>A .NET framework for desktop automation.</Description>
   </PropertyGroup>

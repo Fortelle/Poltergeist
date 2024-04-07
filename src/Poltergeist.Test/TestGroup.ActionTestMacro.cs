@@ -12,6 +12,8 @@ public partial class TestGroup
 
         Description = "This macro is used for testing macro actions.",
 
+        IsSingleton = true,
+
         Actions = {
             new()
             {

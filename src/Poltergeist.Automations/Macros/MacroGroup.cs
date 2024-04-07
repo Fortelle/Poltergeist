@@ -1,6 +1,5 @@
 using System.Reflection;
 using Poltergeist.Automations.Attributes;
-using Poltergeist.Automations.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -8,11 +7,6 @@ public abstract class MacroGroup
 {
     public string Key { get; init; }
     public string? Description { get; init; }
-    public OptionCollection Options { get; } = new();
-    public ParameterCollection Statistics { get; } = new();
-
-    public string? GroupFolder { get; set; }
-    public List<IMacroBase> Macros { get; } = new();
 
     private string? _title;
     public string Title { get => _title ?? Key; set => _title = value; }
@@ -22,10 +16,6 @@ public abstract class MacroGroup
     protected MacroGroup(string key)
     {
         Key = key;
-
-        LoadMacroFields();
-        LoadMacroFunctions();
-        LoadMacroClasses();
     }
 
     public void Load()
@@ -35,18 +25,10 @@ public abstract class MacroGroup
             return;
         }
 
-        if (!string.IsNullOrEmpty(GroupFolder))
-        {
-            Options.Load(Path.Combine(GroupFolder, "useroptions.json"));
-
-            Statistics.Load(Path.Combine(GroupFolder, "statistics.json"));
-        }
-
-
         IsLoaded = true;
     }
 
-    private void LoadMacroFields()
+    public IEnumerable<MacroBase> ReadMacroFields()
     {
         var fields = GetType()
             .GetFields()
@@ -56,12 +38,14 @@ public abstract class MacroGroup
 
         foreach (var field in fields)
         {
-            var macro = (MacroBase)field.GetValue(this)!;
-            Macros.Add(macro);
+            if (field.GetValue(this) is MacroBase macro)
+            {
+                yield return macro;
+            }
         }
     }
 
-    private void LoadMacroFunctions()
+    public IEnumerable<MacroBase> ReadMacroFunctions()
     {
         var methods = GetType()
             .GetMethods()
@@ -71,12 +55,14 @@ public abstract class MacroGroup
 
         foreach (var method in methods)
         {
-            var macro = (MacroBase)method.Invoke(this, null)!;
-            Macros.Add(macro);
+            if (method.Invoke(this, null) is MacroBase macro)
+            {
+                yield return macro;
+            }
         }
     }
 
-    private void LoadMacroClasses()
+    public IEnumerable<MacroBase> ReadMacroClasses()
     {
         var types = GetType()
             .GetNestedTypes()
@@ -86,8 +72,10 @@ public abstract class MacroGroup
 
         foreach (var type in types)
         {
-            var macro = (MacroBase)Activator.CreateInstance(type)!;
-            Macros.Add(macro);
+            if (Activator.CreateInstance(type) is MacroBase macro)
+            {
+                yield return macro;
+            }
         }
     }
 }

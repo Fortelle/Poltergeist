@@ -18,6 +18,7 @@ using Poltergeist.Macros.Instruments;
 using Poltergeist.Models;
 using Poltergeist.Notifications;
 using Poltergeist.Pages.About;
+using Poltergeist.Pages.Groups;
 using Poltergeist.Pages.Macros;
 using Poltergeist.Pages.Macros.Instruments;
 using Poltergeist.Services;
@@ -35,20 +36,22 @@ public abstract class PoltergeistApplication : Application
 
     public IHost? Host { get; private set; }
 
-    private readonly Mutex _mutex = new(true, "Poltergeist");
-
     public static event Action? Initialized;
     public static event Action<LocalSettingsService>? SettingsLoading;
     public static event Action<LocalSettingsService>? SettingsLoaded;
     public static event Action? ContentLoading;
     public static event Action? ContentLoaded;
 
-    public static PoltergeistApplication CurrentPoltergeist => (PoltergeistApplication)Current;
-
+    public static bool IsDevelopment { get; set; }
+    public static bool IsLoaded { get; set; }
     public static string? SingleMacroMode { get; set; }
+
+    public static PoltergeistApplication CurrentPoltergeist => (PoltergeistApplication)Current;
 
     public void Initialize()
     {
+        IsDevelopment = Debugger.IsAttached;
+
         Resources.MergedDictionaries.Add(new XamlControlsResources());
         Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(@"ms-appx:///Poltergeist/Styles/FontSizes.xaml") });
         Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(@"ms-appx:///Poltergeist/Styles/Layouts.xaml") });
@@ -86,7 +89,6 @@ public abstract class PoltergeistApplication : Application
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 
-                services.AddSingleton<LocalSettingsService>();
                 services.AddSingleton<PathService>();
                 services.AddSingleton<PluginService>();
 
@@ -112,7 +114,6 @@ public abstract class PoltergeistApplication : Application
 
     }
 
-
     public static T GetService<T>() where T : class
     {
         var service = GetService(typeof(T));
@@ -137,37 +138,43 @@ public abstract class PoltergeistApplication : Application
 
     public virtual void ParseArguments(CommandOption[] options)
     {
-        foreach (var option in options)
+        foreach (var (name, value) in options)
         {
-            switch (option.Name)
+            switch (name)
             {
-                case "macro" when !string.IsNullOrEmpty(option.Value):
-                    var nav = App.GetService<INavigationService>();
-                    if(!nav.NavigateTo("macro:" + option.Value))
+                case "macro" when !string.IsNullOrEmpty(value):
                     {
-                        continue;
-                    }
-
-                    var autostart = options.Any(x => x.Name == "autostart");
-                    var autoclose = options.Any(x => x.Name == "autoclose");
-
-                    if (autostart)
-                    {
-                        var args = new MacroStartArguments()
+                        var nav = App.GetService<INavigationService>();
+                        if (!nav.NavigateTo("macro:" + value))
                         {
-                            MacroKey = option.Value,
-                            Reason = LaunchReason.ByCommandLine,
-                            Variation = new(),
-                        };
-                        if (autoclose)
-                        {
-                            args.Variation.Options = new() {
-                                ["aftercompletion.action"] = CompletionAction.ExitApplication,
-                            };
+                            continue;
                         }
-                        ActionService.RunMacro(args);
-                    }
 
+                        var autostart = options.Any(x => x.Name == "autostart");
+                        var autoclose = options.Any(x => x.Name == "autoclose");
+
+                        if (autostart)
+                        {
+                            var args = new MacroStartArguments()
+                            {
+                                ShellKey = value,
+                                Reason = LaunchReason.ByCommandLine,
+                            };
+                            if (autoclose)
+                            {
+                                args.OptionOverrides = new()
+                                {
+                                    ["aftercompletion.action"] = CompletionAction.ExitApplication,
+                                };
+                            }
+                            ActionService.RunMacro(args);
+                        }
+                    }
+                    break;
+                case "dev":
+                    {
+                        IsDevelopment = true;
+                    }
                     break;
             }
         }
@@ -230,13 +237,15 @@ public abstract class PoltergeistApplication : Application
 
                             SingletonHelper.Load();
                             SingletonHelper.ArgumentReceived += OnArgumentReceived;
+
+                            IsLoaded = true;
                         });
-                     });
+                    });
                 });
 
             });
         }
-        else if (Debugger.IsAttached)
+        else if (App.IsDevelopment)
         {
             throw new Exception("Another instance is already running.");
         }
@@ -275,13 +284,13 @@ public abstract class PoltergeistApplication : Application
         }
 
         var macroManager = App.GetService<MacroManager>();
-        var macro = macroManager.GetMacro(macroOption.Value);
+        var macro = macroManager.GetShell(macroOption.Value);
         if (macro is null)
         {
             return false;
         }
 
-        SingleMacroMode = macro.Key;
+        SingleMacroMode = macro.ShellKey;
         return true;
     }
 
@@ -289,28 +298,33 @@ public abstract class PoltergeistApplication : Application
     {
         App.GetService<LocalSettingsService>();
         App.GetService<HotKeyManager>();
-        App.GetService<MacroManager>();
-        App.GetService<PluginService>();
+        App.GetService<PluginService>().Load();
+        App.GetService<MacroManager>().LoadProperties();
 
         Initialized?.Invoke();
     }
 
     protected virtual void OnSettingsLoading(LocalSettingsService localsettingsService)
     {
+        localsettingsService.Add(new OptionDefinition<int>(MacroBrowserViewModel.LastSortIndexKey)
+        {
+            Status = ParameterStatus.Hidden,
+        });
+
         // Macro
-        localsettingsService.Add(new OptionItem<bool>(MacroBase.UseStatisticsKey, true)
+        localsettingsService.Add(new OptionDefinition<bool>(MacroBase.UseStatisticsKey, true)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_UseStatistics"),
         });
 
-        localsettingsService.Add(new OptionItem<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.All)
+        localsettingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.All)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToFile"),
         });
 
-        localsettingsService.Add(new OptionItem<LogLevel>(MacroLogger.FrontLogLevelKey, LogLevel.Information)
+        localsettingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FrontLogLevelKey, LogLevel.Information)
         {
             Category = App.Localize($"Poltergeist/Resources/LocalSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/LocalSettings_Macro_LogToConsole"),
@@ -333,27 +347,27 @@ public abstract class PoltergeistApplication : Application
         navigationService.AddInfo(new()
         {
             Key = "home",
-            Glyph = "\uE80F",
+            Icon = new("\uE80F"),
             CreateContent = (_, _) => App.GetService<MainPage>(),
         });
         navigationService.AddInfo(new()
         {
             Key = "settings",
-            Glyph = "\uE713",
+            Icon = new("\uE713"),
             CreateContent = (_, _) => new SettingsPage(),
         });
         navigationService.AddInfo(new()
         {
             Key = "about",
-            Glyph = "\uE9CE",
+            Icon = new("\uE9CE"),
             CreateContent = (_, _) => App.GetService<AboutPage>(),
         });
         navigationService.AddInfo(new()
         {
             Key = "debug",
-            Glyph = "\uEBE8",
+            Icon = new("\uEBE8"),
         });
-        navigationService.AddInfo(MacroGroupPage.NavigationInfo);
+
         navigationService.AddInfo(MacroPage.NavigationInfo);
 
         InteractionService.Interacting += OnInteracting;
@@ -406,6 +420,17 @@ public abstract class PoltergeistApplication : Application
                 {
                     DialogService.ShowProgress(progressModel);
                 });
+                break;
+            case AppWindowModel appWindowModel:
+                switch (appWindowModel.Action)
+                {
+                    case AppWindowAction.Minimize:
+                        ActionService.MinimizeApplication();
+                        break;
+                    case AppWindowAction.Restore:
+                        ActionService.RestoreApplication();
+                        break;
+                }
                 break;
         }
     }

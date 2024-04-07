@@ -14,6 +14,8 @@ public partial class ExampleGroup : MacroGroup
         Title = "Terminal Example",
         Description = "This example shows how to create a terminal panel and execute commands.",
 
+        IsSingleton = true,
+
         Configure = (processor) =>
         {
             processor.Services.AddSingleton<TerminalService>();

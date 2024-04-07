@@ -147,9 +147,6 @@
   <data name="EndReason_UserAborted" xml:space="preserve">
     <value>UserAborted</value>
   </data>
-  <data name="FavoriteAppBarButton.Label" xml:space="preserve">
-    <value>Favorite</value>
-  </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
     <value>Comment</value>
   </data>
@@ -183,6 +180,33 @@
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="PropertiesPivotItem.Header" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="PropertyLabel_assembly_location" xml:space="preserve">
+    <value>Assembly Location</value>
+  </data>
+  <data name="PropertyLabel_assembly_name" xml:space="preserve">
+    <value>Assembly Name</value>
+  </data>
+  <data name="PropertyLabel_assembly_version" xml:space="preserve">
+    <value>Assembly Version</value>
+  </data>
+  <data name="PropertyLabel_shell_created_time" xml:space="preserve">
+    <value>Created Time</value>
+  </data>
+  <data name="PropertyLabel_shell_key" xml:space="preserve">
+    <value>Shell Key</value>
+  </data>
+  <data name="PropertyLabel_shell_private_folder" xml:space="preserve">
+    <value>Private Folder Location</value>
+  </data>
+  <data name="PropertyLabel_template_key" xml:space="preserve">
+    <value>Template Key</value>
+  </data>
+  <data name="PropertyLabel_template_version" xml:space="preserve">
+    <value>Template Version</value>
+  </data>
   <data name="RunAppBarButton.Label" xml:space="preserve">
     <value>Run</value>
   </data>
@@ -190,7 +214,7 @@
     <value>Run</value>
   </data>
   <data name="RunDefaultMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Default</value>
+    <value>User Configuration</value>
   </data>
   <data name="Run_Variation" xml:space="preserve">
     <value>Configuration {0}</value>

@@ -14,6 +14,8 @@ public partial class ExampleGroup : MacroGroup
 
         Description = "This example shows how to display images by using the ImageInstrument.",
 
+        IsSingleton = true,
+
         ExecuteAsync = async (args) =>
         {
             var li = args.Processor.GetService<DashboardService>().Create<ImageInstrument>();

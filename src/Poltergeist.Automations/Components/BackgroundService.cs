@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -58,6 +59,7 @@ public class BackgroundService : MacroService, IAutoloadable
         }).ToArray();
 
         var processer = (MacroProcessor)Processor;
+        var macro = (MacroBase)Processor.Macro;
 
         var optionList = processer.Options
             .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
@@ -67,7 +69,7 @@ public class BackgroundService : MacroService, IAutoloadable
             .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
 
-        var moduleList = Processor.Macro.Modules
+        var moduleList = macro.Modules
             .Select(x => $"{x.GetType().Name}")
             .ToArray();
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Parameters;
 using Poltergeist.Views;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -12,6 +13,8 @@ public class DialogService
 
     public static async Task ShowAsync(DialogModel model)
     {
+        ObservableParameterItem[]? parameters = null;
+
         var stackPanel = new StackPanel();
 
         if (!string.IsNullOrEmpty(model.Text))
@@ -21,16 +24,27 @@ public class DialogService
                 Text = model.Text,
             });
         }
-        if(model.Inputs?.Length > 0)
+
+        switch (model)
         {
-            foreach(var input in model.Inputs)
-            {
-                stackPanel.Children.Add(new OptionControl()
+            case InputDialogModel inputDialogModel:
                 {
-                    DataContext = input,
-                    Margin = new Microsoft.UI.Xaml.Thickness(0, 16, 0, 0),
-                });
-            }
+                    parameters = inputDialogModel.Inputs.Select(input => new ObservableParameterItem(input)).ToArray();
+                    foreach (var p in parameters)
+                    {
+                        stackPanel.Children.Add(new OptionControl()
+                        {
+                            DataContext = p,
+                            Margin = new Microsoft.UI.Xaml.Thickness(0, 16, 0, 0),
+                        });
+                    }
+                }
+                break;
+            case ContentDialogModel contentDialogModel:
+                {
+                    stackPanel.Children.Add(contentDialogModel.Content);
+                }
+                break;
         }
 
         var contentDialog = new ContentDialog()
@@ -65,20 +79,60 @@ public class DialogService
                 : ContentDialogButton.Close;
         }
 
+        switch (model)
+        {
+            case InputDialogModel inputDialogModel:
+                {
+                    if (inputDialogModel.Valid is not null)
+                    {
+                        contentDialog.Closing += (sender, args) =>
+                        {
+                            if (args.Result == ContentDialogResult.Primary)
+                            {
+                                if (inputDialogModel.Valid() != null)
+                                {
+                                    args.Cancel = true;
+                                }
+                            }
+                        };
+                    }
+                }
+                break;
+            case ContentDialogModel contentDialogModel:
+                {
+                    if (contentDialogModel.Valid is not null)
+                    {
+                        contentDialog.Closing += (sender, args) =>
+                        {
+                            if (args.Result == ContentDialogResult.Primary)
+                            {
+                                var x = contentDialogModel.Valid();
+
+                                if (contentDialogModel.Valid() != null)
+                                {
+                                    args.Cancel = true;
+                                }
+                            }
+                        };
+                    }
+                }
+                break;
+        }
+
         var dialogResult = await ShowAsync(contentDialog);
 
         model.Result = model.GetDialogResult(dialogResult);
 
-        if (model.Inputs?.Length > 0)
+        if (parameters?.Length > 0)
         {
-            model.Values = model.Inputs.Select(x => x.Value!).ToArray();
+            model.Values = parameters.Select(x => x.Value).ToArray();
         }
 
-        if(model.MacroKey is not null && model.ProcessId is not null)
+        if(model.ShellKey is not null && model.ProcessId is not null)
         {
             var msg = new InteractionMessage()
             {
-                MacroKey = model.MacroKey,
+                MacroKey = model.ShellKey,
                 ProcessId = model.ProcessId,
 
                 [InteractionService.InteractionIdKey] = model.Id,
@@ -91,11 +145,11 @@ public class DialogService
                 },
             };
 
-            if (model.Inputs?.Length > 0)
+            if (parameters?.Length > 0)
             {
-                for (var i = 0; i < model.Inputs.Length; i++)
+                for (var i = 0; i < parameters.Length; i++)
                 {
-                    msg.Add(string.Format(DialogModel.DialogValueKey, i), $"{model.Inputs[i].Value}");
+                    msg.Add(string.Format(DialogModel.DialogValueKey, i), $"{parameters[i].Value}");
                 }
             }
 

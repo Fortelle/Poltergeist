@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Thumbnails;
@@ -24,19 +25,22 @@ public partial class MacroViewModel : ObservableRecipient
     public ObservableCollection<PanelViewModel> Panels { get; } = new();
 
     [ObservableProperty]
-    private IMacroBase _macro;
+    private MacroShell _shell;
 
     [ObservableProperty]
-    private MacroProcessor? _processor;
+    private IFrontProcessor? _processor;
 
     [ObservableProperty]
     private bool _isRunning;
 
     [ObservableProperty]
-    private OptionCollection _userOptions;
+    private ObservableParameterCollection? _userOptions;
 
     [ObservableProperty]
-    private IParameterEntry[]? _statistics;
+    private ParameterDefinitionValuePair[]? _statistics;
+
+    [ObservableProperty]
+    private KeyValuePair<string, string>[]? _properties;
 
     [ObservableProperty]
     private ProcessHistoryEntry[]? _history;
@@ -57,17 +61,20 @@ public partial class MacroViewModel : ObservableRecipient
     public bool IsValid => string.IsNullOrEmpty(InvalidationMessage);
     public bool IsRunnable => IsValid && !IsRunning;
 
-    public MacroViewModel(IMacroBase macro)
+    public MacroViewModel(MacroShell shell)
     {
-        Macro = macro;
-        Macro.Initialize();
-        Macro.Load();
+        Shell = shell;
 
-        InvalidationMessage = macro.CheckValidity();
+        shell.Load();
 
-        UserOptions = macro.UserOptions;
+        InvalidationMessage = shell.Template?.CheckValidity();
 
-        var thumbfile = macro.GetThumbnailFile();
+        if (shell.UserOptions is not null)
+        {
+            UserOptions = new ObservableParameterCollection(shell.UserOptions);
+        }
+
+        var thumbfile = shell.GetThumbnailFile();
         if (thumbfile is not null)
         {
             var uri = new Uri(thumbfile);
@@ -75,40 +82,54 @@ public partial class MacroViewModel : ObservableRecipient
             Thumbnail = bmp;
         }
 
-        Refresh();
-    }
+        RefreshProperties();
 
-    public bool IsFavorite
-    {
-        get
-        {
-            var macroManager = App.GetService<MacroManager>();
-            var summary = macroManager.GetSummary(Macro.Key);
-            return summary?.IsFavorite ?? false;
-        }
-        set
-        {
-            var macroManager = App.GetService<MacroManager>();
-            macroManager.UpdateSummary(Macro.Key, x =>
-            {
-                x.IsFavorite = value;
-            });
-            OnPropertyChanged(nameof(IsFavorite));
-        }
+        Refresh();
     }
 
     public void Refresh()
     {
-        UpdateStatistics();
-        UpdateHistory();
+        Statistics = Shell.Statistics?.ToDefinitionValueArray();
+
+        History = Shell.History?.Take(100);
 
         OnPropertyChanged(nameof(IsRunnable));
+    }
+
+    public void RefreshProperties()
+    {
+        var properties = new Dictionary<string, object?>(){
+            {"template_key", Shell.TemplateKey},
+            {"shell_key", Shell.ShellKey},
+            {"template_version", Shell.Template?.Version},
+            {"shell_created_time", Shell.Properties.CreatedTime},
+            {"shell_private_folder", Shell.PrivateFolder},
+        };
+
+        if (Shell.Template is not null)
+        {
+            foreach (var prop in Shell.Template.Properties)
+            {
+                properties.Add(prop.Key, prop.FormatValue(prop.DefaultValue));
+            }
+        }
+
+        Properties = properties.Select(x =>
+        {
+            var key = App.Localize($"Poltergeist/Macros/PropertyLabel_{x.Key}");
+            if (string.IsNullOrEmpty(key))
+            {
+                key = x.Key;
+            }
+            var value = x.Value?.ToString() ?? "-";
+            return new KeyValuePair<string, string>(key, value);
+        }).ToArray();
     }
 
     [RelayCommand]
     public void Start(MacroStartArguments? args = null)
     {
-        if (Macro is null)
+        if (Shell.Template is null)
         {
             return;
         }
@@ -123,70 +144,28 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
-        Macro.UserOptions.Save();
+        Shell.UserOptions?.Save();
 
         args ??= new MacroStartArguments()
         {
-            MacroKey = Macro.Key,
+            ShellKey = Shell.ShellKey,
             Reason = LaunchReason.ByUser,
         };
 
         var macroManager = App.GetService<MacroManager>();
-        var processor = macroManager.CreateProcessor(Macro, args.Reason);
 
-        if (processor.Exception is not null)
-        {
-            App.ShowTeachingTip(processor.Exception.Message);
-            return;
-        }
-
-        Processor = processor;
+        Processor = macroManager.CreateProcessor(args);
 
         IsRunning = true;
         OnPropertyChanged(nameof(IsRunnable));
-
-        if (args.Variation is not null)
-        {
-            if (args.Variation.Normalized)
-            {
-                foreach (var option in Macro.UserOptions)
-                {
-                    Processor.Options.Set(option.Key, option.Default);
-                }
-            }
-
-            if (args.Variation.Options?.Count > 0)
-            {
-                foreach (var (key, value) in args.Variation.Options)
-                {
-                    Processor.Options.Set(key, value, ParameterSource.MacroOverride);
-                }
-            }
-
-            if (args.Variation.Environments?.Count > 0)
-            {
-                foreach (var (key, value) in args.Variation.Environments)
-                {
-                    Processor.Environments.Set(key, value, ParameterSource.MacroOverride);
-                }
-            }
-
-            if (args.Variation.SessionStorage?.Count > 0)
-            {
-                foreach (var (key, value) in args.Variation.SessionStorage)
-                {
-                    Processor.SessionStorage.Set(key, value, ParameterSource.MacroOverride);
-                }
-            }
-        }
-
+        
         Processor.Launched += Processor_Launched;
-        Processor.Started += Processor_Started;
         Processor.Completed += Processor_Completed;
         Processor.PanelCreated += Processor_PanelCreated;
         Processor.Interacting += Processor_Interacting;
+        macroManager.MacroProcessorCompleted += MacroManager_MacroProcessorCompleted;
 
-        macroManager.TryStart(Processor);
+        macroManager.Launch(Processor);
 
         Duration = TimeSpanToHhhmmssConverter.ToString(default);
     }
@@ -202,56 +181,43 @@ public partial class MacroViewModel : ObservableRecipient
         Processor.Abort();
     }
 
-    [RelayCommand]
-    public void Favorite()
-    {
-        IsFavorite = !IsFavorite;
-    }
-
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
         Processor!.Launched -= Processor_Launched;
-        Processor.Started -= Processor_Started;
         Processor.Completed -= Processor_Completed;
         Processor.PanelCreated -= Processor_PanelCreated;
         Processor.Interacting -= Processor_Interacting;
-        Processor = null;
 
-        IsRunning = false;
+        var macroManager = App.GetService<MacroManager>();
 
-        Refresh();
-
-        if (e.CompleteAction != CompletionAction.None)
+        if (e.CompletionAction != CompletionAction.None)
         {
-            App.GetService<ActionService>().Execute(e.CompleteAction, e.ActionArgument);
+            App.GetService<ActionService>().Execute(e.CompletionAction);
         }
 
         if(e.Exception != null)
         {
             ExceptionMessage = e.Exception.Message;
         }
+    }
+
+    private void MacroManager_MacroProcessorCompleted(MacroShell shell)
+    {
+        var macroManager = App.GetService<MacroManager>();
+        macroManager.MacroProcessorCompleted -= MacroManager_MacroProcessorCompleted;
+
+        Processor = null;
+
+        IsRunning = false;
 
         Timer?.Stop();
         Timer = null;
-        Processor = null;
-    }
 
-    private void UpdateStatistics()
-    {
-        Statistics = null;
-        Statistics = Macro.Statistics.ToArray();
-    }
-
-    private void UpdateHistory()
-    {
-        History = null;
-        History = Macro.History.Take(100);
+        Refresh();
     }
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
-        // There is an error of about 1 second.
-        // It can be avoided by changing interval to .1s, but it's not necessary.
         ExceptionMessage = null;
         StartTime = e.StartTime;
         Timer = new()
@@ -264,22 +230,6 @@ public partial class MacroViewModel : ObservableRecipient
             Duration = TimeSpanToHhhmmssConverter.ToString(duration);
         };
         Timer.Start();
-    }
-
-    private void Processor_Started(object? sender, ProcessorStartedEventArgs e)
-    {
-        if (e.StartedActions?.Length > 0)
-        {
-            foreach (var action in e.StartedActions)
-            {
-                switch (action)
-                {
-                    case StartedAction.MinimizedWindow:
-                        ActionService.MinimizeApplication();
-                        break;
-                }
-            }
-        }
     }
 
     private void Processor_PanelCreated(object? sender, PanelCreatedEventArgs e)
@@ -332,13 +282,12 @@ public partial class MacroViewModel : ObservableRecipient
         switch (e.Model)
         {
             case TipModel tipModel:
-                tipModel.Title = string.IsNullOrEmpty(tipModel.Title) ? Macro.Title : $"{tipModel.Title} ({Macro.Title})";
+                tipModel.Title = string.IsNullOrEmpty(tipModel.Title) ? Shell.Title : $"{tipModel.Title} ({Shell.Title})";
                 break;
             case DialogModel dialogModel:
-                dialogModel.Title = string.IsNullOrEmpty(dialogModel.Title) ? Macro.Title : $"{dialogModel.Title} ({Macro.Title})";
+                dialogModel.Title = string.IsNullOrEmpty(dialogModel.Title) ? Shell.Title : $"{dialogModel.Title} ({Shell.Title})";
                 break;
         }
         _ = App.Interact(e.Model);
     }
-
 }

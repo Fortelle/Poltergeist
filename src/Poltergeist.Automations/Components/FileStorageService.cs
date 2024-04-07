@@ -12,9 +12,9 @@ public class FileStorageService : MacroService
     {
     }
 
-    public T? Get<T>(string filename, FileStorageSource source = FileStorageSource.Macro) where T : class
+    public T? Get<T>(string filename, bool isGlobal = false) where T : class
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         if (!File.Exists(filepath))
         {
@@ -36,9 +36,9 @@ public class FileStorageService : MacroService
         return null;
     }
 
-    public T? Get<T>(string filename, Func<string, T> load, FileStorageSource source = FileStorageSource.Macro) where T : class
+    public T? Get<T>(string filename, Func<string, T> load, bool isGlobal = false) where T : class
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         if (!File.Exists(filepath))
         {
@@ -60,9 +60,9 @@ public class FileStorageService : MacroService
         return null;
     }
 
-    public async Task<T?> GetAsync<T>(string filename, Func<string, Task<T>> load, FileStorageSource source = FileStorageSource.Macro) where T : class
+    public async Task<T?> GetAsync<T>(string filename, Func<string, Task<T>> load, bool isGlobal = false) where T : class
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         if (!File.Exists(filepath))
         {
@@ -84,69 +84,41 @@ public class FileStorageService : MacroService
         return null;
     }
 
-    public void Set<T>(string filename, T item, FileStorageSource source = FileStorageSource.Macro)
+    public void Set<T>(string filename, T item, bool isGlobal = false)
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         SerializationUtil.JsonSave(filepath, item);
         Logger.Debug($"File is saved to \"{filepath}\".");
     }
 
-    public void Set<T>(string filename, Action<string> save, FileStorageSource source = FileStorageSource.Macro)
+    public void Set<T>(string filename, Action<string> save, bool isGlobal = false)
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         save(filename);
         Logger.Debug($"File is saved to \"{filepath}\".");
     }
 
-    public async Task SetAsync<T>(string filename, Func<string, Task> save, FileStorageSource source = FileStorageSource.Macro)
+    public async Task SetAsync<T>(string filename, Func<string, Task> save, bool isGlobal = false)
     {
-        var filepath = GetPath(filename, source);
+        var filepath = GetPath(filename, isGlobal);
 
         await save(filename);
         Logger.Debug($"File is saved to \"{filepath}\".");
     }
 
-    public string GetPath(string filename, FileStorageSource source = FileStorageSource.Macro)
+    private string GetPath(string filename, bool isGlobal)
     {
-        string? root;
-        switch (source)
+        if (isGlobal)
         {
-            case FileStorageSource.Macro:
-                if (Processor.Macro.PrivateFolder is null)
-                {
-                    throw new Exception($"The property \"{nameof(Processor.Macro)}.{nameof(Processor.Macro.PrivateFolder)}\" is not set.");
-                }
-                root = Processor.Macro.PrivateFolder;
-                break;
-            case FileStorageSource.Group:
-                if (Processor.Macro.Group is null)
-                {
-                    throw new Exception("The macro does not belong to any group.");
-                }
-                if (Processor.Macro.Group.GroupFolder is null)
-                {
-                    throw new Exception($"The property \"{nameof(Processor.Macro)}.{nameof(Processor.Macro.Group)}.{nameof(Processor.Macro.Group.GroupFolder)}\" is not set.");
-                }
-                root = Processor.Macro.Group.GroupFolder;
-                break;
-            case FileStorageSource.Global:
-                if (!Processor.Environments.Contains("document_data_folder"))
-                {
-                    throw new Exception($"The environment variable \"document_data_folder\" does not exist.");
-                }
-                root = Processor.Environments.Get<string>("document_data_folder");
-                break;
-            default:
-                throw new NotSupportedException();
+            var dataFolder = Processor.Environments.Get<string>("document_data_folder") ?? throw new Exception($"Global folder is not set.");
+            return Path.Combine(dataFolder, Foldername, filename);
         }
-
-        var folder = Path.Combine(root, Foldername);
-        Directory.CreateDirectory(folder);
-
-        var filepath = Path.Combine(folder, filename);
-        return filepath;
+        else
+        {
+            var privateFolder = Processor.Environments.Get<string>("private_folder") ?? throw new Exception($"Private folder is not set.");
+            return Path.Combine(privateFolder, Foldername, filename);
+        }
     }
-
 }

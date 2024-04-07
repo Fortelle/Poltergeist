@@ -5,7 +5,7 @@ namespace Poltergeist.Views.Options;
 
 public sealed partial class NumberBoxOptionControl : UserControl
 {
-    private IOptionItem Item { get; }
+    private ObservableParameterItem Item { get; }
     private double Minimum { get; } = double.MinValue;
     private double Maximum { get; } = double.MaxValue;
     private double SmallChange { get; } = 1;
@@ -31,13 +31,9 @@ public sealed partial class NumberBoxOptionControl : UserControl
         };
     }
 
-    public NumberBoxOptionControl(IOptionItem item)
+    public NumberBoxOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
-
-        Item = item;
-
-        if (item is INumberOptionItem numberOption)
+        if (item is INumberOption numberOption)
         {
             if (numberOption.Minimum.HasValue)
             {
@@ -50,13 +46,16 @@ public sealed partial class NumberBoxOptionControl : UserControl
             if (numberOption.StepFrequency.HasValue)
             {
                 SmallChange = numberOption.StepFrequency.Value;
-                if( SmallChange <= 0)
+                if (SmallChange <= 0)
                 {
                     SmallChange = 1;
                 }
             }
         }
 
+        Item = item;
+
+        InitializeComponent();
     }
 
 }

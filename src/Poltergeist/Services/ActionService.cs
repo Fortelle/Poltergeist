@@ -60,14 +60,14 @@ public class ActionService
             }
             else
             {
-                App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Macro.Title));
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Shell.Title));
                 return;
             }
         }
         else
         {
             macroPage.ViewModel.Start(new(){
-                MacroKey = macroPage.ViewModel.Macro.Key,
+                ShellKey = macroPage.ViewModel.Shell.ShellKey,
                 Reason = reason,
             });
         }
@@ -75,7 +75,7 @@ public class ActionService
 
     public static void RunMacro(MacroStartArguments args)
     {
-        var pageKey = "macro:" + args.MacroKey;
+        var pageKey = "macro:" + args.ShellKey;
 
         var navigationService = App.GetService<INavigationService>();
         if (!navigationService.NavigateTo(pageKey))
@@ -96,7 +96,7 @@ public class ActionService
         }
         if (macroPage.ViewModel!.IsRunning)
         {
-            App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Macro.Title));
+            App.ShowTeachingTip(App.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Shell.Title));
             return;
         }
         else

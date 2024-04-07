@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using System.Drawing;
 using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Components.Thumbnails;
@@ -7,14 +7,14 @@ public static class ThumbnailExtensions
 {
     private const string ThumbnailFilename = "thumbnail.png";
 
-    public static string? GetThumbnailFile(this IMacroBase macro)
+    public static string? GetThumbnailFile(this MacroShell shell)
     {
-        if (macro.PrivateFolder is null)
+        if (shell.PrivateFolder is null)
         {
             return null;
         }
 
-        var path = Path.Combine(macro.PrivateFolder, ThumbnailFilename);
+        var path = Path.Combine(shell.PrivateFolder, ThumbnailFilename);
 
         if (!File.Exists(path))
         {
@@ -24,14 +24,14 @@ public static class ThumbnailExtensions
         return path;
     }
 
-    public static void SetThumbnailFile(this IMacroBase macro, System.Drawing.Bitmap image)
+    public static void SetThumbnailFile(this MacroShell shell, Bitmap image)
     {
-        if (macro.PrivateFolder is null)
+        if (shell.PrivateFolder is null)
         {
             return;
         }
 
-        var path = Path.Combine(macro.PrivateFolder, ThumbnailFilename);
+        var path = Path.Combine(shell.PrivateFolder, ThumbnailFilename);
 
         if (!File.Exists(path))
         {

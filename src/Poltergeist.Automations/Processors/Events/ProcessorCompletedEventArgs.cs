@@ -1,20 +1,12 @@
 ﻿namespace Poltergeist.Automations.Processors;
 
-public class ProcessorCompletedEventArgs : EventArgs
+public sealed class ProcessorCompletedEventArgs : EventArgs
 {
-    public EndReason Status { get; set; }
-    public ProcessHistoryEntry History { get; set; }
+    public required EndReason Status { get; init; }
+    public required ProcessHistoryEntry HistoryEntry { get; init; }
+    public CompletionAction CompletionAction { get; init; }
 
-    public CompletionAction CompleteAction { get; set; }
-    public object? ActionArgument { get; set; }
+    public Exception? Exception { get; init; }
 
     public bool IsSucceeded => Status == EndReason.Complete;
-
-    public Exception? Exception { get; set; }
-
-    public ProcessorCompletedEventArgs(EndReason status, ProcessHistoryEntry history)
-    {
-        Status = status;
-        History = history;
-    }
 }

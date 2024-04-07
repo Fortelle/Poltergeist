@@ -1,0 +1,16 @@
+﻿using Poltergeist.Automations.Parameters;
+
+namespace Poltergeist.Automations.Macros;
+
+public interface IFrontBackMacro : IMacroBase
+{
+    public ParameterDefinitionCollection UserOptions { get; }
+    public ParameterDefinitionCollection Statistics { get; }
+    public ParameterDefinitionCollection Properties { get; }
+    public List<ConfigVariation> ConfigVariations { get; }
+    public List<MacroAction> Actions { get; }
+    public MacroStatus Status { get; }
+
+    public void Initialize();
+    public string? CheckValidity();
+}

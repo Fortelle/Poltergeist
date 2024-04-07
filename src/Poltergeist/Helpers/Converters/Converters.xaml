@@ -7,6 +7,7 @@
     <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     <local:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
     <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    <local:EnumToStringConverter x:Key="EnumToStringConverter" />
     <local:NotConverter x:Key="NotConverter" />
     
     <local:BitmapToImageSourceConverter x:Key="BitmapToImageSourceConverter" />

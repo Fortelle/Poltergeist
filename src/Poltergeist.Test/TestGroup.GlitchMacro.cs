@@ -12,6 +12,7 @@ public partial class TestGroup
         {
             Title = nameof(GlitchMacro);
             Description = "This is a glitch macro.";
+            IsSingleton = true;
             Exception = new Exception("This is a glitch exception.");
         }
     }

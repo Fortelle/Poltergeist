@@ -22,7 +22,7 @@ public partial class App : PoltergeistApplication
             Key = "debug",
             Header = "Debug",
             IsFooter = true,
-            Glyph = "\uEBE8",
+            Icon = new("\uEBE8"),
             CreateContent = (_, _) => new DebugPage(),
         });
     }

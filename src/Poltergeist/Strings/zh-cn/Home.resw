@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ChangeIconDialog_Title" xml:space="preserve">
+    <value>更改图标</value>
+  </data>
+  <data name="ChangeIconMenuFlyoutItem.Text" xml:space="preserve">
+    <value>更改图标</value>
+  </data>
   <data name="DateTimeToAgo_1" xml:space="preserve">
     <value>1分钟前</value>
   </data>
@@ -135,16 +141,48 @@
   <data name="DateTimeToAgo_6" xml:space="preserve">
     <value>{0:#}天前</value>
   </data>
-  <data name="FavoriteTextBlock.Text" xml:space="preserve">
-    <value>收藏</value>
+  <data name="DeleteMacroDialog_Text" xml:space="preserve">
+    <value>确定要删除宏“{0}”吗？
+
+这个宏的所有数据与文件都将丢失。</value>
   </data>
-  <data name="GroupTextBlock.Text" xml:space="preserve">
-    <value>分组</value>
+  <data name="DeleteMacroDialog_Title" xml:space="preserve">
+    <value>删除宏</value>
   </data>
-  <data name="PopularTextBlock.Text" xml:space="preserve">
-    <value>最常使用</value>
+  <data name="DeleteMenuFlyoutItem.Text" xml:space="preserve">
+    <value>删除</value>
   </data>
-  <data name="RecentTextBlock.Text" xml:space="preserve">
-    <value>最近运行</value>
+  <data name="LastRunTimeListViewHeader.Text" xml:space="preserve">
+    <value>上次运行时间</value>
+  </data>
+  <data name="MacroListViewHeader.Text" xml:space="preserve">
+    <value>宏</value>
+  </data>
+  <data name="NewMacroButton.Label" xml:space="preserve">
+    <value>新建宏</value>
+  </data>
+  <data name="NewMacroDialog_Name.Text" xml:space="preserve">
+    <value>名字：</value>
+  </data>
+  <data name="NewMacroDialog_Template.Text" xml:space="preserve">
+    <value>框架：</value>
+  </data>
+  <data name="NewMacroDialog_Title" xml:space="preserve">
+    <value>新建宏</value>
+  </data>
+  <data name="OpenMenuFlyoutItem.Text" xml:space="preserve">
+    <value>打开</value>
+  </data>
+  <data name="RenameMacroDialog_Title" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="RenameMenuFlyoutItem.Text" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="TemplateListViewHeader.Text" xml:space="preserve">
+    <value>框架</value>
+  </data>
+  <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
+    <value>总计运行次数</value>
   </data>
 </root>

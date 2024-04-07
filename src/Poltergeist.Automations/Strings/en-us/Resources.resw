@@ -180,6 +180,9 @@
   <data name="Dashboard_Header" xml:space="preserve">
     <value>Dashboard</value>
   </data>
+  <data name="DebugModule_ConfigTitle" xml:space="preserve">
+    <value>Debug</value>
+  </data>
   <data name="DialogButton_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -246,8 +249,17 @@
   <data name="Terminal_Header" xml:space="preserve">
     <value>Terminal</value>
   </data>
+  <data name="TrialModule_ConfigTitle" xml:space="preserve">
+    <value>Trial run</value>
+  </data>
   <data name="Validation_BasicMacro_EmptyExecutions" xml:space="preserve">
     <value>This macro is unable to run because neither {1} nor {2} is set.</value>
+  </data>
+  <data name="Validation_ExceptionOccurred" xml:space="preserve">
+    <value>This macro is unable to run because the following exception occurred: {0}</value>
+  </data>
+  <data name="Validation_Failed" xml:space="preserve">
+    <value>This macro is unable to run because the validation failed.</value>
   </data>
   <data name="Validation_RequiresAdmin" xml:space="preserve">
     <value>This macro requires administrator privileges to run.</value>

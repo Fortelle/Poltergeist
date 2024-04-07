@@ -1,31 +1,25 @@
-﻿using System.Collections;
+﻿namespace Poltergeist.Automations.Macros;
 
-namespace Poltergeist.Automations.Macros;
-
-public class MacroStorage : IEnumerable<object>
+public class MacroStorage : Dictionary<string, object>
 {
-    private List<object> Items { get; set; } = new();
-
-    public void Add(object item)
+    public T? Get<T>(string key)
     {
-        Items.Add(item);
+        return (T?)this[key];
     }
 
     public T? Get<T>()
     {
-        return (T?)Items.FirstOrDefault(x => x is T);
+        return (T?)Values.FirstOrDefault(x => x is T);
     }
 
     public T? Get<T>(Func<T, bool> selector)
     {
-        return (T?)Items.FirstOrDefault(x => x is T t && selector(t));
+        return (T?)Values.FirstOrDefault(x => x is T t && selector(t));
     }
 
     public T[] GetAll<T>()
     {
-        return Items.OfType<T>().ToArray();
+        return Values.OfType<T>().ToArray();
     }
 
-    public IEnumerator<object> GetEnumerator() => Items.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 }

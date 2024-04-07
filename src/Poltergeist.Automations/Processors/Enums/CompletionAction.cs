@@ -3,8 +3,8 @@
 public enum CompletionAction
 {
     None,
-    ExitApplication,
     RestoreApplication,
+    ExitApplication,
 
     LockScreen,
 

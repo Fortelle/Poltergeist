@@ -147,9 +147,6 @@
   <data name="EndReason_UserAborted" xml:space="preserve">
     <value>用户中止</value>
   </data>
-  <data name="FavoriteAppBarButton.Label" xml:space="preserve">
-    <value>收藏</value>
-  </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
     <value>备注</value>
   </data>
@@ -183,6 +180,33 @@
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>参数设置</value>
   </data>
+  <data name="PropertiesPivotItem.Header" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="PropertyLabel_assembly_location" xml:space="preserve">
+    <value>程序集路径</value>
+  </data>
+  <data name="PropertyLabel_assembly_name" xml:space="preserve">
+    <value>程序集名</value>
+  </data>
+  <data name="PropertyLabel_assembly_version" xml:space="preserve">
+    <value>程序集版本</value>
+  </data>
+  <data name="PropertyLabel_shell_created_time" xml:space="preserve">
+    <value>创建日期</value>
+  </data>
+  <data name="PropertyLabel_shell_key" xml:space="preserve">
+    <value>实例键名</value>
+  </data>
+  <data name="PropertyLabel_shell_private_folder" xml:space="preserve">
+    <value>宏文件夹路径</value>
+  </data>
+  <data name="PropertyLabel_template_key" xml:space="preserve">
+    <value>框架键名</value>
+  </data>
+  <data name="PropertyLabel_template_version" xml:space="preserve">
+    <value>框架版本</value>
+  </data>
   <data name="RunAppBarButton.Label" xml:space="preserve">
     <value>运行</value>
   </data>
@@ -190,7 +214,7 @@
     <value>运行</value>
   </data>
   <data name="RunDefaultMenuFlyoutItem.Text" xml:space="preserve">
-    <value>默认配置</value>
+    <value>用户配置</value>
   </data>
   <data name="Run_Variation" xml:space="preserve">
     <value>配置{0}</value>

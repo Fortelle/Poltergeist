@@ -7,18 +7,17 @@ namespace Poltergeist.Automations.Processors;
 public class ArgumentService : IDisposable, IUserLogger
 {
     public IUserProcessor Processor { get; }
-    public IMacroBase Macro { get; }
-    public IUserLogger Logger { get; }
-    public OutputService Outputer => Processor.GetService<OutputService>();
     public string? Comment { get; set; }
 
-    private string SenderName { get; }
+    public IUserLogger Logger => this;
+    public OutputService Outputer => Processor.GetService<OutputService>();
+    public IUserMacro Macro => Processor.Macro;
+
+    private readonly string SenderName;
 
     public ArgumentService(MacroProcessor processor)
     {
-        Macro = processor.Macro;
         Processor = processor;
-        Logger = this;
 
         SenderName = GetType().Name;
     }

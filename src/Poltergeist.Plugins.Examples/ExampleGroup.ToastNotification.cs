@@ -14,6 +14,8 @@ public partial class ExampleGroup : MacroGroup
         Title = "Toast Notification Example",
         Description = "This example shows how to send toast notifications to windows.",
 
+        IsSingleton = true,
+
         LoopOptions =
         {
             DefaultCount = 3,

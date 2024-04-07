@@ -2,5 +2,5 @@
 
 public interface IPageClosed
 {
-    bool OnPageClosed();
+    void OnPageClosed();
 }

@@ -15,7 +15,7 @@ public sealed partial class OptionControl : UserControl
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
-        if(DataContext is not IOptionItem item)
+        if (DataContext is not ObservableParameterItem item)
         {
             return;
         }
@@ -23,17 +23,17 @@ public sealed partial class OptionControl : UserControl
         UpdateContent(item);
     }
 
-    private void UpdateContent(IOptionItem item)
+    private void UpdateContent(ObservableParameterItem item)
     {
-        Content = item switch
+        Content = item.Definition switch
         {
-            IIndexChoiceOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
-            IIndexChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
-            IChoiceOptionItem { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
-            IChoiceOptionItem { Mode: ChoiceOptionMode.Slider } x => new SliderChoiceOptionControl(x),
-            IChoiceOptionItem { Mode: ChoiceOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
+            IIndexChoiceOption { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
+            IIndexChoiceOption { Mode: ChoiceOptionMode.Slider } => new SliderChoiceOptionControl(item),
+            IChoiceOption { Mode: ChoiceOptionMode.ComboBox } => new ComboBoxOptionControl(item),
+            IChoiceOption { Mode: ChoiceOptionMode.Slider } => new SliderChoiceOptionControl(item),
+            IChoiceOption { Mode: ChoiceOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
 
-            RatingOption x => new RatingOptionControl(x),
+            RatingOption => new RatingOptionControl(item),
 
             { BaseType.IsEnum: true } => new ComboBoxOptionControl(item),
 
@@ -41,36 +41,36 @@ public sealed partial class OptionControl : UserControl
             BoolOption { Mode: BoolOptionMode.CheckBox } => new CheckBoxOptionControl(item),
             BoolOption { Mode: BoolOptionMode.ToggleButtons } => new ToggleButtonOptionControl(item),
             BoolOption { Mode: BoolOptionMode.LeftRightSwitch } => new LeftRightSwitchOptionControl(item),
-            OptionItem<bool> => new SwitchOptionControl(item),
+            OptionDefinition<bool> => new SwitchOptionControl(item),
 
-            OptionItem<string[]> x => new StringArrayOptionControl(x),
+            OptionDefinition<string[]> => new StringArrayOptionControl(item),
 
-            INumberOptionItem { Layout: NumberOptionLayout.NumberBox } => new NumberBoxOptionControl(item),
-            INumberOptionItem { Layout: NumberOptionLayout.Slider } => new SliderOptionControl(item),
-            OptionItem<int> or
-            OptionItem<byte> or
-            OptionItem<decimal> or
-            OptionItem<double> or
-            OptionItem<Half> or
-            OptionItem<short> or
-            OptionItem<int> or
-            OptionItem<long> or
-            OptionItem<sbyte> or
-            OptionItem<float> or
-            OptionItem<ushort> or
-            OptionItem<uint> or
-            OptionItem<ulong> => new NumberBoxOptionControl(item),
+            INumberOption { Layout: NumberOptionLayout.NumberBox } => new NumberBoxOptionControl(item),
+            INumberOption { Layout: NumberOptionLayout.Slider } => new SliderOptionControl(item),
+            OptionDefinition<int> or
+            OptionDefinition<byte> or
+            OptionDefinition<decimal> or
+            OptionDefinition<double> or
+            OptionDefinition<Half> or
+            OptionDefinition<short> or
+            OptionDefinition<int> or
+            OptionDefinition<long> or
+            OptionDefinition<sbyte> or
+            OptionDefinition<float> or
+            OptionDefinition<ushort> or
+            OptionDefinition<uint> or
+            OptionDefinition<ulong> => new NumberBoxOptionControl(item),
 
-            OptionItem<TimeOnly> x => new TimeOnlyOptionControl(x),
+            OptionDefinition<TimeOnly> => new TimeOnlyOptionControl(item),
 
-            OptionItem<HotKey> x => new HotKeyOptionControl(x),
+            OptionDefinition<HotKey> => new HotKeyOptionControl(item),
 
-            PathOption pathOption => new PickerOptionControl(pathOption),
+            PathOption => new PickerOptionControl(item),
 
-            PasswordOption passwordOption => new PasswordOptionControl(passwordOption),
+            PasswordOption => new PasswordOptionControl(item),
 
-            TextOption { Multiline: true } x => new MultilineTextOptionControl(x),
-            TextOption or OptionItem<string> => new TextBoxOptionControl(item),
+            TextOption { Multiline: true } => new MultilineTextOptionControl(item),
+            TextOption or OptionDefinition<string> => new TextBoxOptionControl(item),
 
             _ => new TextBlock()
             {

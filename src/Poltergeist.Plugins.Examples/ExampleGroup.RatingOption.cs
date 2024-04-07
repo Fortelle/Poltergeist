@@ -12,6 +12,8 @@ public partial class ExampleGroup : MacroGroup
     {
         Title = "RatingOption Example",
 
+        IsSingleton = true,
+
         UserOptions = {
 
            new RatingOption("default")
@@ -53,7 +55,7 @@ public partial class ExampleGroup : MacroGroup
 
            new RatingOption("defaultvalue", 3)
            {
-               DisplayLabel = $"base.{nameof(IOptionItem.Default)} = 3",
+               DisplayLabel = $"base.{nameof(IParameterDefinition.DefaultValue)} = 3",
            },
         },
     };

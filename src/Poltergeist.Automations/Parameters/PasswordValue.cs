@@ -22,8 +22,13 @@ public class PasswordValue
 
     public class PasswordValueConverter : JsonConverter
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
+            if (value is null)
+            {
+                return;
+            }
+
             if (value is not PasswordValue pv)
             {
                 throw new NotSupportedException();
@@ -34,9 +39,13 @@ public class PasswordValue
             writer.WriteValue(base64);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
-            var base64 = (string)reader.Value;
+            if (reader.Value is not string base64)
+            {
+                throw new NotSupportedException();
+            }
+
             var bytes = Convert.FromBase64String(base64);
             var text = Encoding.UTF8.GetString(bytes);
             var pv = new PasswordValue(text);

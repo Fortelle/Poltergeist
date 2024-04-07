@@ -11,6 +11,11 @@ public class DateTimeToAgoConverter : IValueConverter
             return null;
         }
 
+        if (datetime == default)
+        {
+            return null;
+        }
+
         var timespan = DateTime.Now - datetime;
         return timespan switch
         {

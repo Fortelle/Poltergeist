@@ -4,16 +4,16 @@ namespace Poltergeist.Services;
 
 public class LocalSettingsService
 {
-    public OptionCollection Settings = new();
+    public ParameterDefinitionValueCollection Settings = new();
     public event Action<string, object>? Changed;
 
     public LocalSettingsService()
     {
     }
 
-    public void Add(IOptionItem option)
+    public void Add(IParameterDefinition definition)
     {
-        Settings.Add(option);
+        Settings.Add(definition);
     }
 
     public void Load()
@@ -22,9 +22,9 @@ public class LocalSettingsService
         Settings.Load(filepath);
     }
 
-    public T? Get<T>(string key, T? def = default)
+    public T? Get<T>(string key)
     {
-        return Settings.Get(key, def);
+        return Settings.Get<T>(key);
     }
 
     public void Set<T>(string key, T value)

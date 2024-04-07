@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Macros;
 
 public class MacroActionArguments
 {
-    public IMacroBase Macro { get; init; }
+    public IUserMacro Macro { get; init; }
 
     public required IReadOnlyDictionary<string, object?> Options { get; init; }
 
@@ -14,7 +14,7 @@ public class MacroActionArguments
 
     public string? Message { get; set; }
 
-    public MacroActionArguments(IMacroBase macro)
+    public MacroActionArguments(IUserMacro macro)
     {
         Macro = macro;
     }

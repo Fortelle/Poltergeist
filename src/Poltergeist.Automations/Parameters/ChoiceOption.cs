@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Automations.Parameters;
 
-public class ChoiceOption<T> : OptionItem<T>, IChoiceOptionItem
+public class ChoiceOption<T> : OptionDefinition<T>, IChoiceOption where T : notnull
 {
     public required ChoiceEntry[] Choices { get; init; }
 

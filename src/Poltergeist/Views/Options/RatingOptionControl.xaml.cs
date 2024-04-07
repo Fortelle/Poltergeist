@@ -1,49 +1,62 @@
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Parameters;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Views.Options;
 
 public sealed partial class RatingOptionControl : UserControl
 {
-    private RatingOption Item { get; }
+    private ObservableParameterItem Item { get; }
 
     private double Value
     {
-        get => Item.Value <= 0 ? -1 : Convert.ToDouble(Item.Value);
+        get => (Item.Value is int x && x > 0) ? Convert.ToDouble(x) : -1;
         set => Item.Value = value <= 0 ? 0 : Convert.ToInt32(value);
     }
 
-    public RatingOptionControl(RatingOption item)
+    private bool IsClearEnabled { get; }
+    private int MaxRating { get; }
+    private string Caption { get; }
+
+    public RatingOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
+        if (item.Definition is not RatingOption ratingOption)
+        {
+            throw new NotSupportedException();
+        }
+
+        IsClearEnabled = ratingOption.AllowsEmpty;
+        MaxRating = ratingOption.MaxRating;
 
         Item = item;
 
-        RatingControl1.Caption = GetCaption();
+        Caption = GetCaption();
+
+        InitializeComponent();
     }
 
     private string GetCaption()
     {
-        if (Item.CaptionMethod is not null)
+        var ratingOption = (RatingOption)Item.Definition;
+        var value = (int)Item.Value!;
+
+        if (ratingOption.CaptionMethod is not null)
         {
-            return Item.CaptionMethod(Item.Value);
+            return ratingOption.CaptionMethod(value);
         }
-        else if (Item.CaptionList is not null)
+        else if (ratingOption.CaptionList is not null)
         {
-            return Item.Value >= 0 && Item.Value < Item.CaptionList.Length
-                ? Item.CaptionList[Item.Value]
+            return value >= 0 && value < ratingOption.CaptionList.Length
+                ? ratingOption.CaptionList[value]
                 : "";
         }
-        else if (Item.Caption is not null)
+        else if (ratingOption.Caption is not null)
         {
-            return Item.Caption;
+            return ratingOption.Caption;
         }
-        else if (Item.Value > 0)
+        else if (value > 0)
         {
-            return Item.Value.ToString();
+            return value.ToString();
         }
         else
         {

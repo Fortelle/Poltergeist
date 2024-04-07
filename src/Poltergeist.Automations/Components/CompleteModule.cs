@@ -19,14 +19,14 @@ public class CompleteModule : MacroModule
             GetText = x => ResourceHelper.Localize($"Poltergeist.Automations/Resources/AfterCompletion_CompletionAction_{x}"),
         });
 
-        macro.UserOptions.Add(new OptionItem<TimeOnly>("aftercompletion.minimumtime")
+        macro.UserOptions.Add(new OptionDefinition<TimeOnly>("aftercompletion.minimumtime")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
             Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime_Description"),
         });
 
-        macro.UserOptions.Add(new OptionItem<bool>("aftercompletion.allowerror")
+        macro.UserOptions.Add(new OptionDefinition<bool>("aftercompletion.allowerror")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_AllowError"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
@@ -41,7 +41,7 @@ public class CompleteModule : MacroModule
         processor.Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
     }
 
-    private void OnProcessorEnding(ProcessorEndingHook hook, IServiceProcessor processor)
+    private void OnProcessorEnding(ProcessorEndingHook hook, IUserProcessor processor)
     {
         var completeAction = processor.Options.Get<CompletionAction>("aftercompletion.action");
         var completeAllowerror = processor.Options.Get<bool>("aftercompletion.allowerror");
@@ -59,7 +59,7 @@ public class CompleteModule : MacroModule
         {
             hook.CompletionAction = CompletionAction.None;
         }
-        else if (completeMinimumTime != default && completeMinimumTime.ToTimeSpan().Ticks < hook.HistoryEntry.Duration.Ticks)
+        else if (completeMinimumTime != default && completeMinimumTime.ToTimeSpan().Ticks < hook.Duration.Ticks)
         {
             hook.CompletionAction = CompletionAction.None;
         }

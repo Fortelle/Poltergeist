@@ -1,126 +1,292 @@
-﻿using Poltergeist.Automations.Components.Interactions;
+﻿using Microsoft.VisualBasic.FileIO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Common.Utilities.Cryptology;
+using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Services;
 
 public class MacroManager
 {
-    public List<IMacroBase> Macros { get; } = new();
-    public List<MacroGroup> Groups { get; } = new();
-    public OptionCollection GlobalOptions { get; set; } = new();
-    public ParameterCollection GlobalStatistics { get; set; } = new();
+    public List<IFrontMacro> Templates { get; } = new();
 
-    public List<MacroProcessor> InRunningProcesses { get; set; } = new();
+    public List<MacroShell> Shells { get; } = new();
 
-    public bool IsBusy => InRunningProcesses.Any();
+    public ParameterDefinitionValueCollection GlobalOptions { get; set; } = new();
+    public ParameterDefinitionValueCollection GlobalStatistics { get; set; } = new();
+
+    public List<IFrontProcessor> InRunningProcessors { get; set; } = new();
+
+    public bool IsBusy => InRunningProcessors.Any();
 
     private readonly PathService PathService;
-    private readonly LocalSettingsService LocalSettings;
 
-    public Dictionary<string, MacroSummaryEntry> Summaries { get; } = new();
+    public event Action? MacroCollectionChanged;
+    public event Action? MacroPropertyChanged;
+    public event Action<MacroShell>? MacroProcessorCompleted;
 
-    public MacroManager(PathService path, LocalSettingsService localSettings)
+    public MacroManager(PathService path)
     {
         PathService = path;
-        LocalSettings = localSettings;
 
-        App.ContentLoaded += () =>
-        {
-            LoadGlobalOptions();
-            LoadGlobalStatistics();
-
-            LoadSummary();
-            var macroManager = App.GetService<MacroManager>();
-            foreach(var summary in Summaries.Values)
-            {
-                var macro = macroManager.GetMacro(summary.MacroKey);
-                if (macro is not null)
-                {
-                    summary.Title = macro.Title;
-                }
-            }
-        };
+        LoadGlobalOptions();
+        LoadGlobalStatistics();
     }
 
-    public void AddMacro(IMacroBase macro)
+    public void AddMacro(IFrontMacro macro)
     {
-        macro.PrivateFolder = PathService.GetMacroFolder(macro);
-        macro.SharedFolder = PathService.SharedFolder;
         macro.Initialize();
 
-        Macros.Add(macro);
+        if (macro.IsSingleton)
+        {
+            var shell = new MacroShell(macro);
+            AddMacro(shell);
+        }
+        else
+        {
+            Templates.Add(macro);
+        }
     }
 
-    public void AddGroup(MacroGroup group)
+    public void AddMacro(MacroShell shell)
     {
-        group.GroupFolder = PathService.GetGroupFolder(group);
+        shell.PrivateFolder = Path.Combine(PathService.MacroFolder, shell.ShellKey);
+        shell.Template?.Initialize();
+        Shells.Add(shell);
+
+        MacroCollectionChanged?.Invoke();
+    }
+
+    public void RemoveMacro(MacroShell shell)
+    {
+        if (!Shells.Contains(shell))
+        {
+            return;
+        }
+
+        Shells.Remove(shell);
+
+        if (shell.PrivateFolder is not null && Directory.Exists(shell.PrivateFolder))
+        {
+            try
+            {
+                FileSystem.DeleteDirectory(shell.PrivateFolder, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+            }
+            catch {}
+        }
+
+        MacroCollectionChanged?.Invoke();
+
+        SaveProperties();
+    }
+
+    public void LoadGroup(MacroGroup group)
+    {
         group.Load();
 
-        Groups.Add(group);
-
-        foreach (var macro in group.Macros)
+        foreach (var macro in group.ReadMacroFields())
         {
-            macro.Group = group;
+            AddMacro(macro);
+        }
+        foreach (var macro in group.ReadMacroFunctions())
+        {
+            AddMacro(macro);
+        }
+        foreach (var macro in group.ReadMacroClasses())
+        {
             AddMacro(macro);
         }
     }
 
-    public void AddGroup<T>() where T : MacroGroup, new()
+    public void LoadGroup<T>() where T : MacroGroup, new()
     {
-        AddGroup(new T());
+        LoadGroup(new T());
     }
 
-    public IMacroBase? GetMacro(string key)
+    public IFrontMacro? GetTemplate(string macroKey)
     {
-        return Macros.FirstOrDefault(x => x.Key == key);
+        return Templates.FirstOrDefault(x => x.Key == macroKey);
     }
 
-    public void TryStart(MacroProcessor processor)
+    public MacroShell? GetShell(string shellKey)
+    {
+        return Shells.FirstOrDefault(x => x.ShellKey == shellKey);
+    }
+
+    public MacroProcessor CreateProcessor(MacroStartArguments args)
+    {
+        var shell = GetShell(args.ShellKey);
+
+        if (shell is null)
+        {
+            throw new KeyNotFoundException();
+        }
+
+        if (shell.Template is null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var processor = new MacroProcessor(shell.Template, args.Reason, args.ShellKey);
+
+        if (processor.Exception is not null)
+        {
+            return processor;
+        }
+
+        if (!args.IgnoresUserOptions)
+        {
+            foreach (var (key, value) in GetOptions(shell))
+            {
+                processor.Options.Reset(key, value);
+            }
+        }
+        if (args.OptionOverrides is not null)
+        {
+            foreach (var (key, value) in args.OptionOverrides)
+            {
+                processor.Options.Reset(key, value);
+            }
+        }
+
+        foreach (var (definition, value) in GlobalStatistics.ToDefinitionValueArray())
+        {
+            processor.Statistics.Reset(definition.Key, value);
+        }
+        if (shell.Statistics is not null)
+        {
+            foreach (var (definition, value) in shell.Statistics.ToDefinitionValueArray())
+            {
+                processor.Statistics.Reset(definition.Key, value);
+            }
+        }
+
+        foreach (var (key, value) in GetEnvironments(shell))
+        {
+            processor.Environments.Reset(key, value);
+        }
+        if (args.EnvironmentOverrides is not null)
+        {
+            foreach (var (key, value) in args.EnvironmentOverrides)
+            {
+                processor.Environments.Reset(key, value);
+            }
+        }
+
+        if (args.SessionStorage is not null)
+        {
+            foreach (var (key, value) in args.SessionStorage)
+            {
+                processor.SessionStorage.Reset(key, value);
+            }
+        }
+
+        return processor;
+    }
+
+    public Dictionary<string, object?> GetOptions(MacroShell shell)
+    {
+        var options = new Dictionary<string, object?>();
+        foreach (var (definition, value) in GlobalOptions.ToDefinitionValueArray())
+        {
+            options[definition.Key] = value;
+        }
+        if (shell.UserOptions is not null)
+        {
+            foreach (var (definition, value) in shell.UserOptions.ToDefinitionValueArray())
+            {
+                options[definition.Key] = value;
+            }
+        }
+        return options;
+    }
+
+    public Dictionary<string, object?> GetEnvironments(MacroShell shell)
+    {
+        var environments = new Dictionary<string, object?>();
+
+        var pathService = App.GetService<PathService>();
+        environments.Add("application_name", PathService.ApplicationName);
+        environments.Add("document_data_folder", pathService.DocumentDataFolder);
+        environments.Add("shared_folder", pathService.SharedFolder);
+        environments.Add("macro_folder", pathService.MacroFolder);
+        environments.Add("is_development", App.IsDevelopment);
+
+        var localSettings = App.GetService<LocalSettingsService>();
+        foreach (var (definition, value) in localSettings.Settings.ToDefinitionValueArray())
+        {
+            environments.Add(definition.Key, value);
+        }
+
+        if (!string.IsNullOrEmpty(shell.PrivateFolder))
+        {
+            environments.Add("private_folder", shell.PrivateFolder);
+        }
+
+        return environments;
+    }
+
+    public void Launch(IFrontProcessor processor)
     {
         var macro = processor.Macro;
 
-        if (InRunningProcesses.Contains(processor))
+        if (InRunningProcessors.Contains(processor))
         {
             throw new Exception("The macro is already running.");
         }
 
-        InRunningProcesses.Add(processor);
+        InRunningProcessors.Add(processor);
 
         processor.Completed += Processor_Completed;
 
         processor.Launch();
 
-        UpdateSummary(processor.Macro.Key, x =>
+        UpdateProperties(processor.ShellKey!, properties =>
         {
-            x.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
-            x.RunCount = processor.Statistics.Get<int>("total_run_count");
+            properties.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
+            properties.RunCount = processor.Statistics.Get<int>("total_run_count");
         });
     }
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        var processor = (MacroProcessor)sender!;
+        var processor = (IFrontProcessor)sender!;
 
         processor.Completed -= Processor_Completed;
 
-        var macro = processor.Macro;
-        InRunningProcesses.Remove(processor);
+        InRunningProcessors.Remove(processor);
+
+        if (processor.ShellKey is null)
+        {
+            return;
+        }
+        var shell = GetShell(processor.ShellKey)!;
 
         if (processor.Environments.Get(MacroBase.UseStatisticsKey, true))
         {
-            var globalStatistics = processor.Statistics.ToValueDictionary(ParameterSource.Global);
-            if (globalStatistics.Any())
+            foreach (var entry in processor.Statistics)
             {
-                foreach (var (key, value) in globalStatistics)
+                if (shell.Statistics?.ContainsKey(entry.Key) == true)
                 {
-                    GlobalStatistics.Update(key, value);
+                    shell.Statistics.Set(entry.Key, entry.Value);
                 }
-                GlobalStatistics.Save();
+                else if (GlobalStatistics.ContainsKey(entry.Key) == true)
+                {
+                    GlobalStatistics.Set(entry.Key, entry.Value);
+                }
             }
+
+            shell.Statistics?.Save();
+            GlobalStatistics.Save();
         }
+
+        shell.History?.Add(e.HistoryEntry);
+
+        MacroProcessorCompleted?.Invoke(shell);
     }
 
     private void LoadGlobalOptions()
@@ -147,7 +313,7 @@ public class MacroManager
 
     public void SendMessage(InteractionMessage message)
     {
-        var processor = InRunningProcesses.FirstOrDefault(x => x.ProcessId == message.ProcessId);
+        var processor = InRunningProcessors.FirstOrDefault(x => x.ProcessId == message.ProcessId);
         if (processor == null)
         {
             return;
@@ -160,115 +326,78 @@ public class MacroManager
         processor.ReceiveMessage(message.ToDictionary());
     }
 
-    private void LoadSummary()
+    public void LoadProperties()
     {
-        Summaries.Clear();
-
-        var summaryPath = PathService.SummariesFile;
-        if (!File.Exists(summaryPath))
+        var propertiesPath = PathService.MacroPropertiesFile;
+        if (!File.Exists(propertiesPath))
         {
             return;
         }
 
         try
         {
-            SerializationUtil.JsonLoad<MacroSummaryEntry[]>(summaryPath, out var list);
-            foreach(var summary in list)
+            SerializationUtil.JsonLoad<MacroProperties[]>(propertiesPath, out var propertiesList);
+            foreach (var properties in propertiesList!)
             {
-                Summaries.Add(summary.MacroKey, summary);
+                var template = GetTemplate(properties.TemplateKey);
+                if (template is not null)
+                {
+                    var shell = new MacroShell(template, properties);
+                    AddMacro(shell);
+                }
+                else
+                {
+                    var shell = GetShell(properties.ShellKey);
+                    if (shell is not null)
+                    {
+                        shell.Properties = properties;
+                    }
+                    else
+                    {
+                        AddMacro(new MacroShell(properties));
+                    }
+                }
             }
         }
         catch
         {
-
         }
     }
 
-    public MacroSummaryEntry? GetSummary(string macroKey)
+    public MacroProperties? GetProperties(string shellKey)
     {
-        if (Summaries.TryGetValue(macroKey, out var entry))
+        var shell = GetShell(shellKey);
+        return shell?.Properties;
+    }
+
+    public void UpdateProperties(string shellKey, Action<MacroProperties> action)
+    {
+        var shell = GetShell(shellKey);
+        if (shell is null)
         {
-            return entry;
+            throw new KeyNotFoundException();
         }
 
-        return null;
+        action.Invoke(shell.Properties);
+
+        MacroPropertyChanged?.Invoke();
+
+        SaveProperties();
     }
 
-    public void UpdateSummary(string key, Action<MacroSummaryEntry>? action = null)
+    public void SaveProperties()
     {
-        if(!Summaries.TryGetValue(key, out var entry))
+        var propertiesPath = PathService.MacroPropertiesFile;
+        var serializer = new JsonSerializer
         {
-            var macro = GetMacro(key)!;
-            entry = new MacroSummaryEntry()
-            {
-                MacroKey = key,
-                Title = macro.Title,
-            };
-            Summaries.Add(key, entry);
-        }
-
-        action?.Invoke(entry);
-
-        var summaryPath = PathService.SummariesFile;
-        SerializationUtil.JsonSave(summaryPath, Summaries.Values);
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+        };
+        var propertiesList = Shells
+            .Select(x => x.Properties)
+            .Select(x => JObject.FromObject(x, serializer))
+            .Where(x => x.Values().Count() > 2)
+            .ToArray();
+        SerializationUtil.JsonSave(propertiesPath, propertiesList);
     }
-
-    public MacroProcessor CreateProcessor(IMacroBase macro, LaunchReason reason)
-    {
-        var processor = new MacroProcessor(macro, reason);
-
-        if (processor.Exception is not null)
-        {
-            return processor;
-        }
-
-        PushEnvironments(processor.Environments);
-        PushGlobalOptions(processor.Options);
-        PushGlobalStatistics(processor.Statistics);
-
-        return processor;
-    }
-
-    public void PushEnvironments(VariableCollection vc)
-    {
-        vc.Add("application_name", PathService.ApplicationName, ParameterSource.Global);
-
-        var localSettings = App.GetService<LocalSettingsService>();
-        var dict = localSettings.Settings.ToDictionary();
-
-        vc.AddRange(dict, ParameterSource.Global);
-
-        var pathService = App.GetService<PathService>();
-        vc.Add("document_data_folder", pathService.DocumentDataFolder, ParameterSource.Global);
-        vc.Add("shared_folder", pathService.SharedFolder, ParameterSource.Global);
-        vc.Add("macro_folder", pathService.MacroFolder, ParameterSource.Global);
-        vc.Add("group_folder", pathService.GroupFolder, ParameterSource.Global);
-    }
-
-    public void PushGlobalOptions(VariableCollection vc)
-    {
-        var globalOptions = GlobalOptions.ToDictionary();
-        foreach (var (key, value) in globalOptions)
-        {
-            if (vc.Contains(key))
-            {
-                continue;
-            }
-            vc.Add(key, value, ParameterSource.Global);
-        }
-    }
-
-    private void PushGlobalStatistics(VariableCollection vc)
-    {
-        var globalStatistics = GlobalOptions.ToDictionary();
-        foreach (var (key, value) in globalStatistics)
-        {
-            if (vc.Contains(key))
-            {
-                continue;
-            }
-            vc.Add(key, value, ParameterSource.Global);
-        }
-    }
-
 }

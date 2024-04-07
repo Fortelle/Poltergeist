@@ -14,22 +14,21 @@ public partial class TestGroup
 
         Description = "This macro is used for testing the LocalStorageService.",
 
+        IsSingleton = true,
+
         UserOptions =
         {
-            new ChoiceOption<ParameterSource>("ParameterSource", new[]{
-                ParameterSource.Macro,
-                ParameterSource.Group,
-                ParameterSource.Global
-            },
-            ParameterSource.Macro),
+            new BoolOption("IsGlobal"),
         },
 
         Execute = (args) =>
         {
-            var source = args.Processor.Options.Get<ParameterSource>("ParameterSource");
+            var isGlobal = args.Processor.Options.Get<bool>("IsGlobal");
 
             var localStorage = args.Processor.GetService<LocalStorageService>();
-            var history = localStorage.Get("history", Array.Empty<int>(), source);
+            var history = isGlobal
+                ? localStorage.GlobalGet("history", Array.Empty<int>())
+                : localStorage.Get("history", Array.Empty<int>());
 
             args.Outputer.NewGroup("Last three results:");
             foreach (var x in history.Take(3))
@@ -42,7 +41,14 @@ public partial class TestGroup
             args.Outputer.Write(value.ToString());
 
             history = history.Append(value).TakeLast(3).ToArray();
-            localStorage.Set("history", history, source);
+            if (isGlobal)
+            {
+                localStorage.GlobalSet("history", history);
+            }
+            else
+            {
+                localStorage.Set("history", history);
+            }
         },
     };
 
@@ -54,17 +60,19 @@ public partial class TestGroup
 
         Description = "This macro is used for testing the FileStorageService.",
 
+        IsSingleton = true,
+
         UserOptions =
         {
-            new EnumOption<FileStorageSource>("FileStorageSource", FileStorageSource.Macro),
+            new BoolOption("IsGlobal", false),
         },
 
         Execute = (args) =>
         {
-            var source = args.Processor.Options.Get<FileStorageSource>("FileStorageSource");
+            var isGlobal = args.Processor.Options.Get<bool>("IsGlobal");
 
             var fileStorage = args.Processor.GetService<FileStorageService>();
-            var history = fileStorage.Get<int[]>("history.json", source);
+            var history = fileStorage.Get<int[]>("history.json", isGlobal);
             history ??= Array.Empty<int>();
 
             args.Outputer.NewGroup("Last three results:");
@@ -78,7 +86,7 @@ public partial class TestGroup
             args.Outputer.Write(value.ToString());
 
             history = history.Append(value).TakeLast(3).ToArray();
-            fileStorage.Set("history.json", history, source);
+            fileStorage.Set("history.json", history, isGlobal);
         },
     };
 }

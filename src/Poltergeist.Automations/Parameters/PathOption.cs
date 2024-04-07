@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Automations.Parameters;
 
-public class PathOption : OptionItem<string>
+public class PathOption : OptionDefinition<string>
 {
     public PathOptionMode Mode { get; set; }
 

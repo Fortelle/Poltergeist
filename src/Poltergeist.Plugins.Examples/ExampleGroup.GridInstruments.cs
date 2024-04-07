@@ -13,7 +13,9 @@ public partial class ExampleGroup
     {
         Title = "GridInstrument Example",
         Description = "This example shows how to use the GridInstrument.",
+
         ShowStatusBar = false,
+        IsSingleton = true,
 
         Execute = (args) =>
         {
@@ -87,7 +89,9 @@ public partial class ExampleGroup
     {
         Title = "GridInstrument Customization Example",
         Description = "This example shows how to customize the GridInstrument.",
+
         ShowStatusBar = false,
+        IsSingleton = true,
 
         Execute = (args) =>
         {

@@ -2,8 +2,8 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Services;
@@ -15,7 +15,6 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
     public static readonly NavigationInfo NavigationInfo = new()
     {
         Key = "macro",
-        Glyph = "\uF259",
         CreateContent = (args, obj) =>
         {
             if (args.Length == 0)
@@ -23,21 +22,21 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
                 return null;
             }
 
-            var macrokey = args[0];
+            var shellKey = args[0];
             var macroManager = App.GetService<MacroManager>();
-            var macro = macroManager.GetMacro(macrokey);
-            if (macro is null)
+            var shell = macroManager.GetShell(shellKey);
+            if (shell is null)
             {
-                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroNotExist", macrokey));
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroNotExist", shellKey));
                 return null;
             }
-            //if (!macro.Status.IsInitialized())
-            //{
-            //    App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroUnavailable", macrokey));
-            //    return null;
-            //}
-            
-            var macroPage = new MacroPage(new(macro));
+            if (shell.Template is null)
+            {
+                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/MacroNotExist", shell.TemplateKey));
+                return null;
+            }
+
+            var macroPage = new MacroPage(new(shell));
             return macroPage;
         },
         CreateHeader = obj =>
@@ -45,7 +44,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             var page = (MacroPage)obj;
             var textblock = new TextBlock()
             {
-                Text = page.ViewModel?.Macro.Title,
+                Text = page.ViewModel?.Shell.Title,
             };
             var icon = new FontIcon()
             {
@@ -85,6 +84,21 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             };
             return grid;
         },
+        CreateIcon = obj =>
+        {
+            var page = (MacroPage)obj;
+            if (page.ViewModel.Shell.Icon is string s)
+            {
+                var icon = new IconInfo(s);
+                var source = icon.ToIconSource();
+                if (source is not null)
+                {
+                    return source;
+                }
+            }
+
+            return new IconInfo(MacroShell.DefaultIconUri).ToIconSource();
+        },
     };
 
     public MacroViewModel ViewModel { get; }
@@ -100,54 +114,60 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
 
     private void LoadConfigVariations()
     {
-        if (!ViewModel.Macro.ConfigVariations.Any())
+        if (!ViewModel.Shell.Template!.ConfigVariations.Any())
         {
             return;
         }
 
         RunMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
-        for (var i = 0; i < ViewModel.Macro.ConfigVariations.Count; i++)
+        for (var i = 0; i < ViewModel.Shell.Template.ConfigVariations.Count; i++)
         {
-            var variation = ViewModel.Macro.ConfigVariations[i];
+            var variation = ViewModel.Shell.Template.ConfigVariations[i];
+
+            if (variation.IsDevelopmentOnly && !App.IsDevelopment)
+            {
+                continue;
+            }
+
             var mfi = new MenuFlyoutItem()
             {
                 Text = variation.Title ?? App.Localize($"Poltergeist/Macros/Run_Variation", i + 1),
                 Command = ViewModel.StartCommand,
                 CommandParameter = new MacroStartArguments()
                 {
-                    MacroKey = ViewModel.Macro.Key,
+                    ShellKey = ViewModel.Shell.ShellKey,
                     Reason = LaunchReason.ByUser,
-                    Variation = variation,
+                    IgnoresUserOptions = variation.IgnoresUserOptions,
+                    OptionOverrides = variation.OptionOverrides,
+                    EnvironmentOverrides = variation.EnvironmentOverrides,
+                    SessionStorage = variation.SessionStorage,
                 },
-                Icon = new FontIcon()
-                {
-                    Glyph = variation.Glyph ?? "\uE768",
-                },
+                Icon = new IconInfo(variation.Icon ?? "\uE768").ToIconElement(),
         };
             RunMenuFlyout.Items.Add(mfi);
         }
     }
     
-    private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+    private void ActionExecuteButton_Click(object sender, RoutedEventArgs e)
     {
-        if(((FrameworkElement)sender).DataContext is MacroAction action)
+        if (((FrameworkElement)sender).DataContext is not MacroAction action)
         {
-            var macroManager = App.GetService<MacroManager>();
-
-            var options = ViewModel.Macro.GetOptionCollection();
-            macroManager.PushGlobalOptions(options);
-
-            var environments = new VariableCollection();
-            macroManager.PushEnvironments(environments);
-
-            var args = new MacroActionArguments(ViewModel.Macro)
-            {
-                Options = options.ToValueDictionary(),
-                Environments = environments.ToValueDictionary(),
-            };
-            ViewModel.Macro.ExecuteAction(action, args);
+            return;
         }
+
+        var macroManager = App.GetService<MacroManager>();
+
+        var macro = (MacroBase)ViewModel.Shell.Template!;
+        var options = macroManager.GetOptions(ViewModel.Shell);
+        var environments = macroManager.GetEnvironments(ViewModel.Shell);
+
+        var args = new MacroActionArguments(macro)
+        {
+            Options = options,
+            Environments = environments,
+        };
+        ViewModel.Shell.ExecuteAction(action, args);
     }
 
     public bool OnPageClosing()
@@ -162,7 +182,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return false;
         }
 
-        ViewModel.Macro.UserOptions.Save();
+        ViewModel.Shell.UserOptions?.Save();
 
         return true;
     }
@@ -174,7 +194,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return true;
         }
 
-        ViewModel.Macro.UserOptions.Save();
+        ViewModel.Shell.UserOptions?.Save();
 
         return true;
     }
@@ -183,12 +203,12 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
     {
         if (((FrameworkElement)e.OriginalSource).DataContext is ProcessHistoryEntry historyEntry)
         {
-            if(ViewModel.Macro.PrivateFolder is null)
+            if(ViewModel.Shell.PrivateFolder is null)
             {
                 return;
             }
 
-            var logFile = Path.Combine(ViewModel.Macro.PrivateFolder, "Logs", historyEntry.ProcessId + ".log");
+            var logFile = Path.Combine(ViewModel.Shell.PrivateFolder, "Logs", historyEntry.ProcessId + ".log");
             if(!File.Exists(logFile))
             {
                 App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));
@@ -206,17 +226,4 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
         }
     }
 
-}
-
-internal class EndReasonToTextConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        return App.Localize($"Poltergeist/Macros/EndReason_{value}");
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
 }

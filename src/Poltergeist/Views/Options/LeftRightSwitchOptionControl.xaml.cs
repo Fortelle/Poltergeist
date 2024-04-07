@@ -2,24 +2,21 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Parameters;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
 public sealed partial class LeftRightSwitchOptionControl : UserControl
 {
-    private IOptionItem Item { get; }
-    private string LeftContent { get; }
-    private string RightContent { get; }
+    private ObservableParameterItem Item { get; }
+    private string? LeftContent { get; }
+    private string? RightContent { get; }
 
     private bool IsChecked
     {
-        get => (bool)Item.Value!;
+        get => Item.Value is bool b ? b : false;
         set
         {
-            if(value == IsChecked)
+            if (value == IsChecked)
             {
                 return;
             }
@@ -29,16 +26,21 @@ public sealed partial class LeftRightSwitchOptionControl : UserControl
         }
     }
 
-    public LeftRightSwitchOptionControl(IOptionItem item)
+    public LeftRightSwitchOptionControl(ObservableParameterItem entry)
     {
-        InitializeComponent();
-
-        Item = item;
-        if(item is BoolOption boolOption)
+        switch (entry.Definition)
         {
-            LeftContent = boolOption.OnText ?? "£¨left)";
-            RightContent = boolOption.OffText ?? "(right)";
+            case BoolOption boolOption:
+                LeftContent = boolOption.OnText ?? "£¨left)";
+                RightContent = boolOption.OffText ?? "(right)";
+                break;
+            default:
+                throw new NotSupportedException();
         }
+
+        Item = entry;
+
+        InitializeComponent();
     }
 
     private void LeftTextBlock_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
-
 using Poltergeist.Contracts.Services;
 using Poltergeist.Services;
 
@@ -61,7 +60,7 @@ public partial class ShellViewModel : ObservableRecipient
         AboutInfo = navigationService.GetInfo("about")!;
         DebugInfo = navigationService.GetInfo("debug")!;
 
-        IsDebug = Debugger.IsAttached;
+        IsDebug = App.IsDevelopment;
         IsSingleMacroMode = App.SingleMacroMode is not null;
 
         //todo: config

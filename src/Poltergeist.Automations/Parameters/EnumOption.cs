@@ -1,8 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace Poltergeist.Automations.Parameters;
 
-namespace Poltergeist.Automations.Parameters;
-
-public class EnumOption<T> : OptionItem<T>, IChoiceOptionItem, IEnumOptionItem where T : Enum
+public class EnumOption<T> : OptionDefinition<T>, IChoiceOption where T : notnull, Enum
 {
     public Func<T, string>? GetText { get; set; }
 
@@ -12,7 +10,7 @@ public class EnumOption<T> : OptionItem<T>, IChoiceOptionItem, IEnumOptionItem w
     {
     }
 
-    public EnumOption(string key, T defaultValue = default) : base(key, defaultValue)
+    public EnumOption(string key, T defaultValue) : base(key, defaultValue)
     {
     }
 

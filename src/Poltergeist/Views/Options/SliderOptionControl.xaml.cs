@@ -2,15 +2,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Parameters;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
 public sealed partial class SliderOptionControl : UserControl
 {
-    private IOptionItem Item { get; }
+    private ObservableParameterItem Item { get; }
 
     private double Minimum { get; } = double.MinValue;
     private double Maximum { get; } = double.MaxValue;
@@ -46,13 +43,9 @@ public sealed partial class SliderOptionControl : UserControl
         }
     }
 
-    public SliderOptionControl(IOptionItem item)
+    public SliderOptionControl(ObservableParameterItem item)
     {
-        InitializeComponent();
-
-        Item = item;
-
-        if (item is INumberOptionItem numberOption)
+        if (item.Definition is INumberOption numberOption)
         {
             if (numberOption.Minimum.HasValue)
             {
@@ -72,6 +65,10 @@ public sealed partial class SliderOptionControl : UserControl
             }
             ValueFormat = numberOption.ValueFormat;
         }
+
+        Item = item;
+
+        InitializeComponent();
 
         UpdateText();
     }

@@ -63,7 +63,7 @@
                     <NavigationViewItem.Icon>
                         <FontIcon
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
-                            Glyph="{x:Bind ViewModel.HomeInfo.Glyph, Mode=OneTime}"
+                            Glyph="{x:Bind ViewModel.HomeInfo.Icon.Glyph, Mode=OneTime}"
                             />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -71,6 +71,7 @@
                 <NavigationViewItemSeparator />
 
                 <NavigationViewItemHeader
+                    x:Name="MacroNavigationViewItemHeader"
                     x:Uid="MacroNavigationViewItemHeader"
                     />
             </NavigationView.MenuItems>
@@ -79,7 +80,6 @@
                 </StackPanel>
             </NavigationView.PaneFooter>
             <NavigationView.FooterMenuItems>
-
                 <NavigationViewItem
                     x:Uid="NavigationViewItem_Debug"
                     Visibility="{x:Bind ViewModel.IsDebug, Mode=OneTime}"
@@ -89,7 +89,7 @@
                     <NavigationViewItem.Icon>
                         <FontIcon
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
-                            Glyph="{x:Bind ViewModel.DebugInfo.Glyph, Mode=OneTime}"
+                            Glyph="{x:Bind ViewModel.DebugInfo.Icon.Glyph, Mode=OneTime}"
                             />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -141,7 +141,7 @@
                     <NavigationViewItem.Icon>
                         <FontIcon
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
-                            Glyph="{x:Bind ViewModel.AboutInfo.Glyph, Mode=OneTime}"
+                            Glyph="{x:Bind ViewModel.AboutInfo.Icon.Glyph, Mode=OneTime}"
                             />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -153,7 +153,7 @@
                     <NavigationViewItem.Icon>
                         <FontIcon
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
-                            Glyph="{x:Bind ViewModel.SettingsInfo.Glyph, Mode=OneTime}"
+                            Glyph="{x:Bind ViewModel.SettingsInfo.Icon.Glyph, Mode=OneTime}"
                             />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>

@@ -16,6 +16,8 @@ public partial class ExampleGroup : MacroGroup
 
         Description = "This example shows how to display messages by using ArgumentService.Outputer.",
 
+        IsSingleton = true,
+
         LoopOptions =
         {
             DefaultCount = 30,

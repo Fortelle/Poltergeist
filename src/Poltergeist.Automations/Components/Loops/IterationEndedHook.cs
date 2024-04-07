@@ -1,5 +1,4 @@
-﻿using System;
-using Poltergeist.Automations.Components.Hooks;
+﻿using Poltergeist.Automations.Components.Hooks;
 
 namespace Poltergeist.Automations.Components.Loops;
 

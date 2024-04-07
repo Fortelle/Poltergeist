@@ -96,16 +96,16 @@ public class BasicMacro : MacroBase
         });
     }
 
-    public override string? CheckValidity()
+    protected override string? OnValidating()
     {
-        if (base.CheckValidity() is string baseValue)
+        if (base.OnValidating() is string baseValue)
         {
             return baseValue;
         }
 
         if (Validate?.Invoke() == false)
         {
-            return "Failed to validate.";
+            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_Failed");
         }
 
         if (Execute is null && ExecuteAsync is null)
