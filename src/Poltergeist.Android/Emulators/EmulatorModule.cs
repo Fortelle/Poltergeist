@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Android.Adb;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Terminals;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations;
 using Poltergeist.Operations.Background;
 using Poltergeist.Operations.Foreground;
@@ -38,11 +38,6 @@ public class EmulatorModule : MacroModule
             DisplayLabel = "Preview captured image",
             Category = "Debug",
         });
-    }
-
-    public EmulatorModule()
-    {
-
     }
 
     public override void OnMacroInitialize(IInitializableMacro macro)
@@ -141,7 +136,7 @@ public class EmulatorModule : MacroModule
             {
                 var fls = e.Processor.GetService<ILocatingProvider>();
                 var config = processor.Macro.Storage.Get<RegionConfig>();
-                if (!fls.Locate(config))
+                if (config is null || !fls.Locate(config))
                 {
                     e.Cancel = true;
                     return;
@@ -173,10 +168,4 @@ public class EmulatorModule : MacroModule
         },
     };
 
-    public enum InputMode
-    {
-        ADB,
-        ADB_Background,
-        Mouse,
-    }
 }

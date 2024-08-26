@@ -1,14 +1,15 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Services;
 
 public abstract class KernelService : IDisposable
 {
-    protected MacroProcessor Processor { get; }
+    protected MacroProcessor Processor;
 
-    protected string ServiceName { get; }
+    protected bool IsDisposed;
+
+    private readonly string ServiceName;
 
     protected KernelService(MacroProcessor processor)
     {
@@ -17,8 +18,20 @@ public abstract class KernelService : IDisposable
         ServiceName = GetType().Name;
     }
 
-    public virtual void Dispose()
+    protected virtual void Dispose(bool disposing)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        IsDisposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
         Debug.WriteLine($"Disposed {ServiceName}.");
+        GC.SuppressFinalize(this);
     }
 }

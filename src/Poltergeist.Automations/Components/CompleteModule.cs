@@ -1,9 +1,9 @@
-﻿using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+﻿using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
 
-namespace Poltergeist.Components.Loops;
+namespace Poltergeist.Automations.Components;
 
 public class CompleteModule : MacroModule
 {

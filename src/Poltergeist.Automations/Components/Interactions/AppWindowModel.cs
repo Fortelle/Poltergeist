@@ -1,11 +1,6 @@
 ﻿namespace Poltergeist.Automations.Components.Interactions;
 
-public class AppWindowModel : InteractionModel
+public class AppWindowModel(AppWindowAction action) : InteractionModel
 {
-    public AppWindowAction Action { get; set; }
-
-    public AppWindowModel(AppWindowAction action)
-    {
-        Action = action;
-    }
+    public AppWindowAction Action => action;
 }

@@ -1,5 +1,5 @@
 ﻿using Poltergeist.Android;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Operations.Macros;

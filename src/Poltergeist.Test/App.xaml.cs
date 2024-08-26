@@ -1,4 +1,4 @@
-﻿using Poltergeist.Common.Utilities;
+﻿using Poltergeist.Automations.Utilities;
 using Poltergeist.Contracts.Services;
 using Poltergeist.Test.Views;
 

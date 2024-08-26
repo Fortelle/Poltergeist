@@ -1,6 +1,6 @@
-﻿using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Input.Windows;
+﻿using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Services;
 
@@ -26,7 +26,7 @@ public class HotKeyManager
     private void LoadHotKey()
     {
         var localSettings = App.GetService<LocalSettingsService>();
-        var startHotkey = localSettings.Get<HotKey>("macro.startkey");
+        var startHotkey = localSettings.Get<HotKey>(StartKey);
 
         if (startHotkey.KeyCode == VirtualKey.None)
         {

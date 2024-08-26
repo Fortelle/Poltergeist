@@ -1,13 +1,15 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Views.Options;
 
 public sealed partial class HotKeyOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
+
     private VirtualKey[] VirtualKeys { get; }
+
     private HotKey Value
     {
         get => Item.Value is HotKey x ? x : default;

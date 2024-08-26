@@ -1,35 +1,31 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Maths;
-using Poltergeist.Input.Windows;
 using Poltergeist.Operations.Foreground;
+using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Background;
 
 public class BackgroundKeyboardService : MacroService
 {
-    private BackgroundLocatingService Locating { get; }
+    private readonly BackgroundLocatingService Locating;
+    private readonly RandomEx Random;
 
     private KeyboardInputOptions DefaultOptions { get; }
-    private RandomEx Random { get; }
 
-    public KeyboardInputMode Mode { get; set; } // todo: not supported yet
+    public KeyboardInputMode Mode { get; set; } = KeyboardInputMode.Scancode; // todo: not supported yet
 
     public BackgroundKeyboardService(
         MacroProcessor processor,
         BackgroundLocatingService locating,
         RandomEx random,
         IOptions<KeyboardInputOptions> options
-        )
-        : base(processor)
+        ) : base(processor)
     {
-        DefaultOptions = options.Value;
-        Random = random;
-        Mode = KeyboardInputMode.Scancode;
         Locating = locating;
-
-        Logger.Debug($"Initialized <{nameof(ForegroundKeyboardService)}>.", DefaultOptions);
+        Random = random;
+        DefaultOptions = options.Value;
     }
 
     public void KeyPress(VirtualKey key, KeyboardInputOptions? options = null)

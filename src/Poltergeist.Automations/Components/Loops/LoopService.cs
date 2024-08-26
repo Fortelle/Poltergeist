@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components.Loops;
 

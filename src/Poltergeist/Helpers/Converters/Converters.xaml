@@ -4,9 +4,7 @@
     xmlns:local="using:Poltergeist.Helpers.Converters"
     >
 
-    <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-    <local:EmptyToVisibilityConverter x:Key="EmptyToVisibilityConverter" />
-    <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    <local:FalsyToVisibilityConverter x:Key="FalsyToVisibilityConverter" />
     <local:EnumToStringConverter x:Key="EnumToStringConverter" />
     <local:NotConverter x:Key="NotConverter" />
     

@@ -6,17 +6,15 @@ namespace Poltergeist.Operations.Foreground;
 
 public class ForegroundCapturingService : CapturingProvider
 {
-    private ForegroundLocatingService Locating { get; }
+    private readonly ForegroundLocatingService Locating;
 
     public ForegroundCapturingService(
         MacroProcessor processor,
         ForegroundLocatingService locating
-        )
-        : base(processor)
+        ) : base(processor)
     {
         Locating = locating;
     }
-
 
     public override Bitmap DoCapture()
     {

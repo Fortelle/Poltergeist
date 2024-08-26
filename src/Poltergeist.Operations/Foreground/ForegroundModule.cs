@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Operations.Foreground;

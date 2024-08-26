@@ -2,7 +2,7 @@
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Background;
 
@@ -15,12 +15,10 @@ public class BackgroundMacro : MacroBase
         Instrument = LoopInstrumentType.List,
     };
 
-    private BackgroundOperator? Operator { get; set; }
-
-    public RegionConfig RegionConfig { get; set; }
-
+    public RegionConfig? RegionConfig { get; set; }
     public string? Filename { get; set; }
     public string? Arguments { get; set; }
+    public int Delay { get; set; }
 
     public Action<LoopBeforeArguments, BackgroundOperator>? Begin;
     public Action<LoopExecuteArguments, BackgroundOperator>? Iterate;
@@ -39,27 +37,27 @@ public class BackgroundMacro : MacroBase
         base.OnPrepare(processor);
 
         var repeat = processor.GetService<LoopService>();
+
         repeat.Before = OnBefore;
-        if (Iterate != null)
+
+        if (Iterate is not null)
         {
-            repeat.Execute = (e) => Iterate.Invoke(e, Operator!);
+            repeat.Execute = (e) => Iterate.Invoke(e, e.Processor.GetService<BackgroundOperator>());
         }
 
-        if (CheckContinue != null)
+        if (CheckContinue is not null)
         {
-            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, Operator!);
+            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, e.Processor.GetService<BackgroundOperator>());
         }
 
-        if (End != null)
+        if (End is not null)
         {
-            repeat.After = (e) => End.Invoke(e, Operator!);
+            repeat.After = (e) => End.Invoke(e, e.Processor.GetService<BackgroundOperator>());
         }
     }
 
     private void OnBefore(LoopBeforeArguments e)
     {
-        Operator = e.Processor.GetService<BackgroundOperator>();
-
         if (!string.IsNullOrEmpty(Filename))
         {
             var oldprocess = WindowsFinder.GetForegroundWindow();
@@ -70,7 +68,6 @@ public class BackgroundMacro : MacroBase
                 {
                     FileName = Filename,
                     Arguments = Arguments,
-                    UseShellExecute = true,
                 },
             };
 
@@ -84,25 +81,40 @@ public class BackgroundMacro : MacroBase
                 return;
             }
 
-            var newprocess = nint.Zero;
-            while (newprocess == nint.Zero || oldprocess == newprocess)
+            if (Delay > 0)
             {
-                Thread.Sleep(100);
-                newprocess = WindowsFinder.GetForegroundWindow();
+                Thread.Sleep(Delay);
             }
 
-            RegionConfig = RegionConfig with
+            if (RegionConfig is null)
             {
-                Handle = newprocess
-            };
+                var newprocess = nint.Zero;
+                while (newprocess == nint.Zero || oldprocess == newprocess)
+                {
+                    Thread.Sleep(100);
+                    newprocess = WindowsFinder.GetForegroundWindow();
+                }
+
+                RegionConfig = new()
+                {
+                    Handle = newprocess,
+                };
+            }
         }
 
-        var result = Operator.Locating.Locate(RegionConfig);
+        if (RegionConfig is null)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        var backgroundOperator = e.Processor.GetService<BackgroundOperator>();
+        var result = backgroundOperator.Locating.Locate(RegionConfig);
         if (!result)
         {
             e.Cancel = true;
             return;
         }
-        Begin?.Invoke(e, Operator);
+        Begin?.Invoke(e, backgroundOperator);
     }
 }

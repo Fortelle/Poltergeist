@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Poltergeist.Automations.Logging;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Processors;
@@ -14,6 +14,7 @@ public class ArgumentService : IDisposable, IUserLogger
     public IUserMacro Macro => Processor.Macro;
 
     private readonly string SenderName;
+    protected bool IsDisposed;
 
     public ArgumentService(MacroProcessor processor)
     {
@@ -27,9 +28,20 @@ public class ArgumentService : IDisposable, IUserLogger
         Processor.GetService<MacroLogger>().Log(LogLevel.Information, SenderName, message);
     }
 
-    void IDisposable.Dispose()
+    protected virtual void Dispose(bool disposing)
     {
-        Debug.WriteLine($"Disposed {SenderName}.");
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        IsDisposed = true;
     }
 
+    public void Dispose()
+    {
+        Dispose(true);
+        Debug.WriteLine($"Disposed {SenderName}.");
+        GC.SuppressFinalize(this);
+    }
 }

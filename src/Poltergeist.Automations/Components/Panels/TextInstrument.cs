@@ -8,9 +8,7 @@ public class TextInstrument : InstrumentModel
 {
     public Color? BackgroundColor { get; set; }
     public Color? ForegroundColor { get; set; }
-
     public Dictionary<string, TextLine> Templates { get; } = new();
-
     public ObservableCollection<TextLine> TextCollection { get; set; } = new();
 
     public TextInstrument(MacroProcessor processor) : base(processor)

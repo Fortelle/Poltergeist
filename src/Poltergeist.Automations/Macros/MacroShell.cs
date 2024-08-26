@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -109,22 +109,17 @@ public class MacroShell
     {
         if (Template is null)
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("The macro template does not exist.");
         }
 
         if (Template.Status != MacroStatus.Initialized)
         {
-            throw new InvalidOperationException();
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
+            throw new InvalidOperationException("The macro template has not been initialized correctly.");
         }
 
         if (!Template.Actions.Contains(action))
         {
-            throw new ArgumentException();
+            throw new ArgumentException("The action is not owned by the macro template.");
         }
 
         if (action.Execute is not null)
@@ -197,7 +192,10 @@ public class MacroShell
         }
         else
         {
-            throw new ArgumentNullException();
+            _ = InteractionService.UIShowAsync(new TipModel()
+            {
+                Text = "The action is empty.",
+            });
         }
     }
 }

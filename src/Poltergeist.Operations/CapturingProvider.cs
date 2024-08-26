@@ -2,7 +2,7 @@
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Images;
+using Poltergeist.Automations.Utilities.Images;
 
 namespace Poltergeist.Operations;
 
@@ -34,7 +34,7 @@ public abstract class CapturingProvider : MacroService
     {
         Bitmap bmp;
 
-        if (CachedImage == null)
+        if (CachedImage is null)
         {
             bmp = DoCapture();
             Instrument?.Add(new(new Bitmap(bmp)));
@@ -53,7 +53,7 @@ public abstract class CapturingProvider : MacroService
     {
         Bitmap bmp;
 
-        if (CachedImage == null)
+        if (CachedImage is null)
         {
             bmp = DoCapture(area);
             Instrument?.Add(new(new Bitmap(bmp)));
@@ -82,9 +82,7 @@ public abstract class CapturingProvider : MacroService
 
     public void Cache(bool refresh = false)
     {
-        var hasCache = CachedImage != null;
-
-        if (hasCache)
+        if (CachedImage is not null)
         {
             if (refresh)
             {
@@ -111,4 +109,13 @@ public abstract class CapturingProvider : MacroService
         CachedImage = null;
     }
 
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            ReleaseCache();
+        }
+
+        base.Dispose(disposing);
+    }
 }

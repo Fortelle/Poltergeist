@@ -2,7 +2,6 @@
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Components.Loops;
 
 namespace Poltergeist.Automations.Components.Loops;
 
@@ -43,27 +42,27 @@ public class LoopMacro : MacroBase
 
         var loopService = processor.GetService<LoopService>();
 
-        if (Before != null)
+        if (Before is not null)
         {
             loopService.Before += Before;
         }
 
-        if (Execute != null)
+        if (Execute is not null)
         {
             loopService.Execute += Execute;
         }
 
-        if (CheckContinue != null)
+        if (CheckContinue is not null)
         {
             loopService.CheckContinue += CheckContinue;
         }
 
-        if (After != null)
+        if (After is not null)
         {
             loopService.After += After;
         }
 
-        if (InitializeInfo != null)
+        if (InitializeInfo is not null)
         {
             loopService.InitializeInfo += InitializeInfo;
         }

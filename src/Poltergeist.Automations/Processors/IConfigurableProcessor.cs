@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 

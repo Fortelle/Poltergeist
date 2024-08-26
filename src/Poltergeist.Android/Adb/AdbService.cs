@@ -2,7 +2,7 @@
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Windows;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Android.Adb;
 
@@ -16,10 +16,10 @@ public class AdbService : MacroService
     public string? Filename { get; set; }
     public string? Address { get; set; }
 
-    private TerminalService Terminal { get; init; }
+    private readonly TerminalService Terminal;
 
-    private bool IsInitialized { get; set; }
-    private bool IsClosed { get; set; }
+    private bool IsInitialized;
+    private bool IsClosed;
 
     public AdbService(MacroProcessor processor,
         TerminalService terminal

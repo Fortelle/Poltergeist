@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Test;
 
@@ -12,8 +12,8 @@ public partial class TestGroup
     [AutoLoad]
     public class OptionTestMacro : BasicMacro
     {
-        private readonly IParameterDefinition[] CustomOptions = new IParameterDefinition[]
-        {
+        private readonly IParameterDefinition[] CustomOptions =
+        [
             new OptionDefinition<string>("string")
             {
                 Category = "Basic",
@@ -113,11 +113,11 @@ public partial class TestGroup
                 ValueFormat = "P0",
             },
 
-            new ChoiceOption<string>("choice_string", new string[] { "Item1", "Item2", "Item3" })
+            new ChoiceOption<string>("choice_string", ["Item1", "Item2", "Item3"])
             {
                 Category = "Choices",
             },
-            new ChoiceOption<int>("choice_int", new int[] { 100, 200, 300 })
+            new ChoiceOption<int>("choice_int", [100, 200, 300])
             {
                 Category = "Choices",
             },
@@ -184,7 +184,7 @@ public partial class TestGroup
                 Category = "Type",
                 Status = ParameterStatus.Deprecated,
             },
-        };
+        ];
 
         public OptionTestMacro() : base("test_macrooptions")
         {

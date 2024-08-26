@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Poltergeist.Services;
+﻿namespace Poltergeist.Services;
 
 public class PathService
 {
@@ -9,6 +7,8 @@ public class PathService
     public string AppFolder { get; }
     public string DocumentDataFolder { get; }
     public string LocalDataFolder { get; }
+
+
     public string LocalSettingsFile { get; }
     public string GlobalMacroOptionsFile { get; }
     public string GlobalMacroStatisticsFile { get; }
@@ -20,6 +20,7 @@ public class PathService
 
     public string? SolutionFolder { get; }
     public string? ProjectFolder { get; }
+
 
     public PathService()
     {

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Poltergeist.Attributes;
 
 namespace Poltergeist.ViewModels;
 

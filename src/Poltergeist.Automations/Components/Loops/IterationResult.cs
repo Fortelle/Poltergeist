@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Components.Loops;
+﻿namespace Poltergeist.Automations.Components.Loops;
 
 public class IterationResult
 {

@@ -4,7 +4,7 @@ public partial class App : PoltergeistApplication
 {
     public App()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
 }

@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Poltergeist</RootNamespace>
     <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <Platforms>arm64;x86;x64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
 	  <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>A .NET framework for desktop automation.</Description>
   </PropertyGroup>
@@ -21,19 +21,20 @@
     <LicenseUrl>https://github.com/Fortelle/Poltergeist/blob/master/LICENSE.txt</LicenseUrl>
     <GitHub>Poltergeist</GitHub>
     <GitHubUrl>https://github.com/Fortelle/Poltergeist</GitHubUrl>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyLicenseUrlAttribute">
+    <AssemblyAttribute Include="Poltergeist.Attributes.AssemblyLicenseUrlAttribute">
       <_Parameter1>$(LicenseUrl)</_Parameter1>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyLicenseAttribute">
+    <AssemblyAttribute Include="Poltergeist.Attributes.AssemblyLicenseAttribute">
       <_Parameter1>$(PackageLicenseExpression)</_Parameter1>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyGitHubUrlAttribute">
+    <AssemblyAttribute Include="Poltergeist.Attributes.AssemblyGitHubUrlAttribute">
       <_Parameter1>$(GitHubUrl)</_Parameter1>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="Poltergeist.ViewModels.AssemblyGitHubAttribute">
+    <AssemblyAttribute Include="Poltergeist.Attributes.AssemblyGitHubAttribute">
       <_Parameter1>$(GitHub)</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
@@ -50,10 +51,10 @@
 
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
-  </ItemGroup>
+    </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

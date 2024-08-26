@@ -1,25 +1,18 @@
-﻿using System.Collections.Generic;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Newtonsoft.Json.Linq;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Contracts.Services;
 using Poltergeist.Helpers;
 using Poltergeist.Pages;
 using Poltergeist.Services;
-using Poltergeist.ViewModels;
 
 namespace Poltergeist.Views;
 
 public sealed partial class ShellPage : Page
 {
-    public ShellViewModel ViewModel
-    {
-        get;
-    }
+    public ShellViewModel ViewModel { get; }
 
     public ShellPage(ShellViewModel viewModel, INavigationService navigationService)
     {
@@ -168,8 +161,15 @@ public sealed partial class ShellPage : Page
 
     private void NavigationViewControl_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        if (args.InvokedItemContainer is not FrameworkElement fe) return;
-        if (fe.Tag is not string value) return;
+        if (args.InvokedItemContainer is not FrameworkElement fe)
+        {
+            return;
+        }
+
+        if (fe.Tag is not string value)
+        {
+            return;
+        }
 
         App.GetService<INavigationService>().NavigateTo(value);
     }

@@ -1,13 +1,10 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public partial class TextInstrumentView : UserControl
 {
-    public TextInstrumentViewModel ViewModel
-    {
-        get; set;
-    }
+    public TextInstrumentViewModel ViewModel { get; set; }
 
     public TextInstrumentView(TextInstrumentViewModel viewModel)
     {

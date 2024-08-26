@@ -1,7 +1,8 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
+using Poltergeist.Pages;
 using Poltergeist.Views;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -89,7 +90,7 @@ public class DialogService
                         {
                             if (args.Result == ContentDialogResult.Primary)
                             {
-                                if (inputDialogModel.Valid() != null)
+                                if (inputDialogModel.Valid() is not null)
                                 {
                                     args.Cancel = true;
                                 }
@@ -108,7 +109,7 @@ public class DialogService
                             {
                                 var x = contentDialogModel.Valid();
 
-                                if (contentDialogModel.Valid() != null)
+                                if (contentDialogModel.Valid() is not null)
                                 {
                                     args.Cancel = true;
                                 }
@@ -226,7 +227,7 @@ public class DialogService
         }
         else
         {
-            picker.FileTypeChoices.Add("All files", new List<string> { "." });
+            picker.FileTypeChoices.Add("All files", ["."]);
         }
 
         SetWindow(picker);

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -40,9 +40,9 @@ internal static class ActionHelper
                 SuggestedFileName = $"{args.Macro.Key}.lnk",
                 Filters = new()
                 {
-                    ["Desktop shortcut(*.lnk)"] = new[] {
+                    ["Desktop shortcut(*.lnk)"] = [
                         ".lnk"
-                    }
+                    ]
                 }
             };
             await InteractionService.UIShowAsync(savedialog);
@@ -57,8 +57,7 @@ internal static class ActionHelper
             {
                 Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_Title"),
                 Text = path,
-                Inputs = new[]
-                {
+                Inputs = [
                     new BoolOption("autostart")
                     {
                         Mode = BoolOptionMode.CheckBox,
@@ -74,7 +73,7 @@ internal static class ActionHelper
                         Mode = BoolOptionMode.CheckBox,
                         Text = ResourceHelper.Localize("Poltergeist.Automations/Resources/CreateShortcut_Dialog_SingleMode"),
                     },
-                },
+                ],
             };
             await InteractionService.UIShowAsync(optiondialog);
             if (optiondialog.Result != DialogResult.Ok)

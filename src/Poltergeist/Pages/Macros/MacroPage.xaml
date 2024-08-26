@@ -6,7 +6,7 @@
     xmlns:local="using:Poltergeist.Pages.Macros"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:instruments="using:Poltergeist.Macros.Instruments"
+    xmlns:instruments="using:Poltergeist.Pages.Macros.Instruments"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:converters="using:Poltergeist.Helpers.Converters"
@@ -16,7 +16,6 @@
     >
 
     <Page.Resources>
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:TypeNameConverter x:Key="TypeNameConverter"/>
         <converters:TimeSpanToHhhmmssConverter x:Key="TimeSpanToHhhmmssConverter"/>
         <local:EndReasonToTextConverter x:Key="EndReasonToTextConverter"/>
@@ -181,7 +180,7 @@
                                                 TextWrapping="Wrap"
                                                 Margin="0, 2, 0, 0"
                                                 Text="{Binding Description}"
-                                                Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}}"
+                                                Visibility="{Binding Description, Converter={StaticResource FalsyToVisibilityConverter}}"
                                                 />
 
                                         </StackPanel>
@@ -341,8 +340,19 @@
                                         <ColumnDefinition Width="4*" />
                                         <ColumnDefinition Width="6*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Key, Mode=OneTime}" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Value, Mode=OneTime}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{Binding Value, Mode=OneTime}" />
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Text="{Binding Key, Mode=OneTime}"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Center"
+                                        />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="{Binding Value, Mode=OneTime}"
+                                        TextWrapping="Wrap"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTipService.ToolTip="{Binding Value, Mode=OneTime}"
+                                        />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -462,7 +472,7 @@
                                 HorizontalAlignment="Center"
                                 Foreground="Red"
                                 ToolTipService.ToolTip="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay, Converter={StaticResource EmptyToVisibilityConverter}}"
+                                Visibility="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay, Converter={StaticResource FalsyToVisibilityConverter}}"
                                 />
                         </Grid>
                     </AppBarElementContainer>
@@ -472,7 +482,7 @@
 
             <Grid
                 Grid.Row="1"
-                Visibility="{x:Bind ViewModel.IsValid, Converter={StaticResource EmptyToVisibilityConverter}, ConverterParameter=True, Mode=OneTime}"
+                Visibility="{x:Bind ViewModel.IsValid, Converter={StaticResource FalsyToVisibilityConverter}, ConverterParameter=True, Mode=OneTime}"
                 >
                 <TextBlock
                     HorizontalAlignment="Center"

@@ -1,8 +1,8 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Common.Structures.Colors;
+using Poltergeist.Automations.Structures.Colors;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Test;
 
@@ -331,8 +331,7 @@ public partial class ExampleGroup
                 li.Update(i, new(ProgressStatus.Warning)
                 {
                     Text = $"Oops! Something went wrong.",
-                    Buttons = new[]
-                    {
+                    Buttons = [
                         new ListInstrumentButton(){
                             Text = "Retry",
                             Callback = () =>
@@ -371,7 +370,7 @@ public partial class ExampleGroup
                                 args.Processor.Resume();
                             },
                         },
-                    },
+                    ],
                 });
 
                 await args.Processor.Pause();

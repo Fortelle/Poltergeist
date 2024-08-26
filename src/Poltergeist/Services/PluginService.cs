@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Macros;
 
@@ -7,6 +8,8 @@ namespace Poltergeist.Services;
 public class PluginService
 {
     private const string FilenameFormat = "Poltergeist.Plugins.*.dll";
+
+    public StringBuilder ErrorLog { get; } = new();
 
     public PluginService()
     {
@@ -38,47 +41,63 @@ public class PluginService
             {
                 if (type.IsAssignableTo(groupType))
                 {
-                    if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
+                    if (type.GetCustomAttribute<AutoLoadAttribute>() is null)
                     {
                         continue;
                     }
-                    var group = (MacroGroup)Activator.CreateInstance(type)!;
-                    foreach (var macro in group.ReadMacroFields())
+                    try
                     {
-                        AddMacro(macro);
+                        var group = (MacroGroup)Activator.CreateInstance(type)!;
+                        foreach (var macro in group.ReadMacroFields())
+                        {
+                            AddMacro(macro);
+                        }
+                        foreach (var macro in group.ReadMacroFunctions())
+                        {
+                            AddMacro(macro);
+                        }
+                        foreach (var macro in group.ReadMacroClasses())
+                        {
+                            AddMacro(macro);
+                        }
                     }
-                    foreach (var macro in group.ReadMacroFunctions())
+                    catch
                     {
-                        AddMacro(macro);
-                    }
-                    foreach (var macro in group.ReadMacroClasses())
-                    {
-                        AddMacro(macro);
+                        ErrorLog.AppendLine($"Failed to load group \"{type.Name}\" from plugin \"{assemblyName}\".");
+                        continue;
                     }
 
                 }
                 else if (type.IsAssignableTo(macroType))
                 {
-                    if (type.GetCustomAttribute<AutoLoadAttribute>() == null)
+                    if (type.GetCustomAttribute<AutoLoadAttribute>() is null)
                     {
                         continue;
                     }
 
-                    var macro = (MacroBase)Activator.CreateInstance(type)!;
-                    AddMacro(macro);
+                    try
+                    {
+                        var macro = (MacroBase)Activator.CreateInstance(type)!;
+                        AddMacro(macro);
+                    }
+                    catch
+                    {
+                        ErrorLog.AppendLine($"Failed to load macro \"{type.Name}\" from plugin \"{assemblyName}\".");
+                        continue;
+                    }
                 }
             }
 
         }
     }
 
-    private static IEnumerable<Assembly> GetAssemblies()
+    private IEnumerable<Assembly> GetAssemblies()
     {
         var exe = Assembly.GetExecutingAssembly();
         //yield return exe;
 
         var entry = Assembly.GetEntryAssembly();
-        if(entry != null && entry != exe)
+        if(entry is not null && entry != exe)
         {
             yield return entry;
         }
@@ -100,8 +119,20 @@ public class PluginService
             var files = Directory.GetFiles(folder, FilenameFormat, SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                var assembly = Assembly.LoadFrom(file);
-                yield return assembly;
+                Assembly? assembly;
+                try
+                {
+                    assembly = Assembly.LoadFrom(file);
+                }
+                catch
+                {
+                    ErrorLog.AppendLine($"Failed to load plugin \"{file}\"");
+                    continue;
+                }
+                if (assembly is not null)
+                {
+                    yield return assembly;
+                }
             }
         }
     }

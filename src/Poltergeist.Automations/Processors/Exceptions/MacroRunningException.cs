@@ -1,11 +1,5 @@
-﻿using System;
+﻿namespace Poltergeist.Automations.Processors;
 
-namespace Poltergeist.Automations.Processors;
-
-public class MacroRunningException : Exception
+public class MacroRunningException(string message) : Exception(message)
 {
-    public MacroRunningException(string message) : base(message)
-    {
-
-    }
 }

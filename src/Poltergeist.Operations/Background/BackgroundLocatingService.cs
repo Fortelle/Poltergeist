@@ -1,15 +1,26 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Background;
 
 public class BackgroundLocatingService : MacroService, ILocatingProvider
 {
-    public required SendMessageHelper SendMessage { get; set; }
+    private SendMessageHelper? sendMessage;
+    public SendMessageHelper SendMessage
+    {
+        get
+        {
+            if (sendMessage is null)
+            {
+                throw new InvalidOperationException($"<{nameof(BackgroundLocatingService)}> is currently not available.");
+            }
+            return sendMessage;
+        }
+    }
 
-    public required Size ClientSize { get; set; }
+    public Size ClientSize { get; set; }
 
     public BackgroundLocatingService(MacroProcessor processor) : base(processor)
     {
@@ -21,7 +32,7 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
 
         if (result == LocateResult.Succeeded)
         {
-            SendMessage = new SendMessageHelper(hwnd);
+            sendMessage = new SendMessageHelper(hwnd);
             ClientSize = size;
             Logger.Debug($"Found requested region.",new { hwnd, ClientSize });
 
@@ -29,6 +40,8 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
         }
         else
         {
+            sendMessage = null;
+            ClientSize = default;
             Logger.Warn($"Failed to find requested region: {result}.");
 
             return false;
@@ -40,13 +53,20 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
         hwnd = default;
         size = default;
 
-        if (config.ClassName == null && config.ProcessName == null && config.WindowName == null)
+        if (config.Delay > 0)
+        {
+            Thread.Sleep(config.Delay);
+        }
+
+        if (config.ClassName is null && config.ProcessName is null && config.WindowName is null && config.Handle == IntPtr.Zero)
         {
             return LocateResult.EmptyParameters;
         }
         else
         {
-            var targetHwnd = WindowsFinder.FindWindow(config.WindowName, config.ClassName, config.ProcessName);
+            var targetHwnd = config.Handle != IntPtr.Zero
+                ? config.Handle
+                : WindowsFinder.FindWindow(config.WindowName, config.ClassName, config.ProcessName);
             if (targetHwnd == IntPtr.Zero)
             {
                 return LocateResult.NotFound;

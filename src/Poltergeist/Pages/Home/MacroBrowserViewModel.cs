@@ -40,10 +40,10 @@ public partial class MacroBrowserViewModel : ObservableRecipient
         {
             1 => macros.OrderByDescending(x => x.Properties.IsFavorite).ThenBy(x => x.Title),
             -1 => macros.OrderByDescending(x => x.Properties.IsFavorite).ThenByDescending(x => x.Title),
-            2 => macros.OrderBy(x => x.Properties.RunCount == null).ThenBy(x => x.Properties.RunCount),
-            -2 => macros.OrderBy(x => x.Properties.RunCount == null).ThenByDescending(x => x.Properties.RunCount),
-            3 => macros.OrderBy(x => x.Properties.LastRunTime == null).ThenBy(x => x.Properties.LastRunTime),
-            -3 => macros.OrderBy(x => x.Properties.LastRunTime == null).ThenByDescending(x => x.Properties.LastRunTime),
+            2 => macros.OrderBy(x => x.Properties.RunCount is null).ThenBy(x => x.Properties.RunCount),
+            -2 => macros.OrderBy(x => x.Properties.RunCount is null).ThenByDescending(x => x.Properties.RunCount),
+            3 => macros.OrderBy(x => x.Properties.LastRunTime is null).ThenBy(x => x.Properties.LastRunTime),
+            -3 => macros.OrderBy(x => x.Properties.LastRunTime is null).ThenByDescending(x => x.Properties.LastRunTime),
             _ => macros,
         };
         Macros = macros.ToArray();
@@ -57,7 +57,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient
         {
             Title = App.Localize($"Poltergeist/Home/NewMacroDialog_Title"),
             Content = editor,
-            Valid = () => editor.SelectedTemplateKey == null ? "" : null
+            Valid = () => editor.SelectedTemplateKey is null ? "" : null
         };
 
         await DialogService.ShowAsync(contentDialog);

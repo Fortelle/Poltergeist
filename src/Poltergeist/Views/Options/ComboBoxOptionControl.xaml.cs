@@ -1,12 +1,13 @@
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
 public sealed partial class ComboBoxOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; set; }
+
     private ChoiceEntry[]? Choices { get; set; }
 
     private object? SelectedValue
@@ -25,7 +26,7 @@ public sealed partial class ComboBoxOptionControl : UserControl
         }
     }
 
-    private ChoiceEntry[] GetEnumChoices(Type type)
+    private static ChoiceEntry[] GetEnumChoices(Type type)
     {
         return Enum.GetValues(type).Cast<object>().Select(x => new ChoiceEntry(x)).ToArray();
     }

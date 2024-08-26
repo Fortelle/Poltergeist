@@ -1,10 +1,10 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Structures.Shapes;
-using Poltergeist.Input.Windows;
 using Poltergeist.Operations.Foreground;
 using Poltergeist.Operations.Timers;
+using Poltergeist.Automations.Structures.Shapes;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Android.Emulators;
 
@@ -13,7 +13,7 @@ public class EmulatorMouseService : MacroService, IEmulatorInputProvider
     public ForegroundMouseService Mouse { get; }
     public TimerService Timer { get; }
 
-    private bool IsDragging { get; set; }
+    private bool IsDragging;
 
     public EmulatorMouseService(MacroProcessor processor,
         ForegroundMouseService mouse,

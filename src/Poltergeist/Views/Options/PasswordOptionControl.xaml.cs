@@ -1,12 +1,14 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
 public sealed partial class PasswordOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
+
     private string? Placeholder { get; }
+
     private int MaxLength { get; }
 
     private string? Value

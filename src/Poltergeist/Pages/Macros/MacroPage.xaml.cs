@@ -2,9 +2,9 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Services;
 
@@ -57,7 +57,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             {
                 Path = new PropertyPath("IsRunning"),
                 Mode = BindingMode.OneWay,
-                Converter = new BoolToVisibilityConverter(),
+                Converter = new FalsyToVisibilityConverter(),
             };
             icon.SetBinding(FontIcon.VisibilityProperty, binding);
 
@@ -114,7 +114,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
 
     private void LoadConfigVariations()
     {
-        if (!ViewModel.Shell.Template!.ConfigVariations.Any())
+        if (ViewModel.Shell.Template!.ConfigVariations.Count == 0)
         {
             return;
         }
@@ -182,7 +182,14 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return false;
         }
 
-        ViewModel.Shell.UserOptions?.Save();
+        try
+        {
+            ViewModel.Shell.UserOptions?.Save();
+        }
+        catch (Exception exception)
+        {
+            App.ShowException(exception);
+        }
 
         return true;
     }

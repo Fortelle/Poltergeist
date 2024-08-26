@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Test;
 

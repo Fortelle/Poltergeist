@@ -2,7 +2,7 @@
 using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.FlowBuilders;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Test;
 

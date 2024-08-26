@@ -1,26 +1,24 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Maths;
 
 namespace Poltergeist.Operations.Timers;
 
 public class TimerService : MacroService
 {
-    private DelayOptions DefaultOptions { get; }
-    private DistributionService Distribution { get; }
+    private readonly DelayOptions DefaultOptions;
+
+    private readonly DistributionService Distribution;
 
     public TimerService(
         MacroProcessor processor,
-        DistributionService random,
+        DistributionService distribution,
         IOptions<DelayOptions> options
-        )
-        : base(processor)
+        ) : base(processor)
     {
-        Distribution = random;
+        Distribution = distribution;
         DefaultOptions = options.Value;
-
-        Logger.Debug($"Initialized <{nameof(TimerService)}>.", DefaultOptions);
     }
 
 
@@ -72,7 +70,7 @@ public class TimerService : MacroService
     {
         if (timeout > 0)
         {
-            System.Threading.Thread.Sleep(timeout);
+            Thread.Sleep(timeout);
         }
         //Logger.Debug($"Delayed for {timeout} ms.");
 

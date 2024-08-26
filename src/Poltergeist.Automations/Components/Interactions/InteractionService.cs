@@ -8,10 +8,10 @@ public class InteractionService : MacroService
 {
     public const string InteractionIdKey = "interaction_id";
 
-    public static Func<InteractingEventArgs, Task>? Interacting;
+    public static Func<InteractingEventArgs, Task>? Interacting { get; set; }
 
     // todo: convert to callback parameter
-    private List<InteractionModel> Models { get; } = new();
+    private readonly List<InteractionModel> Models = new();
 
     public InteractionService(MacroProcessor processor, HookService hookService) : base(processor)
     {
@@ -37,10 +37,7 @@ public class InteractionService : MacroService
         model.ProcessId = Processor.ProcessId;
         Models.Add(model);
 
-        var args = new InteractingEventArgs(model)
-        {
-            Suspended = true
-        };
+        var args = new InteractingEventArgs(model, true);
         Processor.RaiseEvent(ProcessorEvent.Interacting, args);
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
@@ -83,10 +80,7 @@ public class InteractionService : MacroService
 
     public static async Task UIShowAsync(InteractionModel model)
     {
-        var args = new InteractingEventArgs(model)
-        {
-            Suspended = true
-        };
+        var args = new InteractingEventArgs(model, true);
 
         await Interacting!.Invoke(args);
     }

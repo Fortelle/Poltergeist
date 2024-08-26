@@ -28,7 +28,7 @@ public class NavigationService : INavigationService
 
     public bool NavigateTo(string pageKey, object? parameter = null)
     {
-        if (TabView == null)
+        if (TabView is null)
         {
             return false;
         }
@@ -102,7 +102,7 @@ public class NavigationService : INavigationService
 
     public bool TryCloseTab(string pageKey)
     {
-        if (TabView == null)
+        if (TabView is null)
         {
             return true;
         }
@@ -119,9 +119,9 @@ public class NavigationService : INavigationService
 
     public bool TryCloseTab(TabViewItem tab)
     {
-        if (TabView == null)
+        if (TabView is null)
         {
-            return false;
+            return true;
         }
 
         if (tab.Content is IPageClosing pageclosing)

@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Test;
 
@@ -18,8 +18,7 @@ public partial class TestGroup
 
         UserOptions =
         {
-            new ChoiceOption<string>("dialog_type", new[]
-            {
+            new ChoiceOption<string>("dialog_type", [
                 "Ok",
                 "OkCancel",
                 "YesNo",
@@ -27,7 +26,7 @@ public partial class TestGroup
                 "AbortRetryIgnore",
                 "Input",
                 "Checkbox",
-            }, "Ok")
+            ], "Ok")
         },
 
         ExecuteAsync = async (args) =>
@@ -66,26 +65,26 @@ public partial class TestGroup
                 "Input" => new InputDialogModel()
                 {
                     Text = "This is an OkCancel dialog, with an inputbox.",
-                    Inputs = new[]
-                    {
+                    Inputs =
+                    [
                         new TextOption("")
                         {
                             Placeholder = "Enter your name",
                         },
-                    },
+                    ],
                 },
                 "Checkbox" => new InputDialogModel()
                 {
                     Text = "This is an Ok dialog, with a checkbox.",
                     Type = DialogType.Ok,
-                    Inputs = new[]
-                    {
+                    Inputs =
+                    [
                         new BoolOption("")
                         {
                             Mode = BoolOptionMode.CheckBox,
                             Text = "Do not show this message again",
                         },
-                    },
+                    ],
                 },
                 _ => throw new NotImplementedException(),
             };

@@ -32,7 +32,7 @@ public abstract class MacroGroup
     {
         var fields = GetType()
             .GetFields()
-            .Where(field => field.GetCustomAttribute<AutoLoadAttribute>() != null)
+            .Where(field => field.GetCustomAttribute<AutoLoadAttribute>() is not null)
             .Where(field => field.FieldType.IsAssignableTo(typeof(MacroBase)))
             ;
 
@@ -49,7 +49,7 @@ public abstract class MacroGroup
     {
         var methods = GetType()
             .GetMethods()
-            .Where(method => method.GetCustomAttribute<AutoLoadAttribute>() != null)
+            .Where(method => method.GetCustomAttribute<AutoLoadAttribute>() is not null)
             .Where(method => method.ReturnType.IsAssignableTo(typeof(MacroBase)))
             ;
 
@@ -67,7 +67,7 @@ public abstract class MacroGroup
         var types = GetType()
             .GetNestedTypes()
             .Where(type => type.IsAssignableTo(typeof(MacroBase)))
-            .Where(type => type.GetCustomAttribute<AutoLoadAttribute>() != null)
+            .Where(type => type.GetCustomAttribute<AutoLoadAttribute>() is not null)
             ;
 
         foreach (var type in types)

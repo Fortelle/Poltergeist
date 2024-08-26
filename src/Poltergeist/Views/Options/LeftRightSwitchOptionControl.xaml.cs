@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -8,12 +8,14 @@ namespace Poltergeist.Views.Options;
 public sealed partial class LeftRightSwitchOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
+
     private string? LeftContent { get; }
+
     private string? RightContent { get; }
 
     private bool IsChecked
     {
-        get => Item.Value is bool b ? b : false;
+        get => Item.Value is bool b && b;
         set
         {
             if (value == IsChecked)

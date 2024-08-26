@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -8,7 +8,9 @@ namespace Poltergeist.Views.Options;
 public sealed partial class TextBoxOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
+
     private string? Placeholder { get; }
+
     private int MaxLenght { get; }
 
     private string? Value

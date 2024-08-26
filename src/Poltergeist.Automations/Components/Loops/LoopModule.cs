@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components.Loops;
 
 public class LoopModule : MacroModule
 {
-    public LoopOptions Options { get; }
+    private readonly LoopOptions Options;
 
     public LoopModule()
     {

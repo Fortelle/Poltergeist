@@ -1,31 +1,78 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Maths;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Foreground;
 
 public class ForegroundKeyboardService : MacroService
 {
-    private KeyboardInputOptions DefaultOptions { get; }
-    private RandomEx Random { get; }
+    private static readonly Dictionary<char, VirtualKey> KeyMap = new()
+    {
+        [' '] = VirtualKey.Space,
+        ['1'] = VirtualKey.D1,
+        ['2'] = VirtualKey.D2,
+        ['3'] = VirtualKey.D3,
+        ['4'] = VirtualKey.D4,
+        ['5'] = VirtualKey.D5,
+        ['6'] = VirtualKey.D6,
+        ['7'] = VirtualKey.D7,
+        ['8'] = VirtualKey.D8,
+        ['9'] = VirtualKey.D9,
+        ['0'] = VirtualKey.D0,
+        [';'] = VirtualKey.OEM_1,
+        ['='] = VirtualKey.OEM_Plus,
+        [','] = VirtualKey.OEM_Comma,
+        ['-'] = VirtualKey.OEM_Minus,
+        ['.'] = VirtualKey.OEM_Period,
+        ['/'] = VirtualKey.OEM_2,
+        ['`'] = VirtualKey.OEM_3,
+        ['['] = VirtualKey.OEM_4,
+        ['\\'] = VirtualKey.OEM_5,
+        [']'] = VirtualKey.OEM_6,
+        ['\''] = VirtualKey.OEM_7,
+    };
 
-    public KeyboardInputMode Mode { get; set; } // todo: not supported yet
+    private static readonly Dictionary<char, VirtualKey> KeyMapShift = new()
+    {
+        ['!'] = VirtualKey.D1,
+        ['@'] = VirtualKey.D2,
+        ['#'] = VirtualKey.D3,
+        ['$'] = VirtualKey.D4,
+        ['%'] = VirtualKey.D5,
+        ['^'] = VirtualKey.D6,
+        ['&'] = VirtualKey.D7,
+        ['*'] = VirtualKey.D8,
+        ['('] = VirtualKey.D9,
+        [')'] = VirtualKey.D0,
+        [':'] = VirtualKey.OEM_1,
+        ['+'] = VirtualKey.OEM_Plus,
+        ['<'] = VirtualKey.OEM_Comma,
+        ['_'] = VirtualKey.OEM_Minus,
+        ['>'] = VirtualKey.OEM_Period,
+        ['?'] = VirtualKey.OEM_2,
+        ['~'] = VirtualKey.OEM_3,
+        ['{'] = VirtualKey.OEM_4,
+        ['|'] = VirtualKey.OEM_5,
+        ['}'] = VirtualKey.OEM_6,
+        ['"'] = VirtualKey.OEM_7,
+    };
+
+    private readonly RandomEx Random;
+    private readonly KeyboardInputOptions DefaultOptions;
 
     public ForegroundKeyboardService(
         MacroProcessor processor,
         RandomEx random,
         IOptions<KeyboardInputOptions> options
-        )
-        : base(processor)
+        ) : base(processor)
     {
-        DefaultOptions = options.Value;
         Random = random;
-        Mode = KeyboardInputMode.Scancode;
-
-        Logger.Debug($"Initialized <{nameof(ForegroundKeyboardService)}>.", DefaultOptions);
+        DefaultOptions = options.Value;
     }
+
+    public KeyboardInputMode Mode { get; set; } = KeyboardInputMode.Scancode; // todo: not supported yet
 
     public void KeyPress(VirtualKey key, KeyboardInputOptions? options = null)
     {
@@ -112,57 +159,6 @@ public class ForegroundKeyboardService : MacroService
 
     }
 
-    private static readonly Dictionary<char, VirtualKey> KeyMapShift = new()
-    {
-        ['!'] = VirtualKey.D1,
-        ['@'] = VirtualKey.D2,
-        ['#'] = VirtualKey.D3,
-        ['$'] = VirtualKey.D4,
-        ['%'] = VirtualKey.D5,
-        ['^'] = VirtualKey.D6,
-        ['&'] = VirtualKey.D7,
-        ['*'] = VirtualKey.D8,
-        ['('] = VirtualKey.D9,
-        [')'] = VirtualKey.D0,
-        [':'] = VirtualKey.OEM_1,
-        ['+'] = VirtualKey.OEM_Plus,
-        ['<'] = VirtualKey.OEM_Comma,
-        ['_'] = VirtualKey.OEM_Minus,
-        ['>'] = VirtualKey.OEM_Period,
-        ['?'] = VirtualKey.OEM_2,
-        ['~'] = VirtualKey.OEM_3,
-        ['{'] = VirtualKey.OEM_4,
-        ['|'] = VirtualKey.OEM_5,
-        ['}'] = VirtualKey.OEM_6,
-        ['"'] = VirtualKey.OEM_7,
-    };
-
-    private static readonly Dictionary<char, VirtualKey> KeyMap = new()
-    {
-        [' '] = VirtualKey.Space,
-        ['1'] = VirtualKey.D1,
-        ['2'] = VirtualKey.D2,
-        ['3'] = VirtualKey.D3,
-        ['4'] = VirtualKey.D4,
-        ['5'] = VirtualKey.D5,
-        ['6'] = VirtualKey.D6,
-        ['7'] = VirtualKey.D7,
-        ['8'] = VirtualKey.D8,
-        ['9'] = VirtualKey.D9,
-        ['0'] = VirtualKey.D0,
-        [';'] = VirtualKey.OEM_1,
-        ['='] = VirtualKey.OEM_Plus,
-        [','] = VirtualKey.OEM_Comma,
-        ['-'] = VirtualKey.OEM_Minus,
-        ['.'] = VirtualKey.OEM_Period,
-        ['/'] = VirtualKey.OEM_2,
-        ['`'] = VirtualKey.OEM_3,
-        ['['] = VirtualKey.OEM_4,
-        ['\\'] = VirtualKey.OEM_5,
-        [']'] = VirtualKey.OEM_6,
-        ['\''] = VirtualKey.OEM_7,
-    };
-
     public void Input(string text, KeyboardInputOptions? options = null)
     {
         //Logger.Debug($"Simulating inputting text: \"{text}\".", options);
@@ -240,8 +236,12 @@ public class ForegroundKeyboardService : MacroService
 
     private static void DoDelay(int timeout)
     {
-        if (timeout == 0) return;
-        System.Threading.Thread.Sleep(timeout);
+        if (timeout <= 0)
+        {
+            return;
+        }
+
+        Thread.Sleep(timeout);
     }
 
 }

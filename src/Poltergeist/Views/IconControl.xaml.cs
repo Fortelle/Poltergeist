@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Poltergeist.Automations.Common;
+using Poltergeist.Automations.Structures;
 
 namespace Poltergeist.Views;
 
@@ -9,7 +9,7 @@ public sealed partial class IconControl : UserControl
 {
     public IconControl()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)

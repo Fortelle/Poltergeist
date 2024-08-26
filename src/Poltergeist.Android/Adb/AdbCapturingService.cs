@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Images;
+using Poltergeist.Automations.Utilities.Images;
 using Poltergeist.Operations;
 
 namespace Poltergeist.Android.Adb;
@@ -12,8 +12,7 @@ public class AdbCapturingService : CapturingProvider
     public AdbCapturingService(
         MacroProcessor processor,
         AdbService adb
-        )
-        : base(processor)
+        ) : base(processor)
     {
         Adb = adb;
     }

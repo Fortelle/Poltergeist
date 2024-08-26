@@ -185,7 +185,7 @@
                                         Text="{Binding Description, Mode=OneTime}"
                                         Style="{StaticResource ListSubTitleStyle}"
                                         Foreground="{StaticResource SecondaryTextColor}"
-                                        Visibility="{Binding Description, Converter={StaticResource EmptyToVisibilityConverter}, Mode=OneTime}"
+                                        Visibility="{Binding Description, Converter={StaticResource FalsyToVisibilityConverter}, Mode=OneTime}"
                                         />
                                 </StackPanel>
 

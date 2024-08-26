@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Cryptology;
+using Poltergeist.Automations.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Components;
 

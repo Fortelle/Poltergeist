@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Components.Interactions;
+﻿namespace Poltergeist.Automations.Components.Interactions;
 
 // todo: buttons
 public class ToastModel : InteractionModel

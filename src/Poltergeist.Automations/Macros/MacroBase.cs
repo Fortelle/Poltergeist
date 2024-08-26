@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Security.Principal;
-using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -45,14 +45,12 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
     protected virtual void OnConfigure(IConfigurableProcessor processor) { }
     protected virtual void OnPrepare(IPreparableProcessor processor) { }
 
-    private static readonly char[] InvalidKeyChars = new[]
-        {
-            ' ',
-            '@',
-            ':',
-        }
-        .Concat(Path.GetInvalidFileNameChars())
-        .ToArray();
+    private static readonly char[] InvalidKeyChars = [
+        ' ',
+        '@',
+        ':',
+        .. Path.GetInvalidFileNameChars()
+    ];
 
     public MacroBase()
     {

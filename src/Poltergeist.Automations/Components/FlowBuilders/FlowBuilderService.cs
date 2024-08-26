@@ -14,7 +14,7 @@ public class FlowBuilderService : MacroService
     private readonly List<FlowBuilderItem> Steps = new();
     private ProgressListInstrument? Instrument;
 
-    public FlowBuilderService(MacroProcessor proc) : base(proc)
+    public FlowBuilderService(MacroProcessor processor) : base(processor)
     {
     }
 

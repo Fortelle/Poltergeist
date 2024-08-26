@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Processors;
@@ -14,7 +13,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
     public T? PlaceholderTemplate { get; set; }
 
     private readonly List<ListInstrumentItem> Buffer = new();
-    private bool IsHookRegistered { get; set; }
+    private bool IsHookRegistered;
 
     public ListInstrument(MacroProcessor processor) : base(processor)
     {
@@ -123,7 +122,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
         }
         else
         {
-            if (shouldUpdate && Buffer[index] != null)
+            if (shouldUpdate && Buffer[index] is not null)
             {
                 ListInstrument<T>.ApplyTemplate(item, Buffer[index]);
             }
@@ -177,9 +176,6 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
     }
 }
 
-public class ListInstrument : ListInstrument<ListInstrumentItem>
+public class ListInstrument(MacroProcessor processor) : ListInstrument<ListInstrumentItem>(processor)
 {
-    public ListInstrument(MacroProcessor processor) : base(processor)
-    {
-    }
 }

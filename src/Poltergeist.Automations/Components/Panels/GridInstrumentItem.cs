@@ -1,4 +1,4 @@
-﻿using Poltergeist.Common.Structures.Colors;
+﻿using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;
 

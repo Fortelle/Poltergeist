@@ -1,10 +1,9 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Common.Structures.Colors;
+using Poltergeist.Automations.Structures.Colors;
 using Poltergeist.Models;
-using Poltergeist.Pages.Macros.Instruments;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public class GridInstrumentViewModel : IInstrumentViewModel
 {
@@ -24,11 +23,11 @@ public class GridInstrumentViewModel : IInstrumentViewModel
     public GridInstrumentViewModel(IGridInstrumentModel model)
     {
         Title = model.Title;
-        MaximumColumns = (model.MaximumColumns == null || model.MaximumColumns <= 0) ? -1 : model.MaximumColumns.Value;
+        MaximumColumns = model.MaximumColumns is null || model.MaximumColumns <= 0 ? -1 : model.MaximumColumns.Value;
         IconWidth = model.IconWidth ?? model.IconSize ?? DefaultIconSize;
         IconHeight = model.IconHeight ?? model.IconSize ?? DefaultIconSize;
 
-        Items = new(model.Items, ModelToViewModel, App.MainWindow.DispatcherQueue);
+        Items = new(model.Items, ModelToViewModel, PoltergeistApplication.MainWindow.DispatcherQueue);
     }
 
     private GridInstrumentItemViewModel? ModelToViewModel(GridInstrumentItem? item)
@@ -40,9 +39,8 @@ public class GridInstrumentViewModel : IInstrumentViewModel
 
         var vm = new GridInstrumentItemViewModel(item);
 
-        if (item.Color != null)
+        if (item.Color is not null && ThemeColors.Colors.TryGetValue(item.Color.Value, out var colorset))
         {
-            var colorset = ThemeColors.Colors[item.Color.Value];
             vm.Foreground = new SolidColorBrush(colorset.Foreground);
             vm.Background = new SolidColorBrush(colorset.Background);
         }

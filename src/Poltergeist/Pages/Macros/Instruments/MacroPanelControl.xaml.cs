@@ -1,9 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Pages.Macros.Instruments;
 using Poltergeist.Services;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public sealed partial class MacroPanelControl : UserControl
 {
@@ -17,7 +16,7 @@ public sealed partial class MacroPanelControl : UserControl
 
     public MacroPanelControl()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     private void ContentControl_Loaded(object sender, RoutedEventArgs e)

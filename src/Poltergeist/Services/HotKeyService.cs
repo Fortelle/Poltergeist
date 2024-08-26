@@ -1,32 +1,45 @@
-﻿using Poltergeist.Input.Windows;
+﻿using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Services;
 
 public class HotKeyService : IDisposable
 {
-    private readonly HotKeyListener Listener;
+    private readonly HotKeyListener Listener = new();
+    private readonly Dictionary<HotKey, Action> Actions = new();
 
-    private Dictionary<HotKey, Action> Actions
-    {
-        get; set;
-    }
+    protected bool IsDisposed;
 
     public HotKeyService()
     {
-        Listener = new();
-
-        Actions = new();
         Listener.HotkeyPressed += HotKeyPressed;
     }
 
     public bool Register(HotKey hotkey, Action action)
     {
-        var result = Listener.Register(hotkey);
-        if (result)
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        if (Actions.ContainsKey(hotkey))
         {
-            Actions.Add(hotkey, action);
+            return false;
         }
+
+        var result = Listener.Register(hotkey);
+
+        if (!result)
+        {
+            return false;
+        }
+
+        Actions.Add(hotkey, action);
+
         return result;
+    }
+
+    public bool Unregister(HotKey hotkey)
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+        return Listener.Unregister(hotkey);
     }
 
     private void HotKeyPressed(HotKey hotkey)
@@ -37,14 +50,25 @@ public class HotKeyService : IDisposable
         }
     }
 
-    public void Dispose()
+    protected virtual void Dispose(bool disposing)
     {
-        Listener.HotkeyPressed -= HotKeyPressed;
-        Listener.Dispose();
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            Listener.HotkeyPressed -= HotKeyPressed;
+            Listener.Dispose();
+        }
+
+        IsDisposed = true;
     }
 
-    public bool Unregister(HotKey hotkey)
+    public void Dispose()
     {
-        return Listener.Unregister(hotkey);
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -103,8 +101,7 @@ internal class TitleBarHelper
     public static void ApplySystemThemeToCaptionButtons()
     {
         var res = Application.Current.Resources;
-        var frame = App.AppTitlebar as FrameworkElement;
-        if (frame != null)
+        if (App.AppTitlebar is FrameworkElement frame)
         {
             if (frame.ActualTheme == ElementTheme.Dark)
             {

@@ -1,5 +1,5 @@
 ﻿using Poltergeist.Automations.Attributes;
-using Poltergeist.Automations.Logging;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Test;

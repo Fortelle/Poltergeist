@@ -32,22 +32,22 @@ public class AndroidEmulatorMacro : MacroBase
 
         var repeat = processor.GetService<LoopService>();
 
-        if (Before != null)
+        if (Before is not null)
         {
             repeat.Before = (e) => Before.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
 
-        if (Execute != null)
+        if (Execute is not null)
         {
             repeat.Execute = (e) => Execute.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
 
-        if (CheckContinue != null)
+        if (CheckContinue is not null)
         {
             repeat.CheckContinue = (e) => CheckContinue.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }
 
-        if (After != null)
+        if (After is not null)
         {
             repeat.After = (e) => After.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
         }

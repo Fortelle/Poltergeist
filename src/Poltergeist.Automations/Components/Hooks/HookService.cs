@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Poltergeist.Automations.Logging;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -7,13 +7,20 @@ namespace Poltergeist.Automations.Components.Hooks;
 
 public sealed class HookService : KernelService
 {
-    private Dictionary<Type, ConcurrentBag<Delegate>> Hooks { get; } = new();
+    private readonly Dictionary<Type, ConcurrentBag<Delegate>> Hooks = new();
 
-    private MacroLogger Logger { get; }
-
-    public HookService(MacroProcessor processor, MacroLogger logger) : base(processor)
+    private MacroLogger? logger;
+    private MacroLogger Logger
     {
-        Logger = logger;
+        get
+        {
+            logger ??= Processor.GetService<MacroLogger>();
+            return logger;
+        }
+    }
+
+    public HookService(MacroProcessor processor) : base(processor)
+    {
     }
 
     public void Register<T>(Action handler) where T : MacroHook

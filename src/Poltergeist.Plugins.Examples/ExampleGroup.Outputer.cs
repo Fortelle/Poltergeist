@@ -1,8 +1,8 @@
 ﻿using Poltergeist.Automations.Attributes;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Maths;
 
 namespace Poltergeist.Test;
 

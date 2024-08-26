@@ -3,31 +3,28 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Cryptology;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Cryptology;
 using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Services;
 
 public class MacroManager
 {
-    public List<IFrontMacro> Templates { get; } = new();
-
     public List<MacroShell> Shells { get; } = new();
-
+    public List<IFrontMacro> Templates { get; } = new();
     public ParameterDefinitionValueCollection GlobalOptions { get; set; } = new();
     public ParameterDefinitionValueCollection GlobalStatistics { get; set; } = new();
 
     public List<IFrontProcessor> InRunningProcessors { get; set; } = new();
-
-    public bool IsBusy => InRunningProcessors.Any();
-
-    private readonly PathService PathService;
+    public bool IsBusy => InRunningProcessors.Count != 0;
 
     public event Action? MacroCollectionChanged;
     public event Action? MacroPropertyChanged;
     public event Action<MacroShell>? MacroProcessorCompleted;
+
+    private readonly PathService PathService;
 
     public MacroManager(PathService path)
     {
@@ -76,7 +73,7 @@ public class MacroManager
             {
                 FileSystem.DeleteDirectory(shell.PrivateFolder, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             }
-            catch {}
+            catch { }
         }
 
         MacroCollectionChanged?.Invoke();
@@ -215,6 +212,8 @@ public class MacroManager
         environments.Add("shared_folder", pathService.SharedFolder);
         environments.Add("macro_folder", pathService.MacroFolder);
         environments.Add("is_development", App.IsDevelopment);
+        environments.Add("is_administrator", App.IsAdministrator);
+        environments.Add("is_singlemode", App.SingleMacroMode is not null);
 
         var localSettings = App.GetService<LocalSettingsService>();
         foreach (var (definition, value) in localSettings.Settings.ToDefinitionValueArray())
@@ -280,11 +279,25 @@ public class MacroManager
                 }
             }
 
-            shell.Statistics?.Save();
-            GlobalStatistics.Save();
+            try
+            {
+                shell.Statistics?.Save();
+            }
+            catch { }
+
+            try
+            {
+                GlobalStatistics.Save();
+            }
+            catch { }
         }
 
         shell.History?.Add(e.HistoryEntry);
+        try
+        {
+            shell.History?.Save();
+        }
+        catch { }
 
         MacroProcessorCompleted?.Invoke(shell);
     }
@@ -314,7 +327,7 @@ public class MacroManager
     public void SendMessage(InteractionMessage message)
     {
         var processor = InRunningProcessors.FirstOrDefault(x => x.ProcessId == message.ProcessId);
-        if (processor == null)
+        if (processor is null)
         {
             return;
         }
@@ -359,9 +372,7 @@ public class MacroManager
                 }
             }
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     public MacroProperties? GetProperties(string shellKey)
@@ -398,6 +409,10 @@ public class MacroManager
             .Select(x => JObject.FromObject(x, serializer))
             .Where(x => x.Values().Count() > 2)
             .ToArray();
-        SerializationUtil.JsonSave(propertiesPath, propertiesList);
+        try
+        {
+            SerializationUtil.JsonSave(propertiesPath, propertiesList);
+        }
+        catch { }
     }
 }

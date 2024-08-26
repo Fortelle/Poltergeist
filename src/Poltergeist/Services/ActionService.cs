@@ -2,8 +2,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Utilities.Windows;
 using Poltergeist.Contracts.Services;
-using Poltergeist.Input.Windows;
 using Poltergeist.Pages.Macros;
 
 namespace Poltergeist.Services;

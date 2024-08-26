@@ -55,14 +55,6 @@ public class TipService
         });
     }
 
-    public static void Show(string message)
-    {
-        Show(new TipModel()
-        {
-            Text = message,
-        });
-    }
-
     private static void Show(TeachingTip teachingTip)
     {
         teachingTip.PreferredPlacement = TeachingTipPlacementMode.Top;

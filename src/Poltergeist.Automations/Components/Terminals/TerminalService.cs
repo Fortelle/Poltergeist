@@ -1,9 +1,8 @@
 ﻿using Microsoft.UI;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Windows;
+using Poltergeist.Automations.Utilities;
 using Windows.UI;
 
 namespace Poltergeist.Automations.Components.Terminals;
@@ -15,12 +14,12 @@ public class TerminalService : MacroService
     public string PanelName { get; set; } = "poltergeist-terminal";
     public string? WorkingDirectory { get; set; }
 
-    private readonly TextInstrument TerminalInstrument;
     private CmdHost? Host;
+    private readonly TextInstrument TerminalInstrument;
 
-    public TerminalService(MacroProcessor processor, TextInstrument instrument) : base(processor)
+    public TerminalService(MacroProcessor processor, TextInstrument terminalInstrument) : base(processor)
     {
-        TerminalInstrument = instrument;
+        TerminalInstrument = terminalInstrument;
     }
 
     public void Start()
@@ -39,7 +38,7 @@ public class TerminalService : MacroService
             IsFilled = true,
         });
 
-        Host = new(WorkingDirectory);
+        Host = new(WorkingDirectory ?? "");
         Host.Start();
 
         Logger.Debug($"Started <{nameof(TerminalService)}>.");
@@ -49,20 +48,18 @@ public class TerminalService : MacroService
     {
         Logger.Debug($"Executing command line \"{command}\".");
 
-        TerminalInstrument.WriteLine(new TextLine()
+        TerminalInstrument.WriteLine(new TextLine("> " + command)
         {
             TemplateKey = "input",
-            Text = "> " + command,
         });
 
         Host!.TryExecute(command, out var output);
 
         if (!string.IsNullOrEmpty(output))
         {
-            TerminalInstrument.WriteLine(new TextLine()
+            TerminalInstrument.WriteLine(new TextLine(output)
             {
                 TemplateKey = "output",
-                Text = output,
             });
         }
 
@@ -76,10 +73,13 @@ public class TerminalService : MacroService
         Host?.Dispose();
     }
 
-    public override void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        base.Dispose();
+        if (disposing)
+        {
+            Close();
+        }
 
-        Close();
+        base.Dispose(disposing);
     }
 }

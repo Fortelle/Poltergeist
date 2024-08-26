@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public partial class ButtonViewModel : ObservableRecipient
 {

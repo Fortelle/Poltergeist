@@ -17,6 +17,6 @@ public sealed partial class MacroEditor : UserControl
         var macroManager = App.GetService<MacroManager>();
         Templates = macroManager.Templates.ToDictionary(x => x.Key, x => x.Title);
 
-        this.InitializeComponent();
+        InitializeComponent();
     }
 }

@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -11,6 +11,7 @@ public sealed partial class ToggleButtonOptionControl : UserControl
     private ObservableParameterItem Item { get; }
 
     private ChoiceEntry[] Choices { get; set; }
+
     private double SelectedIndex = 0;
 
     public ToggleButtonOptionControl(ObservableParameterItem item)
@@ -32,10 +33,10 @@ public sealed partial class ToggleButtonOptionControl : UserControl
                 break;
             case BoolOption { Mode: BoolOptionMode.ToggleButtons } boi:
                 {
-                    Choices = new ChoiceEntry[] {
+                    Choices = [
                         new(true, boi.OnText ?? boi.Text ?? "\u2713"),
                         new(false, boi.OffText ?? boi.Text ?? "\u2715"),
-                    };
+                    ];
                     var text = item.Value?.ToString();
                     SelectedIndex = Array.FindIndex(Choices, x => x.Value?.ToString() == text);
                 }

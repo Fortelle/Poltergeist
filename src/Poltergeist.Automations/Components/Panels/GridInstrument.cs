@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Components.Panels;
@@ -92,7 +91,7 @@ public abstract class GridInstrument<T> : InstrumentModel, IGridInstrumentModel
         }
         else
         {
-            if (shouldUpdate && Buffer[index] != null)
+            if (shouldUpdate && Buffer[index] is not null)
             {
                 GridInstrument<T>.ApplyTemplate(item, Buffer[index]);
             }
@@ -118,9 +117,6 @@ public abstract class GridInstrument<T> : InstrumentModel, IGridInstrumentModel
 
 }
 
-public class GridInstrument : GridInstrument<GridInstrumentItem>
+public class GridInstrument(MacroProcessor processor) : GridInstrument<GridInstrumentItem>(processor)
 {
-    public GridInstrument(MacroProcessor processor) : base(processor)
-    {
-    }
 }

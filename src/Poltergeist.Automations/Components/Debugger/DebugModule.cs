@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components.Debugger;
 
@@ -42,7 +42,7 @@ public class DebugModule : MacroModule
 
         var methods = processor.Macro.GetType()
             .GetMethods()
-            .Where(x => x.GetCustomAttribute<DebugMethodAttribute>() != null)
+            .Where(x => x.GetCustomAttribute<DebugMethodAttribute>() is not null)
             .ToArray()
             ;
 

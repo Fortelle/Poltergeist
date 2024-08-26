@@ -2,12 +2,7 @@
 
 namespace Poltergeist.Automations.Macros;
 
-public class BasicMacroExecutionArguments : ArgumentService
+public class BasicMacroExecutionArguments(MacroProcessor processor) : ArgumentService(processor)
 {
     public string? Message { get; set; }
-
-    public BasicMacroExecutionArguments(MacroProcessor processor) : base(processor)
-    {
-    }
-
 }

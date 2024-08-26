@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Input.Windows;
 using Poltergeist.Views.Options;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Views;
 
@@ -10,7 +10,7 @@ public sealed partial class OptionControl : UserControl
 {
     public OptionControl()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)

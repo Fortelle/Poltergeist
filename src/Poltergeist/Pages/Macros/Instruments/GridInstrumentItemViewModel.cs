@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public class GridInstrumentItemViewModel
 {

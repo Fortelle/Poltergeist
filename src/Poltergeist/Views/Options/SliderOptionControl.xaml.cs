@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -10,8 +10,11 @@ public sealed partial class SliderOptionControl : UserControl
     private ObservableParameterItem Item { get; }
 
     private double Minimum { get; } = double.MinValue;
+
     private double Maximum { get; } = double.MaxValue;
+
     private double StepFrequency { get; } = 1;
+
     private string? ValueFormat { get; }
 
     [ObservableProperty]

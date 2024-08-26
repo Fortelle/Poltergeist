@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using Newtonsoft.Json;
-using Poltergeist.Automations.Logging;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
@@ -12,10 +12,12 @@ public abstract class MacroService : IExtensionService, IServiceLogger, IDisposa
     protected IServiceProcessor Processor { get; }
     protected IServiceLogger Logger { get; }
 
+    protected bool IsDisposed;
+
     private MacroLogger? _loggerProvider;
     private MacroLogger LoggerProvider => _loggerProvider ??= Processor.GetService<MacroLogger>();
 
-    private string SenderName { get; }
+    private readonly string SenderName;
 
     protected MacroService(MacroProcessor processor)
     {
@@ -82,22 +84,32 @@ public abstract class MacroService : IExtensionService, IServiceLogger, IDisposa
         LoggerProvider.Log(LogLevel.Critical, SenderName, message);
     }
 
-    IUserProcessor IExtensionService.GetProcessor() => (IUserProcessor)Processor;
+    IUserProcessor IExtensionService.GetProcessor() => Processor;
 
-    public virtual void Dispose()
+    protected virtual void Dispose(bool disposing)
     {
-        Debug.WriteLine($"Disposed {SenderName}.");
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        IsDisposed = true;
     }
 
+    protected void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        Debug.WriteLine($"Disposed {SenderName}.");
+        GC.SuppressFinalize(this);
+    }
 }
 
-public abstract class MacroService<T> : MacroService
-    where T : MacroBase
+public abstract class MacroService<T>(MacroProcessor processor) : MacroService(processor) where T : MacroBase
 {
     public T Macro => (T)Processor.Macro;
-
-    protected MacroService(MacroProcessor processor) : base(processor)
-    {
-    }
-
 }

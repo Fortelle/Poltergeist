@@ -9,9 +9,6 @@
     xmlns:converters="using:Poltergeist.Helpers.Converters" xmlns:local="using:Poltergeist.Views"
     Style="{StaticResource TabPageStyle}"
     mc:Ignorable="d">
-    <Page.Resources>
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />

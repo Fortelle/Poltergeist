@@ -8,7 +8,7 @@ namespace Poltergeist.Notifications;
 
 public class AppNotificationService 
 {
-    private bool Initialized { get; set; }
+    private bool IsInitialized { get; set; }
 
     public AppNotificationService()
     {
@@ -21,21 +21,24 @@ public class AppNotificationService
 
     public void Initialize()
     {
-        if (Initialized) return;
+        if (IsInitialized)
+        {
+            return;
+        }
 
         AppNotificationManager.Default.NotificationInvoked += OnNotificationInvoked;
         AppNotificationManager.Default.Register();
 
-        Initialized = true;
+        IsInitialized = true;
     }
 
-    public void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+    private static void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
     {
         App.MainWindow.DispatcherQueue.TryEnqueue(() =>
         {
-            if (args.Arguments.ContainsKey("macro"))
+            if (args.Arguments.TryGetValue("macro", out var value))
             {
-                App.GetService<INavigationService>().NavigateTo("macro:" + args.Arguments["macro"]);
+                App.GetService<INavigationService>().NavigateTo("macro:" + value);
             }
 
             var msg = new InteractionMessage(args.Argument);
@@ -45,7 +48,7 @@ public class AppNotificationService
         });
     }
 
-    public void Unregister()
+    private static void Unregister()
     {
         AppNotificationManager.Default.Unregister();
     }
@@ -69,11 +72,11 @@ public class AppNotificationService
 
         builder.AddText(model.Title ?? macro?.Title ?? model.ShellKey);
 
-        if (model.Text != null)
+        if (model.Text is not null)
         {
             builder.AddText(model.Text);
         }
-        if (model.ImageUri != null)
+        if (model.ImageUri is not null)
         {
             builder.SetInlineImage(model.ImageUri);
         }

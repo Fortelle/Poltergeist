@@ -9,7 +9,7 @@ using Poltergeist.Pages;
 using Poltergeist.Services;
 using Windows.UI.ViewManagement;
 
-namespace Poltergeist;
+namespace Poltergeist.Views;
 
 public sealed partial class MainWindow : WindowEx
 {
@@ -57,11 +57,11 @@ public sealed partial class MainWindow : WindowEx
         }
 
         var tabview = App.GetService<INavigationService>().TabView;
-        if(tabview is not null)
+        if (tabview is not null)
         {
-            foreach(var tabviewitem in tabview.TabItems.OfType<TabViewItem>())
+            foreach (var tabviewitem in tabview.TabItems.OfType<TabViewItem>())
             {
-                if(tabviewitem.Content is not IApplicationClosing closing)
+                if (tabviewitem.Content is not IApplicationClosing closing)
                 {
                     continue;
                 }
@@ -69,9 +69,6 @@ public sealed partial class MainWindow : WindowEx
                 closing.OnApplicationClosing();
             }
         }
-
-        App.GetService<LocalSettingsService>().Save();
-        App.GetService<MacroManager>().GlobalOptions.Save();
     }
 
     // this handles updating the caption button colors correctly when windows system theme is changed

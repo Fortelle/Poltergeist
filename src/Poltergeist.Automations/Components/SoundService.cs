@@ -75,12 +75,15 @@ public class SoundService : MacroService
         Restart();
     }
 
-    public override void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        base.Dispose();
+        if (disposing)
+        {
+            mediaPlayer?.Dispose();
+            mediaPlayer = null;
+        }
 
-        mediaPlayer?.Dispose();
-        mediaPlayer = null;
+        base.Dispose(disposing);
     }
 
 }

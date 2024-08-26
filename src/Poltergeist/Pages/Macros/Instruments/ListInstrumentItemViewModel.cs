@@ -4,11 +4,11 @@ using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Services;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public class ListInstrumentItemViewModel : IDisposable
 {
-    private const int MAX_BUTTON_COUNT = 3;
+    private const int MaxButtonLimit = 3;
 
     public string? Key { get; set; }
 
@@ -31,7 +31,7 @@ public class ListInstrumentItemViewModel : IDisposable
     public ButtonViewModel[]? Buttons { get; set; }
 
     public bool HasIcon => !string.IsNullOrEmpty(Glyph) || !string.IsNullOrEmpty(Emoji);
-    
+
     private DispatcherTimer? DispatcherTimer { get; set; }
 
     public ListInstrumentItemViewModel(ListInstrumentItem item)
@@ -49,7 +49,7 @@ public class ListInstrumentItemViewModel : IDisposable
         if (item.Buttons?.Length > 0)
         {
             Buttons = item.Buttons
-                .Take(MAX_BUTTON_COUNT)
+                .Take(MaxButtonLimit)
                 .Select((x, i) => new ButtonViewModel()
                 {
                     Key = x.Key,
@@ -77,7 +77,7 @@ public class ListInstrumentItemViewModel : IDisposable
                     {
                         DispatcherTimer.Stop();
                         var msg = button.Argument is not null ? new InteractionMessage(button.Argument) : new InteractionMessage();
-                        App.GetService<MacroManager>().SendMessage(msg);
+                        PoltergeistApplication.GetService<MacroManager>().SendMessage(msg);
                     }
                 };
                 DispatcherTimer.Start();

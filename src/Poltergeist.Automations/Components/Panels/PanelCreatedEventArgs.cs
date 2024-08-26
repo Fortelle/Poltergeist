@@ -1,13 +1,6 @@
-﻿using System;
+﻿namespace Poltergeist.Automations.Components.Panels;
 
-namespace Poltergeist.Automations.Components.Panels;
-
-public class PanelCreatedEventArgs : EventArgs
+public class PanelCreatedEventArgs(PanelModel item) : EventArgs
 {
-    public PanelModel Item { get; set; }
-
-    public PanelCreatedEventArgs(PanelModel item)
-    {
-        Item = item;
-    }
+    public PanelModel Item => item;
 }

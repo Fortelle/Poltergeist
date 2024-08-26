@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Poltergeist.Automations.Processors;
 
@@ -10,7 +8,7 @@ public class PauseProvider
 
     private static readonly Task CompletedTask = Task.FromResult(true);
 
-    public bool IsPaused => Source != null;
+    public bool IsPaused => Source is not null;
 
     public async Task Pause()
     {
@@ -27,7 +25,7 @@ public class PauseProvider
         while (true)
         {
             var tcs = Source;
-            if (tcs == null)
+            if (tcs is null)
             {
                 return;
             }

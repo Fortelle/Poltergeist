@@ -1,19 +1,15 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities.Images;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
+using Poltergeist.Automations.Utilities.Images;
 
 namespace Poltergeist.Operations.Background;
 
 public class BackgroundCapturingService : CapturingProvider
 {
-    private BackgroundLocatingService Locating { get; }
+    private readonly BackgroundLocatingService Locating;
 
-    public BackgroundCapturingService(
-        MacroProcessor processor,
-        BackgroundLocatingService locating
-        )
-        : base(processor)
+    public BackgroundCapturingService(MacroProcessor processor, BackgroundLocatingService locating) : base(processor)
     {
         Locating = locating;
     }

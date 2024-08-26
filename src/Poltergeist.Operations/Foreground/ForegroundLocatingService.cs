@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Foreground;
 
@@ -100,7 +100,12 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
         client = default;
         scale = null;
 
-        if (config.ClassName == null && config.ProcessName == null && config.WindowName == null && config.Handle == IntPtr.Zero)
+        if (config.Delay > 0)
+        {
+            Thread.Sleep(config.Delay);
+        }
+
+        if (config.ClassName is null && config.ProcessName is null && config.WindowName is null && config.Handle == IntPtr.Zero)
         {
             client.Size = WindowsFinder.GetScreenSize();
         }
@@ -137,7 +142,7 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
             // ugly
             if (!string.IsNullOrEmpty(config.ChildClassName))
             {
-                var path = config.ChildClassName.Split(new char[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
+                var path = config.ChildClassName.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
                 if (!path.All(className =>
                 {
                     var children = WindowsFinder.FindChildWindows(hwnd);

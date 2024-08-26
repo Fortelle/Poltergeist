@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Test;
 
@@ -42,7 +42,7 @@ public partial class ExampleGroup : MacroGroup
            new RatingOption("captionlist")
            {
                DisplayLabel = $"{nameof(RatingOption.CaptionList)} = {{\"-\", \"D\", \"C\", \"B\", \"A\", \"S\"}}",
-               CaptionList = new [] { "-", "D", "C", "B", "A", "S" },
+               CaptionList = ["-", "D", "C", "B", "A", "S"],
                AllowsEmpty = true,
            },
 

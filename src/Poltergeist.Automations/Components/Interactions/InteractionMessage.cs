@@ -11,7 +11,7 @@ public class InteractionMessage
     public string? MacroKey { get; set; }
     public string? ProcessId { get; set; }
 
-    private Dictionary<string, string> Arguments { get; } = new();
+    private readonly Dictionary<string, string> Arguments = new();
 
     public string this[string key]
     {

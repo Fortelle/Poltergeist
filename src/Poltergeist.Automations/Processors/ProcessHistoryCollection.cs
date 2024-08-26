@@ -1,12 +1,12 @@
-﻿using Poltergeist.Common.Utilities.Cryptology;
+﻿using Poltergeist.Automations.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Processors;
 
 public class ProcessHistoryCollection
 {
-    private List<ProcessHistoryEntry> Entries { get; } = new();
+    private readonly List<ProcessHistoryEntry> Entries = new();
 
-    private string? Filepath { get; set; }
+    private string? Filepath;
 
     public void Load(string filepath)
     {
@@ -33,7 +33,6 @@ public class ProcessHistoryCollection
     public void Add(ProcessHistoryEntry history)
     {
         Entries.Add(history);
-        Save();
     }
 
     public ProcessHistoryEntry[] Take(int count)

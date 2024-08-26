@@ -2,30 +2,27 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Services;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Poltergeist.Views.Options;
 
 [ObservableObject]
 public sealed partial class MultilineTextOptionControl : UserControl
 {
+    private const int MaxLength = 100;
+
     private ObservableParameterItem Item { get; }
 
     [ObservableProperty]
     private string? _text;
-
-    private const int MaxLength = 100;
 
     public MultilineTextOptionControl(ObservableParameterItem item)
     {
         Text = Truncate(item.Value as string);
         Item = item;
 
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     private static string Truncate(string? value)

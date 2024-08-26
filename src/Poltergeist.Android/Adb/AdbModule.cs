@@ -2,8 +2,8 @@
 using Poltergeist.Android.Emulators;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Android.Adb;
 
@@ -22,11 +22,6 @@ public class AdbModule : MacroModule
             DisplayLabel = "Exe file",
             Category = "ADB",
         });
-    }
-
-    public AdbModule()
-    {
-
     }
 
     public override void OnMacroInitialize(IInitializableMacro macro)

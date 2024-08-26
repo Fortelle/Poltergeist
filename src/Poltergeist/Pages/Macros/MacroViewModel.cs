@@ -4,15 +4,13 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Newtonsoft.Json.Linq;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Thumbnails;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Helpers.Converters;
-using Poltergeist.Macros.Instruments;
 using Poltergeist.Pages.Macros.Instruments;
 using Poltergeist.Services;
 
@@ -195,7 +193,7 @@ public partial class MacroViewModel : ObservableRecipient
             App.GetService<ActionService>().Execute(e.CompletionAction);
         }
 
-        if(e.Exception != null)
+        if(e.Exception is not null)
         {
             ExceptionMessage = e.Exception.Message;
         }
@@ -273,7 +271,7 @@ public partial class MacroViewModel : ObservableRecipient
         var instrumentService = App.GetService<InstrumentManager>();
         var info = instrumentService.GetInfo(model);
         var viewmodel = Activator.CreateInstance(info.ViewModelType, model) as IInstrumentViewModel;
-        
+
         return viewmodel;
     }
 

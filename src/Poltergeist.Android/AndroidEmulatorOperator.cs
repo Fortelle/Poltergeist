@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Android;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Operations.Macros;
@@ -21,10 +21,8 @@ public class AndroidEmulatorOperator : MacroService, IOperator
         ) : base(processor)
     {
         Capturing = capturing;
-
         Hand = hand;
         Timer = timer;
-
         Random = random;
     }
 }

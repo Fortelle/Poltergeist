@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Common.Structures.Colors;
+using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Test;
 

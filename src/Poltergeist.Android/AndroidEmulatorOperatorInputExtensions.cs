@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Poltergeist.Common.Structures.Shapes;
+using Poltergeist.Automations.Structures.Shapes;
 
 namespace Poltergeist.Operations.Macros;
 

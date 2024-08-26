@@ -3,7 +3,7 @@ using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Components.Loops;
 
-public class LoopExecuteArguments : ArgumentService
+public class LoopExecuteArguments(MacroProcessor processor) : ArgumentService(processor)
 {
     public int Index { get; internal set; }
     public DateTime StartTime { get; internal set; }
@@ -11,10 +11,6 @@ public class LoopExecuteArguments : ArgumentService
 
     public int? ProgressMax { get; set; }
     internal event Action<ProgressInstrumentInfo>? Reported;
-
-    public LoopExecuteArguments(MacroProcessor processor) : base(processor)
-    {
-    }
 
     public void Report(ProgressInstrumentInfo info)
     {

@@ -1,69 +1,19 @@
-﻿using System.Reflection;
-using System.Windows.Input;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using Microsoft.UI.Xaml;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Contracts.Services;
-using Poltergeist.Helpers;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Services;
-using Windows.ApplicationModel;
 
 namespace Poltergeist.ViewModels;
 
 public partial class SettingsViewModel : ObservableRecipient
 {
-    private readonly IThemeSelectorService _themeSelectorService;
-
-    [ObservableProperty]
-    private ElementTheme _elementTheme;
-
-    [ObservableProperty]
-    private string _versionDescription;
-
     public ObservableParameterCollection LocalSettings { get; set; }
 
     public ObservableParameterCollection GlobalOptions { get; set; }
 
-    public ICommand SwitchThemeCommand { get; }
-
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, LocalSettingsService localSettings, MacroManager macroManager)
+    public SettingsViewModel(LocalSettingsService localSettings, MacroManager macroManager)
     {
-        _themeSelectorService = themeSelectorService;
-        _elementTheme = _themeSelectorService.Theme;
-        _versionDescription = GetVersionDescription();
-
-        SwitchThemeCommand = new RelayCommand<ElementTheme>(
-            async (param) =>
-            {
-                if (ElementTheme != param)
-                {
-                    ElementTheme = param;
-                    await _themeSelectorService.SetThemeAsync(param);
-                }
-            });
-
         LocalSettings = new(localSettings.Settings);
         GlobalOptions = new(macroManager.GlobalOptions);
     }
 
-    private static string GetVersionDescription()
-    {
-        Version version;
-
-        if (RuntimeHelper.IsMSIX)
-        {
-            var packageVersion = Package.Current.Id.Version;
-
-            version = new(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
-        }
-        else
-        {
-            version = Assembly.GetExecutingAssembly().GetName().Version!;
-        }
-
-        return $"Poltergeist - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-    }
 }

@@ -2,14 +2,11 @@ using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Services;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public sealed partial class ListInstrumentView : UserControl
 {
-    public ListInstrumentViewModel ViewModel
-    {
-        get; set;
-    }
+    public ListInstrumentViewModel ViewModel { get; set; }
 
     public ListInstrumentView(ListInstrumentViewModel viewModel)
     {

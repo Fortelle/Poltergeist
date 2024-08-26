@@ -3,10 +3,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Pages.Macros.Instruments;
 using Windows.UI;
 
-namespace Poltergeist.Macros.Instruments;
+namespace Poltergeist.Pages.Macros.Instruments;
 
 public class TextInstrumentViewModel : IInstrumentViewModel
 {

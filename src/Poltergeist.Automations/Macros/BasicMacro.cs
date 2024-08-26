@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -43,7 +43,7 @@ public class BasicMacro : MacroBase
             InstallStatusBar(processor);
         }
 
-        if(Execute != null)
+        if(Execute is not null)
         {
             processor.WorkProc = () =>
             {
@@ -51,7 +51,7 @@ public class BasicMacro : MacroBase
                 Execute(args);
             };
         }
-        else if (ExecuteAsync != null)
+        else if (ExecuteAsync is not null)
         {
             processor.AsyncWorkProc = async () =>
             {

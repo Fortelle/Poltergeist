@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Contracts.Services;
 using Poltergeist.Pages.Groups;
 using Poltergeist.Services;
@@ -18,7 +18,7 @@ public sealed partial class MacroBrowser : UserControl
     {
         ViewModel = new();
 
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     private void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -64,10 +64,10 @@ public sealed partial class MacroBrowser : UserControl
         var dialogModel = new InputDialogModel()
         {
             Title = App.Localize($"Poltergeist/Home/RenameMacroDialog_Title"),
-            Inputs = new[]
-            {
+            Inputs =
+            [
                 new TextOption("name", shell.Properties.Title ?? "")
-            }
+            ]
         };
         await DialogService.ShowAsync(dialogModel);
         if (dialogModel.Result != DialogResult.Ok)
@@ -128,10 +128,9 @@ public sealed partial class MacroBrowser : UserControl
         var dialogModel = new InputDialogModel()
         {
             Title = App.Localize($"Poltergeist/Home/ChangeIconDialog_Title"),
-            Inputs = new[]
-            {
+            Inputs = [
                 new TextOption("icon", shell.Properties.Icon ?? "")
-            }
+            ]
         };
         await DialogService.ShowAsync(dialogModel);
         if (dialogModel.Result != DialogResult.Ok)

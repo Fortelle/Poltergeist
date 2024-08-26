@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Services;
 
 namespace Poltergeist.Views.Options;
@@ -27,7 +27,7 @@ public sealed partial class StringArrayOptionControl : UserControl
 
         Item = item;
 
-        this.InitializeComponent();
+        InitializeComponent();
 
         UpdateText();
     }
@@ -52,7 +52,7 @@ public sealed partial class StringArrayOptionControl : UserControl
         {
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
-            Text = Item.Value is not null ? string.Join("\n", Item.Value) : "",
+            Text = Item.Value is IEnumerable<string> s ? string.Join("\n", s) : "",
             Height = 200,
             Width = 600,
         };

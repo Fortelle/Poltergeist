@@ -1,4 +1,4 @@
-﻿using Poltergeist.Common.Utilities.Maths;
+﻿using Poltergeist.Automations.Utilities.Maths;
 
 namespace Poltergeist.Operations.Foreground;
 

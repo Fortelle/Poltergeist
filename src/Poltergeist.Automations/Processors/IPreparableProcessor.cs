@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 

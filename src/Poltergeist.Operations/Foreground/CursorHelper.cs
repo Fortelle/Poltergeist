@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Poltergeist.Input.Windows;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Foreground;
 

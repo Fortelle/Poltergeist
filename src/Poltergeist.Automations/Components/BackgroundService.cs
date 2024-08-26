@@ -9,7 +9,7 @@ namespace Poltergeist.Automations.Components;
 
 public class BackgroundService : MacroService, IAutoloadable
 {
-    private TextInstrument BackgroundInstrument { get; set; }
+    private readonly TextInstrument BackgroundInstrument;
 
     public BackgroundService(MacroProcessor processor,
         PanelService panelService,
@@ -34,7 +34,7 @@ public class BackgroundService : MacroService, IAutoloadable
         while (true)
         {
             var baseType = classes.Last().BaseType;
-            if (baseType == null)
+            if (baseType is null)
             {
                 break;
             }
@@ -58,14 +58,14 @@ public class BackgroundService : MacroService, IAutoloadable
             return s;
         }).ToArray();
 
-        var processer = (MacroProcessor)Processor;
+        var processor = (MacroProcessor)Processor;
         var macro = (MacroBase)Processor.Macro;
 
-        var optionList = processer.Options
+        var optionList = processor.Options
             .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
 
-        var envList = processer.Environments
+        var envList = processor.Environments
             .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
 
@@ -73,22 +73,22 @@ public class BackgroundService : MacroService, IAutoloadable
             .Select(x => $"{x.GetType().Name}")
             .ToArray();
 
-        var serviceList = processer.ServiceCollection!
+        var serviceList = processor.ServiceCollection!
             .Select(x => x.ServiceType.Name)
             .Where(x => !x.StartsWith("IOptions") && !x.StartsWith("IConfigureOptions"))
             .ToArray();
 
-        var serviceOptions = processer.ServiceCollection!
+        var serviceOptions = processor.ServiceCollection!
             .Select(x => x.ServiceType.Name)
             .Where(x => x.StartsWith("IOptions") || x.StartsWith("IConfigureOptions"))
             .ToArray();
 
-        WriteArray("Classes", family);
-        WriteArray("UserOptions", optionList);
+        WriteArray("Inheritance", family);
+        WriteArray("User Options", optionList);
         WriteArray("Environments", envList);
         WriteArray("Modules", moduleList);
         WriteArray("Services", serviceList);
-        WriteArray("ServiceOptions", serviceOptions);
+        WriteArray("Service Options", serviceOptions);
     }
 
     private void WriteArray(string title, string[] lines)

@@ -1,14 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components;
+using Poltergeist.Automations.Components.Debugger;
 using Poltergeist.Automations.Components.FlowBuilders;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Services;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 
@@ -63,6 +64,8 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
     public string? Comment { get; set; }
 
     public Exception? Exception { get; set; }
+
+    private bool IsDisposed;
 
     public MacroProcessor(IFrontBackMacro macro, LaunchReason reason)
     {
@@ -202,9 +205,9 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
         services.AddTransient<ProgressGridInstrument>();
         services.AddTransient<ImageInstrument>();
 
-        services.AddTransient<ArgumentService>();
-
         services.AddTransient<FlowBuilderService>();
+
+        services.AddTransient<ArgumentService>();
         services.AddTransient<LoopBuilderService>();
         services.AddTransient<LoopExecuteArguments>();
         services.AddTransient<LoopCheckContinueArguments>();
@@ -556,7 +559,7 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
 
     #endregion
 
-    public void Abort()
+    public void Abort() // todo: add reason
     {
         IsCancelled = true;
 
@@ -565,10 +568,9 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
             return;
         }
 
-        if (WorkingThread != null)
-        {
-            WorkingThread.Interrupt();
-        }
+        Log(LogLevel.Information, "User aborting.");
+
+        WorkingThread?.Interrupt();
 
         Cancellation?.Cancel();
 
@@ -576,8 +578,6 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
         {
             PauseProvider.Resume();
         }
-
-        Log(LogLevel.Information, "User aborted.");
     }
 
     private void Log(LogLevel level, string message)
@@ -642,7 +642,7 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
 
     public void Resume()
     {
-        if(PauseProvider is null)
+        if (PauseProvider is null)
         {
             return;
         }
@@ -664,22 +664,39 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
     }
 
 
-    public void Dispose()
-    {
-        ServiceProvider!.Dispose();
-
-        foreach(var item in SessionStorage)
-        {
-            if(item.Value is IDisposable idis)
-            {
-                idis.Dispose();
-            }
-        }
-    }
-
     public void Interact(InteractionModel model)
     {
         var args = new InteractingEventArgs(model);
         RaiseEvent(ProcessorEvent.Interacting, args);
     }
+
+    private void Dispose(bool disposing)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            ServiceProvider?.Dispose();
+
+            foreach (var item in SessionStorage)
+            {
+                if (item.Value is IDisposable idis)
+                {
+                    idis.Dispose();
+                }
+            }
+        }
+
+        IsDisposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
 }

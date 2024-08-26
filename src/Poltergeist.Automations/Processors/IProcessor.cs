@@ -1,4 +1,4 @@
-﻿using Poltergeist.Automations.Parameters;
+﻿using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 

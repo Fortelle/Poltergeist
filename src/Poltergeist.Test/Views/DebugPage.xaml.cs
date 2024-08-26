@@ -11,6 +11,6 @@ public sealed partial class DebugPage : Page
 {
     public DebugPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 }

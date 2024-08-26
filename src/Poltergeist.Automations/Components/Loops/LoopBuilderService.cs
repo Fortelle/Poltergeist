@@ -1,12 +1,11 @@
-﻿using Poltergeist.Automations.Common;
-using Poltergeist.Automations.Components.Panels;
+﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Structures.Colors;
+using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components.Loops;
 
-public class LoopBuilderService : MacroService
+public class LoopBuilderService(MacroProcessor processor) : MacroService(processor)
 {
     public string? Title { get; set; }
 
@@ -26,16 +25,12 @@ public class LoopBuilderService : MacroService
 
     public Exception? Exception { get; set; }
 
-    private int IterationIndex { get; set; }
+    private int IterationIndex;
     private event Action? LoopStarted;
     private event Action? LoopEnded;
     private event Action? IterationStarted;
     private event Action<IterationResult>? IterationEnded;
     private event Action<ProgressInstrumentInfo>? IterationReported;
-
-    public LoopBuilderService(MacroProcessor processor) : base(processor)
-    {
-    }
 
     public void Run()
     {

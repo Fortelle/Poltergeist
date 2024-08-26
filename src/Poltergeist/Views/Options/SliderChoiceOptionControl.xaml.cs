@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -19,6 +19,7 @@ public sealed partial class SliderChoiceOptionControl : UserControl
     private string _selectedValue;
 
     private double Minimum { get; } = 0;
+
     private double Maximum { get; } = double.MaxValue;
 
     public SliderChoiceOptionControl(ObservableParameterItem item)

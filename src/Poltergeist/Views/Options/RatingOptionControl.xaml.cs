@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
-using Poltergeist.Pages.Macros;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
@@ -15,7 +14,9 @@ public sealed partial class RatingOptionControl : UserControl
     }
 
     private bool IsClearEnabled { get; }
+
     private int MaxRating { get; }
+
     private string Caption { get; }
 
     public RatingOptionControl(ObservableParameterItem item)

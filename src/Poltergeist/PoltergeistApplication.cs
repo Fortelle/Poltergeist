@@ -1,22 +1,20 @@
 ﻿using System.Diagnostics;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Activation;
-using Poltergeist.Automations.Common;
 using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Logging;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Common.Utilities;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities;
 using Poltergeist.Contracts.Services;
 using Poltergeist.Helpers;
-using Poltergeist.Macros.Instruments;
-using Poltergeist.Models;
 using Poltergeist.Notifications;
+using Poltergeist.Pages;
 using Poltergeist.Pages.About;
 using Poltergeist.Pages.Groups;
 using Poltergeist.Pages.Macros;
@@ -34,23 +32,27 @@ public abstract class PoltergeistApplication : Application
 
     public static UIElement? AppTitlebar { get; set; }
 
-    public IHost? Host { get; private set; }
-
     public static event Action? Initialized;
     public static event Action<LocalSettingsService>? SettingsLoading;
     public static event Action<LocalSettingsService>? SettingsLoaded;
     public static event Action? ContentLoading;
     public static event Action? ContentLoaded;
 
+    public static bool IsAdministrator { get; set; }
     public static bool IsDevelopment { get; set; }
-    public static bool IsLoaded { get; set; }
     public static string? SingleMacroMode { get; set; }
 
     public static PoltergeistApplication CurrentPoltergeist => (PoltergeistApplication)Current;
 
+    public IHost? Host { get; private set; }
+
     public void Initialize()
     {
         IsDevelopment = Debugger.IsAttached;
+
+        using var identity = WindowsIdentity.GetCurrent();
+        var principal = new WindowsPrincipal(identity);
+        IsAdministrator = principal.IsInRole(WindowsBuiltInRole.Administrator);
 
         Resources.MergedDictionaries.Add(new XamlControlsResources());
         Resources.MergedDictionaries.Add(new ResourceDictionary() { Source = new Uri(@"ms-appx:///Poltergeist/Styles/FontSizes.xaml") });
@@ -64,15 +66,8 @@ public abstract class PoltergeistApplication : Application
             UseContentRoot(AppContext.BaseDirectory).
             ConfigureServices((context, services) =>
             {
-                // Default Activation Handler
-                services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-
-                // Other Activation Handlers
-                //services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
-
                 // Services
                 services.AddSingleton<LocalSettingsService>();
-                services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
 
                 services.AddSingleton<INavigationService, NavigationService>();
 
@@ -85,9 +80,6 @@ public abstract class PoltergeistApplication : Application
                 services.AddTransient<SettingsPage>();
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<MainPage>();
-
-                // Configuration
-                services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 
                 services.AddSingleton<PathService>();
                 services.AddSingleton<PluginService>();
@@ -108,6 +100,7 @@ public abstract class PoltergeistApplication : Application
 
         UnhandledException += App_UnhandledException;
     }
+    
 
     public virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
@@ -190,6 +183,7 @@ public abstract class PoltergeistApplication : Application
         if (SingletonHelper.IsSingleInstance)
         {
             _mainWindow = new MainWindow();
+            _mainWindow.Closed += AppWindow_Closed;
             MainWindow.Show();
 
             Initialize();
@@ -237,8 +231,6 @@ public abstract class PoltergeistApplication : Application
 
                             SingletonHelper.Load();
                             SingletonHelper.ArgumentReceived += OnArgumentReceived;
-
-                            IsLoaded = true;
                         });
                     });
                 });
@@ -256,6 +248,23 @@ public abstract class PoltergeistApplication : Application
             return;
         }
 
+    }
+
+    private void AppWindow_Closed(object sender, WindowEventArgs args)
+    {
+        try
+        {
+            App.GetService<LocalSettingsService>().Save();
+        }
+        catch { }
+
+        try
+        {
+            App.GetService<MacroManager>().GlobalOptions.Save();
+        }
+        catch { }
+
+        Host?.Dispose();
     }
 
     private void OnArgumentReceived(string argument)
@@ -296,6 +305,7 @@ public abstract class PoltergeistApplication : Application
 
     protected static void OnInitialized()
     {
+        var pathService = GetService<PathService>();
         App.GetService<LocalSettingsService>();
         App.GetService<HotKeyManager>();
         App.GetService<PluginService>().Load();
@@ -370,16 +380,34 @@ public abstract class PoltergeistApplication : Application
 
         navigationService.AddInfo(MacroPage.NavigationInfo);
 
-        InteractionService.Interacting += OnInteracting;
+        InteractionService.Interacting = OnInteracting;
     }
 
     protected virtual void OnContentLoaded(CommandOption[] options)
     {
+        var pluginService = App.GetService<PluginService>();
+        var plguinLog = pluginService.ErrorLog.ToString().Trim();
+        if (!string.IsNullOrEmpty(plguinLog))
+        {
+            ShowTeachingTip(plguinLog);
+        }
     }
 
     public static void ShowTeachingTip(string message)
     {
-        TipService.Show(message);
+        TipService.Show(new TipModel()
+        {
+            Text = message,
+        });
+    }
+
+    public static void ShowException(Exception exception)
+    {
+        TipService.Show(new TipModel()
+        {
+            Type = TipType.Error,
+            Text = exception.Message,
+        });
     }
 
     private async Task OnInteracting(InteractingEventArgs e)

@@ -2,7 +2,7 @@
 using Poltergeist.Android.Adb;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Structures.Shapes;
+using Poltergeist.Automations.Structures.Shapes;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.Emulators;
@@ -12,8 +12,8 @@ public class EmulatorAdbService : MacroService, IEmulatorInputProvider
     public AdbInputService Adb { get; }
     public TimerService Timer { get; }
 
-    private Point TargetPoint { get; set; }
-    private Point DragPoint { get; set; }
+    private Point TargetPoint;
+    private Point DragPoint;
 
     public EmulatorAdbService(MacroProcessor processor,
         AdbInputService adb,

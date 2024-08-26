@@ -1,16 +1,16 @@
 ﻿using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Parameters;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Cryptology;
+using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Cryptology;
 
 namespace Poltergeist.Automations.Components;
 
 public class LocalStorageService : MacroService
 {
     private const string Filename = "LocalStorage.json";
-    private ParameterValueCollection? GlobalStorage { get; set; }
-    private ParameterValueCollection? MacroStorage { get; set; }
+    private ParameterValueCollection? GlobalStorage;
+    private ParameterValueCollection? MacroStorage;
 
     public LocalStorageService(MacroProcessor processor, HookService hook) : base(processor)
     {

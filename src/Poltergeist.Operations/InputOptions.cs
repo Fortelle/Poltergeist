@@ -11,7 +11,7 @@ public class InputOptions
         foreach (var prop in properties)
         {
             var value = prop.GetValue(this);
-            if(value != null)
+            if(value is not null)
             {
                 list.Add($"{prop.Name} = {value}");
             }

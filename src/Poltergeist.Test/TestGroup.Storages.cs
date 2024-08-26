@@ -1,7 +1,7 @@
 ﻿using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Test;
 
@@ -26,9 +26,10 @@ public partial class TestGroup
             var isGlobal = args.Processor.Options.Get<bool>("IsGlobal");
 
             var localStorage = args.Processor.GetService<LocalStorageService>();
-            var history = isGlobal
-                ? localStorage.GlobalGet("history", Array.Empty<int>())
-                : localStorage.Get("history", Array.Empty<int>());
+            var history = (isGlobal
+                ? localStorage.GlobalGet<int[]>("history")
+                : localStorage.Get<int[]>("history")
+                ) ?? [];
 
             args.Outputer.NewGroup("Last three results:");
             foreach (var x in history.Take(3))
@@ -72,8 +73,7 @@ public partial class TestGroup
             var isGlobal = args.Processor.Options.Get<bool>("IsGlobal");
 
             var fileStorage = args.Processor.GetService<FileStorageService>();
-            var history = fileStorage.Get<int[]>("history.json", isGlobal);
-            history ??= Array.Empty<int>();
+            var history = fileStorage.Get<int[]>("history.json", isGlobal) ?? [];
 
             args.Outputer.NewGroup("Last three results:");
             foreach (var x in history.Take(3))

@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 using Windows.Storage.Pickers;
 
 namespace Poltergeist.Views.Options;
@@ -80,7 +80,7 @@ public sealed partial class PickerOptionControl : UserControl
                     }
                     else
                     {
-                        savePicker.FileTypeChoices.Add("All files", new List<string>() { "." });
+                        savePicker.FileTypeChoices.Add("All files", ["."]);
                     }
                     SetWindow(savePicker);
                     var file = await savePicker.PickSaveFileAsync();

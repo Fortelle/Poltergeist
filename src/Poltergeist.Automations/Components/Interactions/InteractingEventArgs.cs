@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Poltergeist.Automations.Components.Interactions;
+﻿namespace Poltergeist.Automations.Components.Interactions;
 
 public class InteractingEventArgs : EventArgs
 {
@@ -10,5 +8,12 @@ public class InteractingEventArgs : EventArgs
     public InteractingEventArgs(InteractionModel model)
     {
         Model = model;
+        Suspended = false;
+    }
+
+    public InteractingEventArgs(InteractionModel model, bool suspended)
+    {
+        Model = model;
+        Suspended = suspended;
     }
 }

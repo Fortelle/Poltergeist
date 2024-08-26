@@ -2,28 +2,27 @@
 using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Structures.Shapes;
-using Poltergeist.Common.Utilities.Maths;
+using Poltergeist.Automations.Structures.Shapes;
+using Poltergeist.Automations.Utilities.Maths;
 
 namespace Poltergeist.Android.Adb;
 
 public class AdbInputService : MacroService
 {
     public AdbService Adb { get; }
-    private AdbInputOptions DefaultOptions { get; }
-    private DistributionService Distribution { get; }
+
+    private readonly DistributionService Distribution;
+    private readonly AdbInputOptions DefaultOptions;
 
     public AdbInputService(MacroProcessor processor,
         AdbService adb,
-        DistributionService random,
+        DistributionService distribution,
         IOptions<AdbInputOptions> options
         ) : base(processor)
     {
         Adb = adb;
-        Distribution = random;
+        Distribution = distribution;
         DefaultOptions = options.Value;
-
-        Logger.Debug($"Initialized <{nameof(AdbInputService)}>.", DefaultOptions);
     }
 
     #region "Tap"

@@ -1,32 +1,42 @@
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Parameters;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Views.Options;
 
 public sealed partial class NumberBoxOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
+
     private double Minimum { get; } = double.MinValue;
+
     private double Maximum { get; } = double.MaxValue;
+
     private double SmallChange { get; } = 1;
 
     private double Value
     {
-        get => Convert.ToDouble(Item.Value);
+        get => Item.Value switch
+        {
+            double => (double)Item.Value,
+            Half => (double)Item.Value,
+            _ => Convert.ToDouble(Item.Value),
+        };
         set => Item.Value = Item.Value switch
         {
-            byte => Convert.ToByte(value),
-            decimal => Convert.ToDecimal(value),
-            double => Convert.ToDouble(value),
-            Half => Convert.ToDouble(value),
-            short => Convert.ToInt16(value),
-            int => Convert.ToInt32(value),
-            long => Convert.ToInt64(value),
             sbyte => Convert.ToSByte(value),
-            float => Convert.ToSingle(value),
+            byte => Convert.ToByte(value),
+            short => Convert.ToInt16(value),
             ushort => Convert.ToUInt16(value),
+            int => Convert.ToInt32(value),
             uint => Convert.ToUInt32(value),
+            long => Convert.ToInt64(value),
             ulong => Convert.ToUInt64(value),
+            nint => Convert.ToInt64(value),
+            nuint => Convert.ToUInt32(value),
+            Half => (Half)value,
+            float => Convert.ToSingle(value),
+            double => value,
+            decimal => Convert.ToDecimal(value),
             _ => throw new NotSupportedException(),
         };
     }

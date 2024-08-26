@@ -1,33 +1,29 @@
 ﻿using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Common.Utilities.Maths;
-using Poltergeist.Input.Windows;
 using Poltergeist.Operations.Foreground;
+using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Background;
 
 public class BackgroundMouseService : MacroService
 {
-    private BackgroundLocatingService Locating { get; }
-    private MouseInputOptions DefaultOptions { get; }
-    private DistributionService Distribution { get; }
+    private readonly BackgroundLocatingService Locating;
+    private readonly DistributionService Distribution;
+    private readonly MouseInputOptions DefaultOptions;
 
     public BackgroundMouseService(
         MacroProcessor processor,
         BackgroundLocatingService locating,
         IOptions<MouseInputOptions> options,
-        DistributionService random
-        )
-        : base(processor)
+        DistributionService distribution
+        ) : base(processor)
     {
         Locating = locating;
+        Distribution = distribution;
         DefaultOptions = options.Value;
-        Distribution = random;
-
-        Logger.Debug($"Initialized <{nameof(BackgroundMouseService)}>.", DefaultOptions);
     }
-
 
     #region "click"
 
