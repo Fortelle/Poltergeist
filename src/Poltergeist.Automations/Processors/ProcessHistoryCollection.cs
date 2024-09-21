@@ -6,7 +6,7 @@ public class ProcessHistoryCollection
 {
     private readonly List<ProcessHistoryEntry> Entries = new();
 
-    private string? Filepath;
+    public string? Filepath { get; set; }
 
     public void Load(string filepath)
     {

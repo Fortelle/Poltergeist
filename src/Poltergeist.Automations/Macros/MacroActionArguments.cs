@@ -1,6 +1,4 @@
-﻿using Poltergeist.Automations.Components.Interactions;
-
-namespace Poltergeist.Automations.Macros;
+﻿namespace Poltergeist.Automations.Macros;
 
 public class MacroActionArguments
 {
@@ -19,11 +17,11 @@ public class MacroActionArguments
         Macro = macro;
     }
 
-    public void ShowTooltip(string message)
+    public event Action<string>? MessageReceived;
+
+    public void ShowMessage(string message)
     {
-        _ = InteractionService.UIShowAsync(new TipModel()
-        {
-            Text = message,
-        });
+        MessageReceived?.Invoke(message);
     }
+
 }

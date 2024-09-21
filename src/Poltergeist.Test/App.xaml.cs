@@ -1,5 +1,4 @@
-﻿using Poltergeist.Automations.Utilities;
-using Poltergeist.Contracts.Services;
+﻿using Poltergeist.Modules.Navigation;
 using Poltergeist.Test.Views;
 
 namespace Poltergeist.Test;
@@ -12,18 +11,18 @@ public partial class App : PoltergeistApplication
         InitializeComponent();
     }
 
-    protected override void OnContentLoading(CommandOption[] options)
+    protected override void ConfigureNavigations(INavigationService navigationService)
     {
-        base.OnContentLoading(options);
+        base.ConfigureNavigations(navigationService);
 
-        var navigationService = App.GetService<INavigationService>();
         navigationService.AddInfo(new()
         {
-            Key = "debug",
-            Header = "Debug",
-            IsFooter = true,
-            Icon = new("\uEBE8"),
-            CreateContent = (_, _) => new DebugPage(),
+            Key = "test",
+            Header = "Test",
+            Icon = new("\uE99A"),
+            PositionInSidebar = NavigationItemPosition.Bottom,
+            CreateContent = (_, _) => new TestPage(),
         });
     }
+
 }

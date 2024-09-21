@@ -102,7 +102,7 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
 
     public void Launch()
     {
-        if (Exception is not null)
+        if (Exception is not null) // Exception is always null here.
         {
             throw new InvalidOperationException("The macro is not able to run.", Exception);
         }
@@ -642,7 +642,7 @@ public sealed class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfig
 
     public void Resume()
     {
-        if (PauseProvider is null)
+        if(PauseProvider is null)
         {
             return;
         }

@@ -123,7 +123,7 @@
   <data name="HeaderTextBlock.Text" xml:space="preserve">
     <value>设置</value>
   </data>
-  <data name="LocalSettingsTextBlock.Text" xml:space="preserve">
+  <data name="AppSettingsTextBlock.Text" xml:space="preserve">
     <value>本地设置</value>
   </data>
 </root>

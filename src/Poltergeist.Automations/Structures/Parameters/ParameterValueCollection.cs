@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Newtonsoft.Json.Linq;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
@@ -108,7 +107,7 @@ public class ParameterValueCollection : KeyedCollection<string, ParameterValue>
         return value;
     }
 
-    public T? Get<T>(string key, T defaultValue)
+    public T Get<T>(string key, T defaultValue)
     {
         if (!TryGetValue(key, out var entry))
         {

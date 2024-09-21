@@ -147,19 +147,19 @@
   <data name="TabHeader_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="MacroNavigationViewItemHeader.Content" xml:space="preserve">
+  <data name="MacroNavigationViewItemHeader" xml:space="preserve">
     <value>Macros</value>
   </data>
-  <data name="LocalSettings_Macro" xml:space="preserve">
+  <data name="AppSettings_Macro" xml:space="preserve">
     <value>Macro</value>
   </data>
-  <data name="LocalSettings_Macro_LogToConsole" xml:space="preserve">
+  <data name="AppSettings_Macro_LogToConsole" xml:space="preserve">
     <value>Log to console</value>
   </data>
-  <data name="LocalSettings_Macro_LogToFile" xml:space="preserve">
+  <data name="AppSettings_Macro_LogToFile" xml:space="preserve">
     <value>Log to file</value>
   </data>
-  <data name="LocalSettings_Macro_UseStatistics" xml:space="preserve">
+  <data name="AppSettings_Macro_UseStatistics" xml:space="preserve">
     <value>Use statistics</value>
   </data>
   <data name="Options_Uncategorized" xml:space="preserve">
@@ -168,7 +168,7 @@
   <data name="HotKeyOption_Modifiers" xml:space="preserve">
     <value>Modifiers</value>
   </data>
-  <data name="LocalSettings_Macro_StartMacroHotKey" xml:space="preserve">
+  <data name="AppSettings_Macro_StartMacroHotKey" xml:space="preserve">
     <value>Start Macro HotKey</value>
   </data>
   <data name="Options_MultilineTextOption_Dialog_Text" xml:space="preserve">
@@ -191,5 +191,8 @@
   </data>
   <data name="Navigation_UnknownPageKey" xml:space="preserve">
     <value>Unknown page key: {0}</value>
+  </data>
+  <data name="TabHeader_Log" xml:space="preserve">
+    <value>Log</value>
   </data>
 </root>

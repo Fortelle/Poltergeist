@@ -41,11 +41,9 @@ public class HotKeyListener : IDisposable
         };
 
         var atom = NativeMethods.RegisterClassEx(ref wndClassEx);
-
         if (atom == 0)
         {
-            var error = Marshal.GetLastWin32Error();
-            throw new Win32Exception(error);
+            throw new Win32Exception();
         }
 
         HWnd = NativeMethods.CreateWindowEx(
@@ -65,53 +63,46 @@ public class HotKeyListener : IDisposable
 
         if (HWnd == nint.Zero)
         {
-            var error = Marshal.GetLastWin32Error();
-            throw new Win32Exception(error);
+            throw new Win32Exception();
         }
     }
 
-    public bool Register(HotKey hotkey)
+    public void Register(HotKey hotkey)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         if (HotKeyList.ContainsKey(hotkey))
         {
-            return false;
+            throw new Exception($"The hot key '{hotkey}' is already registered.");
         }
 
         var id = Interlocked.Increment(ref IdCounter);
 
         var isSucceeded = NativeMethods.RegisterHotKey(HWnd, id, (uint)hotkey.Modifiers, (uint)hotkey.KeyCode);
-
         if (!isSucceeded)
         {
-            return false;
+            throw new Win32Exception();
         }
 
         HotKeyList.Add(hotkey, id);
-
-        return true;
     }
 
-    public bool Unregister(HotKey hotkey)
+    public void Unregister(HotKey hotkey)
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
         if (!HotKeyList.TryGetValue(hotkey, out var id))
         {
-            return false;
+            throw new Exception($"The hot key '{hotkey}' is not registered.");
         }
 
         var isSucceeded = NativeMethods.UnregisterHotKey(HWnd, id);
-
         if (!isSucceeded)
         {
-            return false;
+            throw new Win32Exception();
         }
 
         HotKeyList.Remove(hotkey);
-
-        return true;
     }
 
     private nint WindowProc(nint hwnd, uint msg, nint wParam, nint lParam)
@@ -144,7 +135,11 @@ public class HotKeyListener : IDisposable
 
         foreach (var hotkey in HotKeyList.Keys)
         {
-            Unregister(hotkey);
+            try
+            {
+                Unregister(hotkey);
+            }
+            catch { }
         }
         NativeMethods.DestroyWindow(HWnd);
         NativeMethods.UnregisterClass(ClassName, NativeMethods.GetModuleHandle(string.Empty));
@@ -222,7 +217,7 @@ public class HotKeyListener : IDisposable
 
         public delegate nint WndProcDelegate(nint hWnd, uint msg, nint wParam, nint lParam);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll")]
         public static extern nint DefWindowProc(nint hWnd, uint uMsg, nint wParam, nint lParam);
 
         [DllImport("user32.dll")]

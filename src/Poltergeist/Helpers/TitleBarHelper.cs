@@ -17,14 +17,14 @@ internal class TitleBarHelper
     private const int WMACTIVATE = 0x0006;
 
     [DllImport("user32.dll")]
-    private static extern IntPtr GetActiveWindow();
+    private static extern nint GetActiveWindow();
 
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
+    private static extern nint SendMessage(nint hWnd, int msg, int wParam, nint lParam);
 
     public static void UpdateTitleBar(ElementTheme theme)
     {
-        if (App.MainWindow.ExtendsContentIntoTitleBar)
+        if (PoltergeistApplication.MainWindow.ExtendsContentIntoTitleBar)
         {
             if (theme == ElementTheme.Default)
             {
@@ -84,16 +84,16 @@ internal class TitleBarHelper
             Application.Current.Resources["WindowCaptionBackground"] = new SolidColorBrush(Colors.Transparent);
             Application.Current.Resources["WindowCaptionBackgroundDisabled"] = new SolidColorBrush(Colors.Transparent);
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PoltergeistApplication.MainWindow);
             if (hwnd == GetActiveWindow())
             {
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, IntPtr.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, IntPtr.Zero);
+                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, nint.Zero);
+                SendMessage(hwnd, WMACTIVATE, WAACTIVE, nint.Zero);
             }
             else
             {
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, IntPtr.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, IntPtr.Zero);
+                SendMessage(hwnd, WMACTIVATE, WAACTIVE, nint.Zero);
+                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, nint.Zero);
             }
         }
     }
@@ -101,7 +101,7 @@ internal class TitleBarHelper
     public static void ApplySystemThemeToCaptionButtons()
     {
         var res = Application.Current.Resources;
-        if (App.AppTitlebar is FrameworkElement frame)
+        if (PoltergeistApplication.AppTitlebar is FrameworkElement frame)
         {
             if (frame.ActualTheme == ElementTheme.Dark)
             {
