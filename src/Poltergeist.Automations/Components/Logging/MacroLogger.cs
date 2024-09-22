@@ -37,9 +37,15 @@ public class MacroLogger : KernelService
     private bool IsReady = false;
     private ConcurrentQueue<LogEntry>? LogPool = new();
 
+    public int IndentLevel { get; set; }
+    private readonly bool IsTraceEnabled = false;
+
     public MacroLogger(MacroProcessor processor, IOptions<LoggerOptions> options) : base(processor)
     {
         Options = options.Value;
+#if DEBUG
+        IsTraceEnabled = true;
+#endif
     }
 
     internal void Load()
@@ -94,7 +100,7 @@ public class MacroLogger : KernelService
             Log(LogLevel.Error, nameof(MacroLogger), WritingException.ToString());
         }
 
-        Log(LogLevel.Debug, nameof(MacroLogger), $"<{nameof(MacroLogger)}> is launched.");
+        Log(LogLevel.Trace, nameof(MacroLogger), $"Kernel service '{nameof(MacroLogger)}' is activated.");
 
         while (LogPool!.TryDequeue(out var entry))
         {
@@ -106,6 +112,11 @@ public class MacroLogger : KernelService
 
     public void Log(LogLevel logLevel, string sender, string message)
     {
+        if (logLevel == LogLevel.Trace && !IsTraceEnabled)
+        {
+            return;
+        }
+
         if (logLevel < Options.FileLogLevel && logLevel < Options.FrontLogLevel)
         {
             return;
@@ -117,6 +128,7 @@ public class MacroLogger : KernelService
             Level = logLevel,
             Message = message,
             Timestamp = DateTime.Now,
+            IndentLevel = IndentLevel,
         };
 
         if (!IsReady)
@@ -165,7 +177,14 @@ public class MacroLogger : KernelService
 
     private void ToFront(LogEntry entry)
     {
-        var line = new TextLine(entry.Message)
+        var message = entry.Message;
+#if DEBUG
+        if (entry.IndentLevel > 0)
+        {
+            message = new string(' ', 4 * entry.IndentLevel) + message;
+        }
+#endif
+        var line = new TextLine(message)
         {
             TemplateKey = entry.Level.ToString(),
         };

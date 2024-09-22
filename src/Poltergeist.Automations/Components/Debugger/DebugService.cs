@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Runtime.CompilerServices;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -25,11 +24,6 @@ public class DebugService : MacroService
         {
             li.Title = "Images:";
         });
-    }
-
-    public void Trace(object variable, [CallerArgumentExpression(nameof(variable))] string? name = null)
-    {
-        Logger.Trace(variable, name);
     }
 
     public void Write(Bitmap image, string text = "")
