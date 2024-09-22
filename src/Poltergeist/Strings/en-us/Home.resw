@@ -185,4 +185,7 @@ All data and files of this macro will be lost permanently.</value>
   <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
     <value>Total run count</value>
   </data>
+  <data name="StickyMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Sticky</value>
+  </data>
 </root>

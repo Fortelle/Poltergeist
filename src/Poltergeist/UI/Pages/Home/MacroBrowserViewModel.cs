@@ -40,14 +40,17 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
         }
         macros = SortIndex switch
         {
-            1 => macros.OrderByDescending(x => x.Properties.IsFavorite).ThenBy(x => x.Title),
-            -1 => macros.OrderByDescending(x => x.Properties.IsFavorite).ThenByDescending(x => x.Title),
+            1 => macros.OrderBy(x => x.Title),
+            -1 => macros.OrderByDescending(x => x.Title),
             2 => macros.OrderBy(x => x.Properties.RunCount is null).ThenBy(x => x.Properties.RunCount),
             -2 => macros.OrderBy(x => x.Properties.RunCount is null).ThenByDescending(x => x.Properties.RunCount),
             3 => macros.OrderBy(x => x.Properties.LastRunTime is null).ThenBy(x => x.Properties.LastRunTime),
             -3 => macros.OrderBy(x => x.Properties.LastRunTime is null).ThenByDescending(x => x.Properties.LastRunTime),
             _ => macros,
         };
+
+        macros = macros.OrderByDescending(x => x.Properties.IsFavorite);
+
         Macros = macros.ToArray();
     }
 

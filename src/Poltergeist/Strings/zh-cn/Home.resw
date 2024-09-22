@@ -185,4 +185,7 @@
   <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
     <value>总计运行次数</value>
   </data>
+  <data name="StickyMenuFlyoutItem.Text" xml:space="preserve">
+    <value>置顶</value>
+  </data>
 </root>

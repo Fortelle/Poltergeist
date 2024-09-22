@@ -130,7 +130,15 @@
                                             Click="OpenMenuFlyoutItem_Click"
                                             >
                                         </MenuFlyoutItem>
-                                        
+
+                                        <ToggleMenuFlyoutItem
+                                            x:Uid="/Poltergeist/Home/StickyMenuFlyoutItem"
+                                            Icon="Pin"
+                                            IsChecked="{Binding Properties.IsFavorite, Mode=OneTime}"
+                                            Click="StickyMenuFlyoutItem_Click"
+                                            >
+                                        </ToggleMenuFlyoutItem>
+
                                         <MenuFlyoutSeparator/>
 
                                         <MenuFlyoutItem

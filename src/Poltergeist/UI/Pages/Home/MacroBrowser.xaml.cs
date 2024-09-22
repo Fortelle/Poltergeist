@@ -142,4 +142,15 @@ public sealed partial class MacroBrowser : UserControl
         var macroManager = App.GetService<MacroManager>();
         macroManager.UpdateProperties(shell, x => x.Icon = newIcon);
     }
+
+    private void StickyMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not MacroShell shell)
+        {
+            return;
+        }
+
+        var macroManager = App.GetService<MacroManager>();
+        macroManager.UpdateProperties(shell, x => x.IsFavorite = !x.IsFavorite);
+    }
 }
