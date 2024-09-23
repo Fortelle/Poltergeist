@@ -41,11 +41,11 @@ public class CompleteModule : MacroModule
         processor.Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
     }
 
-    private void OnProcessorEnding(ProcessorEndingHook hook, IUserProcessor processor)
+    private void OnProcessorEnding(ProcessorEndingHook hook)
     {
-        var completeAction = processor.Options.Get<CompletionAction>("aftercompletion.action");
-        var completeAllowerror = processor.Options.Get<bool>("aftercompletion.allowerror");
-        var completeMinimumTime = processor.Options.Get<TimeOnly>("aftercompletion.minimumtime");
+        var completeAction = hook.Processor.Options.Get<CompletionAction>("aftercompletion.action");
+        var completeAllowerror = hook.Processor.Options.Get<bool>("aftercompletion.allowerror");
+        var completeMinimumTime = hook.Processor.Options.Get<TimeOnly>("aftercompletion.minimumtime");
 
         if (hook.Reason is EndReason.None or EndReason.InitializationFailed or EndReason.LoadFailed or EndReason.Unstarted or EndReason.SystemShutdown)
         {

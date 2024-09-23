@@ -52,15 +52,15 @@ public class DebugModule : MacroModule
             var parameters = method.GetParameters();
             if (parameters.Length == 0)
             {
-                processor.Hooks.Register<ProcessorPreparedHook>(() =>
+                processor.Hooks.Register<ProcessorPreparedHook>(hook =>
                 {
                     method.Invoke(processor.Macro, null);
                 });
                 if (attr.PreventsStart)
                 {
-                    processor.Hooks.Register<ProcessorCheckStartHook>(e =>
+                    processor.Hooks.Register<ProcessorCheckStartHook>(hook =>
                     {
-                        e.CanStart = false;
+                        hook.CanStart = false;
                     });
                 }
             }

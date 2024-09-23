@@ -38,26 +38,26 @@ public class MinimizationModule : MacroModule
         processor.Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
     }
 
-    private void OnProcessorStarted(ProcessorStartedHook hook, IUserProcessor processor)
+    private void OnProcessorStarted(ProcessorStartedHook hook)
     {
-        if (!processor.Options.Get<bool>("minimization"))
+        if (!hook.Processor.Options.Get<bool>("minimization"))
         {
             return;
         }
 
         var model = new AppWindowModel(AppWindowAction.Minimize);
-        processor.Interact(model);
+        hook.Processor.Interact(model);
     }
 
-    private void OnProcessorEnding(ProcessorEndingHook hook, IUserProcessor processor)
+    private void OnProcessorEnding(ProcessorEndingHook hook)
     {
-        if (!processor.Options.Get<bool>("minimization"))
+        if (!hook.Processor.Options.Get<bool>("minimization"))
         {
             return;
         }
 
         var model = new AppWindowModel(AppWindowAction.Restore);
-        processor.Interact(model);
+        hook.Processor.Interact(model);
     }
 
 }

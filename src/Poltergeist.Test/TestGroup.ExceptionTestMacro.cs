@@ -64,7 +64,7 @@ public partial class TestGroup
 
             if (processor.Options.Get<bool>($"{nameof(ProcessorCheckStartHook)}"))
             {
-                processor.Hooks.Register<ProcessorCheckStartHook>(() =>
+                processor.Hooks.Register<ProcessorCheckStartHook>(hook =>
                 {
                     throw new MacroRunningException($"This exception is thrown by <{nameof(ProcessorCheckStartHook)}>.");
                 });
@@ -72,7 +72,7 @@ public partial class TestGroup
 
             if (processor.Options.Get<bool>($"{nameof(IterationStartedHook)}"))
             {
-                processor.Hooks.Register<ProcessorStartedHook>(() =>
+                processor.Hooks.Register<ProcessorStartedHook>(hook =>
                 {
                     throw new MacroRunningException($"This exception is thrown by <{nameof(ProcessorStartedHook)}>.");
                 });

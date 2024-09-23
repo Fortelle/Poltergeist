@@ -127,10 +127,10 @@ public class LoopService : LoopBuilderService, IAutoloadable
         Logger.Debug($"Finished running the after-loop procedure.");
     }
 
-    private void OnProcessorEnding(ProcessorEndingHook hook, IUserProcessor processor)
+    private void OnProcessorEnding(ProcessorEndingHook hook)
     {
         hook.Comment ??= ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", IterationCount);
-        processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationCount);
+        hook.Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + IterationCount);
     }
 
 }

@@ -110,7 +110,7 @@ public class LocalStorageService : MacroService
         return GlobalStorage;
     }
 
-    private void OnEnding()
+    private void OnEnding(ProcessorEndingHook hook)
     {
         if (MacroStorage is not null && (MacroStorage.Count == 0 || MacroStorage.Any(x => x.HasChanged)))
         {
