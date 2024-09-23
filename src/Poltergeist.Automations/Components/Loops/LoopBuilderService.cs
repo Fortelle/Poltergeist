@@ -80,6 +80,7 @@ public class LoopBuilderService(MacroProcessor processor) : MacroService(process
         Logger.Debug($"Started running the iteration procedure.", new { IterationIndex });
 
         var startTime = DateTime.Now;
+        var startElapsedTime = Processor.GetElapsedTime();
 
         Logger.Info($"Iteration: {IterationIndex + 1}");
 
@@ -125,6 +126,7 @@ public class LoopBuilderService(MacroProcessor processor) : MacroService(process
         }
 
         var endTime = DateTime.Now;
+        var endElapsedTime = Processor.GetElapsedTime();
 
         Logger.Debug($"Finished running the iteration procedure.", new { IterationIndex, status });
 
@@ -133,6 +135,7 @@ public class LoopBuilderService(MacroProcessor processor) : MacroService(process
             Index = IterationIndex,
             StartTime = startTime,
             EndTime = endTime,
+            Duration = endElapsedTime - startElapsedTime,
             Status = status,
         };
     }

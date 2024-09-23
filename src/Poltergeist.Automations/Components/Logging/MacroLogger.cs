@@ -128,6 +128,7 @@ public class MacroLogger : KernelService
             Level = logLevel,
             Message = message,
             Timestamp = DateTime.Now,
+            ElapsedTime = Processor.GetElapsedTime(),
             IndentLevel = IndentLevel,
         };
 
@@ -162,6 +163,8 @@ public class MacroLogger : KernelService
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(entry.Message))
         {
+            sb.Append($"{entry.ElapsedTime}");
+            sb.Append('\t');
             sb.Append($"{entry.Timestamp:o}");
             sb.Append('\t');
             sb.Append($"{ToShortLevel(entry.Level)}");

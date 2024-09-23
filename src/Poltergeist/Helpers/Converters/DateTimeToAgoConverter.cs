@@ -19,6 +19,7 @@ public class DateTimeToAgoConverter : IValueConverter
         var timespan = DateTime.Now - datetime;
         return timespan switch
         {
+            { TotalMinutes: < 0 } => datetime.ToLocalTime(),
             { TotalMinutes: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_1"),
             { TotalMinutes: < 60 } => App.Localize("Poltergeist/Home/DateTimeToAgo_2", timespan.TotalMinutes),
             { TotalHours: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_3"),

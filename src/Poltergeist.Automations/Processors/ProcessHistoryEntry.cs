@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Poltergeist.Automations.Processors;
+﻿namespace Poltergeist.Automations.Processors;
 
 public sealed class ProcessHistoryEntry
 {
@@ -16,6 +14,10 @@ public sealed class ProcessHistoryEntry
 
     public string? Comment { get; init; }
 
-    [JsonIgnore]
-    public TimeSpan Duration => EndTime - StartTime;
+    private readonly TimeSpan? _duration;
+    public TimeSpan Duration
+    {
+        get => _duration ?? EndTime - StartTime;
+        init => _duration = value;
+    }
 }

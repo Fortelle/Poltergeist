@@ -51,13 +51,12 @@ public partial class MacroViewModel : ObservableRecipient
     private ImageSource? _thumbnail;
 
     [ObservableProperty]
-    private string? _duration;
+    private TimeSpan _duration;
 
     [ObservableProperty]
     private string? _exceptionMessage;
 
     private DispatcherTimer? Timer;
-    private DateTime StartTime;
 
     public string? InvalidationMessage { get; }
     public bool IsValid => string.IsNullOrEmpty(InvalidationMessage);
@@ -176,7 +175,7 @@ public partial class MacroViewModel : ObservableRecipient
         Processor.Interacting += Processor_Interacting;
         App.GetService<AppEventService>().Subscribe<MacroCompletedHandler>(OnMacroCompleted, once: true);
 
-        Duration = TimeSpanToHhhmmssConverter.ToString(default);
+        Duration = default;
 
         try
         {
@@ -246,8 +245,12 @@ public partial class MacroViewModel : ObservableRecipient
 
         IsRunning = false;
 
-        Timer?.Stop();
-        Timer = null;
+        if (Timer is not null)
+        {
+            Timer.Stop();
+            Timer.Tick -= Timer_Tick;
+            Timer = null;
+        }
 
         Refresh();
     }
@@ -255,17 +258,17 @@ public partial class MacroViewModel : ObservableRecipient
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
         ExceptionMessage = null;
-        StartTime = e.StartTime;
         Timer = new()
         {
             Interval = TimeSpan.FromSeconds(1),
         };
-        Timer.Tick += (s, e) =>
-        {
-            var duration = DateTime.Now - StartTime;
-            Duration = TimeSpanToHhhmmssConverter.ToString(duration);
-        };
+        Timer.Tick += Timer_Tick;
         Timer.Start();
+    }
+
+    private void Timer_Tick(object? sender, object e)
+    {
+        Duration += ((DispatcherTimer)sender!).Interval;
     }
 
     private void Processor_PanelCreated(object? sender, PanelCreatedEventArgs e)

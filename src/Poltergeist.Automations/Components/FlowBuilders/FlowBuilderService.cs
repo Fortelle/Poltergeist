@@ -70,6 +70,8 @@ public class FlowBuilderService : MacroService
             var subtext = Steps[i].Subtext;
             var startTime = default(DateTime);
             var endTime = default(DateTime);
+            var startElapsedTime = default(TimeSpan);
+            var endElapsedTime = default(TimeSpan);
 
             void resetSubtext()
             {
@@ -93,7 +95,7 @@ public class FlowBuilderService : MacroService
                 {
                     FlowBuilderSubtextType.StartTime when startTime != default => startTime.ToString("HH:mm:ss"),
                     FlowBuilderSubtextType.EndTime when endTime != default => endTime.ToString("HH:mm:ss"),
-                    FlowBuilderSubtextType.Duration when endTime != default => (endTime - startTime).ToString("hh\\:mm\\:ss"),
+                    FlowBuilderSubtextType.Duration when endElapsedTime != default => (endElapsedTime - startElapsedTime).TotalHours.ToString("X2") + (endElapsedTime - startElapsedTime).ToString("\\:mm\\:ss"),
                     FlowBuilderSubtextType.Status => status.ToString(),
                     FlowBuilderSubtextType.None => "",
                     _ => null,
@@ -145,12 +147,13 @@ public class FlowBuilderService : MacroService
                 text = Steps[i].ErrorText ?? Steps[i].Text;
                 Logger.Error(e.Message);
 
-                if(Processor.IsCancelled)
+                if (Processor.IsCancelled)
                 {
                     throw;
                 }
             }
             endTime = DateTime.Now;
+            endElapsedTime = Processor.GetElapsedTime();
 
             updateInstrumentItem();
 

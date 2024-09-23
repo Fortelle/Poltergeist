@@ -299,7 +299,7 @@
                                             Grid.Column="1"
                                             TextAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Text="{Binding Duration, Converter={StaticResource TimeSpanToHhhmmssConverter}, ConverterParameter='hh\\:mm\\:ss', Mode=OneTime}"
+                                            Text="{Binding Duration, Converter={StaticResource TimeSpanToHhhmmssConverter}, Mode=OneTime}"
                                             />
                                         <TextBlock
                                             Grid.Column="2"

@@ -27,6 +27,8 @@ public partial class MacroProcessor
         }
 
         StartTime = DateTime.Now;
+        Timer.Start();
+
         Statistics.Set("last_run_time", StartTime);
         Statistics.Set("total_run_count", (int x) => x + 1);
 
@@ -411,7 +413,8 @@ public partial class MacroProcessor
         Log(LogLevel.Debug, "Started running the ending procedure.");
 
         EndTime = DateTime.Now;
-        var duration = EndTime - StartTime;
+        Timer.Stop();
+        var duration = GetElapsedTime();
 
         var endingHook = new ProcessorEndingHook()
         {
@@ -442,6 +445,7 @@ public partial class MacroProcessor
             EndTime = EndTime,
             EndReason = reason,
             Comment = Comment,
+            Duration = duration,
         };
 
         var endedHook = new ProcessorEndedHook()

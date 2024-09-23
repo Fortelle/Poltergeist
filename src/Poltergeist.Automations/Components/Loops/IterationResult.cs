@@ -5,5 +5,6 @@ public class IterationResult
     public int Index { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
+    public TimeSpan Duration { get; set; }
     public IterationStatus Status { get; set; }
 }
