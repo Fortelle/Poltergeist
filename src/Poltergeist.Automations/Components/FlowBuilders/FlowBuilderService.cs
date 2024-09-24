@@ -146,16 +146,16 @@ public class FlowBuilderService : MacroService
                 status = ProgressStatus.Failure;
                 text = Steps[i].ErrorText ?? Steps[i].Text;
                 Logger.Error(e.Message);
-
-                if (Processor.IsCancelled)
-                {
-                    throw;
-                }
             }
             endTime = DateTime.Now;
             endElapsedTime = Processor.GetElapsedTime();
 
             updateInstrumentItem();
+
+            if (Processor.IsCancelled)
+            {
+                break;
+            }
 
             if (Interval > 0 && i < Steps.Count - 1)
             {
