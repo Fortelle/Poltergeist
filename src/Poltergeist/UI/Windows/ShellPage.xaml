@@ -9,7 +9,7 @@
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     Loaded="OnLoaded"
     >
-
+    
     <Grid>
         <Grid
             x:Name="AppTitleBar"
@@ -79,6 +79,40 @@
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         </Style>
                     </TabView.Resources>
+                    <TabView.TabStripFooter>
+                        <Grid
+                            Padding="16, 0"
+                            ColumnSpacing="4"
+                            >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Grid.Column="1"
+                                Spacing="8"
+                                >
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.CpuValue, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    />
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.RamValue, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    />
+                                <TextBlock
+                                    x:Uid="/Poltergeist/Resources/TabViewDebugTextBlock"
+                                    Visibility="{x:Bind ViewModel.IsDevelopment, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    />
+                                <TextBlock
+                                    x:Uid="/Poltergeist/Resources/TabViewAdministratorTextBlock"
+                                    Visibility="{x:Bind ViewModel.IsAdministrator, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    />
+                            </StackPanel>
+                        </Grid>
+                    </TabView.TabStripFooter>
                 </TabView>
 
             </Grid>

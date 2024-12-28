@@ -2,6 +2,7 @@
 using Poltergeist.Automations.Attributes;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Modules.App;
+using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
 
 namespace Poltergeist.Modules.Macros;
@@ -100,6 +101,11 @@ public class PluginService : ServiceBase
         if (entry is not null && entry != exe)
         {
             yield return entry;
+        }
+
+        if (CommandLineService.StartupOptions.Contains("DisablePlugins"))
+        {
+            yield break;
         }
 
         var pluginFolders = new string[]

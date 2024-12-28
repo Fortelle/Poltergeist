@@ -195,4 +195,10 @@
   <data name="TabHeader_Log" xml:space="preserve">
     <value>Log</value>
   </data>
+  <data name="TabViewAdministratorTextBlock.Text" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="TabViewDebugTextBlock.Text" xml:space="preserve">
+    <value>Debug</value>
+  </data>
 </root>

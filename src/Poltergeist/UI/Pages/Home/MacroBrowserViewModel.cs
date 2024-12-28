@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
 using Poltergeist.Modules.Interactions;
 using Poltergeist.Modules.Macros;
@@ -34,10 +35,12 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
     {
         var macroManager = App.GetService<MacroManager>();
         var macros = macroManager.Shells.AsEnumerable();
-        if (!App.IsDevelopment)
+
+        if (!CommandLineService.StartupOptions.Contains("ShowInvalidMacros"))
         {
             macros = macros.Where(x => x.Template is not null);
         }
+
         macros = SortIndex switch
         {
             1 => macros.OrderBy(x => x.Title),

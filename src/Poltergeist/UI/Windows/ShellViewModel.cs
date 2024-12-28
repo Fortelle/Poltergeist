@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Poltergeist.Modules.CommandLine;
 
 namespace Poltergeist.UI.Windows;
 
@@ -15,7 +16,8 @@ public partial class ShellViewModel : ObservableRecipient
     protected PerformanceCounter? CpuCounter;
     protected PerformanceCounter? RamCounter;
 
-    public bool IsDebug { get; }
+    public bool IsDevelopment { get; }
+    public bool IsAdministrator { get; }
     public bool IsSingleMacroMode { get; }
 
     private bool _showPerformance;
@@ -33,7 +35,7 @@ public partial class ShellViewModel : ObservableRecipient
                     var processName = Process.GetCurrentProcess().ProcessName;
                     CpuCounter = new PerformanceCounter("Process", "% Processor Time", processName);
                     RamCounter = new PerformanceCounter("Process", "Working Set", processName);
-                    var timer = new System.Timers.Timer(3000);
+                    var timer = new System.Timers.Timer(1000);
                     timer.Elapsed += Timer_Elapsed;
                     timer.Start();
                 });
@@ -48,11 +50,10 @@ public partial class ShellViewModel : ObservableRecipient
 
     public ShellViewModel()
     {
-        IsDebug = App.IsDevelopment;
+        IsDevelopment = App.IsDevelopment;
         IsSingleMacroMode = App.SingleMacroMode is not null;
-
-        //todo: config
-        //ShowPerformance = true;
+        IsAdministrator = PoltergeistApplication.IsAdministrator;
+        ShowPerformance = CommandLineService.StartupOptions.Contains("ShowPerformance");
     }
 
     private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
@@ -63,10 +64,10 @@ public partial class ShellViewModel : ObservableRecipient
     private void Update()
     {
         var cpuValue = CpuCounter?.NextValue();
-        CpuValue = $"{cpuValue:N2}%";
+        CpuValue = $"CPU: {cpuValue:N2}%";
 
         var ramValue = RamCounter?.NextValue();
         ramValue = ramValue / 1024 / 1024;
-        RamValue = $"{ramValue:#} MB";
+        RamValue = $"RAM: {ramValue:#}MB";
     }
 }
