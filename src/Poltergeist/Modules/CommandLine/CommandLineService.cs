@@ -12,8 +12,8 @@ public class CommandLineService : ServiceBase
 
     private static readonly List<Type> ParserTypes = new();
 
-    private static CommandLineOption[]? _startupOptions;
-    public static CommandLineOption[] StartupOptions
+    private static CommandLineOptionCollection? _startupOptions;
+    public static CommandLineOptionCollection StartupOptions
     {
         get
         {
@@ -70,7 +70,7 @@ public class CommandLineService : ServiceBase
         });
     }
 
-    private void ParseOptions(CommandLineOption[] options, bool isPassed)
+    private void ParseOptions(CommandLineOptionCollection options, bool isPassed)
     {
         Logger.Trace($"Parsing command line options.", new { options });
 
@@ -89,10 +89,10 @@ public class CommandLineService : ServiceBase
         Logger.Debug($"Parsed command line options.");
     }
 
-    private static CommandLineParser CreateParser(Type parserType, CommandLineOption[] options)
+    private static CommandLineParser CreateParser(Type parserType, CommandLineOptionCollection options)
     {
         var parser = (CommandLineParser)Activator.CreateInstance(parserType)!;
-       
+
         foreach (var property in parserType.GetProperties())
         {
             var attr = property.GetCustomAttribute<CommandLineOptionAttribute>(true);
@@ -101,10 +101,11 @@ public class CommandLineService : ServiceBase
                 continue;
             }
 
-            var longname = attr.LongName?.ToLower() ?? property.Name.ToLower();
-            var shortname = attr.ShortName?.ToString().ToLower();
-            var option = options.FirstOrDefault(x => x.Name == longname || x.Name == shortname);
-
+            var option = options.Get(attr.LongName ?? property.Name);
+            if (option is null && attr.ShortName is not null)
+            {
+                option = options.Get(attr.ShortName.ToString()!);
+            }
             if (option is null)
             {
                 continue;
@@ -130,9 +131,19 @@ public class CommandLineService : ServiceBase
         return parser;
     }
 
-    private static CommandLineOption[] GetOptions(string[] args)
+    public static string? NormalizeName(string? name)
     {
-        var list = new List<CommandLineOption>();
+        return name?
+            .ToLower()
+            .Replace(" ", "")
+            .Replace("_", "")
+            .Replace("_", "")
+            ;
+    }
+
+    private static CommandLineOptionCollection GetOptions(string[] args)
+    {
+        var options = new CommandLineOptionCollection();
         for (var i = 0; i < args.Length; i++)
         {
             var option = "";
@@ -160,9 +171,9 @@ public class CommandLineService : ServiceBase
                 value = args[i + 1];
                 i++;
             }
-            list.Add(new CommandLineOption(option.ToLower(), value));
+            options.Add(option, value);
         }
-        return list.ToArray();
+        return options;
     }
 
 }

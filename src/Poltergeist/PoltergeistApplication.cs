@@ -41,7 +41,7 @@ public abstract partial class PoltergeistApplication : Application
     protected PoltergeistApplication()
     {
         IsDevelopment = Debugger.IsAttached;
-        IsDevelopment |= CommandLineService.StartupOptions.Any(x => x.Name == "dev");
+        IsDevelopment |= CommandLineService.StartupOptions.Contains("dev");
 
         using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
