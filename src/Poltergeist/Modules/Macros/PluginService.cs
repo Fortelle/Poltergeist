@@ -8,7 +8,7 @@ namespace Poltergeist.Modules.Macros;
 
 public class PluginService : ServiceBase
 {
-    private const string FilenameFormat = "Poltergeist.Plugins.*.dll";
+    private const string FilenameFormat = "Poltergeist.Plugin*.dll";
 
     public PluginService(AppEventService eventService)
     {
