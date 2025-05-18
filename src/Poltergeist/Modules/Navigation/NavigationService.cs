@@ -59,6 +59,7 @@ public class NavigationService : ServiceBase, INavigationService
                 var content = info.CreateContent!.Invoke(pageKey, data);
                 var header = info.CreateHeader?.Invoke(content) ?? info.Header ?? info.Text ?? info.Key;
                 var icon = info.CreateIcon?.Invoke(content) ?? info.Icon?.ToIconSource();
+                var menuItems = info.CreateMenu?.Invoke(content) ?? info.Menu;
 
                 tab = new TabViewItem
                 {
@@ -66,6 +67,11 @@ public class NavigationService : ServiceBase, INavigationService
                     Content = content,
                     Tag = pageKey,
                     IconSource = icon,
+                };
+
+                tab.RightTapped += (_, e) =>
+                {
+                    tab.ContextFlyout ??= CreateTabPageContextFlyout(menuItems, pageKey);
                 };
             }
             catch (Exception ex)
@@ -146,4 +152,36 @@ public class NavigationService : ServiceBase, INavigationService
 
         return true;
     }
+
+    private MenuFlyout CreateTabPageContextFlyout(MenuItemInfo[]? infos, string pageKey)
+    {
+        var flyout = new MenuFlyout();
+
+        if (infos?.Length > 0)
+        {
+            foreach (var info in infos)
+            {
+                var menuItem = new MenuFlyoutItem
+                {
+                    Text = info.Text,
+                    Icon = info.Icon?.ToIconElement(),
+                    Command = info.CanExecute is null ? new RelayCommand(info.Execute) : new RelayCommand(info.Execute, info.CanExecute),
+                };
+                flyout.Items.Add(menuItem);
+            }
+
+            flyout.Items.Add(new MenuFlyoutSeparator());
+        }
+
+        flyout.Items.Add(new MenuFlyoutItem()
+        {
+            Icon = new SymbolIcon(Symbol.Clear),
+            Text = PoltergeistApplication.Localize($"Poltergeist/Resources/TabViewContextFlyout_Close"),
+            KeyboardAcceleratorTextOverride = "Ctrl+F4",
+            Command = new RelayCommand(() => TryCloseTab(pageKey)),
+        });
+
+        return flyout;
+    }
+
 }

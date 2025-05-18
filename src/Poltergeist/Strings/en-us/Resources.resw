@@ -201,4 +201,7 @@
   <data name="TabViewDebugTextBlock.Text" xml:space="preserve">
     <value>Debug</value>
   </data>
+  <data name="TabViewContextFlyout_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>
