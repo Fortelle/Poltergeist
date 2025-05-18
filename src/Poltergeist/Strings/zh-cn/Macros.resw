@@ -135,17 +135,14 @@
   <data name="EndReason_None" xml:space="preserve">
     <value>未知</value>
   </data>
-  <data name="EndReason_Purposed" xml:space="preserve">
-    <value>部分完成</value>
-  </data>
   <data name="EndReason_SystemShutdown" xml:space="preserve">
     <value>系统关机</value>
   </data>
   <data name="EndReason_Unstarted" xml:space="preserve">
     <value>未启动</value>
   </data>
-  <data name="EndReason_UserAborted" xml:space="preserve">
-    <value>用户中止</value>
+  <data name="EndReason_Stopped" xml:space="preserve">
+    <value>中止</value>
   </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
     <value>备注</value>
@@ -224,5 +221,20 @@
   </data>
   <data name="StopAppBarButton.Label" xml:space="preserve">
     <value>停止</value>
+  </data>
+  <data name="StopAppBarButtonTextBlock.Text" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="TerminateMenuFlyoutItem.Text" xml:space="preserve">
+    <value>强制结束</value>
+  </data>
+  <data name="EndReason_Unknown" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="EndReason_Terminated" xml:space="preserve">
+    <value>强制结束</value>
+  </data>
+  <data name="EndReason_Crushed" xml:space="preserve">
+    <value>致命错误</value>
   </data>
 </root>

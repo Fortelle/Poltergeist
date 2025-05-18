@@ -4,17 +4,17 @@ using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Processors;
 
-public interface IFrontProcessor : IProcessor
+public interface IFrontProcessor : IProcessor, IDisposable
 {
     public IFrontMacro Macro { get; }
-    public string? ShellKey { get; }
 
     public DateTime StartTime { get; }
     public DateTime EndTime { get; }
 
-    public void Abort();
-    public void Launch();
-    public Task Pause();
+    public void Run();
+    public void Stop(AbortReason reason);
+    public Task Pause(PauseReason reason);
+    public void Terminate();
     public void RaiseAction(Action action);
     public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
     public void ReceiveMessage(Dictionary<string, string> paramaters);

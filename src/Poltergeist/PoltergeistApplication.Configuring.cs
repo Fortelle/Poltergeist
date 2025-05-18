@@ -156,13 +156,8 @@ public partial class PoltergeistApplication
         });
 
         // Macro
-        settingsService.Add(new OptionDefinition<bool>(MacroBase.UseStatisticsKey, true)
-        {
-            Category = App.Localize($"Poltergeist/Resources/AppSettings_Macro"),
-            DisplayLabel = App.Localize($"Poltergeist/Resources/AppSettings_Macro_UseStatistics"),
-        });
 
-        settingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.All)
+        settingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.None)
         {
             Category = App.Localize($"Poltergeist/Resources/AppSettings_Macro"),
             DisplayLabel = App.Localize($"Poltergeist/Resources/AppSettings_Macro_LogToFile"),

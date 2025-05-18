@@ -19,7 +19,7 @@ public partial class TestGroup
             Instrument = LoopInstrumentType.List,
         },
 
-        Execute = (proc) =>
+        Iterate = (proc) =>
         {
             Thread.Sleep(500);
         },

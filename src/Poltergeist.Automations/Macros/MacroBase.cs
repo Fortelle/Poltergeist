@@ -11,8 +11,6 @@ namespace Poltergeist.Automations.Macros;
 /// </summary>
 public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigurableMacro, IInitializableMacro, IUserMacro
 {
-    public const string UseStatisticsKey = "macro.usestatistics";
-
     public string Key { get; }
 
     private string? _title;

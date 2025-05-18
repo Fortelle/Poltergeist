@@ -426,13 +426,42 @@
                         </SplitButton>
                     </AppBarElementContainer>
                     
-                    <AppBarButton
-                        x:Uid="/Poltergeist/Macros/StopAppBarButton"
-                        Icon="Stop"
-                        Command="{x:Bind ViewModel.StopCommand, Mode=OneTime}"
-                        IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
-                        />
-                    
+                    <AppBarElementContainer>
+                        <SplitButton
+                            Command="{x:Bind ViewModel.StopCommand, Mode=OneTime}"
+                            IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
+                            >
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    Glyph="&#xE71A;"
+                                    FontSize="16"
+                                    >
+                                </FontIcon>
+                                <TextBlock
+                                    x:Uid="/Poltergeist/Macros/StopAppBarButtonTextBlock"
+                                    Margin="8, 0, 0, 0"
+                                    Grid.Column="1"
+                                    />
+                            </Grid>
+                            <SplitButton.Flyout>
+                                <MenuFlyout
+                                    x:Name="StopMenuFlyout"
+                                    Placement="RightEdgeAlignedTop"
+                                    >
+                                    <MenuFlyoutItem
+                                        x:Uid="/Poltergeist/Macros/TerminateMenuFlyoutItem"
+                                        Icon="Stop"
+                                        Command="{x:Bind ViewModel.TerminateCommand, Mode=OneTime}"
+                                        />
+                                </MenuFlyout>
+                            </SplitButton.Flyout>
+                        </SplitButton>
+                    </AppBarElementContainer>
+
                 </CommandBar>
 
                 <CommandBar

@@ -1,6 +1,4 @@
-﻿using Poltergeist.Automations.Components.Logging;
-
-namespace Poltergeist.Automations.Processors;
+﻿namespace Poltergeist.Automations.Processors;
 
 public partial class MacroProcessor
 {
@@ -8,17 +6,35 @@ public partial class MacroProcessor
 
     private PauseProvider? PauseProvider;
 
-    private CancellationTokenSource? Cancellation { get; set; }
-    CancellationToken? IUserProcessor.CancellationToken => Cancellation?.Token;
+    private CancellationTokenSource? Cancellation;
 
-    private bool CanAbort { get; set; }
+    CancellationToken IUserProcessor.CancellationToken => Cancellation?.Token ?? CancellationToken.None;
 
-    public async Task Pause()
+    /// <summary>
+    /// Runs the processor in a new thread.
+    /// </summary>
+    public void Run()
     {
-        Log(LogLevel.Debug, "The processor is paused.");
+        InternalRun();
+    }
 
+    /// <summary>
+    /// Pauses the processor.
+    /// </summary>
+    /// <param name="reason"></param>
+    public async Task Pause(PauseReason reason)
+    {
         PauseProvider = new();
+
+        Logger?.Debug(reason switch
+        {
+            PauseReason.User => "The macro is paused by the user.",
+            PauseReason.Input => "The macro is paused for user input.",
+            _ => "The macro is paused."
+        });
+
         await PauseProvider.Pause();
+
         PauseProvider = null;
 
         if (IsCancelled)
@@ -29,41 +45,70 @@ public partial class MacroProcessor
 
     public void Resume()
     {
+        Logger?.Trace("Received a resume request.");
+
         if (PauseProvider is null)
         {
-            return;
+            Logger?.Trace($"The processor is not paused.");
         }
-
-        Log(LogLevel.Debug, "The processor is resumed.");
-
-        PauseProvider.Resume();
-    }
-
-    public void CheckCancel()
-    {
-        Cancellation?.Token.ThrowIfCancellationRequested();
-    }
-
-    public void Abort() // todo: add reason
-    {
-        IsCancelled = true;
-
-        if (!CanAbort)
-        {
-            return;
-        }
-
-        Log(LogLevel.Information, "User aborting.");
-
-        WorkingThread?.Interrupt();
-
-        Cancellation?.Cancel();
-
-        if (PauseProvider?.IsPaused == true)
+        else
         {
             PauseProvider.Resume();
+            Logger?.Info("The macro is resumed.");
         }
     }
 
-}
+    public bool IsInterrupted()
+    {
+        return IsCancelled || Cancellation?.Token.IsCancellationRequested == true;
+    }
 
+    public void ThrowIfInterrupted()
+    {
+        if (IsInterrupted())
+        {
+            throw new WorkflowStoppedException();
+        }
+    }
+
+    /// <summary>
+    /// Tries to stop the processor.
+    /// </summary>
+    /// <param name="reason"></param>
+    public void Stop(AbortReason reason)
+    {
+        Logger?.Debug("Received a stop request.");
+
+        if (Status != ProcessorStatus.Running)
+        {
+            return;
+        }
+
+        Status = ProcessorStatus.Stopping;
+
+        if (CanAbort)
+        {
+            Cancellation?.Cancel();
+
+            WorkflowThread?.Interrupt();
+        }
+    }
+
+    /// <summary>
+    /// Forces to terminate the processor.
+    /// </summary>
+    public void Terminate()
+    {
+        Logger?.Trace("Received a termination request.");
+
+        if (ProcessThread is null)
+        {
+            throw new Exception("The processor is not running.");
+        }
+
+        Status = ProcessorStatus.Terminating;
+
+        WorkflowThread?.Interrupt();
+        ProcessThread.Interrupt();
+    }
+}

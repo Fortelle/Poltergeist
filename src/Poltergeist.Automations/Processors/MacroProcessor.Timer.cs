@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Automations.Processors;
 
-public partial class MacroProcessor : IDisposable
+public partial class MacroProcessor
 {
     private readonly Stopwatch Timer = new();
 

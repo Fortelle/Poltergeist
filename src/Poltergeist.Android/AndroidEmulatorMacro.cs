@@ -1,4 +1,5 @@
 ﻿using Poltergeist.Android.Emulators;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
@@ -7,10 +8,11 @@ namespace Poltergeist.Operations.Macros;
 
 public class AndroidEmulatorMacro : MacroBase
 {
-    public Action<LoopBeforeArguments, AndroidEmulatorOperator>? Before;
-    public Action<LoopExecuteArguments, AndroidEmulatorOperator>? Execute;
+    public Action<ArgumentService>? BeforeConnect;
+    public Action<ArgumentService, AndroidEmulatorOperator>? AfterConnect;
+    public Action<IterationArguments, AndroidEmulatorOperator>? Execute;
     public Action<LoopCheckContinueArguments, AndroidEmulatorOperator>? CheckContinue;
-    public Action<ArgumentService, AndroidEmulatorOperator>? After;
+    public Action<ArgumentService, AndroidEmulatorOperator>? Finally;
 
     public LoopOptions LoopOptions { get; } = new()
     {
@@ -30,27 +32,59 @@ public class AndroidEmulatorMacro : MacroBase
     {
         base.OnPrepare(processor);
 
-        var repeat = processor.GetService<LoopService>();
+        var loopService = processor.GetService<LoopService>();
+        var hookService = processor.GetService<HookService>();
 
-        if (Before is not null)
+        hookService.Register<LoopStartedHook>(hook =>
         {
-            repeat.Before = (e) => Before.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
-        }
+            BeforeConnect?.Invoke(processor.GetService<ArgumentService>());
+
+            var emulatorService = processor.GetService<EmulatorService>();
+            emulatorService.Connect();
+
+            var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
+            AfterConnect?.Invoke(processor.GetService<ArgumentService>(), ope);
+        });
 
         if (Execute is not null)
         {
-            repeat.Execute = (e) => Execute.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
+            hookService.Register<IterationExecutingHook>(hook =>
+            {
+                var args = hook.Processor.GetService<IterationArguments>();
+                args.Index = hook.Index;
+                //args.StartTime = hook.StartTime;
+                args.Result = IterationResult.Continue;
+
+                var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
+
+                Execute(args, ope);
+                hook.Result = args.Result;
+            });
         }
 
         if (CheckContinue is not null)
         {
-            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
+            hookService.Register<LoopCheckContinueHook>(hook =>
+            {
+                var args = hook.Processor.GetService<LoopCheckContinueArguments>();
+                args.IterationIndex = hook.Data.Index;
+                args.IterationData = hook.Data;
+                var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
+                CheckContinue(args, ope);
+                hook.Result = args.Result;
+            });
         }
 
-        if (After is not null)
+        if (Finally is not null)
         {
-            repeat.After = (e) => After.Invoke(e, e.Processor.GetService<AndroidEmulatorOperator>());
+            hookService.Register<LoopEndingHook>(hook =>
+            {
+                var args = hook.Processor.GetService<ArgumentService>();
+                var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
+                Finally(args, ope);
+            });
         }
+
     }
 
 }

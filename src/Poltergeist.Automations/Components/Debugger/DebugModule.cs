@@ -30,8 +30,8 @@ public class DebugModule : MacroModule
             },
             EnvironmentOverrides = new()
             {
-                {DebugModeKey, true },
-                {MacroBase.UseStatisticsKey, false},
+                {DebugModeKey, true},
+                {"incognito_mode", true},
             }
         });
     }
@@ -52,17 +52,14 @@ public class DebugModule : MacroModule
             var parameters = method.GetParameters();
             if (parameters.Length == 0)
             {
-                processor.Hooks.Register<ProcessorPreparedHook>(hook =>
+                processor.Hooks.Register<ProcessorStartedHook>(hook =>
                 {
                     method.Invoke(processor.Macro, null);
-                });
-                if (attr.PreventsStart)
-                {
-                    processor.Hooks.Register<ProcessorCheckStartHook>(hook =>
+                    if (attr.PreventsStart)
                     {
-                        hook.CanStart = false;
-                    });
-                }
+                        throw new Exception();
+                    }
+                });
             }
             else if (parameters.Length == 1 && parameters[0].ParameterType.IsAssignableTo(typeof(MacroHook)))
             {

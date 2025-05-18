@@ -1,6 +1,11 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Collections;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.Options;
 
 namespace Poltergeist.Automations.Components.Logging;
 
@@ -11,7 +16,28 @@ public class LoggerWrapper
         WriteIndented = false,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new IntPtrConverter(),
+            new JsonStringEnumConverter(),
+        },
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver
+        {
+            Modifiers = {
+                static jsonTypeInfo =>
+                {
+                    foreach (var property in jsonTypeInfo.Properties)
+                    {
+                        var browsableAttribute = property.AttributeProvider?.GetCustomAttributes(typeof(BrowsableAttribute), true).OfType<BrowsableAttribute>().FirstOrDefault();
+                        if (browsableAttribute != null && !browsableAttribute.Browsable)
+                        {
+                            property.ShouldSerialize = static (_, _) => false;
+                        }
+                    }
+                }
+            }
+        },
     };
 
     private readonly MacroLogger Logger;
@@ -27,6 +53,16 @@ public class LoggerWrapper
     public void Trace(string message, object? data = null)
     {
         Log(LogLevel.Trace, message, data);
+    }
+
+    public void Trace(object variable, [CallerArgumentExpression(nameof(variable))] string? variableName = null)
+    {
+        if (string.IsNullOrEmpty(variableName))
+        {
+            return;
+        }
+
+        Log(LogLevel.Trace, $"{variableName} = {variable}");
     }
 
     public void Debug(string message, object? data = null)
@@ -51,12 +87,17 @@ public class LoggerWrapper
 
     public void Error(Exception exception)
     {
-        Log(LogLevel.Error, exception.Message);
+        Log(LogLevel.Error, exception);
     }
 
     public void Critical(string message)
     {
         Log(LogLevel.Critical, message);
+    }
+
+    public void Critical(Exception exception)
+    {
+        Log(LogLevel.Critical, exception);
     }
 
     public void IncreaseIndent()
@@ -66,17 +107,67 @@ public class LoggerWrapper
 
     public void DecreaseIndent()
     {
-        Logger.IndentLevel -= 1;
+        Logger.IndentLevel = Math.Max(Logger.IndentLevel - 1, 0);
+    }
+
+    public void IncreaseIndent(string message)
+    {
+        Trace(message);
+        IncreaseIndent();
+    }
+
+    public void DecreaseIndent(string message)
+    {
+        Trace(message);
+        DecreaseIndent();
+    }
+
+    public void ResetIndent()
+    {
+        Logger.IndentLevel = 0;
     }
 
     private void Log(LogLevel level, string message, object? data = null)
     {
-        if (data is not null)
+        if (data is string[] lines)
         {
-            message += " (" + ConvertToString(data) + ")";
+            Logger.Log(level, Sender, message);
+            IncreaseIndent();
+            foreach (var line in lines)
+            {
+                Logger.Log(level, string.Empty, line);
+            }
+            DecreaseIndent();
         }
+        else if (data is IEnumerable ie)
+        {
+            Logger.Log(level, Sender, message);
+            IncreaseIndent();
+            foreach (var item in ie)
+            {
+                Logger.Log(level, string.Empty, ConvertToString(item));
+            }
+            DecreaseIndent();
+        }
+        else if (data is not null)
+        {
+            Logger.Log(level, Sender, message + " (" + ConvertToString(data) + ")");
+        }
+        else
+        {
+            Logger.Log(level, Sender, message);
+        }
+    }
 
-        Logger.Log(level, Sender, message);
+    private void Log(LogLevel level, Exception exception)
+    {
+        Log(level, exception.Message);
+        if (exception.InnerException is not null)
+        {
+            IncreaseIndent();
+            Log(level, exception.InnerException);
+            DecreaseIndent();
+        }
     }
 
     private static string ConvertToString(object item)
@@ -86,5 +177,18 @@ public class LoggerWrapper
             string s => '"' + s + '"',
             _ => JsonSerializer.Serialize(item, SerializerOptions),
         };
+    }
+
+    private class IntPtrConverter : JsonConverter<IntPtr>
+    {
+        public override nint Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return reader.GetInt32();
+        }
+
+        public override void Write(Utf8JsonWriter writer, nint value, JsonSerializerOptions options)
+        {
+            writer.WriteNumberValue(value);
+        }
     }
 }

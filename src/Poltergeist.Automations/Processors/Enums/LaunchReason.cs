@@ -2,6 +2,7 @@
 
 public enum LaunchReason
 {
+    Unknown,
     ByUser,
     ByCommandLine,
     ByAnotherMacro,

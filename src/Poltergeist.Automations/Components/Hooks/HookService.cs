@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -15,7 +16,7 @@ public sealed class HookService : KernelService
     {
         Logger = new(loggerService, nameof(HookService));
 
-        Logger.Trace($"Kernel service '{nameof(HookService)}' is activated.");
+        Logger.Debug($"Kernel service {nameof(HookService)} is instantiated.");
     }
 
     public void Register<T>(Action<T> handler, bool once = false, int priority = 0) where T : MacroHook
@@ -28,19 +29,14 @@ public sealed class HookService : KernelService
         });
     }
 
-    public void Raise<T>(T hook, bool dispose = false) where T : MacroHook
+    public void Raise<T>(T hook) where T : MacroHook
     {
-        InternalRaise(hook, dispose);
+        InternalRaise(hook);
     }
 
-    public void Raise<T>(bool dispose = false) where T : MacroHook, new()
+    public void Raise<T>() where T : MacroHook, new()
     {
-        InternalRaise(new T(), dispose);
-    }
-
-    public void RaiseUntil<T>(T hook, Func<T, bool> predicate) where T : MacroHook
-    {
-        InternalRaise(hook, false, predicate);
+        InternalRaise(new T());
     }
 
     public void Unregister<T>(Action<T> handler) where T : MacroHook
@@ -58,67 +54,49 @@ public sealed class HookService : KernelService
 
         delegator.Listeners.Add(listener);
 
-        Logger.Trace($"A listener is attatched to hook '{delegator.Name}'.", new
-        {
-            delegator.Name,
-            listener.Subscriber,
-            listener.Once,
-            listener.Priority,
-        });
+        LoggerTrace(listener.Type, $"A listener is registered to hook '{delegator.Type.Name}'.", new { Hook = delegator.Type.Name, listener.Subscriber });
     }
 
-    private void InternalRaise<T>(T hook, bool dispose, Func<T, bool>? untilPredicate = null) where T : MacroHook
+    private void InternalRaise<T>(T hook) where T : MacroHook
     {
-        var type = typeof(T);
+        var hookType = typeof(T);
 
-        Logger.Trace($"Hook '{type.Name}' is triggered.");
-        Logger.IncreaseIndent();
+        Delegators.TryGetValue(hookType, out var delegator);
 
-        if (!Delegators.TryGetValue(type, out var delegator))
+        LoggerTrace(hookType, $"Hook '{hookType.Name}' is triggered.", new { Listeners = delegator?.Listeners.Count ?? 0 });
+
+        if (delegator is null || delegator.Listeners.Count == 0)
         {
-            Logger.Trace($"No listener is attatched to hook '{type.Name}'.");
-            Logger.DecreaseIndent();
             return;
         }
 
         hook.Processor = Processor;
 
         var listeners = delegator.Listeners.OrderByDescending(x => x.Priority).ToArray();
-        var index = 0;
+
+        Logger.IncreaseIndent();
 
         foreach (var listener in listeners)
         {
-            Logger.Trace($"Executing the listener registered by '{listener.Subscriber}' for hook '{delegator.Name}' ({index + 1}/{listeners.Length}).");
+            LoggerTrace(hookType, $"Executing the callback.", new { Hook = delegator.Type.Name, listener.Subscriber, listener.Once });
+            Logger.IncreaseIndent();
 
             listener.Callback.DynamicInvoke(hook);
 
             if (listener.Once)
             {
                 delegator.Listeners.Remove(listener);
-                Logger.Trace($"Removed the listener from hook '{delegator.Name}'.");
             }
 
-            if (untilPredicate?.Invoke(hook) == true)
-            {
-                break;
-            }
-
-            index += 1;
+            Logger.DecreaseIndent();
         }
 
-        if (dispose && delegator.Listeners.Count > 0)
-        {
-            delegator.Listeners.Clear();
-            Logger.Trace($"Removed all listeners from hook '{delegator.Name}'.");
-        }
-
-        Logger.Trace($"Hook '{type.Name}' is performed.");
         Logger.DecreaseIndent();
     }
 
-    private void InternalUnregister(Type type, Delegate del)
+    private void InternalUnregister(Type hookType, Delegate del)
     {
-        if (!Delegators.TryGetValue(type, out var delegator))
+        if (!Delegators.TryGetValue(hookType, out var delegator))
         {
             return;
         }
@@ -131,7 +109,8 @@ public sealed class HookService : KernelService
         }
 
         delegator.Listeners.Remove(listener);
-        Logger.Trace($"Removed the listener from hook '{type.Name}'.");
+
+        LoggerTrace(hookType, $"A listener is removed from hook '{delegator.Type.Name}'.", new { Hook = delegator.Type.Name, listener.Subscriber });
     }
 
     private static string? GetCallingClassName(int skipFrames)
@@ -142,4 +121,33 @@ public sealed class HookService : KernelService
         return null;
 #endif
     }
+
+    #region "Logging"
+
+    private readonly Dictionary<Type, bool> LogEnablements = new();
+
+    private bool IsLogEnabled(Type hookType)
+    {
+        if (LogEnablements.TryGetValue(hookType, out var isLogEnabled))
+        {
+            return isLogEnabled;
+        }
+
+        isLogEnabled = hookType.GetCustomAttribute<DisableLogAttribute>() == null;
+        LogEnablements.Add(hookType, isLogEnabled);
+
+        return false;
+    }
+
+    private void LoggerTrace(Type hookType, string message, object? data = null)
+    {
+        if (!IsLogEnabled(hookType))
+        {
+            return;
+        }
+
+        Logger.Trace(message, data);
+    }
+
+    #endregion
 }

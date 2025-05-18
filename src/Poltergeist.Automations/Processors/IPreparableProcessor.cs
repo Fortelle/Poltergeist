@@ -11,11 +11,10 @@ public interface IPreparableProcessor
     public ParameterValueCollection Options { get; }
     public ParameterValueCollection Environments { get; }
     public ParameterValueCollection Statistics { get; }
-
-    public Action? WorkProc { set; }
-    public Func<Task>? AsyncWorkProc { set; }
+    public ParameterValueCollection SessionStorage { get; }
 
     public T GetService<T>() where T : class;
+    public void AddStep(WorkflowStep step);
 
     public HookService Hooks => GetService<HookService>();
 }

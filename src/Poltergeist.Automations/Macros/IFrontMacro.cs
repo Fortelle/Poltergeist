@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Macros;
 
-public interface IFrontMacro : IFrontBackMacro
+public interface IFrontMacro : IMacroBase, IFrontBackMacro
 {
     public string? Category { get; }
     public string? Description { get; }

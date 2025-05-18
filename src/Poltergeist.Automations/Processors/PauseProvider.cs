@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Poltergeist.Automations.Processors;
+﻿namespace Poltergeist.Automations.Processors;
 
 public class PauseProvider
 {
@@ -13,9 +11,6 @@ public class PauseProvider
     public async Task Pause()
     {
         Interlocked.CompareExchange(ref Source, new(), null);
-
-        Debug.WriteLine("Paused");
-        Debug.Flush();
 
         await (Source?.Task ?? CompletedTask);
     }
@@ -36,7 +31,6 @@ public class PauseProvider
                 break;
             }
         }
-        Debug.WriteLine("Resumed");
     }
 
 }

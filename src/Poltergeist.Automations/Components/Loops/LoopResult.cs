@@ -1,11 +1,11 @@
 ﻿namespace Poltergeist.Automations.Components.Loops;
 
-public enum LoopStatus
+public enum LoopResult
 {
-    None,
+    Unknown,
     Unstarted,
-    Purposed,
-    UserAborted,
-    ErrorOccurred,
+    Broken,
     Complete,
+    Interrupted,
+    Error,
 }

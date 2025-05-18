@@ -8,16 +8,14 @@ public class LoopOptions
     public bool IsInfiniteLoopable { get; set; }
 
     [SafetyLock]
-    public int MaxIterationLimit { get; set; } = 100;
+    public int MaxIterationLimit { get; set; } = 999;
 
     public bool IsCountLimitable { get; set; } = true;
     public bool IsDurationLimitable { get; set; }
-    public bool ExcludesIncompleteIteration { get; set; }
-
-    public bool ContinuesOnError { get; set; }
 
     public int DefaultCount { get; set; } = 1;
     public TimeOnly DefaultDuration { get; set; }
 
     public LoopInstrumentType Instrument { get; set; }
+    public string? Title { get; set; }
 }

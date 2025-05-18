@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Components.Panels;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
@@ -15,10 +14,9 @@ public class LoopMacro : MacroBase
     };
 
     public Action<LoopBeforeArguments>? Before;
-    public Action<LoopExecuteArguments>? Execute;
+    public Action<IterationArguments>? Iterate;
     public Action<LoopCheckContinueArguments>? CheckContinue;
     public Action<ArgumentService>? After;
-    public Func<int, ProgressInstrumentInfo>? InitializeInfo;
 
     public LoopMacro(string name) : base(name)
     {
@@ -29,11 +27,6 @@ public class LoopMacro : MacroBase
     protected override void OnConfigure(IConfigurableProcessor processor)
     {
         base.OnConfigure(processor);
-
-        processor.Services.Configure<LoopOptions>(options =>
-        {
-            options.Instrument = LoopInstrumentType.List;
-        });
     }
 
     protected override void OnPrepare(IPreparableProcessor processor)
@@ -41,30 +34,52 @@ public class LoopMacro : MacroBase
         base.OnPrepare(processor);
 
         var loopService = processor.GetService<LoopService>();
+        var hookService = processor.GetService<HookService>();
 
         if (Before is not null)
         {
-            loopService.Before += Before;
+            hookService.Register<LoopStartingHook>(hook =>
+            {
+                var args = hook.Processor.GetService<LoopBeforeArguments>();
+                Before(args);
+                if (args.Cancel)
+                {
+                    hook.Cancel = true;
+                }
+            });
         }
 
-        if (Execute is not null)
+        if (Iterate is not null)
         {
-            loopService.Execute += Execute;
+            hookService.Register<IterationExecutingHook>(hook =>
+            {
+                var args = hook.Processor.GetService<IterationArguments>();
+                args.Index = hook.Index;
+                args.Result = IterationResult.Continue;
+                Iterate(args);
+                hook.Result = args.Result;
+            });
         }
 
         if (CheckContinue is not null)
         {
-            loopService.CheckContinue += CheckContinue;
+            hookService.Register<LoopCheckContinueHook>(hook =>
+            {
+                var args = hook.Processor.GetService<LoopCheckContinueArguments>();
+                args.IterationIndex = hook.Data.Index;
+                args.IterationData = hook.Data;
+                CheckContinue(args);
+                hook.Result = args.Result;
+            });
         }
 
         if (After is not null)
         {
-            loopService.After += After;
-        }
-
-        if (InitializeInfo is not null)
-        {
-            loopService.InitializeInfo += InitializeInfo;
+            hookService.Register<LoopEndedHook>(hook =>
+            {
+                var args = hook.Processor.GetService<ArgumentService>();
+                After(args);
+            });
         }
     }
 

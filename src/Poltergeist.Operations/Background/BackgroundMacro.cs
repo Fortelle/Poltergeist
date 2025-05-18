@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
@@ -21,7 +23,7 @@ public class BackgroundMacro : MacroBase
     public int Delay { get; set; }
 
     public Action<LoopBeforeArguments, BackgroundOperator>? Begin;
-    public Action<LoopExecuteArguments, BackgroundOperator>? Iterate;
+    public Action<IterationArguments, BackgroundOperator>? Iterate;
     public Action<LoopCheckContinueArguments, BackgroundOperator>? CheckContinue;
     public Action<ArgumentService, BackgroundOperator>? End;
 
@@ -36,23 +38,48 @@ public class BackgroundMacro : MacroBase
     {
         base.OnPrepare(processor);
 
-        var repeat = processor.GetService<LoopService>();
+        var loopService = processor.GetService<LoopService>();
+        var hookService = processor.GetService<HookService>();
 
-        repeat.Before = OnBefore;
+        hookService.Register<LoopStartedHook>(hook =>
+        {
+            var args = hook.Processor.GetService<LoopBeforeArguments>();
+            OnBefore(args);
+        });
 
         if (Iterate is not null)
         {
-            repeat.Execute = (e) => Iterate.Invoke(e, e.Processor.GetService<BackgroundOperator>());
+            hookService.Register<IterationExecutingHook>(hook =>
+            {
+                var args = hook.Processor.GetService<IterationArguments>();
+                args.Index = hook.Index;
+                args.Result = IterationResult.Continue;
+
+                Iterate.Invoke(args, hook.Processor.GetService<BackgroundOperator>());
+
+                hook.Result = args.Result;
+            });
         }
 
         if (CheckContinue is not null)
         {
-            repeat.CheckContinue = (e) => CheckContinue.Invoke(e, e.Processor.GetService<BackgroundOperator>());
+            hookService.Register<LoopCheckContinueHook>(hook =>
+            {
+                var args = hook.Processor.GetService<LoopCheckContinueArguments>();
+                args.IterationIndex = hook.Data.Index;
+                args.IterationData = hook.Data;
+                CheckContinue.Invoke(args, hook.Processor.GetService<BackgroundOperator>());
+                hook.Result = args.Result;
+            });
         }
 
         if (End is not null)
         {
-            repeat.After = (e) => End.Invoke(e, e.Processor.GetService<BackgroundOperator>());
+            hookService.Register<LoopCheckContinueHook>(hook =>
+            {
+                var args = hook.Processor.GetService<ArgumentService>();
+                End.Invoke(args, hook.Processor.GetService<BackgroundOperator>());
+            });
         }
     }
 

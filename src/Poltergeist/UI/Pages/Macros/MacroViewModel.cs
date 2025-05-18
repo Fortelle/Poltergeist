@@ -186,11 +186,8 @@ public partial class MacroViewModel : ObservableRecipient
             App.ShowException(ex);
 
             App.GetService<AppEventService>().Unsubscribe<MacroCompletedHandler>(OnMacroCompleted);
-            Processor.Launched -= Processor_Launched;
-            Processor.Completed -= Processor_Completed;
-            Processor.PanelCreated -= Processor_PanelCreated;
-            Processor.Interacting -= Processor_Interacting;
-            Processor = null;
+
+            ReleaseProcessor();
         }
     }
 
@@ -202,16 +199,22 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
-        Processor.Abort();
+        Processor.Stop(AbortReason.User);
+    }
+
+    [RelayCommand]
+    public void Terminate()
+    {
+        if (Processor is null)
+        {
+            return;
+        }
+
+        Processor.Terminate();
     }
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        Processor!.Launched -= Processor_Launched;
-        Processor.Completed -= Processor_Completed;
-        Processor.PanelCreated -= Processor_PanelCreated;
-        Processor.Interacting -= Processor_Interacting;
-
         var macroManager = App.GetService<MacroManager>();
 
         if (e.CompletionAction != CompletionAction.None)
@@ -233,6 +236,22 @@ public partial class MacroViewModel : ObservableRecipient
             ExceptionMessage = e.Exception.Message;
         }
 
+        ReleaseProcessor();
+    }
+
+    private void ReleaseProcessor()
+    {
+        if (Processor is null)
+        {
+            return;
+        }
+
+        Processor.Launched -= Processor_Launched;
+        Processor.Completed -= Processor_Completed;
+        Processor.PanelCreated -= Processor_PanelCreated;
+        Processor.Interacting -= Processor_Interacting;
+
+        Processor.Dispose();
         Processor = null;
     }
 

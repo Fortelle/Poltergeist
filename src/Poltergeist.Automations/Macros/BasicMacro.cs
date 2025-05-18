@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities;
@@ -43,21 +45,31 @@ public class BasicMacro : MacroBase
             InstallStatusBar(processor);
         }
 
-        if(Execute is not null)
+        var loopService = processor.GetService<LoopService>();
+        var hookService = processor.GetService<HookService>();
+
+        if (Execute is not null)
         {
-            processor.WorkProc = () =>
+            processor.AddStep(new("execution", () =>
             {
                 var args = processor.GetService<BasicMacroExecutionArguments>();
                 Execute(args);
-            };
+            })
+            {
+                IsDefault = true,
+                IsInterruptable = true,
+            });
         }
         else if (ExecuteAsync is not null)
         {
-            processor.AsyncWorkProc = async () =>
+            processor.AddStep(new("execution", () =>
             {
                 var args = processor.GetService<BasicMacroExecutionArguments>();
-                await ExecuteAsync(args);
-            };
+                ExecuteAsync(args).GetAwaiter().GetResult();
+            })
+            {
+                IsDefault = true,
+            });
         }
 
     }
@@ -84,8 +96,8 @@ public class BasicMacro : MacroBase
         {
             var status = e.Reason switch
             {
-                EndReason.Complete or EndReason.UserAborted => ProgressStatus.Success,
-                EndReason.Unstarted => ProgressStatus.Warning,
+                EndReason.Complete => ProgressStatus.Success,
+                EndReason.Interrupted => ProgressStatus.Warning,
                 EndReason.ErrorOccurred => ProgressStatus.Failure,
                 _ => ProgressStatus.Idle,
             };

@@ -8,6 +8,8 @@ public class DashboardService : MacroService
 {
     private readonly PanelModel Panel;
 
+    public bool IsEmpty => !Panel.Instruments.Any();
+
     public DashboardService(MacroProcessor processor, PanelService panelService) : base(processor)
     {
         Panel = panelService.Create(new("poltergeist-dashboard", ResourceHelper.Localize("Poltergeist.Automations/Resources/Dashboard_Header"))
@@ -20,7 +22,7 @@ public class DashboardService : MacroService
     {
         Panel.Instruments.Add(instrument);
 
-        Logger.Debug($"Added an instrument <{instrument.GetType().Name}> to Dashboard panel.");
+        Logger.Trace($"Added an instrument '{instrument.GetType().Name}' to Dashboard panel.");
 
         return instrument;
     }
@@ -39,7 +41,7 @@ public class DashboardService : MacroService
             Panel.Instruments.Add(instrument);
         }
 
-        Logger.Debug($"A new instrument <{instrument.GetType().Name}> is created.");
+        Logger.Trace($"A new instrument '{instrument.GetType().Name}' is created.");
 
         return instrument;
     }

@@ -11,6 +11,12 @@ public class HookDelegator
     public HookDelegator(Type hookType)
     {
         Type = hookType;
-        Name = hookType.Name.Replace("Hook", null); ;
+
+        var name = hookType.Name;
+        if (name.EndsWith("Hook"))
+        {
+            name = name[0..^4];
+        }
+        Name = name;
     }
 }

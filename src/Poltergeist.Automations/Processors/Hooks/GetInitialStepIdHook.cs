@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Automations.Processors;
 
-public class ProcessorPreparedHook : MacroHook
+public class GetInitialStepIdHook : MacroHook
 {
-
+    public string? StepId { get; set; }
 }

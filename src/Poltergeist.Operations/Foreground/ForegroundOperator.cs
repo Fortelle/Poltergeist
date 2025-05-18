@@ -10,7 +10,7 @@ public class ForegroundOperator(MacroProcessor processor,
     ForegroundKeyboardService keyboard,
     ForegroundMouseService mouse,
     TimerService timer
-    ) : LoopExecuteArguments(processor)
+    ) : IterationArguments(processor)
 {
     public ForegroundLocatingService Locating => locating;
     public ForegroundCapturingService Capture => capture;

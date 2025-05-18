@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Components.Debugger;
 using Poltergeist.Automations.Components.FlowBuilders;
@@ -7,83 +8,158 @@ using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Services;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 
 public partial class MacroProcessor
 {
-    public Action? WorkProc { get; set; }
-    private Thread? WorkingThread;
+    private readonly List<WorkflowStep> Steps = new();
 
-    public Func<Task>? AsyncWorkProc { get; set; }
-    private Func<Task>? WorkingTask;
+    private bool CanAbort { get; set; }
 
-    public void Launch()
+    private List<string> Footsteps { get; } = new();
+
+    private Thread? ProcessThread;
+
+    private Thread? WorkflowThread;
+
+    private void InternalRun()
     {
-        if (Exception is not null) // Exception is always null here.
+        ProcessThread = new Thread(() => {
+            try
+            {
+                Launch();
+
+                Process();
+            }
+            catch (Exception exception)
+            {
+                Exception = exception;
+                Status = ProcessorStatus.Crushed;
+            }
+            finally
+            {
+                Finally();
+            }
+        });
+        ProcessThread.SetApartmentState(ApartmentState.STA);
+        ProcessThread.Start();
+    }
+
+    private void Launch()
+    {
+        if (Status != ProcessorStatus.Idle)
         {
-            throw new InvalidOperationException("The macro is not able to run.", Exception);
+            throw new Exception("The macro is not able to run.");
         }
 
+        if (Exception is not null)
+        {
+            throw new Exception("The macro is not able to run.", Exception);
+        }
+
+        Status = ProcessorStatus.Launching;
         StartTime = DateTime.Now;
         Timer.Start();
 
-        Statistics.Set("last_run_time", StartTime);
-        Statistics.Set("total_run_count", (int x) => x + 1);
-
-        RaiseEvent(ProcessorEvent.Launched, new ProcessorLaunchedEventArgs(StartTime));
-
-        Load();
-        if (Exception is not null)
+        if (!this.IsIncognitoMode())
         {
-            End(EndReason.LoadFailed);
-            return;
+            Statistics.Set("last_run_time", StartTime);
+            Statistics.Set("total_run_count", (int x) => x + 1);
         }
 
-        if (!CheckStart())
-        {
-            End(EndReason.Unstarted);
-            return;
-        }
-
-        Start();
-    }
-
-    private void Load()
-    {
         ServiceCollection = new();
         ConfigureBasicServices(ServiceCollection);
         ConfigureExtraServices(ServiceCollection);
         ServiceProvider = ServiceCollection.BuildServiceProvider();
 
-        // active basic services
         GetService<HookService>();
         GetService<PanelService>();
-        GetService<MacroLogger>().Load();
+        var logger = GetService<MacroLogger>();
+        logger.Load();
+        Logger = new(logger, nameof(MacroProcessor));
+
         GetService<DashboardService>();
 
-        if (Exception is not null)
+        PrintEnvironments();
+
+        Logger.Info("The macro has launched.");
+
+        if (Exception is not null) // process the exception that occurred in ConfigureExtraServices
         {
-            return;
+            Logger.Error(Exception);
+            throw Exception;
         }
 
-        LoadStartupServices();
-        if (Exception is not null)
+        RaiseEvent(ProcessorEvent.Launched, new ProcessorLaunchedEventArgs(StartTime));
+
+        Status = ProcessorStatus.Launched;
+    }
+
+    private void Process()
+    {
+        if (Status != ProcessorStatus.Launched)
         {
-            return;
+            throw new InvalidOperationException();
         }
 
-        Prepare();
-        if (Exception is not null)
+        Status = ProcessorStatus.Running;
+
+        try
         {
-            return;
+            ProcessStart();
+
+            WorkflowThread = new Thread(ProcessWorkflow);
+            WorkflowThread.SetApartmentState(ApartmentState.STA);
+            WorkflowThread.Start();
+            WorkflowThread.Join();
+            WorkflowThread = null;
+
+            ProcessEnd();
+        }
+        catch (Exception exception)
+        {
+            Logger?.Error(exception);
+            throw;
+        }
+    }
+
+    private void ProcessStart()
+    {
+        Logger?.ResetIndent();
+        Logger?.Trace("---");
+
+        GetService<HookService>().Raise<ProcessorStartingHook>();
+
+        SetupAutoloadServices();
+
+        SetupPreparations();
+
+        GetService<HookService>().Raise<ProcessorStartedHook>();
+    }
+
+    private void PrintEnvironments()
+    {
+        if (Options.Count > 0)
+        {
+            Logger?.Trace("User options:", ToLines(Options));
         }
 
-        SetWork();
-        if (Exception is not null)
+        if (Environments.Count > 0)
         {
-            return;
+            Logger?.Trace("Environments:", ToLines(Environments));
+        }
+
+        static string[] ToLines(ParameterValueCollection collection)
+        {
+            return collection
+                .OrderBy(pv => pv.Key)
+                .Where(pv => pv.Value is not null)
+                .Select(pv => $"- {pv.Key}({pv.Value!.GetType().Name}) = {pv.Value}")
+                .ToArray();
         }
     }
 
@@ -129,8 +205,7 @@ public partial class MacroProcessor
         services.AddTransient<FlowBuilderService>();
 
         services.AddTransient<ArgumentService>();
-        services.AddTransient<LoopBuilderService>();
-        services.AddTransient<LoopExecuteArguments>();
+        services.AddTransient<IterationArguments>();
         services.AddTransient<LoopCheckContinueArguments>();
     }
 
@@ -162,9 +237,10 @@ public partial class MacroProcessor
         }
     }
 
-    private void LoadStartupServices()
+    private void SetupAutoloadServices()
     {
-        Log(LogLevel.Debug, "Started activating the startup services.");
+        Logger?.Debug("Setting up the auto-loading services.");
+        Logger?.IncreaseIndent();
 
         foreach (var serviceDescriptor in ServiceCollection!)
         {
@@ -172,253 +248,74 @@ public partial class MacroProcessor
             var isAutoloadable = serviceType.IsAssignableTo(typeof(IAutoloadable));
             if (isAutoloadable)
             {
-                try
-                {
-                    GetService(serviceType);
-                }
-                catch (Exception ex)
-                {
-                    Log(LogLevel.Error, $"Failed to activate service '{serviceType.Name}'.");
-                    Exception = ex;
-                    return;
-                }
+                Logger?.Trace($"Loading service '{serviceType.Name}'.");
+                Logger?.IncreaseIndent();
+                GetService(serviceType);
+                Logger?.DecreaseIndent();
             }
         }
 
-        Log(LogLevel.Debug, "Finished activating the startup services.");
+        Logger?.DecreaseIndent();
     }
 
-    private void Prepare()
+    private void SetupPreparations()
     {
-        Log(LogLevel.Debug, "Started running the preparation procedure.");
+        Logger?.Debug("Setting up the preparations.");
+        Logger?.IncreaseIndent();
 
         foreach (var module in Macro.Modules)
         {
-            try
+            if (module.GetType().GetMethod(nameof(MacroModule.OnProcessorPrepare))?.DeclaringType != module.GetType())
             {
-                module.OnProcessorPrepare(this);
+                Logger?.Trace($"'{module.Name}.{nameof(MacroModule.OnProcessorPrepare)}' is not overridden.");
+                continue;
             }
-            catch (Exception ex)
-            {
-                Log(LogLevel.Error, $"An exception occurred while executing \"{module.Name}.{nameof(module.OnProcessorPrepare)}\".");
-                Exception = ex;
-                return;
-            }
+
+            Logger?.Trace($"Executing '{module.Name}.{nameof(MacroModule.OnProcessorPrepare)}'.");
+            Logger?.IncreaseIndent();
+            module.OnProcessorPrepare(this);
+            Logger?.DecreaseIndent();
         }
 
-        try
-        {
-            Macro.Prepare(this);
-        }
-        catch (Exception ex)
-        {
-            Log(LogLevel.Error, $"An exception occurred while executing \"{Macro.GetType().Name}.{nameof(Macro.Prepare)}\".");
-            Exception = ex;
-            return;
-        }
+        Logger?.Trace($"Executing '{nameof(MacroBase)}.{nameof(IBackMacro.Prepare)}'.");
+        Logger?.IncreaseIndent();
+        Macro.Prepare(this);
+        Logger?.DecreaseIndent();
 
-        try
-        {
-            GetService<HookService>().Raise<ProcessorPreparedHook>();
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            return;
-        }
-
-        Log(LogLevel.Debug, "Finished running the preparation procedure.");
+        Logger?.DecreaseIndent();
     }
 
-    private void SetWork()
+    private void ProcessEnd()
     {
-        if (WorkProc is not null)
-        {
-            Log(LogLevel.Debug, $"<{nameof(WorkProc)}> is set. The workflow will be run in thread mode.");
-
-            var start = new ThreadStart(ProcessThreadWorkflow);
-            WorkingThread = new Thread(start);
-            WorkingThread.SetApartmentState(ApartmentState.STA);
-        }
-        else if (AsyncWorkProc is not null)
-        {
-            Log(LogLevel.Debug, $"<{nameof(AsyncWorkProc)}> is set. The workflow will be run in task mode.");
-
-            WorkingTask = ProcessTaskWorkflow;
-        }
-        else
-        {
-            Log(LogLevel.Debug, $"Neither <{nameof(WorkProc)}> nor <{nameof(AsyncWorkProc)}> is set.");
-        }
-    }
-
-    private bool CheckStart()
-    {
-        Log(LogLevel.Debug, "Started running the check-start procedure.");
-
-        var checkHook = new ProcessorCheckStartHook()
-        {
-            CanStart = true,
-        };
-
-        try
-        {
-            GetService<HookService>().RaiseUntil(checkHook, x => !x.CanStart);
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            return false;
-        }
-
-        if (!checkHook.CanStart)
-        {
-            Log(LogLevel.Debug, "The start check is not passed."); // not an error
-            return false;
-        }
-
-        Log(LogLevel.Debug, $"Finished running the check-start procedure.");
-
-        return true;
-    }
-
-    private void Start()
-    {
-        try
-        {
-            GetService<HookService>().Raise<ProcessorStartingHook>();
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            End(EndReason.ErrorOccurred);
-            return;
-        }
-
-        try
-        {
-            GetService<HookService>().Raise<ProcessorStartedHook>();
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            End(EndReason.ErrorOccurred);
-            return;
-        }
-
-        if (WorkingThread is not null)
-        {
-            WorkingThread.Start();
-        }
-        else if (WorkingTask is not null)
-        {
-            WorkingTask();
-        }
-        else
-        {
-            End(EndReason.Empty);
-        }
-    }
-
-    private void ProcessThreadWorkflow()
-    {
-        Log(LogLevel.Debug, "Started running the working procedure in thread mode.");
-
-        CanAbort = true;
-
-        try
-        {
-            WorkProc!.Invoke();
-        }
-        catch (UserAbortException)
-        {
-            Log(LogLevel.Debug, "The workflow is interrupted due to user aborting.");
-            End(EndReason.UserAborted);
-            return;
-        }
-        catch (ThreadInterruptedException) when (IsCancelled)
-        {
-            Log(LogLevel.Debug, "The workflow is interrupted due to user aborting.");
-            End(EndReason.UserAborted);
-            return;
-        }
-        catch (AggregateException ex) when (ex.InnerException is ThreadInterruptedException && IsCancelled)
-        {
-            Log(LogLevel.Debug, "The workflow is interrupted due to user aborting.");
-            End(EndReason.UserAborted);
-            return;
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            End(EndReason.ErrorOccurred);
-            return;
-        }
-        finally
-        {
-            CanAbort = false;
-        }
-
-        Log(LogLevel.Debug, "Finished running the working procedure.");
-
-        End(EndReason.Complete);
-    }
-
-    private async Task ProcessTaskWorkflow()
-    {
-        Log(LogLevel.Debug, "Started running the working procedure in task mode.");
-
-        Cancellation = new();
-        CanAbort = true;
-
-        try
-        {
-            await AsyncWorkProc!();
-        }
-        catch (UserAbortException)
-        {
-            Log(LogLevel.Debug, "The workflow is interrupted due to user aborting.");
-            End(EndReason.UserAborted);
-            return;
-        }
-        catch (ThreadInterruptedException)
-        {
-            Log(LogLevel.Debug, "The workflow is interrupted due to user aborting.");
-            End(EndReason.UserAborted);
-            return;
-        }
-        catch (Exception ex)
-        {
-            Exception = ex;
-            End(EndReason.ErrorOccurred);
-            return;
-        }
-        finally
-        {
-            CanAbort = false;
-        }
-
-        Log(LogLevel.Debug, "Finished running the working procedure.");
-
-        End(EndReason.Complete);
-    }
-
-    private void End(EndReason reason)
-    {
-        if (Exception is not null)
-        {
-            Log(Exception);
-        }
-
-        Log(LogLevel.Debug, "Started running the ending procedure.");
+        Logger?.ResetIndent();
+        Logger?.Trace("---");
 
         EndTime = DateTime.Now;
         Timer.Stop();
+
+        Status = Status switch
+        {
+            ProcessorStatus.Stopping => ProcessorStatus.Stopped,
+            ProcessorStatus.Faulting => ProcessorStatus.Faulted,
+            ProcessorStatus.Terminating => ProcessorStatus.Terminated,
+            ProcessorStatus.Running => ProcessorStatus.Complete,
+            _ => Status // ProcessorStatus.Crushed
+        };
+
+        var endReason = Status switch
+        {
+            ProcessorStatus.Complete => EndReason.Complete,
+            ProcessorStatus.Faulted => EndReason.ErrorOccurred,
+            ProcessorStatus.Stopped => EndReason.Interrupted,
+            ProcessorStatus.Terminated => EndReason.Terminated,
+            _ => EndReason.Unknown, // Other cases should not go here.
+        };
+
         var duration = GetElapsedTime();
 
         var endingHook = new ProcessorEndingHook()
         {
-            Reason = reason,
+            Reason = endReason,
             StartTime = StartTime,
             Duration = duration,
             CompletionAction = CompletionAction.None,
@@ -430,12 +327,16 @@ public partial class MacroProcessor
         }
         catch (Exception exception)
         {
-            Log(exception, LogLevel.Warning);
+            Logger?.Warn(exception.Message);
         }
 
+        var completionAction = endingHook.CompletionAction;
         Comment ??= endingHook.Comment;
 
-        Statistics.Set<TimeSpan>("total_run_duration", old => old + duration);
+        if (!this.IsIncognitoMode())
+        {
+            Statistics.Set<TimeSpan>("total_run_duration", old => old + duration);
+        }
 
         var history = new ProcessHistoryEntry()
         {
@@ -443,7 +344,7 @@ public partial class MacroProcessor
             ProcessId = ProcessId,
             StartTime = StartTime,
             EndTime = EndTime,
-            EndReason = reason,
+            EndReason = endReason,
             Comment = Comment,
             Duration = duration,
         };
@@ -451,7 +352,7 @@ public partial class MacroProcessor
         var endedHook = new ProcessorEndedHook()
         {
             HistoryEntry = history,
-            CompletionAction = endingHook.CompletionAction,
+            CompletionAction = completionAction,
         };
 
         try
@@ -460,23 +361,263 @@ public partial class MacroProcessor
         }
         catch (Exception exception)
         {
-            Log(exception, LogLevel.Warning);
+            Logger?.Warn(exception.Message);
         }
 
+        try
+        {
+            if (GetService<DashboardService>().IsEmpty)
+            {
+                var (level, comment) = endReason switch
+                {
+                    EndReason.Interrupted => (OutputLevel.Attention, Comment ?? "User Stop"),
+                    EndReason.ErrorOccurred => (OutputLevel.Failure, Comment ?? "Error Occurred"),
+                    EndReason.Complete => (OutputLevel.Success, Comment ?? "Complete"),
+                    _ => (OutputLevel.Failure, Comment ?? "Unexpected Error"),
+                };
+                GetService<OutputService>().Write(level, comment);
+            }
+        }
+        catch (Exception exception)
+        {
+            Logger?.Warn(exception.Message);
+        }
+
+        ClearSessionStorage();
+
+        Logger?.Info(endReason switch
+        {
+            //EndReason.FailedToLaunch => "The macro has not been initialized successfully.",
+            EndReason.Interrupted => "The macro has been stopped by the user.",
+            EndReason.ErrorOccurred => "The macro has been terminated due to an error.",
+            EndReason.Complete => "The macro has been completed.",
+            _ => "The macro has ended due to an unexpected reason.",
+        }); // this should be the last log
+
+        SessionStorage.Reset("processor_end_reason", endReason);
+        SessionStorage.Reset("processor_history_entry", history);
+        SessionStorage.Reset("processor_completion_action", completionAction);
+    }
+
+    private void Finally()
+    {
+        ProcessThread = null;
+
+        var endReason = SessionStorage.Get<EndReason?>("processor_end_reason") ?? EndReason.Crushed;
+        var historyEntry = SessionStorage.Get<ProcessHistoryEntry>("processor_history_entry");
+        var completionAction = SessionStorage.Get<CompletionAction?>("processor_completion_action") ?? CompletionAction.None;
+        
         var args = new ProcessorCompletedEventArgs()
         {
-            Status = reason,
-            HistoryEntry = history,
+            Reason = endReason,
+            HistoryEntry = historyEntry,
             Exception = Exception,
-            CompletionAction = endingHook.CompletionAction,
+            CompletionAction = completionAction,
+        };
+        RaiseEvent(ProcessorEvent.Completed, args);
+    }
+
+    public void AddStep(WorkflowStep step)
+    {
+        Steps.Add(step);
+    }
+
+    private void ProcessWorkflow()
+    {
+        if (Status != ProcessorStatus.Running)
+        {
+            return;
+        }
+
+        Logger?.ResetIndent();
+        Logger?.Trace("---");
+
+        var initialStepId = GetInitialStepId();
+        if (initialStepId is null)
+        {
+            return;
+        }
+
+        Cancellation = new();
+
+        ProcessQueue(initialStepId);
+    }
+
+    private string? GetInitialStepId()
+    {
+        var defaultSteps = Steps.Where(x => x.IsDefault).ToArray();
+        if (defaultSteps.Length > 1)
+        {
+            throw new Exception("More than one default step is set.");
+        }
+
+        var initialStepId = defaultSteps.FirstOrDefault()?.Id;
+        var getInitialStepIdHook = new GetInitialStepIdHook()
+        {
+            StepId = initialStepId,
+        };
+        GetService<HookService>().Raise(getInitialStepIdHook);
+        initialStepId = getInitialStepIdHook.StepId;
+
+        if (initialStepId is null)
+        {
+            Logger?.Debug("Could not find the initial step.");
+        }
+        else
+        {
+            Logger?.Trace($"The initial step is set to '{initialStepId}'.");
+        }
+
+        return initialStepId;
+    }
+
+    private void ProcessQueue(string stepId)
+    {
+        var nextStepId = stepId;
+        WorkflowStepReport? report = null;
+        while (true)
+        {
+            var step = Steps.FirstOrDefault(x => x.Id == nextStepId);
+            if (step is null)
+            {
+                Logger?.Trace($"Workflow step '{nextStepId}' is not found.");
+                break;
+            }
+
+            report = ProcessStep(step, report);
+            Footsteps.Add(step.Id);
+            nextStepId = report.NextStepId;
+
+            if (nextStepId is null)
+            {
+                break;
+            }
+        }
+    }
+
+    private WorkflowStepReport ProcessStep(WorkflowStep step, WorkflowStepReport? previousResult)
+    {
+        Logger?.ResetIndent();
+        Logger?.Trace($"Running workflow step '{step.Id}'.");
+        Logger?.IncreaseIndent();
+
+        var startTime = DateTime.Now;
+        var startElapsedTime = GetElapsedTime();
+        var stepArguments = new WorkflowStepArguments()
+        {
+            StepId = step.Id,
+            PreviousResult = previousResult,
+            StartTime = startTime,
+            SuccessStepId = step.SuccessStepId,
+            FailureStepId = step.FailureStepId,
+            ErrorStepId = step.ErrorStepId,
+            InterruptionStepId = step.InterruptionStepId,
         };
 
-        RaiseEvent(ProcessorEvent.Completed, args);
+        WorkflowStepResult stepResult;
+        CanAbort = step.IsInterruptable;
+        try
+        {
+            stepResult = step.Action.Invoke(stepArguments) ? WorkflowStepResult.Success : WorkflowStepResult.Failed;
+        }
+        catch (Exception exception) when (IsInterruptionException(exception))
+        {
+            stepResult = WorkflowStepResult.Interrupted;
+            Logger?.Trace($"The stop request has been performed.");
+        }
+        catch (Exception exception)
+        {
+            stepResult = WorkflowStepResult.Error;
+            Exception = exception;
+            Status = ProcessorStatus.Faulting;
+            Logger?.Error(exception);
+        }
+        CanAbort = false;
 
-        Log(LogLevel.Information, $"The workflow is ended: {reason}.");
+        var nextStepId = stepResult switch
+        {
+            WorkflowStepResult.Failed => stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
+            WorkflowStepResult.Error => stepArguments.ErrorStepId ?? stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
+            WorkflowStepResult.Interrupted => stepArguments.InterruptionStepId ?? stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
+            WorkflowStepResult.Success => stepArguments.SuccessStepId,
+            _ => null,
+        };
 
-        Log(LogLevel.Debug, "The processor will shut down."); // this should be the last log
+        var endTime = DateTime.Now;
+        var endElapsedTime = GetElapsedTime();
+        var finallyArguments = new WorkflowStepFinallyArguments()
+        {
+            StepId = step.Id,
+            Result = stepResult,
+            StartTime = startTime,
+            EndTime = endTime,
+            Duration = endElapsedTime - startElapsedTime,
+            Output = stepArguments.Output,
+            NextStepId = nextStepId,
+        };
+        try
+        {
+            step.Finally?.Invoke(finallyArguments);
+        }
+        catch (Exception exception)
+        {
+            stepResult = WorkflowStepResult.Error;
+            Status = ProcessorStatus.Faulting;
+            Logger?.Error(exception);
+        }
 
-        Dispose();
+        var report = new WorkflowStepReport()
+        {
+            StepId = step.Id,
+            Result = stepResult,
+            NextStepId = nextStepId,
+            Output = stepArguments.Output,
+        };
+
+        Logger?.Trace($"Finished running workflow step '{step.Id}'.", new {
+            report.StepId,
+            report.Result,
+            report.NextStepId,
+            Output = report.Output?.ToString()
+        });
+        Logger?.DecreaseIndent();
+
+        return report;
+
+        static bool IsInterruptionException(Exception exception)
+        {
+            return exception switch
+            {
+                ThreadInterruptedException or UserAbortException => true,
+                WorkflowStoppedException => true,
+                TaskCanceledException => true,
+                TargetInvocationException tie when tie.InnerException is not null => IsInterruptionException(tie.InnerException),
+                _ => false
+            };
+        }
+    }
+
+    private void ClearSessionStorage()
+    {
+        Logger?.Trace($"Clearing the {nameof(SessionStorage)}.");
+        Logger?.IncreaseIndent();
+
+        foreach (var item in SessionStorage)
+        {
+            if (item.Value is IDisposable idis)
+            {
+                try
+                {
+                    idis.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    Logger?.Error(exception);
+                }
+            }
+        }
+        SessionStorage.Clear();
+
+        Logger?.DecreaseIndent();
     }
 }

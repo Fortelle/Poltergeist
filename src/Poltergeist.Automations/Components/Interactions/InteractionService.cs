@@ -42,7 +42,7 @@ public class InteractionService : MacroService
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
 
-        await Processor.Pause();
+        await Processor.Pause(PauseReason.Input);
     }
 
     public void ShowTip(string message)

@@ -49,7 +49,7 @@ public partial class ExampleGroup
                 EnvironmentOverrides = new()
                 {
                     {"maintenance_mode", true},
-                    {MacroBase.UseStatisticsKey, false},
+                    {"incognito_mode", true},
                 }
             }
         },
@@ -85,7 +85,7 @@ public partial class ExampleGroup
             args.Outputer.NewGroup($"Counting:");
         },
 
-        Execute = (LoopExecuteArguments args) =>
+        Iterate = (IterationArguments args) =>
         {
             var counter = args.Processor.Statistics.Get<int>("counter");
 

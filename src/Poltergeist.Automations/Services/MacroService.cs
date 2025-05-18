@@ -22,7 +22,7 @@ public abstract class MacroService : IExtensionService, IDisposable
         Processor = processor;
         Logger = new(processor.GetService<MacroLogger>(), ServiceName);
 
-        Logger.Trace($"Service '{ServiceName}' is activated.");
+        Logger.Debug($"Service '{ServiceName}' is instantiated.");
     }
 
     IUserProcessor IExtensionService.GetProcessor() => Processor;

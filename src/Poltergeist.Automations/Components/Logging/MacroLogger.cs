@@ -18,7 +18,7 @@ public class MacroLogger : KernelService
     private readonly Dictionary<LogLevel, Color> LogColors = new()
     {
         [LogLevel.Debug] = Colors.Gray,
-        [LogLevel.Trace] = Colors.SkyBlue,
+        [LogLevel.Trace] = Colors.DeepSkyBlue,
         [LogLevel.Information] = Colors.Black,
         [LogLevel.Warning] = Colors.Orange,
         [LogLevel.Error] = Colors.Red,
@@ -39,10 +39,12 @@ public class MacroLogger : KernelService
 
     public int IndentLevel { get; set; }
     private readonly bool IsTraceEnabled = false;
+    private bool CanLogToFile { get; set; }
 
     public MacroLogger(MacroProcessor processor, IOptions<LoggerOptions> options) : base(processor)
     {
         Options = options.Value;
+        CanLogToFile = Options.Filename is not null && Options.FileLogLevel < LogLevel.None && !processor.IsIncognitoMode();
 #if DEBUG
         IsTraceEnabled = true;
 #endif
@@ -50,18 +52,18 @@ public class MacroLogger : KernelService
 
     internal void Load()
     {
-        if (Options.Filename is not null)
+        if (CanLogToFile)
         {
             WritingQueue = new(256);
 
             try
             {
-                var fileInfo = new FileInfo(Options.Filename);
+                var fileInfo = new FileInfo(Options.Filename!);
                 if (fileInfo.Directory is not null && fileInfo.Directory.FullName != fileInfo.Directory.Root.FullName)
                 {
                     fileInfo.Directory.Create();
                 }
-                LogFileStream = new FileStream(Options.Filename, FileMode.OpenOrCreate, FileAccess.Write);
+                LogFileStream = new FileStream(Options.Filename!, FileMode.OpenOrCreate, FileAccess.Write);
                 LogFileWriter = new StreamWriter(LogFileStream);
 
                 Task.Factory.StartNew(WriteFile, this, TaskCreationOptions.LongRunning);
@@ -97,10 +99,10 @@ public class MacroLogger : KernelService
 
         if (WritingException is not null)
         {
-            Log(LogLevel.Error, nameof(MacroLogger), WritingException.ToString());
+            Log(LogLevel.Warning, nameof(MacroLogger), WritingException.ToString());
         }
 
-        Log(LogLevel.Trace, nameof(MacroLogger), $"Kernel service '{nameof(MacroLogger)}' is activated.");
+        Log(LogLevel.Debug, nameof(MacroLogger), $"Kernel service '{nameof(MacroLogger)}' is instantiated.");
 
         while (LogPool!.TryDequeue(out var entry))
         {
@@ -182,11 +184,20 @@ public class MacroLogger : KernelService
     {
         var message = entry.Message;
 #if DEBUG
-        if (entry.IndentLevel > 0)
+        if (message == "---")
+        {
+            message = new string('=', 32);
+        }
+        else if (entry.Level == LogLevel.Trace && !string.IsNullOrEmpty(entry.Sender))
+        {
+            message = $"[{entry.Sender}] {message}";
+        }
+        if (entry.IndentLevel > 0 && Options.FrontLogLevel <= LogLevel.Trace)
         {
             message = new string(' ', 4 * entry.IndentLevel) + message;
         }
 #endif
+
         var line = new TextLine(message)
         {
             TemplateKey = entry.Level.ToString(),
@@ -233,6 +244,7 @@ public class MacroLogger : KernelService
                     LogFileWriter?.Close();
                     LogFileStream?.Close();
                     WritingQueue?.Dispose();
+                    WritingQueue = null;
                 });
             }
         }

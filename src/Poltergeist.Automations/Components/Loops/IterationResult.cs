@@ -1,10 +1,15 @@
 ﻿namespace Poltergeist.Automations.Components.Loops;
 
-public class IterationResult
+public enum IterationResult
 {
-    public int Index { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
-    public TimeSpan Duration { get; set; }
-    public IterationStatus Status { get; set; }
+    Undetermined,
+    Continue,
+    Break,
+    ForceContinue,
+    Error,
+    Failed,
+    Interrupted,
+
+    RestartLoop,
+    RestartIteration,
 }

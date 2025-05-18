@@ -26,7 +26,7 @@ public class TrialModule : MacroModule
             EnvironmentOverrides = new()
             {
                 {TrialModeKey, true },
-                {MacroBase.UseStatisticsKey, false},
+                {"incognito_mode", true },
             }
         });
     }

@@ -373,7 +373,7 @@ public partial class ExampleGroup
                     ],
                 });
 
-                await args.Processor.Pause();
+                await args.Processor.Pause(Automations.Processors.PauseReason.Input);
 
                 if (!loop)
                 {

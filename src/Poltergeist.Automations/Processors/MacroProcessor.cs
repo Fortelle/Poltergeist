@@ -10,7 +10,6 @@ namespace Poltergeist.Automations.Processors;
 public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfigurableProcessor, IUserProcessor, IPreparableProcessor
 {
     public string ProcessId { get; }
-    public string? ShellKey { get; }
 
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
@@ -28,7 +27,9 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
 
     public string? Comment { get; set; }
 
-    public Exception? Exception { get; set; }
+    public Exception? Exception { get; private set; }
+
+    public ProcessorStatus Status { get; private set; } = ProcessorStatus.Idle;
 
     private IBackMacro Macro { get; }
     IUserMacro IUserProcessor.Macro => (IUserMacro)Macro;
@@ -37,10 +38,11 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
 
     private readonly SynchronizationContext? OriginalContext = SynchronizationContext.Current;
 
-    public MacroProcessor(IFrontBackMacro macro, LaunchReason reason)
+    private LoggerWrapper? Logger;
+
+    public MacroProcessor(MacroBase macro)
     {
-        Macro = (IBackMacro)macro;
-        Reason = reason;
+        Macro = macro;
         ProcessId = Guid.NewGuid().ToString();
 
         Macro.Initialize();
@@ -49,13 +51,45 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
         if (invalidationMessage is not null)
         {
             Exception = new Exception(invalidationMessage);
+            Status = ProcessorStatus.Invalid;
             return;
         }
     }
 
-    public MacroProcessor(IFrontBackMacro macro, LaunchReason reason, string shellKey) : this(macro, reason)
+    public MacroProcessor(MacroBase macro, MacroProcessorArguments arguments) : this(macro)
     {
-        ShellKey = shellKey;
+        Reason = arguments.LaunchReason;
+
+        if (arguments.Options?.Count > 0)
+        {
+            foreach (var (key, value) in arguments.Options)
+            {
+                Options.Reset(key, value);
+            }
+        }
+
+        if (arguments.Environments?.Count > 0)
+        {
+            foreach (var (key, value) in arguments.Environments)
+            {
+                Environments.Reset(key, value);
+            }
+        }
+        if (arguments.SessionStorage?.Count > 0)
+        {
+            foreach (var (key, value) in arguments.SessionStorage)
+            {
+                SessionStorage.Reset(key, value);
+            }
+        }
+
+        if (arguments.Statistics is not null)
+        {
+            foreach (var (key, value) in arguments.Statistics)
+            {
+                Statistics.Reset(key, value);
+            }
+        }
     }
 
     public T GetService<T>() where T : class
@@ -66,21 +100,6 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     public object? GetService(Type type)
     {
         return ServiceProvider!.GetService(type);
-    }
-
-    private void Log(LogLevel level, string message)
-    {
-        GetService<MacroLogger>().Log(level, nameof(MacroProcessor), message);
-    }
-
-    private void Log(Exception exception, LogLevel level = LogLevel.Error)
-    {
-        Log(level, exception.Message);
-
-        if (exception.InnerException is not null)
-        {
-            Log(exception.InnerException, level);
-        }
     }
 
     public void ReceiveMessage(Dictionary<string, string> paramaters)

@@ -130,13 +130,10 @@
     <value>Empty</value>
   </data>
   <data name="EndReason_ErrorOccurred" xml:space="preserve">
-    <value>ErrorOccurred</value>
+    <value>Error</value>
   </data>
   <data name="EndReason_None" xml:space="preserve">
     <value>None</value>
-  </data>
-  <data name="EndReason_Purposed" xml:space="preserve">
-    <value>Purposed</value>
   </data>
   <data name="EndReason_SystemShutdown" xml:space="preserve">
     <value>SystemShutdown</value>
@@ -144,8 +141,8 @@
   <data name="EndReason_Unstarted" xml:space="preserve">
     <value>Unstarted</value>
   </data>
-  <data name="EndReason_UserAborted" xml:space="preserve">
-    <value>UserAborted</value>
+  <data name="EndReason_Stopped" xml:space="preserve">
+    <value>Aborted</value>
   </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
     <value>Comment</value>
@@ -224,5 +221,20 @@
   </data>
   <data name="StopAppBarButton.Label" xml:space="preserve">
     <value>Stop</value>
+  </data>
+  <data name="StopAppBarButtonTextBlock.Text" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="TerminateMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Terminate</value>
+  </data>
+  <data name="EndReason_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="EndReason_Terminated" xml:space="preserve">
+    <value>Terminated</value>
+  </data>
+  <data name="EndReason_Crushed" xml:space="preserve">
+    <value>Crushed</value>
   </data>
 </root>

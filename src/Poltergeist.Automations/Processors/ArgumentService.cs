@@ -9,7 +9,7 @@ public class ArgumentService : IDisposable, IUserLogger
     public IUserProcessor Processor { get; }
     public string? Comment { get; set; }
 
-    public IUserLogger Logger => this;
+    public IUserLogger Logger => this; // todo: change to wrapper
     public OutputService Outputer => Processor.GetService<OutputService>();
     public IUserMacro Macro => Processor.Macro;
 

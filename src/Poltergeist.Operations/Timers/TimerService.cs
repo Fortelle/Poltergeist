@@ -72,9 +72,8 @@ public class TimerService : MacroService
         {
             Thread.Sleep(timeout);
         }
-        //Logger.Debug($"Delayed for {timeout} ms.");
 
-        Processor.CheckCancel();
+        Processor.ThrowIfInterrupted();
     }
 
     private async Task DoDelayAsync(int timeout)
@@ -85,7 +84,7 @@ public class TimerService : MacroService
         }
         //Logger.Debug($"Delayed for {timeout} ms.");
 
-        Processor.CheckCancel();
+        Processor.ThrowIfInterrupted();
     }
 
     private int GetTimeout(int milliseconds, DelayOptions? options)

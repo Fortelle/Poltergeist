@@ -4,5 +4,4 @@ namespace Poltergeist.Automations.Processors;
 
 public class ProcessorStartedHook : MacroHook
 {
-
 }

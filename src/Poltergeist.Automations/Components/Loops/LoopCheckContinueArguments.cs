@@ -8,7 +8,7 @@ public class LoopCheckContinueArguments(MacroProcessor processor) : ArgumentServ
     public int IterationIndex { get; set; }
 
     [AllowNull]
-    public IterationResult IterationResult { get; set; }
+    public IterationData IterationData { get; set; }
 
     public CheckContinueResult Result { get; set; }
 }

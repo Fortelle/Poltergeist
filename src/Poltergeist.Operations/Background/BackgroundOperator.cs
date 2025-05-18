@@ -11,7 +11,7 @@ public class BackgroundOperator(
     BackgroundKeyboardService keyboard,
     BackgroundMouseService mouse,
     TimerService timer
-    ) : LoopExecuteArguments(processor)
+    ) : IterationArguments(processor)
 {
     public BackgroundLocatingService Locating => locating;
     public BackgroundCapturingService Capture => capture;

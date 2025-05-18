@@ -26,7 +26,7 @@ public class MacroManager : ServiceBase
 
     public MacroManager(AppEventService eventService)
     {
-        eventService.Subscribe<AppContentLoadingHandler>(OnAppContentLoading);
+        eventService.Subscribe<AppContentLoadedHandler>(OnAppContentLoaded);
         eventService.Subscribe<AppWindowClosingHandler>(OnAppWindowClosing);
         eventService.Subscribe<AppWindowClosedHandler>(OnAppWindowClosed);
     }
@@ -219,59 +219,58 @@ public class MacroManager : ServiceBase
             throw new InvalidOperationException();
         }
 
-        var processor = new MacroProcessor(shell.Template, args.Reason, args.ShellKey);
-
-        if (processor.Exception is not null)
+        var options = new Dictionary<string, object?>();
+        foreach (var (definition, value) in GlobalOptions.ToDefinitionValueArray())
         {
-            return processor;
+            options[definition.Key] = value;
         }
-
-        if (!args.IgnoresUserOptions)
+        if (!args.IgnoresUserOptions && shell.UserOptions is not null)
         {
-            foreach (var (key, value) in GetOptions(shell))
+            foreach (var (definition, value) in shell.UserOptions.ToDefinitionValueArray())
             {
-                processor.Options.Reset(key, value);
+                options[definition.Key] = value;
             }
         }
         if (args.OptionOverrides is not null)
         {
             foreach (var (key, value) in args.OptionOverrides)
             {
-                processor.Options.Reset(key, value);
+                options[key] = value;
             }
         }
 
+        var statistics = new Dictionary<string, object?>();
         foreach (var (definition, value) in GlobalStatistics.ToDefinitionValueArray())
         {
-            processor.Statistics.Reset(definition.Key, value);
+            statistics[definition.Key] = value;
         }
         if (shell.Statistics is not null)
         {
             foreach (var (definition, value) in shell.Statistics.ToDefinitionValueArray())
             {
-                processor.Statistics.Reset(definition.Key, value);
+                statistics[definition.Key] = value;
             }
         }
 
-        foreach (var (key, value) in GetEnvironments(shell))
-        {
-            processor.Environments.Reset(key, value);
-        }
+        var environments = GetEnvironments(shell);
         if (args.EnvironmentOverrides is not null)
         {
             foreach (var (key, value) in args.EnvironmentOverrides)
             {
-                processor.Environments.Reset(key, value);
+                environments[key] = value;
             }
         }
 
-        if (args.SessionStorage is not null)
+        var processorArguments = new MacroProcessorArguments
         {
-            foreach (var (key, value) in args.SessionStorage)
-            {
-                processor.SessionStorage.Reset(key, value);
-            }
-        }
+            LaunchReason = args.Reason,
+            Options = options,
+            Statistics = statistics,
+            Environments = environments,
+            SessionStorage = args.SessionStorage,
+        };
+
+        var processor = new MacroProcessor((MacroBase)shell.Template, processorArguments);
 
         return processor;
     }
@@ -303,7 +302,8 @@ public class MacroManager : ServiceBase
             { "macro_folder", PoltergeistApplication.Paths.MacroFolder },
             { "is_development", PoltergeistApplication.IsDevelopment },
             { "is_administrator", PoltergeistApplication.IsAdministrator },
-            { "is_singlemode", PoltergeistApplication.SingleMacroMode is not null }
+            { "is_singlemode", PoltergeistApplication.SingleMacroMode is not null },
+            { "shell_key", shell.ShellKey },
         };
 
         var settings = PoltergeistApplication.GetService<AppSettingsService>();
@@ -325,16 +325,12 @@ public class MacroManager : ServiceBase
         Logger.Trace($"Launching macro processor.", new
         {
             TemplateKey = processor.Macro.Key,
-            processor.ShellKey,
             processor.ProcessId,
-            //processor.Reason,
             processor.Options,
             processor.Statistics,
             processor.Environments,
             SessionStorage = processor.SessionStorage.Select(x => x.Key).ToArray(),
         });
-
-        var macro = processor.Macro;
 
         if (InRunningProcessors.Contains(processor))
         {
@@ -348,7 +344,7 @@ public class MacroManager : ServiceBase
 
         Logger.Info($"Macro '{processor.Macro.Key}' started.");
 
-        new Thread(processor.Launch).Start();
+        processor.Run();
     }
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
@@ -357,14 +353,18 @@ public class MacroManager : ServiceBase
 
         processor.Launched -= Processor_Launched;
 
-        if (processor.ShellKey is not null)
+        if (!processor.IsIncognitoMode())
         {
-            var shell = GetShell(processor.ShellKey)!;
-            UpdateProperties(shell, properties =>
+            var shellKey = processor.Environments.Get<string?>("shell_key");
+            if (shellKey is not null)
             {
-                properties.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
-                properties.RunCount = processor.Statistics.Get<int>("total_run_count");
-            });
+                var shell = GetShell(shellKey)!;
+                UpdateProperties(shell, properties =>
+                {
+                    properties.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
+                    properties.RunCount = processor.Statistics.Get<int>("total_run_count");
+                });
+            }
         }
 
         PoltergeistApplication.GetService<AppEventService>().Raise(new MacroRunningHandler(processor));
@@ -378,13 +378,16 @@ public class MacroManager : ServiceBase
 
         InRunningProcessors.Remove(processor);
 
-        if (processor.ShellKey is null)
+        var shellKey = processor.Environments.Get<string?>("shell_key");
+
+        if (shellKey is null)
         {
             return;
         }
-        var shell = GetShell(processor.ShellKey)!;
 
-        if (processor.Environments.Get(MacroBase.UseStatisticsKey, true))
+        var shell = GetShell(shellKey)!;
+
+        if (!processor.IsIncognitoMode())
         {
             foreach (var entry in processor.Statistics)
             {
@@ -408,16 +411,19 @@ public class MacroManager : ServiceBase
             }
 
             SaveGlobaStatistics();
-        }
 
-        shell.History?.Add(e.HistoryEntry);
-        try
-        {
-            shell.History?.Save();
-        }
-        catch (Exception ex)
-        {
-            Logger.Warn($"Failed to save shell history: {ex.Message}");
+            if (shell.History is not null && e.HistoryEntry is not null)
+            {
+                shell.History.Add(e.HistoryEntry);
+                try
+                {
+                    shell.History.Save();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Failed to save shell history: {ex.Message}");
+                }
+            }
         }
 
         PoltergeistApplication.GetService<AppEventService>().Raise<MacroCompletedHandler>(new(shell));
@@ -637,7 +643,7 @@ public class MacroManager : ServiceBase
         }
     }
 
-    private void OnAppContentLoading(AppContentLoadingHandler e)
+    private void OnAppContentLoaded(AppContentLoadedHandler e)
     {
         LoadGlobalOptions();
         LoadGlobalStatistics();
