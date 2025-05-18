@@ -19,6 +19,8 @@ public class AppSettingsService : ServiceBase
         try
         {
             settings.Load(FilePath);
+
+            PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsLoadedHandler(settings));
         }
         catch (Exception ex)
         {
@@ -53,7 +55,7 @@ public class AppSettingsService : ServiceBase
         Settings.Set(key, value);
         Logger.Trace($"Set the application settings variable: {key} = {value}");
 
-        PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingChangedHandler() {
+        PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsChangedHandler() {
             Key = key,
             NewValue = value,
         });
@@ -77,6 +79,8 @@ public class AppSettingsService : ServiceBase
 
     private void OnAppWindowClosed(AppWindowClosedHandler e)
     {
+        PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsSavingHandler(Settings));
+
         try
         {
             Settings.Save();

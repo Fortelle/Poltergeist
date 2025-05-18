@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Modules.Settings;
 
-public class AppSettingChangedHandler() : AppEventHandler
+public class AppSettingsChangedHandler() : AppEventHandler
 {
     public required string Key { get; init; }
     public object? NewValue { get; init; }

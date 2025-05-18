@@ -85,6 +85,8 @@ public class NavigationService : ServiceBase, INavigationService
             }
 
             Logger.Trace($"Created tab page '{pageKey}'.");
+
+            PoltergeistApplication.GetService<AppEventService>().Raise(new PageCreatedHandler(pageKey));
         }
 
         if (TabView.SelectedItem is not TabViewItem tvi || tvi != tab)
@@ -138,6 +140,9 @@ public class NavigationService : ServiceBase, INavigationService
         }
 
         Logger.Trace($"Removed tab page '{tab.Tag}'.");
+
+        var pageKey = (string)tab.Tag;
+        PoltergeistApplication.GetService<AppEventService>().Raise(new PageClosedHandler(pageKey));
 
         return true;
     }
