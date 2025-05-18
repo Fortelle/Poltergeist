@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Android.Adb;
-using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
@@ -17,6 +16,7 @@ namespace Poltergeist.Android.Emulators;
 
 public class EmulatorModule : MacroModule
 {
+    public const string CapturingModeKey = "adb.capturingmode";
     public const string InputModeKey = "adb.inputmode";
 
     static EmulatorModule()
@@ -53,7 +53,13 @@ public class EmulatorModule : MacroModule
             Category = "ADB",
         });
 
-        macro.UserOptions.Add(new OptionDefinition<InputMode>(InputModeKey, InputMode.ADB)
+        macro.UserOptions.Add(new OptionDefinition<EmulatorOperationMode>(CapturingModeKey, EmulatorOperationMode.ADB)
+        {
+            DisplayLabel = "Capturing mode",
+            Category = "ADB",
+        });
+
+        macro.UserOptions.Add(new OptionDefinition<EmulatorOperationMode>(InputModeKey, EmulatorOperationMode.ADB)
         {
             DisplayLabel = "Input mode",
             Category = "ADB",
@@ -70,45 +76,62 @@ public class EmulatorModule : MacroModule
         processor.Services.AddSingleton<AndroidEmulatorOperator>();
         processor.Services.AddSingleton<RandomEx>();
         processor.Services.AddSingleton<DistributionService>();
+        processor.Services.AddSingleton<EmulatorService>();
 
-        var inputMode = processor.Options.Get<InputMode>(InputModeKey);
+        var capturingMode = processor.Options.Get<EmulatorOperationMode>(CapturingModeKey);
+        var inputMode = processor.Options.Get<EmulatorOperationMode>(InputModeKey);
 
-        switch (inputMode)
+        if (inputMode == EmulatorOperationMode.Foreground || capturingMode == EmulatorOperationMode.Foreground)
         {
-            case InputMode.ADB:
-                {
-                    processor.Services.AddSingleton<TerminalService>();
-                    processor.Services.AddSingleton<AdbService>();
-                    processor.Services.AddSingleton<AdbInputService>();
+            processor.Services.AddSingleton<ForegroundLocatingService>();
+            processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<ForegroundLocatingService>());
+        }
+        if (inputMode == EmulatorOperationMode.Background || capturingMode == EmulatorOperationMode.Background)
+        {
+            processor.Services.AddSingleton<BackgroundLocatingService>();
+            processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<BackgroundLocatingService>());
+        }
+        if (inputMode == EmulatorOperationMode.ADB || capturingMode == EmulatorOperationMode.ADB)
+        {
+            processor.Services.AddSingleton<TerminalService>();
+            processor.Services.AddSingleton<AdbService>();
+        }
+        
+        if (capturingMode == EmulatorOperationMode.Foreground)
+        {
+            processor.Services.AddSingleton<CapturingProvider, ForegroundCapturingService>();
+        }
+        if (capturingMode == EmulatorOperationMode.Background)
+        {
+            processor.Services.AddSingleton<CapturingProvider, BackgroundCapturingService>();
+        }
+        if (capturingMode == EmulatorOperationMode.ADB)
+        {
+            processor.Services.AddSingleton<CapturingProvider, AdbCapturingService>();
+        }
+        if (capturingMode == EmulatorOperationMode.None)
+        {
+            processor.Services.AddSingleton<CapturingProvider, EmptyCapturingService>();
+        }
 
-                    processor.Services.AddSingleton<CapturingProvider, AdbCapturingService>();
-
-                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
-                }
-                break;
-            case InputMode.ADB_Background:
-                {
-                    processor.Services.AddSingleton<TerminalService>();
-                    processor.Services.AddSingleton<AdbService>();
-                    processor.Services.AddSingleton<AdbInputService>();
-
-                    processor.Services.AddSingleton<BackgroundLocatingService>();
-                    processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<BackgroundLocatingService>());
-                    processor.Services.AddSingleton<CapturingProvider, BackgroundCapturingService>();
-
-                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
-                }
-                break;
-            case InputMode.Mouse:
-                {
-                    processor.Services.AddSingleton<ForegroundLocatingService>();
-                    processor.Services.AddSingleton<ILocatingProvider>(x => x.GetRequiredService<ForegroundLocatingService>());
-                    processor.Services.AddSingleton<ForegroundMouseService>();
-
-                    processor.Services.AddSingleton<CapturingProvider, ForegroundCapturingService>();
-                    processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorMouseService>();
-                }
-                break;
+        if (inputMode == EmulatorOperationMode.Foreground)
+        {
+            processor.Services.AddSingleton<ForegroundMouseService>();
+            processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorForegroundMouseService>();
+        }
+        if (inputMode == EmulatorOperationMode.Background)
+        {
+            processor.Services.AddSingleton<BackgroundMouseService>();
+            processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorBackgroundMouseService>();
+        }
+        if (inputMode == EmulatorOperationMode.ADB)
+        {
+            processor.Services.AddSingleton<AdbInputService>();
+            processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorAdbService>();
+        }
+        if (inputMode == EmulatorOperationMode.None)
+        {
+            processor.Services.AddSingleton<IEmulatorInputProvider, EmulatorEmptyInputService>();
         }
     }
 
@@ -116,33 +139,10 @@ public class EmulatorModule : MacroModule
     {
         base.OnProcessorPrepare(processor);
 
-        var repeats = processor.GetService<LoopService>();
-
-        repeats.Before += (e) =>
-        {
-            var inputMode = e.Processor.Options.Get<InputMode>(InputModeKey);
-
-            if (inputMode is InputMode.ADB or InputMode.ADB_Background)
-            {
-                var adb = e.Processor.GetService<AdbService>();
-                if (!adb.Connect())
-                {
-                    e.Cancel = true;
-                    return;
-                }
-            }
-
-            if (inputMode is InputMode.ADB_Background or InputMode.Mouse)
-            {
-                var fls = e.Processor.GetService<ILocatingProvider>();
-                var config = processor.Macro.Storage.Get<RegionConfig>();
-                if (config is null || !fls.Locate(config))
-                {
-                    e.Cancel = true;
-                    return;
-                }
-            }
-        };
+        var config = processor.Macro.Storage.Get<RegionConfig>();
+        if (config != null && !processor.SessionStorage.Contains("window_region_config")) {
+            processor.SessionStorage.Add("window_region_config", config);
+        }
     }
 
     public static readonly MacroAction KillServerAction = new()

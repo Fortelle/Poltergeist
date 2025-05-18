@@ -9,8 +9,7 @@ namespace Poltergeist.Android.Adb;
 
 public class AdbInputService : MacroService
 {
-    public AdbService Adb { get; }
-
+    private readonly AdbService Adb;
     private readonly DistributionService Distribution;
     private readonly AdbInputOptions DefaultOptions;
 

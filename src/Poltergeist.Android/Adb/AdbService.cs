@@ -1,4 +1,6 @@
-﻿using Poltergeist.Automations.Components.Hooks;
+﻿using System.Drawing;
+using System.Text.RegularExpressions;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -114,6 +116,13 @@ public class AdbService : MacroService
         }
 
         Logger.Info($"Connected to adb server {Address}.");
+
+        var size = GetScreenSize();
+        if (size is not null)
+        {
+            Processor.SessionStorage.Reset("client_size", size.Value);
+        }
+
         return true;
     }
 
@@ -150,12 +159,33 @@ public class AdbService : MacroService
 
         cmd.TryExecute(Filename!, "exec-out", string.Join(' ', args));
         var buff = cmd.OutputData;
-        var length = buff!.Length;
+        //buff = ConvertCrlfToLf(buff);
+        //todo: requires watching
+        return buff;
+    }
+
+    private Size? GetScreenSize()
+    {
+        var output = Execute($"shell wm size");
+        var match = Regex.Match(output, @"(\d+)x(\d+)");
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        var w = int.Parse(match.Groups[1].Value);
+        var h = int.Parse(match.Groups[2].Value);
+        return new Size(w, h);
+    }
+
+    private static byte[] ConvertCrLfToLf(byte[] source)
+    {
+        var length = source.Length;
         var list = new List<byte>(length);
         for (var i = 0; i < length; i++)
         {
-            var b = buff[i];
-            if (b == 0x0D && i + 1 < length && buff[i + 1] == 0x0A) // warning: unsafe
+            var b = source[i];
+            if (b == 0x0D && i + 1 < length && source[i + 1] == 0x0A) // warning: unsafe
             {
                 list.Add(0x0A);
                 i++;

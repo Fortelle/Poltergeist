@@ -18,7 +18,7 @@ public class AdbCapturingService : CapturingProvider
     }
 
     // experimental
-    public override Bitmap DoCapture()
+    protected override Bitmap DoCapture()
     {
         var begintime = DateTime.Now;
 
@@ -30,15 +30,17 @@ public class AdbCapturingService : CapturingProvider
         using var ms = new MemoryStream(data);
         var bmp = (Bitmap)Image.FromStream(ms);
 
-        Logger.Debug($"Captured an image via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, duration });
+        Logger.Trace($"Captured a screenshot via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, duration });
+
+        Cache(new Bitmap(bmp));
+
         return bmp;
     }
 
-    public override Bitmap DoCapture(Rectangle area)
+    protected override Bitmap DoCapture(Rectangle area)
     {
         using var bmp = DoCapture();
         var bmp2 = BitmapUtil.Crop(bmp, area);
         return bmp2;
     }
-
 }

@@ -61,8 +61,7 @@ public class CmdHost : IDisposable
     {
         ObjectDisposedException.ThrowIf(IsDisposed, this);
 
-        CmdProcess.StandardInput.WriteLine(command);
-        CmdProcess.StandardInput.WriteLine($"echo {CompletionToken}");
+        CmdProcess.StandardInput.WriteLine(command + $" & echo {CompletionToken}");
         CmdProcess.StandardInput.Flush();
 
         AutoEvent.WaitOne();
@@ -85,6 +84,7 @@ public class CmdHost : IDisposable
         {
             case BeginToken:
                 OutputBuff.Clear();
+                AutoEvent.Set();
                 break;
             case CompletionToken:
                 BuildText();
@@ -105,7 +105,7 @@ public class CmdHost : IDisposable
         HasError = ErrorBuff.Count > 0;
         OutputText = HasError
             ? string.Join('\n', ErrorBuff)
-            : string.Join('\n', OutputBuff.SkipWhile(x => x.Length == 0).Take(1..^2));
+            : string.Join('\n', OutputBuff.SkipWhile(x => x.Length == 0).Skip(1)); // todo: needs tested
         ErrorBuff.Clear();
         OutputBuff.Clear();
     }
