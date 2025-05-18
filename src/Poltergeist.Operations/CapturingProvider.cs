@@ -10,8 +10,8 @@ public abstract class CapturingProvider : MacroService
 {
     public const string PreviewCaptureKey = "preview_capture";
 
-    public abstract Bitmap DoCapture();
-    public abstract Bitmap DoCapture(Rectangle area);
+    protected abstract Bitmap DoCapture();
+    protected abstract Bitmap DoCapture(Rectangle area);
 
     protected Bitmap? CachedImage { get; set; }
     protected ImageInstrument? Instrument { get; set; }
@@ -32,6 +32,9 @@ public abstract class CapturingProvider : MacroService
 
     public Bitmap Capture()
     {
+        Logger.Trace("Capturing image");
+        Logger.IncreaseIndent();
+
         Bitmap bmp;
 
         if (CachedImage is null)
@@ -43,14 +46,18 @@ public abstract class CapturingProvider : MacroService
         {
             bmp = new Bitmap(CachedImage);
 
-            Logger.Debug($"Captured an image from cached image.", new { CachedImage.Size });
+            Logger.Debug($"Captured an image from the cached image.", new { CachedImage.Size });
         }
 
+        Logger.DecreaseIndent();
         return bmp;
     }
 
     public Bitmap Capture(Rectangle area)
     {
+        Logger.Trace("Capturing image", new { area });
+        Logger.IncreaseIndent();
+
         Bitmap bmp;
 
         if (CachedImage is null)
@@ -62,9 +69,10 @@ public abstract class CapturingProvider : MacroService
         {
             bmp = BitmapUtil.Crop(CachedImage, area);
 
-            Logger.Debug($"Captured an image from cached image.", new { area });
+            Logger.Debug($"Captured an image from the cached image.", new { area });
         }
 
+        Logger.DecreaseIndent();
         return bmp;
     }
 

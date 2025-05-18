@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Drawing;
+using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Operations.Foreground;
+using Poltergeist.Automations.Structures.Shapes;
 using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Automations.Utilities.Windows;
+using Poltergeist.Operations.Foreground;
 
 namespace Poltergeist.Operations.Background;
 
@@ -67,6 +69,22 @@ public class BackgroundMouseService : MacroService
 
     #endregion
 
+    public Point GetPoint(Point targetPoint)
+    {
+        var offsetRange = DefaultOptions?.PointOffsetRange ?? 0;
+        var point = Distribution.GetPointByOffset(targetPoint, offsetRange);
+        return point;
+    }
+
+    public Point GetPoint(IShape targetShape)
+    {
+        var distribution = DefaultOptions?.ShapeDistribution ?? default;
+        var point = Distribution.GetPointByShape(targetShape, distribution);
+        return point;
+    }
+
+    public Point GetPoint(Rectangle targetRectangle) => GetPoint(new RectangleShape(targetRectangle));
+
     private static void DoDelay(int timeout)
     {
         if (timeout == 0)
@@ -79,7 +97,7 @@ public class BackgroundMouseService : MacroService
 
     private void DoClick(uint x, uint y, MouseButtons button, MouseInputOptions? options)
     {
-        var (min, max) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
+        var (min, max) = options?.ClickDuration ?? DefaultOptions?.ClickDuration ?? (0, 0);
 
         var interval = Distribution.Random.Next(min, max);
         Locating.SendMessage.MouseButtonDown(x, y, button);
@@ -90,8 +108,8 @@ public class BackgroundMouseService : MacroService
 
     private void DoDoubleClick(uint x, uint y, MouseButtons button, MouseInputOptions? options)
     {
-        var (min1, max1) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
-        var (min2, max2) = options?.DoubleClickTime ?? DefaultOptions?.DoubleClickTime ?? (0, 0);
+        var (min1, max1) = options?.ClickDuration ?? DefaultOptions?.ClickDuration ?? (0, 0);
+        var (min2, max2) = options?.DoubleClickInterval ?? DefaultOptions?.DoubleClickInterval ?? (0, 0);
 
         var interval1 = Distribution.Random.Next(min1, max1);
         var interval2 = Distribution.Random.Next(min2, max2);

@@ -26,14 +26,13 @@ public class ForegroundMouseService : MacroService
         DefaultOptions = options.Value;
     }
 
-
     #region "click"
 
     public void Click(MouseButtons button, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse click: {{{button}}}.", options);
-
         DoClick(button, options);
+
+        Logger.Debug($"Simulated a mouse {button} click action.");
     }
 
     public void Click()
@@ -41,23 +40,23 @@ public class ForegroundMouseService : MacroService
         Click(MouseButtons.Left);
     }
 
-    public void Click(Rectangle targetRectangle)
-    {
-        MoveTo(targetRectangle);
-        Click();
-    }
+    //public void Click(Rectangle targetRectangle, MouseInputOptions? options = null)
+    //{
+    //    MoveTo(targetRectangle, options);
+    //    DoClick(MouseButtons.Left, options);
+    //}
 
-    public void Click(IShape targetShape)
-    {
-        MoveTo(targetShape);
-        Click();
-    }
+    //public void Click(IShape targetShape, MouseInputOptions? options = null)
+    //{
+    //    MoveTo(targetShape, options);
+    //    DoClick(MouseButtons.Left, options);
+    //}
 
-    public void Click(Point targetPoint)
-    {
-        MoveTo(targetPoint);
-        Click();
-    }
+    //public void Click(Point targetPoint, MouseInputOptions? options = null)
+    //{
+    //    MoveTo(targetPoint, options);
+    //    DoClick(MouseButtons.Left, options);
+    //}
 
     #endregion
 
@@ -66,9 +65,9 @@ public class ForegroundMouseService : MacroService
 
     public void DoubleClick(MouseButtons button, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse double-click: {{{button}}}.", options);
-
         DoDoubleClick(button, options);
+
+        Logger.Debug($"Simulated a mouse {button} double-click action.");
     }
 
     public void DoubleClick()
@@ -82,40 +81,52 @@ public class ForegroundMouseService : MacroService
     //todo: LineTo
     #region "move"
 
-    public void MoveBy(int dx, int dy, MouseInputOptions? options = null)
+    public Point MoveBy(int ox, int oy, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse move: to offset({dx},{dy}).", options);
-
         var clientPoint = GetClientCursorPosition();
-        clientPoint.Offset(dx, dy);
-        DoMoveTo(clientPoint, options);
+        clientPoint.Offset(ox, oy);
+        var result = DoMoveTo(clientPoint, options);
+
+        Logger.Debug($"Moved the cursor by offset {{{clientPoint.X},{clientPoint.Y}}}.");
+
+        return result;
     }
 
-    public void MoveTo(Point clientPoint, MouseInputOptions? options = null)
+    public Point MoveTo(Point clientPoint, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse move: to point({clientPoint.X},{clientPoint.Y}).", options);
+        var result = DoMoveTo(clientPoint, options);
 
-        DoMoveTo(clientPoint, options);
+        Logger.Debug($"Moved the cursor to the client position {{{clientPoint.X},{clientPoint.Y}}}.");
+
+        return result;
     }
 
-    public void MoveTo(int x, int y, MouseInputOptions? options = null)
+    public Point MoveTo(int x, int y, MouseInputOptions? options = null)
     {
-        MoveTo(new Point(x, y), options);
+        var result = DoMoveTo(new Point(x, y), options);
+
+        Logger.Debug($"Moved the cursor to the client position {{{x},{y}}}.");
+
+        return result;
     }
 
-    public void MoveTo(IShape targetShape, MouseInputOptions? options = null)
+    public Point MoveTo(IShape targetShape, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse move: to shape \"{targetShape.Name}\"({targetShape.GetSignature()}).", options);
+        var result = DoMoveTo(targetShape, options);
 
-        DoMoveTo(targetShape, options);
+        Logger.Debug($"Moved the cursor to the client shape \"{targetShape.Name}\"({targetShape.GetSignature()}).");
+
+        return result;
     }
 
-    public void MoveTo(Rectangle clientArea, MouseInputOptions? options = null)
+    public Point MoveTo(Rectangle clientArea, MouseInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating mouse move: to rectangle({clientArea.X},{clientArea.Y},{clientArea.Width},{clientArea.Height}).", options);
-
         var targetShape = new RectangleShape(clientArea);
-        DoMoveTo(targetShape, options);
+        var result = DoMoveTo(targetShape, options);
+
+        Logger.Debug($"Moved the cursor to the client rectangle {{{clientArea.X},{clientArea.Y},{clientArea.Width},{clientArea.Height}}}.");
+
+        return result;
     }
 
     #endregion
@@ -159,14 +170,14 @@ public class ForegroundMouseService : MacroService
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents left.", options);
 
-        DoHorizonWheel(-detents, options);
+        DoHorizontalWheel(-detents, options);
     }
 
     public void WheelRight(int detents, MouseInputOptions? options = null)
     {
         //Logger.Debug($"Simulating mouse wheel scrolling: {detents} detents right.", options);
 
-        DoHorizonWheel(detents, options);
+        DoHorizontalWheel(detents, options);
     }
 
     #endregion
@@ -178,16 +189,14 @@ public class ForegroundMouseService : MacroService
         throw new NotImplementedException();
     }
 
-
-
     private Point GetClientCursorPosition()
     {
         var screenPoint = SendInputHelper.Cursor;
-        var clientPoint = Locating.PointToScreen(screenPoint);
+        var clientPoint = Locating.PointToClient(screenPoint);
         return clientPoint;
     }
 
-    private static void DoDelay(int timeout)
+    private void DoDelay(int timeout)
     {
         if (timeout == 0)
         {
@@ -197,90 +206,158 @@ public class ForegroundMouseService : MacroService
         Thread.Sleep(timeout);
     }
 
-    private void DoMoveTo(IShape targetShape, MouseInputOptions? options)
+    private Point DoMoveTo(IShape targetShape, MouseInputOptions? options)
     {
+        var keepUnmovedInShape = options?.KeepUnmovedInShape ?? DefaultOptions?.KeepUnmovedInShape ?? false;
+        var currentPoint = GetClientCursorPosition();
+        if (keepUnmovedInShape && targetShape.Contains(currentPoint))
+        {
+            Logger.Trace($"Skipped moving the cursor because it is currently in the shape.", new { targetShape, options });
+            return currentPoint;
+        }
+        
         var distribution = options?.ShapeDistribution ?? DefaultOptions?.ShapeDistribution ?? default;
         var clientPoint = Distribution.GetPointByShape(targetShape, distribution);
         var screenPoint = Locating.PointToScreen(clientPoint);
         var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
-        CursorHelper.MoveTo(screenPoint, motion);
-        Logger.Debug($"Simulated mouse move: to screen({screenPoint.X},{screenPoint.Y}).", new { targetShape, distribution, clientPoint, screenPoint, motion });
+        DoMoveTo(screenPoint, motion);
+
+        Logger.Trace($"Simulated a mouse move action.", new { targetShape, options, distribution, clientPoint, screenPoint, motion });
+
+        return clientPoint;
     }
 
-    private void DoMoveTo(Point targetPoint, MouseInputOptions? options)
+    private Point DoMoveTo(Point targetPoint, MouseInputOptions? options)
     {
         var offsetRange = options?.PointOffsetRange ?? DefaultOptions?.PointOffsetRange ?? 0;
         var clientPoint = Distribution.GetPointByOffset(targetPoint, offsetRange);
         var screenPoint = Locating.PointToScreen(clientPoint);
         var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
-        CursorHelper.MoveTo(screenPoint, motion);
-        Logger.Debug($"Simulated mouse move: to screen({screenPoint.X},{screenPoint.Y}).", new { targetPoint, offsetRange, clientPoint, screenPoint, motion });
+        DoMoveTo(screenPoint, motion);
+
+        Logger.Trace($"Simulated a mouse move action.", new { targetPoint, options, offsetRange, clientPoint, screenPoint, motion });
+
+        return clientPoint;
+    }
+
+    private void DoMoveTo(Point screenPoint, MouseMoveMotion motion)
+    {
+        switch (motion)
+        {
+            case MouseMoveMotion.Jump:
+                SendInputHelper.Cursor = screenPoint;
+                Logger.Trace($"Moved the cursor to {screenPoint.X}, {screenPoint.Y}.", new { screenPoint, motion });
+                break;
+            case MouseMoveMotion.Linear:
+                var current = SendInputHelper.Cursor;
+                var points = CursorHelper.GetLinearPositions(current, screenPoint);
+                foreach (var point in points)
+                {
+                    SendInputHelper.Cursor = point;
+                    Logger.Trace($"Moved the cursor to {point.X}, {point.Y}.", new { screenPoint, motion });
+
+                    var interval = 15;
+                    DoDelay(interval);
+                    Logger.Trace($"Delayed for {interval}ms.");
+                }
+                break;
+            default:
+                throw new NotImplementedException();
+        }
     }
 
     private void DoClick(MouseButtons button, MouseInputOptions? options)
     {
-        var (min, max) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
+        var (min, max) = options?.ClickDuration ?? DefaultOptions?.ClickDuration ?? (0, 0);
 
-        if (min == 0 || max == 0)
+        if (min > 0 && max >= min)
         {
+            var interval = Distribution.Random.Next(min, max);
+
+            new SendInputHelper().AddMouseDown(button).Execute();
+            Logger.Trace($"Simulated a mouse down message.", new { button });
+
+            DoDelay(interval);
+            Logger.Trace($"Delayed for {interval}ms.", new { min, max });
+
+            new SendInputHelper().AddMouseUp(button).Execute();
+            Logger.Trace($"Simulated a mouse up message.", new { button });
+        }
+        else
+        {
+            if (min < 0 || max < 0 || max < min)
+            {
+                Logger.Warn($"The {nameof(MouseInputOptions.ClickDuration)}({min},{max}) is not set correctly. The value of (0,0) will be used instead.");
+            }
+
             new SendInputHelper()
                 .AddMouseDown(button)
                 .AddMouseUp(button)
                 .Execute();
-            Logger.Debug($"Simulated mouse click: {{{button}}}.");
-        }
-        else
-        {
-            var interval = Distribution.Random.Next(min, max);
-            new SendInputHelper().AddMouseDown(button).Execute();
-            DoDelay(interval);
-            new SendInputHelper().AddMouseUp(button).Execute();
-            Logger.Debug($"Simulated mouse click: {{{button}}}.", new { interval });
+            Logger.Trace($"Simulated a mouse click message.", new { button, min, max });
         }
     }
 
     private void DoDoubleClick(MouseButtons button, MouseInputOptions? options)
     {
-        var (min1, max1) = options?.ClickTime ?? DefaultOptions?.ClickTime ?? (0, 0);
-        var (min2, max2) = options?.DoubleClickTime ?? DefaultOptions?.DoubleClickTime ?? (0, 0);
+        var (min1, max1) = options?.ClickDuration ?? DefaultOptions?.ClickDuration ?? (0, 0);
+        var (min2, max2) = options?.DoubleClickInterval ?? DefaultOptions?.DoubleClickInterval ?? (0, 0);
 
-        if (min1 == 0 || min2 == 0)
-        {
-            new SendInputHelper()
-                .AddMouseDown(button)
-                .AddMouseUp(button)
-                .AddMouseDown(button)
-                .AddMouseUp(button)
-                .Execute();
-            Logger.Debug($"Simulated mouse double-click: {{{button}}}.");
-        }
-        else
+        if (min1 > 0 && max1 >= min1 && min2 > 0 && max2 >= min2)
         {
             var interval1 = Distribution.Random.Next(min1, max1);
             var interval2 = Distribution.Random.Next(min2, max2);
             var interval3 = Distribution.Random.Next(min1, max1);
 
             new SendInputHelper().AddMouseDown(button).Execute();
+            Logger.Trace($"Simulated a mouse down message.", new { button });
+
             DoDelay(interval1);
+            Logger.Trace($"Delayed for {interval1}ms.", new { min1, max1 });
+
             new SendInputHelper().AddMouseUp(button).Execute();
+            Logger.Trace($"Simulated a mouse up message.", new { button });
+
             DoDelay(interval2);
+            Logger.Trace($"Delayed for {interval2}ms.", new { min2, max2 });
+
             new SendInputHelper().AddMouseDown(button).Execute();
+            Logger.Trace($"Simulated a mouse down message.", new { button });
+
             DoDelay(interval3);
+            Logger.Trace($"Delayed for {interval3}ms.", new { min1, max1 });
+
             new SendInputHelper().AddMouseUp(button).Execute();
-            Logger.Debug($"Simulated mouse double-click: {{{button}}}.", new { interval1, interval2, interval3 });
+            Logger.Trace($"Simulated a mouse up message.", new { button });
         }
+        else
+        {
+            if (min1 < 0 || max1 < 0 || max1 < min1 || min2 < 0 || max2 < 0 || max1 < min2)
+            {
+                Logger.Warn($"The {nameof(MouseInputOptions.ClickDuration)}({min1},{max1}) or the {nameof(MouseInputOptions.DoubleClickInterval)}({min2},{max2}) is not set correctly. The values of (0,0) and (0,0) will be used instead.");
+            }
+
+            new SendInputHelper()
+                .AddMouseDown(button)
+                .AddMouseUp(button)
+                .AddMouseDown(button)
+                .AddMouseUp(button)
+                .Execute();
+            Logger.Trace($"Simulated a mouse double-click message.", new { button });
+        }
+        
     }
 
     private void DoMouseDown(MouseButtons button)
     {
         new SendInputHelper().AddMouseDown(button).Execute();
-        Logger.Debug($"Simulated mouse down: {{{button}}}.");
+        Logger.Trace($"Simulated a mouse down message.", new { button });
     }
 
     private void DoMouseUp(MouseButtons button)
     {
         new SendInputHelper().AddMouseUp(button).Execute();
-        Logger.Debug($"Simulated mouse up: {{{button}}}.");
+        Logger.Trace($"Simulated a mouse up message.", new { button });
     }
 
     private void DoVerticalWheel(int detents, MouseInputOptions? options = null)
@@ -291,7 +368,8 @@ public class ForegroundMouseService : MacroService
         {
             var movement = detents * 120;
             new SendInputHelper().AddMouseWheel(movement).Execute();
-            Logger.Debug($"Simulated mouse wheel scrolling.", new { detents, movement });
+
+            Logger.Trace($"Simulated a mouse wheel message.", new { detents, movement });
         }
         else
         {
@@ -303,24 +381,26 @@ public class ForegroundMouseService : MacroService
             for (var i = 0; i < absoluteDetent; i++)
             {
                 new SendInputHelper().AddMouseWheel(movement).Execute();
+                Logger.Trace($"Simulated a mouse wheel message.", new { detents, movement });
+
                 if (i < absoluteDetent - 1)
                 {
                     DoDelay(interval);
+                    Logger.Trace($"Delayed for {interval}ms.", new { min, max });
                 }
             }
-            Logger.Debug($"Simulated mouse wheel scrolling.", new { detents, delta, interval });
         }
     }
 
-    private void DoHorizonWheel(int detents, MouseInputOptions? options = null)
+    private void DoHorizontalWheel(int detents, MouseInputOptions? options = null)
     {
-        var (min, max) = options?.HorizonWheelInterval ?? DefaultOptions?.HorizonWheelInterval ?? (0, 0);
+        var (min, max) = options?.HorizontalWheelInterval ?? DefaultOptions?.HorizontalWheelInterval ?? (0, 0);
 
         if (min == 0 || max == 0)
         {
             var movement = detents * 120;
             new SendInputHelper().AddMouseHWheel(movement).Execute();
-            Logger.Debug($"Simulated mouse h-wheel scrolling.", new { detents, movement });
+            Logger.Trace($"Simulated a mouse h-wheel message.", new { detents, movement });
         }
         else
         {
@@ -332,12 +412,14 @@ public class ForegroundMouseService : MacroService
             for (var i = 0; i < absoluteDetent; i++)
             {
                 new SendInputHelper().AddMouseHWheel(movement).Execute();
+                Logger.Trace($"Simulated a mouse h-wheel message.", new { detents, movement });
+
                 if (i < absoluteDetent - 1)
                 {
                     DoDelay(interval);
+                    Logger.Trace($"Delayed for {interval}ms.", new { min, max });
                 }
             }
-            Logger.Debug($"Simulated mouse h-wheel scrolling.", new { detents, delta, interval });
         }
     }
 

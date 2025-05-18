@@ -72,51 +72,45 @@ public class ForegroundKeyboardService : MacroService
         DefaultOptions = options.Value;
     }
 
-    public KeyboardInputMode Mode { get; set; } = KeyboardInputMode.Scancode; // todo: not supported yet
-
     public void KeyPress(VirtualKey key, KeyboardInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating key press: {{{key}}}.", options);
-
-        var (min, max) = options?.PressTime ?? DefaultOptions?.PressTime ?? (0, 0);
+        var (min, max) = options?.PressDuration ?? DefaultOptions?.PressDuration ?? (0, 0);
+        var mode = options?.Mode ?? DefaultOptions?.Mode ?? KeyboardInputMode.Scancode;
 
         if (min == 0 || max == 0)
         {
             new SendInputHelper()
-                .AddScancodeDown(key)
-                .AddScancodeUp(key)
+                .AddKey(key, false, mode)
+                .AddKey(key, true, mode)
                 .Execute();
-
-            Logger.Debug($"Simulated key press: {{{key}}}.");
+            Logger.Debug($"Simulated a key press message.", new { key, mode });
         }
         else
         {
             var interval = Random.Next(min, max);
-            new SendInputHelper().AddScancodeDown(key).Execute();
+            new SendInputHelper().AddKey(key, false, mode).Execute();
+            Logger.Trace($"Simulated a key down message.", new { key, mode, min, max, interval });
             DoDelay(interval);
-            new SendInputHelper().AddScancodeUp(key).Execute();
+            new SendInputHelper().AddKey(key, true, mode).Execute();
+            Logger.Trace($"Simulated a key up message.", new { key, mode, min, max, interval });
 
-            Logger.Debug($"Simulated key press: {{{key}}}.", new { min, max, interval });
         }
 
+        Logger.Debug($"Simulated a key press action.", new { key, mode });
     }
 
-    public void KeyDown(VirtualKey key)
+    public void KeyDown(VirtualKey key, KeyboardInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating key down: {{{key}}}.");
-
-        new SendInputHelper().AddScancodeDown(key).Execute();
-
-        Logger.Debug($"Simulated key down: {{{key}}}.");
+        var mode = options?.Mode ?? DefaultOptions?.Mode ?? KeyboardInputMode.Scancode;
+        new SendInputHelper().AddKey(key, false, mode).Execute();
+        Logger.Debug($"Simulated a key down message.", new { key, mode });
     }
 
-    public void KeyUp(VirtualKey key)
+    public void KeyUp(VirtualKey key, KeyboardInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating key up: {{{key}}}.");
-
-        new SendInputHelper().AddScancodeUp(key).Execute();
-
-        Logger.Debug($"Simulated key up: {{{key}}}.");
+        var mode = options?.Mode ?? DefaultOptions?.Mode ?? KeyboardInputMode.Scancode;
+        new SendInputHelper().AddKey(key, true, mode).Execute();
+        Logger.Debug($"Simulated a key up message.", new { key, mode });
     }
 
     public void Combine(params VirtualKey[] keys)
@@ -124,7 +118,8 @@ public class ForegroundKeyboardService : MacroService
         var text = '{' + string.Join("} + {", keys) + '}';
         //Logger.Debug($"Simulating key combination: {text}.");
 
-        var (min, max) = DefaultOptions?.PressTime ?? (0, 0);
+        var (min, max) = DefaultOptions?.PressDuration ?? (0, 0);
+        var mode = DefaultOptions?.Mode ?? KeyboardInputMode.Scancode;
 
         if (min == 0 || max == 0)
         {
@@ -145,13 +140,15 @@ public class ForegroundKeyboardService : MacroService
         {
             foreach (var key in keys)
             {
+                var interval = Random.Next(min, max);
                 new SendInputHelper().AddScancodeDown(key).Execute();
-                DoDelay(Random.Next(min, max));
+                DoDelay(interval);
             }
             foreach (var key in keys.Reverse())
             {
+                var interval = Random.Next(min, max);
                 new SendInputHelper().AddScancodeUp(key).Execute();
-                DoDelay(Random.Next(min, max));
+                DoDelay(interval);
             }
 
             Logger.Debug($"Simulated key combination: {text}.", new { min, max });

@@ -12,7 +12,7 @@ public class BackgroundKeyboardService : MacroService
     private readonly BackgroundLocatingService Locating;
     private readonly RandomEx Random;
 
-    private KeyboardInputOptions DefaultOptions { get; }
+    private readonly KeyboardInputOptions DefaultOptions;
 
     public KeyboardInputMode Mode { get; set; } = KeyboardInputMode.Scancode; // todo: not supported yet
 
@@ -32,7 +32,7 @@ public class BackgroundKeyboardService : MacroService
     {
         //Logger.Debug($"Simulating key press: {{{key}}}.", options);
 
-        var (min, max) = options?.PressTime ?? DefaultOptions?.PressTime ?? (0, 0);
+        var (min, max) = options?.PressDuration ?? DefaultOptions?.PressDuration ?? (0, 0);
         var interval = Random.Next(min, max);
 
         Locating.SendMessage.KeyDown(key);

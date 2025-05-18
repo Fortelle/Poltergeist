@@ -14,7 +14,7 @@ public class BackgroundCapturingService : CapturingProvider
         Locating = locating;
     }
 
-    public override Bitmap DoCapture()
+    protected override Bitmap DoCapture()
     {
         var begintime = DateTime.Now;
 
@@ -25,11 +25,12 @@ public class BackgroundCapturingService : CapturingProvider
         var endtime = DateTime.Now;
         var duration = endtime - begintime;
 
-        Logger.Debug($"Captured an image from background window.", new { hwnd, clientSize = size, duration });
+        Logger.Debug($"Captured an image of the background window.", new { hwnd = (ulong)hwnd, clientSize = size, duration });
+        
         return bmp;
     }
 
-    public override Bitmap DoCapture(Rectangle area)
+    protected override Bitmap DoCapture(Rectangle area)
     {
         using var bmp = DoCapture();
         var bmp2 = BitmapUtil.Crop(bmp, area);

@@ -10,8 +10,8 @@ public class RegionConfig
     public string? ChildClassName { get; set; }
 
     public int Delay { get; set; }
-    public Size OriginSize { get; set; }
-    public Rectangle Cropping { get; set; }
+    public Size? OriginalSize { get; set; }
+    public Rectangle? Cropping { get; set; }
     public ResizeRule Resizable { get; set; }
     public bool BringToFront { get; set; }
     public bool Wildcard { get; set; }

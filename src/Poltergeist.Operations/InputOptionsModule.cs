@@ -9,7 +9,6 @@ namespace Poltergeist.Operations;
 
 public class InputOptionsModule : MacroModule
 {
-    // todo: global options
     public override void OnProcessorConfigure(IConfigurableProcessor processor)
     {
         base.OnProcessorConfigure(processor);
@@ -24,19 +23,20 @@ public class InputOptionsModule : MacroModule
         });
         processor.Services.Configure<MouseInputOptions>(options =>
         {
-            options.ClickTime = (50, 150);
-            options.DoubleClickTime = (80, 110);
+            options.ClickDuration = (50, 150);
+            options.DoubleClickInterval = (80, 110);
             options.Motion = MouseMoveMotion.Jump;
-            options.UnmoveInShape = true;
+            options.KeepUnmovedInShape = true;
             options.PointOffsetRange = 16;
-            options.ShapeDistribution = ShapeDistributionType.Inclination;
+            options.ShapeDistribution = ShapeDistributionType.Central;
             options.VerticalWheelInterval = (50, 150);
-            options.HorizonWheelInterval = (50, 150);
+            options.HorizontalWheelInterval = (50, 150);
         });
         processor.Services.Configure<KeyboardInputOptions>(options =>
         {
-            options.PressTime = (50, 100);
+            options.PressDuration = (50, 100);
             options.PressInterval = (50, 100);
+            options.Mode = KeyboardInputMode.Scancode;
         });
     }
 }

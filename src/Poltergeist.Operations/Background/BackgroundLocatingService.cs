@@ -14,13 +14,26 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
         {
             if (sendMessage is null)
             {
-                throw new InvalidOperationException($"<{nameof(BackgroundLocatingService)}> is currently not available.");
+                throw new Exception("The background window is not located successfully.");
             }
+
             return sendMessage;
         }
     }
 
-    public Size ClientSize { get; set; }
+    private Size? clientSize;
+    public Size ClientSize
+    {
+        get
+        {
+            if (clientSize is null)
+            {
+                throw new Exception("The background window is not located successfully.");
+            }
+
+            return clientSize.Value;
+        }
+    }
 
     public BackgroundLocatingService(MacroProcessor processor) : base(processor)
     {
@@ -28,21 +41,25 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
 
     public bool Locate(RegionConfig config)
     {
+        Logger.Trace($"Trying to find the background window.", config);
+
         var result = TryLocate(config, out var hwnd, out var size);
 
         if (result == LocateResult.Succeeded)
         {
             sendMessage = new SendMessageHelper(hwnd);
-            ClientSize = size;
-            Logger.Debug($"Found requested region.",new { hwnd, ClientSize });
+            clientSize = size;
+            Processor.SessionStorage.Reset("client_size", size);
+            Logger.Trace($"Found the requested window.", new { hwnd = (ulong)hwnd, ClientSize });
 
             return true;
         }
         else
         {
             sendMessage = null;
-            ClientSize = default;
-            Logger.Warn($"Failed to find requested region: {result}.");
+            clientSize = default;
+            Processor.SessionStorage.Remove("client_size");
+            Logger.Trace($"Failed to find the requested window.", new { result });
 
             return false;
         }
@@ -98,7 +115,7 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
                 return LocateResult.NotFound;
             }
 
-            if (config.OriginSize != default && rect.Value.Size != config.OriginSize)
+            if (config.OriginalSize is not null && rect.Value.Size != config.OriginalSize.Value)
             {
                 return LocateResult.SizeNotMatch;
             }

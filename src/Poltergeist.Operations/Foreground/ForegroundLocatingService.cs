@@ -7,12 +7,21 @@ namespace Poltergeist.Operations.Foreground;
 
 public class ForegroundLocatingService : MacroService, ILocatingProvider
 {
-    public Rectangle ClientRegion { get; private set; }
-    public PointF? Scale { get; set; }
+    private Rectangle? clientRegion;
+    public Rectangle ClientRegion
+    {
+        get
+        {
+            if (clientRegion is null)
+            {
+                throw new Exception("The foreground region is not located successfully.");
+            }
 
-    public bool Contains(Point pt) => ClientRegion.Contains(pt);
-    public bool Contains(Rectangle rect) => ClientRegion.Contains(rect);
-    public bool IntersectsWith(Rectangle rect) => ClientRegion.IntersectsWith(rect);
+            return clientRegion.Value;
+        }
+    }
+
+    public PointF? Scale { get; private set; }
 
     public ForegroundLocatingService(MacroProcessor processor) : base(processor)
     {
@@ -20,34 +29,37 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
 
     public bool Locate(RegionConfig config)
     {
+        //Logger.Trace($"Trying to find the foreground region.", config);
+
+        Logger.Trace($"Locating region.", config);
+
         var result = TryLocate(config, out var client, out var scale);
 
         if (result == LocateResult.Succeeded)
         {
-            ClientRegion = client;
+            clientRegion = client;
             Scale = scale;
-            Logger.Debug($"Found requested region.", new { ClientRegion, Scale });
+            Processor.SessionStorage.Reset("client_size", client.Size);
+            //Logger.Trace($"Found the requested region.", new { ClientRegion, Scale });
+            Logger.Trace($"Successfully located region", new { ClientRegion, Scale });
 
             return true;
         }
         else
         {
-            Logger.Warn($"Failed to find requested region: {result}.");
+            clientRegion = null;
+            Scale = null;
+            Processor.SessionStorage.Remove("client_size");
+            //Logger.Trace($"Failed to find the requested region.", new { result });
+            Logger.Trace($"Failed to located region.", new { result });
 
             return false;
         }
     }
 
-    public Rectangle Intersect(Rectangle rect)
-    {
-        var bound = ClientRegion;
-        bound.Intersect(rect);
-        return bound;
-    }
-
     public Point PointToScreen(Point p)
     {
-        if(Scale is null)
+        if (Scale is null)
         {
             return new Point(ClientRegion.X + p.X, ClientRegion.Y + p.Y);
         }
@@ -165,16 +177,16 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
             client = rect.Value;
         }
 
-        if (config.OriginSize != default && client.Size != config.OriginSize)
+        if (config.OriginalSize.HasValue && client.Size != config.OriginalSize)
         {
             switch (config.Resizable)
             {
                 case ResizeRule.Disallow:
                     return LocateResult.SizeNotMatch;
                 case ResizeRule.ConstrainProportion:
-                    if ((double)client.Width / client.Height == (double)config.OriginSize.Width / config.OriginSize.Height)
+                    if ((double)client.Width / client.Height == (double)config.OriginalSize.Value.Width / config.OriginalSize.Value.Height)
                     {
-                        scale = new PointF((float)config.OriginSize.Width / client.Width, (float)config.OriginSize.Height / client.Height);
+                        scale = new PointF((float)config.OriginalSize.Value.Width / client.Width, (float)config.OriginalSize.Value.Height / client.Height);
                     }
                     else
                     {
@@ -182,18 +194,17 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
                     }
                     break;
                 case ResizeRule.AnySize:
-                    scale = new PointF((float)config.OriginSize.Width / client.Width, (float)config.OriginSize.Height / client.Height);
+                    scale = new PointF((float)config.OriginalSize.Value.Width / client.Width, (float)config.OriginalSize.Value.Height / client.Height);
                     break;
             }
         }
-
-        else if (config.Cropping != default)
+        else if (config.Cropping is not null)
         {
             client = new Rectangle(
-                client.X + config.Cropping.X,
-                client.Y + config.Cropping.Y,
-                config.Cropping.Width,
-                config.Cropping.Height
+                client.X + config.Cropping.Value.X,
+                client.Y + config.Cropping.Value.Y,
+                config.Cropping.Value.Width,
+                config.Cropping.Value.Height
             );
         }
 

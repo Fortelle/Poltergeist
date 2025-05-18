@@ -86,6 +86,7 @@ public class WindowHelper
         }
     }
 
+    // todo: try bitblt and dwm
     public static Bitmap Capture(IntPtr hWnd, Size size, uint flags = 0)
     {
         using var nativeGraphics = Graphics.FromHwnd(hWnd);

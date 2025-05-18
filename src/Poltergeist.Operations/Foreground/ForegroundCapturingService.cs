@@ -16,29 +16,30 @@ public class ForegroundCapturingService : CapturingProvider
         Locating = locating;
     }
 
-    public override Bitmap DoCapture()
+    protected override Bitmap DoCapture()
     {
         var clientArea = new Rectangle(Point.Empty, Locating.ClientRegion.Size);
-
-        return DoCapture(clientArea);
-    }
-
-    public override Bitmap DoCapture(Rectangle clientArea)
-    {
-        var begintime = DateTime.Now;
-
         var screenArea = Locating.RectangleToScreen(clientArea);
+
         var bmp = CaptureFromScreen(screenArea);
 
-        var endtime = DateTime.Now;
-        var duration = endtime - begintime;
+        Logger.Debug($"Captured an image from the screen.", new { clientArea, screenArea });
+        
+        return bmp;
+    }
 
-        Logger.Debug($"Captured an image from screen.", new { clientArea, screenArea, duration });
+    protected override Bitmap DoCapture(Rectangle clientArea)
+    {
+        var screenArea = Locating.RectangleToScreen(clientArea);
+
+        var bmp = CaptureFromScreen(screenArea);
+
+        Logger.Debug($"Captured an image from the screen.", new { clientArea, screenArea });
 
         return bmp;
     }
 
-    public static Bitmap CaptureFromScreen(Rectangle screen)
+    private static Bitmap CaptureFromScreen(Rectangle screen)
     {
         var bmp = new Bitmap(screen.Width, screen.Height, PixelFormat.Format32bppRgb);
         using var gra = Graphics.FromImage(bmp);
