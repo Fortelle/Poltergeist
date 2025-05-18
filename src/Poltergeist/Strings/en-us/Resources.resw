@@ -204,4 +204,10 @@
   <data name="TabViewContextFlyout_Close" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="AppSettings_App" xml:space="preserve">
+    <value>App</value>
+  </data>
+  <data name="AppSettings_App_RestorePreviousTabs" xml:space="preserve">
+    <value>Restore previous tabs at startup</value>
+  </data>
 </root>

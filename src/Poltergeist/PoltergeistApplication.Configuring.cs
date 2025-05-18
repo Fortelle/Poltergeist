@@ -4,10 +4,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
@@ -88,6 +88,8 @@ public partial class PoltergeistApplication
         GetService<PluginService>();
         GetService<MacroManager>();
         GetService<PipeService>();
+
+        RestorePreviousTabsHelper.Inject();
     }
 
     protected virtual void ConfigureInstruments(InstrumentManager instrumentManager)

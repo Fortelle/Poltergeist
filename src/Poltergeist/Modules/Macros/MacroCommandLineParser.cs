@@ -1,4 +1,5 @@
 ﻿using Poltergeist.Automations.Processors;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
@@ -58,6 +59,8 @@ public class MacroCommandLineParser : CommandLineParser
             PoltergeistApplication.SingleMacroMode = ShellKey;
             PoltergeistApplication.StartPageKey = "macro:" + ShellKey;
         }
+
+        RestorePreviousTabsHelper.IsEnabled = false;
     }
 
     private void Parse(bool isPassed)

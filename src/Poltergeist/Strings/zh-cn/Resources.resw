@@ -204,4 +204,10 @@
   <data name="TabViewContextFlyout_Close" xml:space="preserve">
     <value>关闭</value>
   </data>
+  <data name="AppSettings_App" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="AppSettings_App_RestorePreviousTabs" xml:space="preserve">
+    <value>启动时恢复上次打开的页面</value>
+  </data>
 </root>
