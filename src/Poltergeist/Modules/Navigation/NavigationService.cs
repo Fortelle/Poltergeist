@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Modules.Events;
 using Poltergeist.UI.Pages;
 
 namespace Poltergeist.Modules.Navigation;
@@ -47,7 +49,7 @@ public class NavigationService : ServiceBase, INavigationService
 
         if (PoltergeistApplication.SingleMacroMode is not null && pageKey != "macro:" + PoltergeistApplication.SingleMacroMode)
         {
-            Logger.Error($"Could not switch to tab page '{pageKey}' in single macro mode."); 
+            Logger.Error($"Could not switch to tab page '{pageKey}' in single macro mode.");
             return false;
         }
 
@@ -93,6 +95,11 @@ public class NavigationService : ServiceBase, INavigationService
             Logger.Trace($"Created tab page '{pageKey}'.");
 
             PoltergeistApplication.GetService<AppEventService>().Raise(new PageCreatedHandler(pageKey));
+        }
+        else if (info.UpdateArguments is not null)
+        {
+            var page = (Page)tab.Content;
+            info.UpdateArguments.Invoke(page, data);
         }
 
         if (TabView.SelectedItem is not TabViewItem tvi || tvi != tab)

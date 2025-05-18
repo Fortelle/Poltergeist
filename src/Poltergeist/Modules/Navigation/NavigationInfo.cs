@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures;
+using Poltergeist.UI.Pages;
 
 namespace Poltergeist.Modules.Navigation;
 
@@ -16,6 +17,7 @@ public class NavigationInfo
     public CreateHeaderCallback? CreateHeader { get; set; }
     public CreateIconCallback? CreateIcon { get; set; }
     public CreateMenuCallback? CreateMenu { get; set; }
+    public UpdateArgumentsCallback? UpdateArguments { get; set; }
 
     public Action? Action { get; set; }
 
@@ -23,4 +25,5 @@ public class NavigationInfo
     public delegate object? CreateHeaderCallback(Page page);
     public delegate IconSource? CreateIconCallback(Page page);
     public delegate MenuItemInfo[]? CreateMenuCallback(Page page);
+    public delegate void UpdateArgumentsCallback(Page page, object? arguments);
 };

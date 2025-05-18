@@ -49,7 +49,7 @@ public static class RestorePreviousTabsHelper
                     if (pageKey.StartsWith("macro:"))
                     {
                         var shellKey = pageKey.Split(':', 2)[1];
-                        if (macroManager.GetShell(shellKey) is null)
+                        if (macroManager.GetShell(shellKey)?.Template is null)
                         {
                             continue;
                         }

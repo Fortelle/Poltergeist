@@ -61,6 +61,12 @@ public class AppSettingsService : ServiceBase
         });
     }
 
+    public void Remove(string key)
+    {
+        Settings.Remove(key);
+        Logger.Trace($"Removed the application settings variable: {key}");
+    }
+
     private void OnAppContentLoading(AppContentLoadingHandler e)
     {
         switch (LoadingException)

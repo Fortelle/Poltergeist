@@ -60,9 +60,12 @@ public class SynchronizableCollection<TModel, TViewModel> : ObservableCollection
                     throw new NotImplementedException();
                 case NotifyCollectionChangedAction.Reset:
                     Clear();
-                    for (var i = 0; i < e.NewItems!.Count; i++)
+                    if (e.NewItems?.Count > 0)
                     {
-                        Add(CreateViewModel((TModel?)e.NewItems![i]));
+                        for (var i = 0; i < e.NewItems.Count; i++)
+                        {
+                            Add(CreateViewModel((TModel?)e.NewItems[i]));
+                        }
                     }
                     break;
             }

@@ -57,6 +57,19 @@ public class DashboardService : MacroService
         return instrument;
     }
 
+    public T GetOrCreate<T>(string key, Action<T>? config = null) where T : InstrumentModel
+    {
+        var instrument = Panel.Instruments.OfType<T>().FirstOrDefault(x => x.Key == key);
+        if (instrument is not null)
+        {
+            return instrument;
+        }
+
+        instrument = Create(config);
+        instrument.Key ??= key;
+        return instrument;
+    }
+
     public void Update<T>(string key, Action<T> action) where T : IInstrumentModel
     {
         var instrument = Get<T>(key);

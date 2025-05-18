@@ -66,7 +66,7 @@ public class RectangleShape : IShape
         return pt.X >= X
             && pt.X <= X + Width
             && pt.Y >= Y
-            && pt.Y <= Y + Width;
+            && pt.Y <= Y + Height;
     }
 
     public void Pan(int x, int y)

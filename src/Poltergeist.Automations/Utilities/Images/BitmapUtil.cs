@@ -15,6 +15,18 @@ public class BitmapUtil
     }
 
 
+    public static Bitmap Enlarge(Bitmap bmpSrc, Size newSize, Color background)
+    {
+        var bmp = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format32bppRgb);
+        using var gra = Graphics.FromImage(bmp);
+        gra.Clear(background);
+        var x = newSize.Width / 2 - bmpSrc.Width / 2;
+        var y = newSize.Height / 2 - bmpSrc.Height / 2;
+        gra.DrawImageUnscaled(bmpSrc, x, y);
+        return bmp;
+    }
+
+
     public static Bitmap Resize(Bitmap oldImage, Size newSize)
     {
         var newBmp = new Bitmap(newSize.Width, newSize.Height);

@@ -5,6 +5,7 @@ using Windows.Storage.Pickers;
 
 namespace Poltergeist.UI.Controls.Options;
 
+// bug: https://github.com/files-community/Files/issues/11440
 [ObservableObject]
 public sealed partial class PickerOptionControl : UserControl
 {

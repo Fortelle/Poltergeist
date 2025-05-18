@@ -146,6 +146,13 @@ public class ParameterDefinitionValueCollection
         return Get(definition.Key);
     }
 
+    public void Remove(string key)
+    {
+        Definitions.Remove(key);
+
+        HasChanged = true;
+    }
+
     public void Load(string path)
     {
         FilePath = path;
