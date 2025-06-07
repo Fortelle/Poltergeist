@@ -11,11 +11,11 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
 {
     public string ProcessId { get; }
 
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public DateTime StartTime { get; private set; }
+    public DateTime EndTime { get; private set; }
 
-    public ServiceCollection? ServiceCollection { get; set; }
-    public ServiceProvider? ServiceProvider { get; set; }
+    public ServiceCollection? ServiceCollection { get; private set; }
+    public ServiceProvider? ServiceProvider { get; private set; }
     ServiceCollection IConfigurableProcessor.Services => ServiceCollection!;
 
     /// <summary>
@@ -50,7 +50,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     /// </summary>
     public ParameterValueCollection OutputStorage { get; } = new();
 
-    public LaunchReason Reason { get; set; }
+    public LaunchReason Reason { get; private set; }
 
     public string? Comment { get; set; }
 
@@ -72,8 +72,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
 
         Macro.Initialize();
 
-        var invalidationMessage = Macro.CheckValidity();
-        if (invalidationMessage is not null)
+        if (!Macro.CheckValidity(out var invalidationMessage))
         {
             Exception = new Exception(invalidationMessage);
             Status = ProcessorStatus.Invalid;

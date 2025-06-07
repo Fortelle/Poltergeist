@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Structures.Parameters;
+﻿using System.Diagnostics.CodeAnalysis;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -12,5 +13,5 @@ public interface IFrontBackMacro : IMacroBase
     public MacroStatus Status { get; }
 
     public void Initialize();
-    public string? CheckValidity();
+    public bool CheckValidity([MaybeNullWhen(false)] out string invalidationMessage);
 }

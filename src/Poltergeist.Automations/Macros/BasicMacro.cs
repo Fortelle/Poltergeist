@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
@@ -108,23 +109,25 @@ public class BasicMacro : MacroBase
         });
     }
 
-    protected override string? OnValidating()
+    protected override bool OnValidating([MaybeNullWhen(false)] out string invalidationMessage)
     {
-        if (base.OnValidating() is string baseValue)
+        if (!base.OnValidating(out invalidationMessage))
         {
-            return baseValue;
+            return false;
         }
 
         if (Validate?.Invoke() == false)
         {
-            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_Failed");
+            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_Failed");
+            return false;
         }
 
         if (Execute is null && ExecuteAsync is null)
         {
-            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
+            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
+            return false;
         }
         
-        return null;
+        return true;
     }
 }

@@ -34,7 +34,7 @@ public class ActionService
                 ApplicationHelper.Exit();
                 break;
             case CompletionAction.RestoreApplication:
-                ApplicationHelper.Restore();
+                ApplicationHelper.BringToFront();
                 break;
         }
     }

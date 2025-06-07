@@ -48,6 +48,9 @@ public class CmdHost : IDisposable
         CmdProcess.BeginOutputReadLine();
         CmdProcess.BeginErrorReadLine();
         CmdProcess.StandardInput.WriteLine($"echo {BeginToken}");
+        CmdProcess.StandardInput.Flush();
+
+        AutoEvent.WaitOne();
     }
 
     public string Execute(string command)

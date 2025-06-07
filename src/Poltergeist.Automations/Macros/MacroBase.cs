@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Principal;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
@@ -65,7 +66,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
         return (T)this;
     }
 
-    protected virtual string? OnValidating()
+    protected virtual bool OnValidating([MaybeNullWhen(false)] out string invalidationMessage)
     {
         if (Status == MacroStatus.Uninitialized)
         {
@@ -74,7 +75,8 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
         if (Exception is not null)
         {
-            return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_ExceptionOccurred", Exception.Message);
+            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_ExceptionOccurred", Exception.Message);
+            return false;
         }
 
         if (RequiresAdmin)
@@ -84,11 +86,13 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
             var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
             if (!isAdmin)
             {
-                return ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
+                invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
+                return false;
             }
         }
 
-        return null;
+        invalidationMessage = null;
+        return true;
     }
 
     void IFrontBackMacro.Initialize()
@@ -142,9 +146,9 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
         }
     }
 
-    string? IFrontBackMacro.CheckValidity()
+    bool IFrontBackMacro.CheckValidity([MaybeNullWhen(false)] out string invalidationMessage)
     {
-        return OnValidating();
+        return OnValidating(out invalidationMessage);
     }
 
     void IBackMacro.Configure(IConfigurableProcessor processor) => OnConfigure(processor);

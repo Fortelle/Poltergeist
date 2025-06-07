@@ -9,8 +9,9 @@ public class UnrunnableMacro : MacroBase
         IsSingleton = true;
     }
 
-    protected override string? OnValidating()
+    protected override bool OnValidating(out string invalidationMessage)
     {
-        return $"This macro is unable to run.";
+        invalidationMessage = $"This macro is unable to run.";
+        return false;
     }
 }

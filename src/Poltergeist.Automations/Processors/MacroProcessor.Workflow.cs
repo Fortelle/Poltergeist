@@ -35,28 +35,28 @@ public partial class MacroProcessor
 
     private void InternalExecute()
     {
-            try
-            {
-                Launch();
+        try
+        {
+            Launch();
 
-                Process();
-            }
-            catch (Exception exception)
-            {
-                Exception = exception;
-                Status = ProcessorStatus.Crushed;
-            }
-            finally
-            {
-                Finally();
-            }
+            Process();
+        }
+        catch (Exception exception)
+        {
+            Exception = exception;
+            Status = ProcessorStatus.Crushed;
+        }
+        finally
+        {
+            Finally();
+        }
     }
 
     private void Launch()
     {
         if (Status != ProcessorStatus.Idle)
         {
-            throw new Exception("The macro is not able to run.");
+            throw new Exception("The macro is not able to run.", Exception);
         }
 
         if (Exception is not null)
@@ -156,7 +156,6 @@ public partial class MacroProcessor
         static string[] ToLines(ParameterValueCollection collection)
         {
             return collection
-                .ToDictionary()
                 .OrderBy(pv => pv.Key)
                 .Where(pv => pv.Value is not null)
                 .Select(pv => $"- {pv.Key}({pv.Value!.GetType().Name}) = {pv.Value}")
@@ -521,6 +520,13 @@ public partial class MacroProcessor
         {
             stepResult = WorkflowStepResult.Interrupted;
             Logger?.Trace($"The stop request has been performed.");
+        }
+        catch (TargetInvocationException exception)
+        {
+            stepResult = WorkflowStepResult.Error;
+            Exception = exception.InnerException;
+            Status = ProcessorStatus.Faulting;
+            Logger?.Error(exception.InnerException!);
         }
         catch (Exception exception)
         {

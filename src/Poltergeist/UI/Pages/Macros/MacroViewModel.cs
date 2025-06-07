@@ -68,7 +68,10 @@ public partial class MacroViewModel : ObservableRecipient
 
         shell.Load();
 
-        InvalidationMessage = shell.Template?.CheckValidity();
+        if (shell.Template?.CheckValidity(out var invalidationMessage) == false)
+        {
+            InvalidationMessage = invalidationMessage;
+        }
 
         if (shell.UserOptions is not null)
         {
