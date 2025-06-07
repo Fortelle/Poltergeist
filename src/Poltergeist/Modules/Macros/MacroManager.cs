@@ -344,7 +344,7 @@ public class MacroManager : ServiceBase
 
         Logger.Info($"Macro '{processor.Macro.Key}' started.");
 
-        processor.Run();
+        processor.Start();
     }
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
@@ -358,21 +358,21 @@ public class MacroManager : ServiceBase
 
         PoltergeistApplication.TryEnqueue(() =>
         {
-        if (!processor.IsIncognitoMode())
-        {
-                var shellKey = processor.Environments.GetValueOrDefault<string>("shell_key");
-            if (shellKey is not null)
+            if (!processor.IsIncognitoMode())
             {
-                var shell = GetShell(shellKey)!;
-                UpdateProperties(shell, properties =>
+                var shellKey = processor.Environments.GetValueOrDefault<string>("shell_key");
+                if (shellKey is not null)
                 {
-                    properties.LastRunTime = processor.Statistics.GetValueOrDefault<DateTime>("last_run_time");
-                    properties.RunCount = processor.Statistics.GetValueOrDefault<int>("total_run_count");
-                });
+                    var shell = GetShell(shellKey)!;
+                    UpdateProperties(shell, properties =>
+                    {
+                        properties.LastRunTime = processor.Statistics.GetValueOrDefault<DateTime>("last_run_time");
+                        properties.RunCount = processor.Statistics.GetValueOrDefault<int>("total_run_count");
+                    });
+                }
             }
-        }
 
-        PoltergeistApplication.GetService<AppEventService>().Raise(new MacroRunningHandler(processor));
+            PoltergeistApplication.GetService<AppEventService>().Raise(new MacroRunningHandler(processor));
         });
     }
 
@@ -436,7 +436,7 @@ public class MacroManager : ServiceBase
         }
 
         PoltergeistApplication.GetService<AppEventService>().Raise<MacroCompletedHandler>(new(shell));
-       
+
         Logger.Info($"Macro '{processor.Macro.Key}' ended.");
     }
 

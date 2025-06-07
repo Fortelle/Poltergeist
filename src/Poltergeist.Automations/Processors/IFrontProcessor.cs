@@ -11,7 +11,9 @@ public interface IFrontProcessor : IProcessor, IDisposable
     public DateTime StartTime { get; }
     public DateTime EndTime { get; }
 
-    public void Run();
+    public void Start();
+    public void Execute();
+    public Task ExecuteAsync();
     public void Stop(AbortReason reason);
     public Task Pause(PauseReason reason);
     public void Terminate();

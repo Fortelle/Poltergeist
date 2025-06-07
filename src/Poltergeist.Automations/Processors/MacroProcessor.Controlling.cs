@@ -13,9 +13,62 @@ public partial class MacroProcessor
     /// <summary>
     /// Runs the processor in a new thread.
     /// </summary>
-    public void Run()
+    /// <remarks>
+    /// You can subscribe to the <see cref="Completed"/> event to get notified when the processor is completed.
+    /// </remarks>
+    public void Start()
     {
-        InternalRun();
+        if (Status != ProcessorStatus.Idle)
+        {
+            throw new InvalidOperationException();
+        }
+
+        InternalStart();
+    }
+
+    /// <summary>
+    /// Executes the processor synchronously. Blocks the current thread until the processor is completed.
+    /// </summary>
+    public void Execute()
+    {
+        if (Status != ProcessorStatus.Idle)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var mre = new ManualResetEvent(false);
+
+        Completed += (_, _) =>
+        {
+            mre.Set();
+        };
+
+        InternalExecute();
+
+        mre.WaitOne();
+    }
+
+    /// <summary>
+    /// Executes the processor asynchronously.
+    /// </summary>
+    /// <returns></returns>
+    public async Task ExecuteAsync()
+    {
+        if (Status != ProcessorStatus.Idle)
+        {
+            throw new InvalidOperationException();
+        }
+
+        var tcs = new TaskCompletionSource();
+
+        Completed += (_, _) =>
+        {
+            tcs.SetResult();
+        };
+
+        InternalExecute();
+
+        await tcs.Task.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -86,25 +139,30 @@ public partial class MacroProcessor
 
         Status = ProcessorStatus.Stopping;
 
-        if (CanAbort)
-        {
-            Cancellation?.Cancel();
+        Cancellation?.Cancel();
 
+        if (CanInterrupt)
+        {
             WorkflowThread?.Interrupt();
         }
+
+        IsCancelled = true;
     }
 
     /// <summary>
-    /// Forces to terminate the processor.
+    /// Forces to terminate the processor that is run via the <see cref="Start"/> method.
     /// </summary>
+    /// <remarks>
+    /// This method terminates the processor brutally. Beware that the resources are not guaranteed to be released.
+    /// </remarks>
     public void Terminate()
     {
-        Logger?.Trace("Received a termination request.");
-
         if (ProcessThread is null)
         {
-            throw new Exception("The processor is not running.");
+            throw new InvalidOperationException("The processor is not running.");
         }
+
+        Logger?.Trace("Received a termination request.");
 
         Status = ProcessorStatus.Terminating;
 

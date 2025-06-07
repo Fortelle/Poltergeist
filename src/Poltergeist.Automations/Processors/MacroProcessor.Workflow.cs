@@ -18,17 +18,23 @@ public partial class MacroProcessor
 {
     private readonly List<WorkflowStep> Steps = new();
 
-    private bool CanAbort { get; set; }
-
     private List<string> Footsteps { get; } = new();
 
     private Thread? ProcessThread;
 
     private Thread? WorkflowThread;
 
-    private void InternalRun()
+    private bool CanInterrupt;
+
+    private void InternalStart()
     {
-        ProcessThread = new Thread(() => {
+        ProcessThread = new Thread(InternalExecute);
+        ProcessThread.SetApartmentState(ApartmentState.STA);
+        ProcessThread.Start();
+    }
+
+    private void InternalExecute()
+    {
             try
             {
                 Launch();
@@ -44,9 +50,6 @@ public partial class MacroProcessor
             {
                 Finally();
             }
-        });
-        ProcessThread.SetApartmentState(ApartmentState.STA);
-        ProcessThread.Start();
     }
 
     private void Launch()
@@ -509,7 +512,7 @@ public partial class MacroProcessor
         };
 
         WorkflowStepResult stepResult;
-        CanAbort = step.IsInterruptable;
+        CanInterrupt = step.IsInterruptable;
         try
         {
             stepResult = step.Action.Invoke(stepArguments) ? WorkflowStepResult.Success : WorkflowStepResult.Failed;
@@ -526,7 +529,7 @@ public partial class MacroProcessor
             Status = ProcessorStatus.Faulting;
             Logger?.Error(exception);
         }
-        CanAbort = false;
+        CanInterrupt = false;
 
         var nextStepId = stepResult switch
         {
