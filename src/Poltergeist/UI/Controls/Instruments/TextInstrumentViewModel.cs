@@ -12,11 +12,11 @@ public class TextInstrumentViewModel : IInstrumentViewModel
 {
     public SolidColorBrush? Background { get; set; }
     public SolidColorBrush? Foreground { get; set; }
-    public RichTextBlock? RichTextBlock { get; set; }
     public string? Title { get; set; }
 
     private readonly Dictionary<Color, SolidColorBrush> Brushes = new();
     private readonly TextInstrument Model;
+    private RichTextBlock? RichTextBlock;
 
     public TextInstrumentViewModel(TextInstrument model)
     {
@@ -33,8 +33,25 @@ public class TextInstrumentViewModel : IInstrumentViewModel
         {
             Foreground = new SolidColorBrush(model.ForegroundColor.Value);
         }
+    }
 
-        model.TextCollection.CollectionChanged += TextCollection_CollectionChanged;
+    public void Bind(RichTextBlock rtb)
+    {
+        RichTextBlock = rtb;
+
+        RichTextBlock.Blocks.Clear();
+
+        App.TryEnqueue(() =>
+        {
+            lock (Model)
+            {
+                foreach (var line in Model.TextCollection)
+                {
+                    PushLine(line);
+                }
+            }
+        });
+        Model.TextCollection.CollectionChanged += TextCollection_CollectionChanged;
     }
 
     private void TextCollection_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -44,25 +61,25 @@ public class TextInstrumentViewModel : IInstrumentViewModel
             return;
         }
 
-        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add && e.NewItems?.Count > 0)
         {
-            foreach (var line in e.NewItems!.OfType<TextLine>())
+            App.TryEnqueue(() =>
             {
-                PushLine(line);
-            }
+                foreach (var line in e.NewItems.OfType<TextLine>())
+                {
+                    PushLine(line);
+                }
+            });
         }
     }
 
-    public void Refresh()
+    private void PushLine(TextLine line)
     {
-        foreach (var line in Model.TextCollection)
+        if (RichTextBlock is null)
         {
-            PushLine(line);
+            throw new InvalidOperationException();
         }
-    }
 
-    public void PushLine(TextLine line)
-    {
         var run = new Run
         {
             Text = line.Text
@@ -83,7 +100,7 @@ public class TextInstrumentViewModel : IInstrumentViewModel
         var block = new Paragraph();
         block.Inlines.Add(run);
 
-        RichTextBlock!.Blocks.Add(block);
+        RichTextBlock.Blocks.Add(block);
     }
 
     private SolidColorBrush GetBrush(Color color)

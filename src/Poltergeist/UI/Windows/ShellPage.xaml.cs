@@ -135,27 +135,33 @@ public sealed partial class ShellPage : Page
 
     private void OnMacroCollectionChanged(MacroCollectionChangedHandler handler)
     {
-        RefreshHeaderMenu();
+        App.TryEnqueue(() =>
+        {
+            RefreshHeaderMenu();
+        });
     }
 
     private void OnMacroPropertyChanged(MacroPropertyChangedHandler handler)
     {
-        var pageKey = "macro:" + handler.Shell.ShellKey;
-        var nvi = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == pageKey);
-        if (nvi is null)
+        App.TryEnqueue(() =>
         {
-            return;
-        }
-        
-        nvi.Content = handler.Shell.Title;
-        if (handler.Shell.Icon is not null)
-        {
-            nvi.Icon = new IconInfo(handler.Shell.Icon).ToIconElement();
-        }
-        else
-        {
-            nvi.Icon = new IconInfo(MacroShell.DefaultIconUri).ToIconElement();
-        }
+            var pageKey = "macro:" + handler.Shell.ShellKey;
+            var nvi = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == pageKey);
+            if (nvi is null)
+            {
+                return;
+            }
+
+            nvi.Content = handler.Shell.Title;
+            if (handler.Shell.Icon is not null)
+            {
+                nvi.Icon = new IconInfo(handler.Shell.Icon).ToIconElement();
+            }
+            else
+            {
+                nvi.Icon = new IconInfo(MacroShell.DefaultIconUri).ToIconElement();
+            }
+        });
     }
 
     private void SelectMenu(string pageKey)

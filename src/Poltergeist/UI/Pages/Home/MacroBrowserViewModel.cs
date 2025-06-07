@@ -113,12 +113,18 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
 
     private void OnMacroPropertyChanged(MacroPropertyChangedHandler handler)
     {
-        RefreshMacroList();
+        App.TryEnqueue(() =>
+        {
+            RefreshMacroList();
+        });
     }
 
     private void MacroCollectionChanged(MacroCollectionChangedHandler handler)
     {
-        RefreshMacroList();
+        App.TryEnqueue(() =>
+        {
+            RefreshMacroList();
+        });
     }
 
     protected virtual void Dispose(bool disposing)

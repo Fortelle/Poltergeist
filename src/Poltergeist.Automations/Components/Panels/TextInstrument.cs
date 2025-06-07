@@ -23,7 +23,7 @@ public class TextInstrument : InstrumentModel
 
     public void WriteLines(params TextLine[] lines)
     {
-        Processor.RaiseAction(() =>
+        lock (this)
         {
             foreach (var line in lines)
             {
@@ -35,7 +35,7 @@ public class TextInstrument : InstrumentModel
 
                 TextCollection.Add(line);
             }
-        });
+        }
     }
 
     private static void ApplyTemplate(TextLine item, TextLine template)

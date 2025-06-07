@@ -15,7 +15,6 @@ public interface IFrontProcessor : IProcessor, IDisposable
     public void Stop(AbortReason reason);
     public Task Pause(PauseReason reason);
     public void Terminate();
-    public void RaiseAction(Action action);
     public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
     public void ReceiveMessage(Dictionary<string, string> paramaters);
     public void Resume();

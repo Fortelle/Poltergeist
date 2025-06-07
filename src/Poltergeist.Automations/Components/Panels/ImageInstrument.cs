@@ -18,19 +18,13 @@ public class ImageInstrument : InstrumentModel
     public void Add(ImageInstrumentItem item)
     {
         Keys.Add(string.Empty);
-        Processor.RaiseAction(() =>
-        {
-            Items.Add(item);
-        });
+        Items.Add(item);
     }
 
     public void Add(string key, ImageInstrumentItem item)
     {
         Keys.Add(key);
-        Processor.RaiseAction(() =>
-        {
-            Items.Add(item);
-        });
+        Items.Add(item);
     }
 
     public void Update(int index, ImageInstrumentItem item)
@@ -41,10 +35,7 @@ public class ImageInstrument : InstrumentModel
         }
         else if (index < Items.Count)
         {
-            Processor.RaiseAction(() =>
-            {
-                Items[index] = item;
-            });
+            Items[index] = item;
         }
     }
 
@@ -94,10 +85,7 @@ public class ImageInstrument : InstrumentModel
     public void Clear()
     {
         Keys.Clear();
-        Processor.RaiseAction(() =>
-        {
-            Items.Clear();
-        });
+        Items.Clear();
     }
 
 }

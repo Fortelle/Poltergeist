@@ -356,6 +356,8 @@ public class MacroManager : ServiceBase
 
         processor.Launched -= Processor_Launched;
 
+        PoltergeistApplication.TryEnqueue(() =>
+        {
         if (!processor.IsIncognitoMode())
         {
                 var shellKey = processor.Environments.GetValueOrDefault<string>("shell_key");
@@ -371,6 +373,7 @@ public class MacroManager : ServiceBase
         }
 
         PoltergeistApplication.GetService<AppEventService>().Raise(new MacroRunningHandler(processor));
+        });
     }
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)

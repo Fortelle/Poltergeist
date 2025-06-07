@@ -12,8 +12,7 @@ public partial class TextInstrumentView : UserControl
 
         InitializeComponent();
 
-        viewModel.RichTextBlock = TextPanelBox;
-        viewModel.Refresh();
+        viewModel.Bind(TextPanelBox);
     }
 
 }

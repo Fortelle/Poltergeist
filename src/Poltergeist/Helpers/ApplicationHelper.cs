@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Poltergeist.Automations.Utilities.Windows;
+using Poltergeist.Modules.App;
 
 namespace Poltergeist.Helpers;
 
@@ -7,7 +8,10 @@ public static class ApplicationHelper
 {
     public static void Exit()
     {
-        Application.Current.Exit();
+        App.TryEnqueue(() =>
+        {
+            Application.Current.Exit();
+        });
     }
 
     public static void Minimize()

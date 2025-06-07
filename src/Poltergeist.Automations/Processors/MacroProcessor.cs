@@ -63,8 +63,6 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     IUserMacro IPreparableProcessor.Macro => (IUserMacro)Macro;
     IFrontMacro IFrontProcessor.Macro => (IFrontMacro)Macro;
 
-    private readonly SynchronizationContext? OriginalContext = SynchronizationContext.Current;
-
     private LoggerWrapper? Logger;
 
     public MacroProcessor(MacroBase macro)

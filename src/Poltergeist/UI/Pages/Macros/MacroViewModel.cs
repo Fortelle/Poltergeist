@@ -174,7 +174,7 @@ public partial class MacroViewModel : ObservableRecipient
         Processor.PanelCreated += Processor_PanelCreated;
         Processor.Interacting += Processor_Interacting;
         App.GetService<AppEventService>().Subscribe<MacroCompletedHandler>(OnMacroCompleted, once: true);
-
+        
         Duration = default;
 
         try
@@ -215,28 +215,28 @@ public partial class MacroViewModel : ObservableRecipient
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        var macroManager = App.GetService<MacroManager>();
-
-        if (e.CompletionAction != CompletionAction.None)
+        App.TryEnqueue(() =>
         {
-            App.GetService<AppEventService>().Subscribe<MacroCompletedHandler>(_ =>
+            var macroManager = App.GetService<MacroManager>();
+
+            if (e.CompletionAction != CompletionAction.None)
             {
-                Task.Delay(1000).ContinueWith(_ =>
+                App.GetService<AppEventService>().Subscribe<MacroCompletedHandler>(_ =>
                 {
-                    App.TryEnqueue(() =>
+                    Task.Delay(1000).ContinueWith(_ =>
                     {
                         App.GetService<ActionService>().Execute(e.CompletionAction);
                     });
                 });
-            });
-        }
+            }
 
-        if (e.Exception is not null)
-        {
-            ExceptionMessage = e.Exception.Message;
-        }
+            if (e.Exception is not null)
+            {
+                ExceptionMessage = e.Exception.Message;
+            }
 
-        ReleaseProcessor();
+            ReleaseProcessor();
+        });
     }
 
     private void ReleaseProcessor()
@@ -262,27 +262,34 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
-        IsRunning = false;
-
-        if (Timer is not null)
+        App.TryEnqueue(() =>
         {
-            Timer.Stop();
-            Timer.Tick -= Timer_Tick;
-            Timer = null;
-        }
+            IsRunning = false;
 
-        Refresh();
+            if (Timer is not null)
+            {
+                Timer.Stop();
+                Timer.Tick -= Timer_Tick;
+                Timer = null;
+            }
+
+            Refresh();
+        });
     }
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
-        ExceptionMessage = null;
-        Timer = new()
+        App.TryEnqueue(() =>
         {
-            Interval = TimeSpan.FromSeconds(1),
-        };
-        Timer.Tick += Timer_Tick;
-        Timer.Start();
+            ExceptionMessage = null;
+
+            Timer = new()
+            {
+                Interval = TimeSpan.FromSeconds(1),
+            };
+            Timer.Tick += Timer_Tick;
+            Timer.Start();
+        });
     }
 
     private void Timer_Tick(object? sender, object e)
@@ -292,33 +299,36 @@ public partial class MacroViewModel : ObservableRecipient
 
     private void Processor_PanelCreated(object? sender, PanelCreatedEventArgs e)
     {
-        var panelVM = new PanelViewModel()
+        App.TryEnqueue(() =>
         {
-            Key = e.Item.Key,
-            Header = e.Item.Header,
-            Instruments = new(e.Item.Instruments, ModelToViewModel, App.MainWindow.DispatcherQueue)
+            var panelVM = new PanelViewModel()
             {
-                IsFilled = e.Item.IsFilled,
-            },
-        };
+                Key = e.Item.Key,
+                Header = e.Item.Header,
+                Instruments = new(e.Item.Instruments, ModelToViewModel, App.MainWindow.DispatcherQueue)
+                {
+                    IsFilled = e.Item.IsFilled,
+                },
+            };
 
-        var tabitem = Panels.FirstOrDefault(x => x.Key == e.Item.Key);
-        if (tabitem is not null)
-        {
-            var index = Panels.IndexOf(tabitem);
-            Panels[index] = panelVM;
-        }
-        else
-        {
-            if (e.Item.ToLeft)
+            var tabitem = Panels.FirstOrDefault(x => x.Key == e.Item.Key);
+            if (tabitem is not null)
             {
-                Panels.Insert(0, panelVM);
+                var index = Panels.IndexOf(tabitem);
+                Panels[index] = panelVM;
             }
             else
             {
-                Panels.Add(panelVM);
+                if (e.Item.ToLeft)
+                {
+                    Panels.Insert(0, panelVM);
+                }
+                else
+                {
+                    Panels.Add(panelVM);
+                }
             }
-        }
+        });
     }
 
     private IInstrumentViewModel? ModelToViewModel(IInstrumentModel? model)
@@ -337,15 +347,19 @@ public partial class MacroViewModel : ObservableRecipient
 
     private void Processor_Interacting(object? sender, InteractingEventArgs e)
     {
-        switch (e.Model)
+        PoltergeistApplication.TryEnqueue(() =>
         {
-            case TipModel tipModel:
-                tipModel.Title = string.IsNullOrEmpty(tipModel.Title) ? Shell.Title : $"{tipModel.Title} ({Shell.Title})";
-                break;
-            case DialogModel dialogModel:
-                dialogModel.Title = string.IsNullOrEmpty(dialogModel.Title) ? Shell.Title : $"{dialogModel.Title} ({Shell.Title})";
-                break;
-        }
-        _ = InteractionHelper.Interact(e.Model);
+            switch (e.Model)
+            {
+                case TipModel tipModel:
+                    tipModel.Title = string.IsNullOrEmpty(tipModel.Title) ? Shell.Title : $"{tipModel.Title} ({Shell.Title})";
+                    break;
+                case DialogModel dialogModel:
+                    dialogModel.Title = string.IsNullOrEmpty(dialogModel.Title) ? Shell.Title : $"{dialogModel.Title} ({Shell.Title})";
+                    break;
+            }
+
+            _ = InteractionHelper.Interact(e.Model);
+        });
     }
 }

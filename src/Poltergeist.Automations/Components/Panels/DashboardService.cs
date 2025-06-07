@@ -74,24 +74,18 @@ public class DashboardService : MacroService
     {
         var instrument = Get<T>(key);
 
-        Processor.RaiseAction(() =>
-        {
-            action(instrument);
-        });
+        action(instrument);
     }
 
     public void Update<T>(Action<T> action) where T : IInstrumentModel
     {
         var instrument = Panel.Instruments.OfType<T>().FirstOrDefault();
-        if(instrument is null)
+        if (instrument is null)
         {
             throw new ArgumentException($"The panel type <{typeof(T)}> does not exist.");
         }
 
-        Processor.RaiseAction(() =>
-        {
-            action(instrument);
-        });
+        action(instrument);
     }
 
 }

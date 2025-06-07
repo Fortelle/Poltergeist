@@ -12,32 +12,22 @@ public sealed partial class MacroProcessor
 
     public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs)
     {
-        MulticastDelegate? multicastDelegate = type switch
+        switch (type)
         {
-            ProcessorEvent.Launched => Launched,
-            ProcessorEvent.Completed => Completed,
-            ProcessorEvent.PanelCreated => PanelCreated,
-            ProcessorEvent.Interacting => Interacting,
-            _ => throw new NotSupportedException(),
-        };
-        if (multicastDelegate is null)
-        {
-            return;
+            case ProcessorEvent.Launched:
+                Launched?.Invoke(this, (ProcessorLaunchedEventArgs)eventArgs);
+                break;
+            case ProcessorEvent.Completed:
+                Completed?.Invoke(this, (ProcessorCompletedEventArgs)eventArgs);
+                break;
+            case ProcessorEvent.PanelCreated:
+                PanelCreated?.Invoke(this, (PanelCreatedEventArgs)eventArgs);
+                break;
+            case ProcessorEvent.Interacting:
+                Interacting?.Invoke(this, (InteractingEventArgs)eventArgs);
+                break;
+            default:
+                throw new NotSupportedException();
         }
-
-        var handlerArgs = new object[] { this, eventArgs };
-
-        OriginalContext!.Post(d =>
-        {
-            multicastDelegate?.DynamicInvoke(handlerArgs);
-        }, null);
-    }
-
-    public void RaiseAction(Action action)
-    {
-        OriginalContext!.Post(d =>
-        {
-            action.DynamicInvoke();
-        }, null);
     }
 }

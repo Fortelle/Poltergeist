@@ -84,10 +84,7 @@ public abstract class GridInstrument<T> : InstrumentModel, IGridInstrumentModel
         if (index == -1 || index >= Buffer.Count)
         {
             Buffer.Add(item);
-            Processor.RaiseAction(() =>
-            {
-                Items.Add(item);
-            });
+            Items.Add(item);
         }
         else
         {
@@ -97,10 +94,7 @@ public abstract class GridInstrument<T> : InstrumentModel, IGridInstrumentModel
             }
 
             Buffer[index] = item;
-            Processor.RaiseAction(() =>
-            {
-                Items[index] = item;
-            });
+            Items[index] = item;
         }
 
     }
