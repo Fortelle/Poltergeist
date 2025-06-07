@@ -38,7 +38,7 @@ public class EmulatorDetectionModule : MacroModule
     {
         base.OnProcessorPrepare(processor);
 
-        var emulator = processor.Options.Get<string>(ConfigKey);
+        var emulator = processor.Options.GetValueOrDefault<string>(ConfigKey);
         if (string.IsNullOrEmpty(emulator) || emulator == "Custom")
         {
         }
@@ -84,11 +84,11 @@ public class EmulatorDetectionModule : MacroModule
             return false;
         }
 
-        processor.Options.Reset("emulator.exepath", emulatorpath);
-        processor.Options.Reset(AdbService.IpAddressKey, @"127.0.0.1:5037");
-        processor.Options.Reset(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
+        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:5037");
+        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
 
-        processor.SessionStorage.Reset("window_region_config", new RegionConfig()
+        processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
             ClassName = "Qt653QWindowIcon",
             ChildClassName = "subWin"
@@ -123,11 +123,11 @@ public class EmulatorDetectionModule : MacroModule
             return false;
         }
 
-        processor.Options.Reset("emulator.exepath", emulatorpath);
-        processor.Options.Reset(AdbService.IpAddressKey, @"127.0.0.1:5555");
-        processor.Options.Reset(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
+        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:5555");
+        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
 
-        processor.SessionStorage.Reset("window_region_config", new RegionConfig()
+        processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
             WindowName = "BlueStacks App Player",
             ClassName = "Qt672QWindowIcon",
@@ -163,11 +163,11 @@ public class EmulatorDetectionModule : MacroModule
             return false;
         }
 
-        processor.Options.Reset("emulator.exepath", emulatorpath);
-        processor.Options.Reset(AdbService.IpAddressKey, @"127.0.0.1:16384");
-        processor.Options.Reset(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
+        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:16384");
+        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
 
-        processor.SessionStorage.Reset("window_region_config", new RegionConfig()
+        processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
             ClassName = "LDPlayerMainFrame",
             ChildClassName = "subWin"
@@ -202,11 +202,11 @@ public class EmulatorDetectionModule : MacroModule
             return false;
         }
 
-        processor.Options.Reset("emulator.exepath", emulatorpath);
-        processor.Options.Reset(AdbService.IpAddressKey, @"127.0.0.1:16384");
-        processor.Options.Reset(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
+        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:16384");
+        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
 
-        processor.SessionStorage.Reset("window_region_config", new RegionConfig()
+        processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
             ClassName = "Qt5156QWindowIcon",
             ChildClassName = "nemuwin"
@@ -241,11 +241,11 @@ public class EmulatorDetectionModule : MacroModule
             return false;
         }
 
-        processor.Options.Reset("emulator.exepath", emulatorpath);
-        processor.Options.Reset(AdbService.IpAddressKey, @"127.0.0.1:62001");
-        processor.Options.Reset(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
+        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:62001");
+        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
 
-        processor.SessionStorage.Reset("window_region_config", new RegionConfig()
+        processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
             ClassName = "Qt5QWindowIcon",
             ChildClassName = "subWin"

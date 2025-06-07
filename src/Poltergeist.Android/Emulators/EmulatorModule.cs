@@ -78,8 +78,8 @@ public class EmulatorModule : MacroModule
         processor.Services.AddSingleton<DistributionService>();
         processor.Services.AddSingleton<EmulatorService>();
 
-        var capturingMode = processor.Options.Get<EmulatorOperationMode>(CapturingModeKey);
-        var inputMode = processor.Options.Get<EmulatorOperationMode>(InputModeKey);
+        var capturingMode = processor.Options.GetValueOrDefault<EmulatorOperationMode>(CapturingModeKey);
+        var inputMode = processor.Options.GetValueOrDefault<EmulatorOperationMode>(InputModeKey);
 
         if (inputMode == EmulatorOperationMode.Foreground || capturingMode == EmulatorOperationMode.Foreground)
         {
@@ -139,9 +139,8 @@ public class EmulatorModule : MacroModule
     {
         base.OnProcessorPrepare(processor);
 
-        var config = processor.Macro.Storage.Get<RegionConfig>();
-        if (config != null && !processor.SessionStorage.Contains("window_region_config")) {
-            processor.SessionStorage.Add("window_region_config", config);
+        if (processor.Macro.ExtraData.TryGetValue("window_region_config", out RegionConfig config)) {
+            processor.SessionStorage.TryAdd("window_region_config", config);
         }
     }
 

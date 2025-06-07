@@ -29,7 +29,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
     public List<MacroAction> Actions { get; } = new();
     public List<MacroModule> Modules { get; } = new();
-    public MacroStorage Storage { get; } = new();
+    public ParameterValueCollection ExtraData { get; } = new();
     public List<ConfigVariation> ConfigVariations { get; } = new();
 
     private bool _requiresAdmin;

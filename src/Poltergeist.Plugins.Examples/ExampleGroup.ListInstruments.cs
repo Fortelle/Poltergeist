@@ -313,7 +313,7 @@ public partial class ExampleGroup
 
             var loop = true;
             var i = 0;
-            var useCountdown = args.Processor.Options.Get<bool>("countdown");
+            var useCountdown = args.Processor.Options.GetValueOrDefault<bool>("countdown");
 
             while (loop)
             {

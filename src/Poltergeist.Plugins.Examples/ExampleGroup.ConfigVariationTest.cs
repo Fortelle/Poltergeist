@@ -67,9 +67,9 @@ public partial class ExampleGroup
 
         Before = (LoopBeforeArguments args) =>
         {
-            if (args.Processor.Environments.Get<bool>("maintenance_mode"))
+            if (args.Processor.Environments.GetValueOrDefault<bool>("maintenance_mode"))
             {
-                var counter = args.Processor.Statistics.Get<int>("counter");
+                var counter = args.Processor.Statistics.GetValueOrDefault<int>("counter");
 
                 args.Outputer.NewGroup("Maintenance Mode");
                 args.Outputer.Write($"Current number is {counter}.");
@@ -77,9 +77,9 @@ public partial class ExampleGroup
                 return;
             }
 
-            if (args.Processor.Environments.Get<bool>("reset"))
+            if (args.Processor.Environments.GetValueOrDefault<bool>("reset"))
             {
-                args.Processor.Statistics.Set("counter", 0);
+                args.Processor.Statistics.TryRemove("counter");
             }
 
             args.Outputer.NewGroup($"Counting:");
@@ -87,13 +87,13 @@ public partial class ExampleGroup
 
         Iterate = (IterationArguments args) =>
         {
-            var counter = args.Processor.Statistics.Get<int>("counter");
+            var counter = args.Processor.Statistics.GetValueOrDefault<int>("counter");
 
             counter++;
             Thread.Sleep(100);
 
             args.Outputer.Write($"{counter}");
-            args.Processor.Statistics.Set("counter", counter);
+            args.Processor.Statistics.AddOrUpdate("counter", counter);
         }
     };
 }

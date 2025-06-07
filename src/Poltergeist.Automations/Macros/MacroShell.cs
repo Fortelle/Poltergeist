@@ -1,5 +1,4 @@
-﻿using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;

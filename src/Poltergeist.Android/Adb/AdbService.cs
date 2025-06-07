@@ -41,7 +41,7 @@ public class AdbService : MacroService
 
         if (string.IsNullOrEmpty(WorkingDirectory))
         {
-            var path = Processor.Options.Get(ExePathKey, "");
+            var path = Processor.Options.GetValueOrDefault(ExePathKey, "");
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentException($"{nameof(ExePathKey)} is not set.");
@@ -57,7 +57,7 @@ public class AdbService : MacroService
 
         if (string.IsNullOrEmpty(Address))
         {
-            Address = Processor.Options.Get(IpAddressKey, "");
+            Address = Processor.Options.GetValueOrDefault(IpAddressKey, "");
         }
 
         if (string.IsNullOrEmpty(WorkingDirectory))
@@ -99,7 +99,7 @@ public class AdbService : MacroService
             Initialize();
         }
 
-        var keepalive = Processor.Options.Get(KeepAliveKey, false);
+        var keepalive = Processor.Options.GetValueOrDefault(KeepAliveKey, false);
 
         Logger.Debug($"Connecting to adb server {Address}.", new { Address, keepalive });
 
@@ -120,7 +120,7 @@ public class AdbService : MacroService
         var size = GetScreenSize();
         if (size is not null)
         {
-            Processor.SessionStorage.Reset("client_size", size.Value);
+            Processor.SessionStorage.AddOrUpdate("client_size", size.Value);
         }
 
         return true;

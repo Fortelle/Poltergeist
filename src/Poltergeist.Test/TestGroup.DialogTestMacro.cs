@@ -32,7 +32,7 @@ public partial class TestGroup
         ExecuteAsync = async (args) =>
         {
             var interactionService = args.Processor.GetService<InteractionService>();
-            var dialogType = args.Processor.Options.Get("dialog_type", "");
+            var dialogType = args.Processor.Options.GetValueOrDefault<string>("dialog_type");
             var dialog = dialogType switch
             {
                 "Ok" => new DialogModel()

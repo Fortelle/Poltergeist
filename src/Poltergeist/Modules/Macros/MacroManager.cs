@@ -220,13 +220,13 @@ public class MacroManager : ServiceBase
         }
 
         var options = new Dictionary<string, object?>();
-        foreach (var (definition, value) in GlobalOptions.ToDefinitionValueArray())
+        foreach (var (definition, value) in GlobalOptions.GetDefinitionValueCollection())
         {
             options[definition.Key] = value;
         }
         if (!args.IgnoresUserOptions && shell.UserOptions is not null)
         {
-            foreach (var (definition, value) in shell.UserOptions.ToDefinitionValueArray())
+            foreach (var (definition, value) in shell.UserOptions.GetDefinitionValueCollection())
             {
                 options[definition.Key] = value;
             }
@@ -240,13 +240,13 @@ public class MacroManager : ServiceBase
         }
 
         var statistics = new Dictionary<string, object?>();
-        foreach (var (definition, value) in GlobalStatistics.ToDefinitionValueArray())
+        foreach (var (definition, value) in GlobalStatistics.GetDefinitionValueCollection())
         {
             statistics[definition.Key] = value;
         }
         if (shell.Statistics is not null)
         {
-            foreach (var (definition, value) in shell.Statistics.ToDefinitionValueArray())
+            foreach (var (definition, value) in shell.Statistics.GetDefinitionValueCollection())
             {
                 statistics[definition.Key] = value;
             }
@@ -278,13 +278,13 @@ public class MacroManager : ServiceBase
     public Dictionary<string, object?> GetOptions(MacroShell shell)
     {
         var options = new Dictionary<string, object?>();
-        foreach (var (definition, value) in GlobalOptions.ToDefinitionValueArray())
+        foreach (var (definition, value) in GlobalOptions.GetDefinitionValueCollection())
         {
             options[definition.Key] = value;
         }
         if (shell.UserOptions is not null)
         {
-            foreach (var (definition, value) in shell.UserOptions.ToDefinitionValueArray())
+            foreach (var (definition, value) in shell.UserOptions.GetDefinitionValueCollection())
             {
                 options[definition.Key] = value;
             }
@@ -307,7 +307,7 @@ public class MacroManager : ServiceBase
         };
 
         var settings = PoltergeistApplication.GetService<AppSettingsService>();
-        foreach (var (definition, value) in settings.Settings.ToDefinitionValueArray())
+        foreach (var (definition, value) in settings.Settings.GetDefinitionValueCollection())
         {
             environments.Add(definition.Key, value);
         }
@@ -329,7 +329,7 @@ public class MacroManager : ServiceBase
             processor.Options,
             processor.Statistics,
             processor.Environments,
-            SessionStorage = processor.SessionStorage.Select(x => x.Key).ToArray(),
+            SessionStorage = processor.SessionStorage.Keys.ToArray(),
         });
 
         if (InRunningProcessors.Contains(processor))
@@ -349,20 +349,23 @@ public class MacroManager : ServiceBase
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
-        var processor = (IFrontProcessor)sender!;
+        if (sender is not IFrontProcessor processor)
+        {
+            throw new InvalidOperationException();
+        }
 
         processor.Launched -= Processor_Launched;
 
         if (!processor.IsIncognitoMode())
         {
-            var shellKey = processor.Environments.Get<string?>("shell_key");
+                var shellKey = processor.Environments.GetValueOrDefault<string>("shell_key");
             if (shellKey is not null)
             {
                 var shell = GetShell(shellKey)!;
                 UpdateProperties(shell, properties =>
                 {
-                    properties.LastRunTime = processor.Statistics.Get<DateTime>("last_run_time");
-                    properties.RunCount = processor.Statistics.Get<int>("total_run_count");
+                    properties.LastRunTime = processor.Statistics.GetValueOrDefault<DateTime>("last_run_time");
+                    properties.RunCount = processor.Statistics.GetValueOrDefault<int>("total_run_count");
                 });
             }
         }
@@ -372,13 +375,16 @@ public class MacroManager : ServiceBase
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        var processor = (IFrontProcessor)sender!;
+        if (sender is not IFrontProcessor processor)
+        {
+            throw new InvalidOperationException();
+        }
 
         processor.Completed -= Processor_Completed;
 
         InRunningProcessors.Remove(processor);
 
-        var shellKey = processor.Environments.Get<string?>("shell_key");
+        var shellKey = processor.Environments.GetValueOrDefault<string>("shell_key");
 
         if (shellKey is null)
         {
@@ -389,15 +395,15 @@ public class MacroManager : ServiceBase
 
         if (!processor.IsIncognitoMode())
         {
-            foreach (var entry in processor.Statistics)
+            foreach (var (key, value) in processor.Statistics)
             {
-                if (shell.Statistics?.ContainsKey(entry.Key) == true)
+                if (shell.Statistics?.ContainsDefinition(key) == true)
                 {
-                    shell.Statistics.Set(entry.Key, entry.Value);
+                    shell.Statistics.Set(key, value);
                 }
-                else if (GlobalStatistics.ContainsKey(entry.Key) == true)
+                else if (GlobalStatistics.ContainsDefinition(key) == true)
                 {
-                    GlobalStatistics.Set(entry.Key, entry.Value);
+                    GlobalStatistics.Set(key, value);
                 }
             }
 
@@ -435,7 +441,7 @@ public class MacroManager : ServiceBase
     {
         foreach (var item in MacroModule.GlobalOptions)
         {
-            GlobalOptions.Add(item);
+            GlobalOptions.AddDefinition(item);
         }
 
         var filepath = PoltergeistApplication.Paths.GlobalMacroOptionsFile;
@@ -471,7 +477,7 @@ public class MacroManager : ServiceBase
     {
         foreach (var item in MacroModule.GlobalStatistics)
         {
-            GlobalStatistics.Add(item);
+            GlobalStatistics.AddDefinition(item);
         }
 
         var filepath = PoltergeistApplication.Paths.GlobalMacroStatisticsFile;

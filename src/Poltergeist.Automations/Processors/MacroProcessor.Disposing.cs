@@ -15,9 +15,9 @@ public partial class MacroProcessor : IDisposable
         {
             ServiceProvider?.Dispose();
 
-            foreach (var item in SessionStorage)
+            foreach (var value in SessionStorage.Values)
             {
-                if (item.Value is IDisposable idis)
+                if (value is IDisposable idis)
                 {
                     idis.Dispose();
                 }

@@ -6,6 +6,6 @@ public static class IncognitoModeExtensions
 
     public static bool IsIncognitoMode(this IProcessor processor)
     {
-        return processor.Environments.Get<bool>(Key) == true;
+        return processor.Environments.GetValueOrDefault<bool>(Key) == true;
     }
 }

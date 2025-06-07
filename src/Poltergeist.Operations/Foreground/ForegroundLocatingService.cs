@@ -39,7 +39,7 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
         {
             clientRegion = client;
             Scale = scale;
-            Processor.SessionStorage.Reset("client_size", client.Size);
+            Processor.SessionStorage.AddOrUpdate("client_size", client.Size);
             //Logger.Trace($"Found the requested region.", new { ClientRegion, Scale });
             Logger.Trace($"Successfully located region", new { ClientRegion, Scale });
 
@@ -49,7 +49,7 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
         {
             clientRegion = null;
             Scale = null;
-            Processor.SessionStorage.Remove("client_size");
+            Processor.SessionStorage.TryRemove("client_size");
             //Logger.Trace($"Failed to find the requested region.", new { result });
             Logger.Trace($"Failed to located region.", new { result });
 

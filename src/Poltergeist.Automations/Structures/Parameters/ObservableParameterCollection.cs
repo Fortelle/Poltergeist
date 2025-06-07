@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Structures.Parameters;
 
 public class ObservableParameterCollection : IEnumerable<ObservableParameterItem>
 {
-    public List<ObservableParameterItem> Items { get; } = new();
+    private readonly List<ObservableParameterItem> Items = new();
 
     public ObservableParameterCollection()
     {
@@ -12,12 +12,12 @@ public class ObservableParameterCollection : IEnumerable<ObservableParameterItem
 
     public ObservableParameterCollection(ParameterDefinitionValueCollection collection)
     {
-        foreach (var (def, value) in collection.ToDefinitionValueArray())
+        foreach (var (def, value) in collection.GetDefinitionValueCollection())
         {
             var item = new ObservableParameterItem(def, value);
             item.Changed += () =>
             {
-                collection.Set(def, item.Value);
+                collection.Set(def.Key, item.Value);
             };
             Items.Add(item);
         }

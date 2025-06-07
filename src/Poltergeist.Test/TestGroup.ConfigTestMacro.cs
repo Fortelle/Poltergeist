@@ -206,7 +206,7 @@ public partial class TestGroup
                     args.Outputer.NewGroup(group.Key!);
                     foreach (var option in group)
                     {
-                        var value = args.Processor.Options.Get(option.Key)!;
+                        var value = args.Processor.Options.GetValueOrDefault(option.Key)!;
                         args.Outputer.Write(option.Key, $"{value}");
                     }
                 }

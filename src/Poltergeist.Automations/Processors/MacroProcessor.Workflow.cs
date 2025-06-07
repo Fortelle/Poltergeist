@@ -65,11 +65,8 @@ public partial class MacroProcessor
         StartTime = DateTime.Now;
         Timer.Start();
 
-        if (!this.IsIncognitoMode())
-        {
-            Statistics.Set("last_run_time", StartTime);
-            Statistics.Set("total_run_count", (int x) => x + 1);
-        }
+        Statistics.AddOrUpdate("last_run_time", StartTime);
+        Statistics.AddOrUpdate("total_run_count", 1, x => x + 1);
 
         ServiceCollection = new();
         ConfigureBasicServices(ServiceCollection);
@@ -156,6 +153,7 @@ public partial class MacroProcessor
         static string[] ToLines(ParameterValueCollection collection)
         {
             return collection
+                .ToDictionary()
                 .OrderBy(pv => pv.Key)
                 .Where(pv => pv.Value is not null)
                 .Select(pv => $"- {pv.Key}({pv.Value!.GetType().Name}) = {pv.Value}")
@@ -170,9 +168,9 @@ public partial class MacroProcessor
         services.AddOptions<LoggerOptions>();
         services.Configure<LoggerOptions>(options =>
         {
-            options.FileLogLevel = Environments.Get<LogLevel>(MacroLogger.FileLogLevelKey);
-            options.FrontLogLevel = Environments.Get<LogLevel>(MacroLogger.FrontLogLevelKey);
-            var privateFolder = Environments.Get<string>("private_folder");
+            options.FileLogLevel = Environments.GetValueOrDefault<LogLevel>(MacroLogger.FileLogLevelKey);
+            options.FrontLogLevel = Environments.GetValueOrDefault<LogLevel>(MacroLogger.FrontLogLevelKey);
+            var privateFolder = Environments.GetValueOrDefault<string>("private_folder");
             options.Filename = privateFolder is null ? null : Path.Combine(privateFolder, "Logs", $"{ProcessId}.log");
         });
         services.AddSingleton<MacroLogger>();
@@ -185,10 +183,9 @@ public partial class MacroProcessor
         services.AddSingleton<InteractionService>();
         services.AddSingleton<OutputService>();
         services.AddSingleton<DebugService>();
-        services.AddSingleton<FileStorageService>();
-        services.AddSingleton<LocalStorageService>();
+        services.AddSingleton<StorageService>();
 
-        if (Environments.Get<bool>("is_development"))
+        if (Environments.GetValueOrDefault<bool>("is_development"))
         {
             // todo: convert to model
             services.AddSingleton<BackgroundService>();
@@ -319,6 +316,7 @@ public partial class MacroProcessor
             StartTime = StartTime,
             Duration = duration,
             CompletionAction = CompletionAction.None,
+            OutputStorage = OutputStorage,
         };
 
         try
@@ -333,10 +331,7 @@ public partial class MacroProcessor
         var completionAction = endingHook.CompletionAction;
         Comment ??= endingHook.Comment;
 
-        if (!this.IsIncognitoMode())
-        {
-            Statistics.Set<TimeSpan>("total_run_duration", old => old + duration);
-        }
+        Statistics.AddOrUpdate("total_run_duration", duration, x => x + duration);
 
         var history = new ProcessHistoryEntry()
         {
@@ -353,6 +348,7 @@ public partial class MacroProcessor
         {
             HistoryEntry = history,
             CompletionAction = completionAction,
+            OutputStorage = OutputStorage,
         };
 
         try
@@ -383,8 +379,6 @@ public partial class MacroProcessor
             Logger?.Warn(exception.Message);
         }
 
-        ClearSessionStorage();
-
         Logger?.Info(endReason switch
         {
             //EndReason.FailedToLaunch => "The macro has not been initialized successfully.",
@@ -394,18 +388,18 @@ public partial class MacroProcessor
             _ => "The macro has ended due to an unexpected reason.",
         }); // this should be the last log
 
-        SessionStorage.Reset("processor_end_reason", endReason);
-        SessionStorage.Reset("processor_history_entry", history);
-        SessionStorage.Reset("processor_completion_action", completionAction);
+        SessionStorage.TryAdd("processor_end_reason", endReason);
+        SessionStorage.TryAdd("processor_history_entry", history);
+        SessionStorage.TryAdd("processor_completion_action", completionAction);
     }
 
     private void Finally()
     {
         ProcessThread = null;
 
-        var endReason = SessionStorage.Get<EndReason?>("processor_end_reason") ?? EndReason.Crushed;
-        var historyEntry = SessionStorage.Get<ProcessHistoryEntry>("processor_history_entry");
-        var completionAction = SessionStorage.Get<CompletionAction?>("processor_completion_action") ?? CompletionAction.None;
+        var endReason = SessionStorage.GetValueOrDefault("processor_end_reason", EndReason.Crushed);
+        var historyEntry = SessionStorage.GetValueOrDefault<ProcessHistoryEntry>("processor_history_entry");
+        var completionAction = SessionStorage.GetValueOrDefault("processor_completion_action", CompletionAction.None);
         
         var args = new ProcessorCompletedEventArgs()
         {
@@ -597,27 +591,4 @@ public partial class MacroProcessor
         }
     }
 
-    private void ClearSessionStorage()
-    {
-        Logger?.Trace($"Clearing the {nameof(SessionStorage)}.");
-        Logger?.IncreaseIndent();
-
-        foreach (var item in SessionStorage)
-        {
-            if (item.Value is IDisposable idis)
-            {
-                try
-                {
-                    idis.Dispose();
-                }
-                catch (Exception exception)
-                {
-                    Logger?.Error(exception);
-                }
-            }
-        }
-        SessionStorage.Clear();
-
-        Logger?.DecreaseIndent();
-    }
 }

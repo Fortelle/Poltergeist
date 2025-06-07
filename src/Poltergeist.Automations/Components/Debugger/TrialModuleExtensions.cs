@@ -6,6 +6,6 @@ public static class TrialModuleExtensions
 {
     public static bool IsTrialMode(this ArgumentService args)
     {
-        return args.Processor.Environments.Get<bool>(TrialModule.TrialModeKey);
+        return args.Processor.Environments.GetValueOrDefault<bool>(TrialModule.TrialModeKey);
     }
 }

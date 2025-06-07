@@ -1,10 +1,14 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Collections.Concurrent;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
+/// <summary>
+/// Represents a collection of parameter definitions and their associated values.
+/// </summary>
 public class ParameterDefinitionValueCollection
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -17,156 +21,142 @@ public class ParameterDefinitionValueCollection
         },
     };
 
-    private ParameterDefinitionCollection Definitions { get; }
-    private Dictionary<string, object?> Values { get; } = new();
+    private readonly ConcurrentDictionary<string, IParameterDefinition> DefinitionCollection = new();
+    private readonly ConcurrentDictionary<string, object?> ValueCollection = new();
+    private readonly ConcurrentDictionary<string, JsonNode> JsonCollection = new();
 
-    private string? FilePath { get; set; }
-    private bool HasChanged { get; set; }
+    private string? FilePath;
+    private bool HasChanged;
 
     public ParameterDefinitionValueCollection()
     {
-        Definitions = new();
     }
 
     public ParameterDefinitionValueCollection(ParameterDefinitionCollection definitions)
     {
-        Definitions = definitions;
-    }
-
-    public bool ContainsKey(string key)
-    {
-        return Definitions.Contains(key);
-    }
-
-    public bool ContainsValue(string key)
-    {
-        return Values.ContainsKey(key);
-    }
-
-    public void Add(IParameterDefinition definition)
-    {
-        Definitions.Add(definition);
-    }
-
-    public void Set<T>(string key, T value)
-    {
-        if (Definitions.TryGetValue(key, out var definition))
+        foreach (var definition in definitions)
         {
-            if (value is null && definition.DefaultValue is null)
-            {
-                Values.Remove(key);
-            }
-            else if (value!.Equals(definition.DefaultValue))
-            {
-                Values.Remove(key);
-            }
-            else
-            {
-                Values[key] = value;
-            }
+            DefinitionCollection.TryAdd(definition.Key, definition);
         }
-        else
-        {
-            Values[key] = value;
-        }
-
-        HasChanged = true;
     }
 
-    public void Set<T>(IParameterDefinition definition, T value)
+    public void AddDefinition(IParameterDefinition definition)
     {
-        Set(definition.Key, value);
+        DefinitionCollection.TryAdd(definition.Key, definition);
     }
 
-    public T? Get<T>(string key)
+    public bool ContainsDefinition(string key)
     {
-        var hasDef = Definitions.TryGetValue(key, out var definition);
-        var hasVal = Values.TryGetValue(key, out var value);
-
-        if (hasDef && !hasVal)
-        {
-            value = definition!.DefaultValue;
-        }
-
-        try
-        {
-            if (value is T tvalue)
-            {
-                return tvalue;
-            }
-            else if (value is JsonNode jsonNode)
-            {
-                value = JsonSerializer.Deserialize<T>(jsonNode, SerializerOptions);
-                Values[key] = value;
-            }
-
-            return (T?)value;
-        }
-        catch { }
-
-        return default;
-    }
-
-
-    public object? Get(string key)
-    {
-        var hasDef = Definitions.TryGetValue(key, out var definition);
-        var hasVal = Values.TryGetValue(key, out var value);
-
-        try
-        {
-            if (hasDef)
-            {
-                if (hasVal)
-                {
-                    if (value is JsonNode jsonNode)
-                    {
-                        value = JsonSerializer.Deserialize(jsonNode, definition!.BaseType, SerializerOptions);
-                        Values[key] = value;
-                    }
-                }
-                else
-                {
-                    value = definition!.DefaultValue;
-                }
-            }
-        }
-        catch { }
-
-        return value;
-    }
-
-    public T? Get<T>(ParameterDefinition<T> definition)
-    {
-        return Get<T>(definition.Key);
-    }
-
-    public object? Get(IParameterDefinition definition)
-    {
-        return Get(definition.Key);
+        return DefinitionCollection.ContainsKey(key);
     }
 
     public void Remove(string key)
     {
-        Definitions.Remove(key);
+        HasChanged |= DefinitionCollection.TryRemove(key, out _);
+        HasChanged |= ValueCollection.TryRemove(key, out _);
+        HasChanged |= JsonCollection.TryRemove(key, out _);
+    }
+
+    public object? Get(string key)
+    {
+        DefinitionCollection.TryGetValue(key, out var definition);
+        ValueCollection.TryGetValue(key, out var value);
+
+        if (definition is null)
+        {
+            return value;
+        }
+
+        value ??= GetJsonValue(key, definition.BaseType);
+
+        value ??= definition?.DefaultValue;
+
+        return value;
+    }
+
+    public T? Get<T>(string key)
+    {
+        DefinitionCollection.TryGetValue(key, out var definition);
+        ValueCollection.TryGetValue(key, out var value);
+
+        value ??= GetJsonValue(key, definition?.BaseType ?? typeof(T));
+
+        value ??= definition?.DefaultValue ?? default;
+
+        return (T?)value;
+    }
+
+    public void Set(string key, object? value)
+    {
+        SetInternal(key, value);
 
         HasChanged = true;
+    }
+
+    private object? GetJsonValue(string key, Type valueType)
+    {
+        if (JsonCollection.TryGetValue(key, out var jsonNode))
+        {
+            try
+            {
+                var value = JsonSerializer.Deserialize(jsonNode, valueType, SerializerOptions);
+                SetInternal(key, value);
+                JsonCollection.TryRemove(key, out _);
+                return value;
+            }
+            catch
+            {
+            }
+        }
+
+        return null;
+    }
+
+    private void SetInternal(string key, object? value)
+    {
+        if (DefinitionCollection.TryGetValue(key, out var definition))
+        {
+            if (definition.DefaultValue == value)
+            {
+                ValueCollection.TryRemove(key, out _);
+            }
+            else
+            {
+                ValueCollection[key] = value;
+            }
+        }
+        else if (value is null)
+        {
+            ValueCollection.TryRemove(key, out _);
+        }
+        else
+        {
+            ValueCollection[key] = value;
+        }
     }
 
     public void Load(string path)
     {
         FilePath = path;
 
-        var text = File.ReadAllText(FilePath);
-        var json = JsonNode.Parse(text);
-        if (json is null)
+        try
         {
-            return;
+            var text = File.ReadAllText(FilePath);
+            var json = JsonNode.Parse(text);
+            if (json is null)
+            {
+                return;
+            }
+            foreach (var (key, jsonNode) in json.AsObject())
+            {
+                if (jsonNode is not null)
+                {
+                    JsonCollection[key] = jsonNode;
+                }
+            }
         }
-
-        foreach (var (key, jsonNode) in json.AsObject())
+        catch
         {
-            Values[key] = jsonNode;
         }
     }
 
@@ -175,25 +165,37 @@ public class ParameterDefinitionValueCollection
         if (!HasChanged)
         {
             return;
-        };
+        }
 
         if (string.IsNullOrEmpty(FilePath))
         {
             return;
         }
 
-        if (Values.Count == 0)
-        {
-            return;
-        }
-
         SaveAs(FilePath);
+
         HasChanged = false;
     }
 
     public void SaveAs(string path)
     {
-        var text = JsonSerializer.Serialize(Values, SerializerOptions);
+        var dict = new Dictionary<string, object>();
+        foreach (var (key, value) in ValueCollection)
+        {
+            if (value is not null)
+            {
+                dict.Add(key, value);
+            }
+        }
+        foreach (var (key, value) in JsonCollection)
+        {
+            if (value is not null && !dict.ContainsKey(key))
+            {
+                dict.Add(key, value);
+            }
+        }
+
+        var text = JsonSerializer.Serialize(dict, SerializerOptions);
 
         var folder = Path.GetDirectoryName(path);
         if (folder is not null && !Directory.Exists(folder))
@@ -203,14 +205,38 @@ public class ParameterDefinitionValueCollection
         File.WriteAllText(path, text);
     }
 
-    public ParameterDefinitionValuePair[] ToDefinitionValueArray()
+    public ParameterDefinitionValuePair[] GetDefinitionValueCollection()
     {
         var list = new List<ParameterDefinitionValuePair>();
-        foreach (var definition in Definitions)
+        foreach (var definition in DefinitionCollection.Values.OrderBy(x => x.Key))
         {
-            list.Add(new(definition, Get(definition)));
+            list.Add(new(definition, Get(definition.Key)));
         }
 
         return list.ToArray();
+    }
+
+    public Dictionary<string, object?> GetValueDictionary(bool includesOrphans = false)
+    {
+        var dict = new Dictionary<string, object?>();
+        foreach (var definition in DefinitionCollection.Values)
+        {
+            dict.Add(definition.Key, Get(definition.Key));
+        }
+
+        if (includesOrphans)
+        {
+            foreach (var entry in ValueCollection.Where(x => !dict.ContainsKey(x.Key)))
+            {
+                dict.Add(entry.Key, entry.Value);
+            }
+
+            foreach (var entry in JsonCollection.Where(x => !dict.ContainsKey(x.Key)))
+            {
+                dict.Add(entry.Key, entry.Value);
+            }
+        }
+
+        return dict;
     }
 }

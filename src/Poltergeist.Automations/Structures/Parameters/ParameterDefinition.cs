@@ -1,36 +1,20 @@
 ﻿namespace Poltergeist.Automations.Structures.Parameters;
 
-public class ParameterDefinition<T> : IParameterDefinition
+public class ParameterDefinition<T> : ParameterDefinitionBase, IParameterDefinition
 {
-    public string Key { get; }
-
-    private string? _displayLabel;
-    public string DisplayLabel
-    {
-        get => _displayLabel ?? Key;
-        set => _displayLabel = value;
-    }
-
-    public string? Category { get; set; }
-    public string? Description { get; set; }
-
     public Type BaseType => typeof(T);
 
     public Func<T, string>? Format { get; set; }
 
-    public ParameterStatus Status { get; set; }
-
     public object? DefaultValue { get; }
 
-    public ParameterDefinition(string key)
+    public ParameterDefinition(string key) : base(key)
     {
-        Key = key;
         DefaultValue = default(T);
     }
 
-    public ParameterDefinition(string key, T? value)
+    public ParameterDefinition(string key, T? value) : base(key)
     {
-        Key = key;
         DefaultValue = value;
     }
 

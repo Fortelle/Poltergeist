@@ -43,9 +43,9 @@ public class CompleteModule : MacroModule
 
     private void OnProcessorEnding(ProcessorEndingHook hook)
     {
-        var completeAction = hook.Processor.Options.Get<CompletionAction>("aftercompletion.action");
-        var completeAllowerror = hook.Processor.Options.Get<bool>("aftercompletion.allowerror");
-        var completeMinimumTime = hook.Processor.Options.Get<TimeOnly>("aftercompletion.minimumtime");
+        var completeAction = hook.Processor.Options.GetValueOrDefault<CompletionAction>("aftercompletion.action");
+        var completeAllowerror = hook.Processor.Options.GetValueOrDefault<bool>("aftercompletion.allowerror");
+        var completeMinimumTime = hook.Processor.Options.GetValueOrDefault<TimeOnly>("aftercompletion.minimumtime");
 
         if (hook.Reason == EndReason.Interrupted)
         {

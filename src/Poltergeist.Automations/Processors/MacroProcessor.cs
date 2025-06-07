@@ -18,10 +18,37 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     public ServiceProvider? ServiceProvider { get; set; }
     ServiceCollection IConfigurableProcessor.Services => ServiceCollection!;
 
+    /// <summary>
+    /// Gets a collection that contains the options for the macro processor.
+    /// </summary>
+    /// <remarks>
+    /// Be aware of modifying this collection during the processor is running, as it may cause unexpected inconsistencies.
+    /// The changes to this collection are only effective for the processor and will not affect the macro itself.
+    /// </remarks>
     public ParameterValueCollection Options { get; } = new();
+
+    /// <summary>
+    /// Gets a collection that contains the environment variables for the macro processor.
+    /// </summary>
     public ParameterValueCollection Environments { get; } = new();
+
+    /// <summary>
+    /// Gets a collection that contains the statistics for the macro processor.
+    /// </summary>
     public ParameterValueCollection Statistics { get; } = new();
+
+    /// <summary>
+    /// Gets a collection that contains temporary data for the macro processor.
+    /// </summary>
+    /// <remarks>
+    /// The data stored in this collection are only kept for the lifetime of the processor and will be disposed automatically.
+    /// </remarks>
     public ParameterValueCollection SessionStorage { get; } = new();
+
+    /// <summary>
+    /// Gets a collection that contains the outcome data produced by the macro processor.
+    /// </summary>
+    public ParameterValueCollection OutputStorage { get; } = new();
 
     public LaunchReason Reason { get; set; }
 
@@ -54,6 +81,22 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
             Status = ProcessorStatus.Invalid;
             return;
         }
+
+        if (macro.UserOptions?.Count > 0)
+        {
+            foreach (var entry in macro.UserOptions)
+            {
+                Options.TryAdd(entry.Key, entry.DefaultValue);
+            }
+        }
+
+        if (macro.Statistics?.Count > 0)
+        {
+            foreach (var entry in macro.Statistics)
+            {
+                Statistics.TryAdd(entry.Key, entry.DefaultValue);
+            }
+        }
     }
 
     public MacroProcessor(MacroBase macro, MacroProcessorArguments arguments) : this(macro)
@@ -64,7 +107,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
         {
             foreach (var (key, value) in arguments.Options)
             {
-                Options.Reset(key, value);
+                Options.AddOrUpdate(key, value);
             }
         }
 
@@ -72,22 +115,23 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
         {
             foreach (var (key, value) in arguments.Environments)
             {
-                Environments.Reset(key, value);
+                Environments.AddOrUpdate(key, value);
             }
         }
+
         if (arguments.SessionStorage?.Count > 0)
         {
             foreach (var (key, value) in arguments.SessionStorage)
             {
-                SessionStorage.Reset(key, value);
+                SessionStorage.AddOrUpdate(key, value);
             }
         }
 
-        if (arguments.Statistics is not null)
+        if (arguments.Statistics is not null && !this.IsIncognitoMode())
         {
             foreach (var (key, value) in arguments.Statistics)
             {
-                Statistics.Reset(key, value);
+                Statistics.AddOrUpdate(key, value);
             }
         }
     }

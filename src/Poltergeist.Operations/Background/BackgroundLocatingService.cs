@@ -49,7 +49,7 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
         {
             sendMessage = new SendMessageHelper(hwnd);
             clientSize = size;
-            Processor.SessionStorage.Reset("client_size", size);
+            Processor.SessionStorage.AddOrUpdate("client_size", size);
             Logger.Trace($"Found the requested window.", new { hwnd = (ulong)hwnd, ClientSize });
 
             return true;
@@ -58,7 +58,7 @@ public class BackgroundLocatingService : MacroService, ILocatingProvider
         {
             sendMessage = null;
             clientSize = default;
-            Processor.SessionStorage.Remove("client_size");
+            Processor.SessionStorage.TryRemove("client_size");
             Logger.Trace($"Failed to find the requested window.", new { result });
 
             return false;

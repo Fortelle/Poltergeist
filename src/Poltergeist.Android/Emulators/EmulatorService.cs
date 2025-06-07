@@ -11,9 +11,9 @@ public class EmulatorService(MacroProcessor processor) : MacroService(processor)
 {
     public void Connect()
     {
-        var capturingMode = Processor.Options.Get<EmulatorOperationMode>(EmulatorModule.CapturingModeKey);
-        var inputMode = Processor.Options.Get<EmulatorOperationMode>(EmulatorModule.InputModeKey);
-        var config = Processor.SessionStorage.Get<RegionConfig>("window_region_config");
+        var capturingMode = Processor.Options.GetValueOrDefault<EmulatorOperationMode>(EmulatorModule.CapturingModeKey);
+        var inputMode = Processor.Options.GetValueOrDefault<EmulatorOperationMode>(EmulatorModule.InputModeKey);
+        var config = Processor.SessionStorage.GetValueOrDefault<RegionConfig>("window_region_config");
 
         var hasAdbMode = capturingMode == EmulatorOperationMode.ADB || inputMode == EmulatorOperationMode.ADB;
         var hasForegroundMode = capturingMode == EmulatorOperationMode.Foreground || inputMode == EmulatorOperationMode.Foreground;
@@ -49,8 +49,8 @@ public class EmulatorService(MacroProcessor processor) : MacroService(processor)
 
     public void Disconnect()
     {
-        var capturingMode = Processor.Options.Get<EmulatorOperationMode>(EmulatorModule.CapturingModeKey);
-        var inputMode = Processor.Options.Get<EmulatorOperationMode>(EmulatorModule.InputModeKey);
+        var capturingMode = Processor.Options.GetValueOrDefault<EmulatorOperationMode>(EmulatorModule.CapturingModeKey);
+        var inputMode = Processor.Options.GetValueOrDefault<EmulatorOperationMode>(EmulatorModule.InputModeKey);
 
         var hasAdbMode = capturingMode == EmulatorOperationMode.ADB || inputMode == EmulatorOperationMode.ADB;
 

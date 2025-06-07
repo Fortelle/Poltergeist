@@ -6,6 +6,6 @@ public static class DebugModuleExtensions
 {
     public static bool IsDebugMode(this ArgumentService args)
     {
-        return args.Processor.Environments.Get<bool>(DebugModule.DebugModeKey);
+        return args.Processor.Environments.GetValueOrDefault<bool>(DebugModule.DebugModeKey);
     }
 }

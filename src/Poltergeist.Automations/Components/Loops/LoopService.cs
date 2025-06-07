@@ -97,7 +97,7 @@ public class LoopService : MacroService
 
     private void CheckLimit()
     {
-        var isLoopEnabled = Processor.Options.Get<bool>(ConfigEnableKey);
+        var isLoopEnabled = Processor.Options.GetValueOrDefault<bool>(ConfigEnableKey);
         if (!isLoopEnabled)
         {
             MaxCount = 1;
@@ -106,11 +106,11 @@ public class LoopService : MacroService
 
         if (Options.IsCountLimitable == true)
         {
-            MaxCount = Processor.Options.Get<int>(ConfigCountKey);
+            MaxCount = Processor.Options.GetValueOrDefault<int>(ConfigCountKey);
         }
         if (Options.IsDurationLimitable == true)
         {
-            var duration = Processor.Options.Get<TimeOnly>(ConfigDurationKey);
+            var duration = Processor.Options.GetValueOrDefault<TimeOnly>(ConfigDurationKey);
             MaxDuration = duration.ToTimeSpan();
         }
 
@@ -357,10 +357,8 @@ public class LoopService : MacroService
 
         Processor.Comment ??= beginHook.Comment;
 
-        if (!Processor.IsIncognitoMode())
-        {
-            Processor.Statistics.Set<int>(StatisticTotalIterationCountKey, x => x + TotalIterations);
-        }
+        Processor.Statistics.AddOrUpdate(StatisticTotalIterationCountKey, TotalIterations, x => x + TotalIterations);
+        Processor.OutputStorage.TryAdd(StatisticTotalIterationCountKey, TotalIterations);
 
         var endHook = new LoopEndedHook()
         {

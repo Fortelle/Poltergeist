@@ -36,7 +36,7 @@ public class AppSettingsService : ServiceBase
 
     public void Add(IParameterDefinition definition)
     {
-        Settings.Add(definition);
+        Settings.AddDefinition(definition);
         Logger.Trace($"Added application settings definition '{definition.Key}'.", new { definition });
     }
 
@@ -52,6 +52,11 @@ public class AppSettingsService : ServiceBase
 
     public void Set<T>(string key, T value)
     {
+        if (Settings is null)
+        {
+            throw new InvalidOperationException();
+        }
+
         Settings.Set(key, value);
         Logger.Trace($"Set the application settings variable: {key} = {value}");
 

@@ -40,7 +40,7 @@ public class MinimizationModule : MacroModule
 
     private void OnProcessorStarted(ProcessorStartedHook hook)
     {
-        if (!hook.Processor.Options.Get<bool>("minimization"))
+        if (!hook.Processor.Options.GetValueOrDefault<bool>("minimization"))
         {
             return;
         }
@@ -51,7 +51,7 @@ public class MinimizationModule : MacroModule
 
     private void OnProcessorEnding(ProcessorEndingHook hook)
     {
-        if (!hook.Processor.Options.Get<bool>("minimization"))
+        if (!hook.Processor.Options.GetValueOrDefault<bool>("minimization"))
         {
             return;
         }

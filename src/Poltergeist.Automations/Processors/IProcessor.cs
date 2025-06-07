@@ -10,4 +10,5 @@ public interface IProcessor
     public ParameterValueCollection Environments { get; }
     public ParameterValueCollection Statistics { get; }
     public ParameterValueCollection SessionStorage { get; }
+    public ParameterValueCollection OutputStorage { get; }
 }

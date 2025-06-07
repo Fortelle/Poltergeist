@@ -90,7 +90,7 @@ public partial class MacroViewModel : ObservableRecipient
 
     public void Refresh()
     {
-        Statistics = Shell.Statistics?.ToDefinitionValueArray();
+        Statistics = Shell.Statistics?.GetDefinitionValueCollection();
 
         History = Shell.History?.Take(100);
 
