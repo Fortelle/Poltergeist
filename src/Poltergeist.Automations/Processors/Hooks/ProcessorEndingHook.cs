@@ -7,10 +7,8 @@ public class ProcessorEndingHook : MacroHook
 {
     public required EndReason Reason { get; init; }
     public required DateTime StartTime { get; init; }
+    public required DateTime EndTime { get; init; }
     public required TimeSpan Duration { get; init; }
     public required ParameterValueCollection OutputStorage { get; init; }
-    
-    public string? Comment { get; set; }
-
-    public CompletionAction CompletionAction { get; set; }
+    public required ParameterValueCollection Report { get; init; }
 }

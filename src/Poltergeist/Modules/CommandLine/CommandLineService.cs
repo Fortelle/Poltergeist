@@ -12,25 +12,10 @@ public class CommandLineService : ServiceBase
 
     private static readonly List<Type> ParserTypes = new();
 
-    private static CommandLineOptionCollection? _startupOptions;
-    public static CommandLineOptionCollection StartupOptions
-    {
-        get
-        {
-            if (_startupOptions is null)
-            {
-                var args = Environment.GetCommandLineArgs();
-                _startupOptions = GetOptions(args[1..]);
-            }
-
-            return _startupOptions;
-        }
-    }
-
     public CommandLineService(AppEventService eventService)
     {
-        eventService.Subscribe<AppContentLoadingHandler>(OnAppContentLoading);
-        eventService.Subscribe<PipeMessageReceivedHandler>(OnPipeMessageReceived);
+        eventService.Subscribe<AppContentLoadingEvent>(OnAppContentLoading);
+        eventService.Subscribe<PipeMessageReceivedEvent>(OnPipeMessageReceived);
     }
 
     public void AddParser<T>() where T : CommandLineParser
@@ -43,12 +28,12 @@ public class CommandLineService : ServiceBase
         PipeService.Send(CommandLinePipeKey, options);
     }
 
-    private void OnAppContentLoading(AppContentLoadingHandler e)
+    private void OnAppContentLoading(AppContentLoadingEvent _)
     {
-        ParseOptions(StartupOptions, false);
+        ParseOptions(PoltergeistApplication.Current.StartupOptions, false);
     }
 
-    private void OnPipeMessageReceived(PipeMessageReceivedHandler e)
+    private void OnPipeMessageReceived(PipeMessageReceivedEvent e)
     {
         if (e.Message.Key != CommandLinePipeKey)
         {
@@ -60,7 +45,7 @@ public class CommandLineService : ServiceBase
             return;
         }
 
-        var options = GetOptions(arguments);
+        var options = new CommandLineOptionCollection(arguments);
 
         ApplicationHelper.BringToFront();
 
@@ -129,51 +114,6 @@ public class CommandLineService : ServiceBase
         }
 
         return parser;
-    }
-
-    public static string? NormalizeName(string? name)
-    {
-        return name?
-            .ToLower()
-            .Replace(" ", "")
-            .Replace("_", "")
-            .Replace("_", "")
-            ;
-    }
-
-    private static CommandLineOptionCollection GetOptions(string[] args)
-    {
-        var options = new CommandLineOptionCollection();
-        for (var i = 0; i < args.Length; i++)
-        {
-            var option = "";
-            var value = default(string?);
-            if (args[i].StartsWith("--"))
-            {
-                var parts = args[i][2..].Split('=', 2);
-                option = parts[0];
-                if (parts.Length == 2)
-                {
-                    value = parts[1];
-                }
-            }
-            else if (args[i].StartsWith('/'))
-            {
-                var parts = args[i][1..].Split(':', 2);
-                option = parts[0];
-                if (parts.Length == 2)
-                {
-                    value = parts[1];
-                }
-            }
-            if (value is null && i < args.Length - 1 && !args[i + 1].StartsWith('-') && !args[i + 1].StartsWith('/'))
-            {
-                value = args[i + 1];
-                i++;
-            }
-            options.Add(option, value);
-        }
-        return options;
     }
 
 }

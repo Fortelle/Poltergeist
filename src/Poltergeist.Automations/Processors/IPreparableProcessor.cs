@@ -10,7 +10,6 @@ public interface IPreparableProcessor
 
     public ParameterValueCollection Options { get; }
     public ParameterValueCollection Environments { get; }
-    public ParameterValueCollection Statistics { get; }
     public ParameterValueCollection SessionStorage { get; }
 
     public T GetService<T>() where T : class;

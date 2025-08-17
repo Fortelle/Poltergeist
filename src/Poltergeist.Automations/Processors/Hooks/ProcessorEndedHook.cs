@@ -5,7 +5,6 @@ namespace Poltergeist.Automations.Processors;
 
 public class ProcessorEndedHook : MacroHook
 {
-    public required ProcessHistoryEntry HistoryEntry { get; init; }
-    public required CompletionAction CompletionAction { get; set; }
-    public required ParameterValueCollection OutputStorage { get; init; }
+    public required EndReason Reason { get; init; }
+    public required ParameterValueCollection Report { get; init; }
 }

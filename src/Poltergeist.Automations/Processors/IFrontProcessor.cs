@@ -8,12 +8,9 @@ public interface IFrontProcessor : IProcessor, IDisposable
 {
     public IFrontMacro Macro { get; }
 
-    public DateTime StartTime { get; }
-    public DateTime EndTime { get; }
-
     public void Start();
-    public void Execute();
-    public Task ExecuteAsync();
+    public ProcessorResult Execute();
+    public Task<ProcessorResult> ExecuteAsync();
     public void Stop(AbortReason reason);
     public Task Pause(PauseReason reason);
     public void Terminate();

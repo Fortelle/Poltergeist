@@ -127,7 +127,7 @@ public class LoggerWrapper
         Logger.IndentLevel = 0;
     }
 
-    private void Log(LogLevel level, string message, object? data = null)
+    public void Log(LogLevel level, string message, object? data = null)
     {
         if (data is string[] lines)
         {
@@ -159,7 +159,7 @@ public class LoggerWrapper
         }
     }
 
-    private void Log(LogLevel level, Exception exception)
+    public void Log(LogLevel level, Exception exception)
     {
         Log(level, exception.Message);
         if (exception.InnerException is not null)

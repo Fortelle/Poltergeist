@@ -12,21 +12,21 @@ public class CompleteModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new EnumOption<CompletionAction>("aftercompletion.action", CompletionAction.None)
+        macro.OptionDefinitions.Add(new EnumOption<CompletionAction>("aftercompletion.action", CompletionAction.None)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_Action"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
             GetText = x => ResourceHelper.Localize($"Poltergeist.Automations/Resources/AfterCompletion_CompletionAction_{x}"),
         });
 
-        macro.UserOptions.Add(new OptionDefinition<TimeOnly>("aftercompletion.minimumtime")
+        macro.OptionDefinitions.Add(new OptionDefinition<TimeOnly>("aftercompletion.minimumtime")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
             Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime_Description"),
         });
 
-        macro.UserOptions.Add(new OptionDefinition<bool>("aftercompletion.allowerror")
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>("aftercompletion.allowerror")
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_AllowError"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
@@ -49,23 +49,24 @@ public class CompleteModule : MacroModule
 
         if (hook.Reason == EndReason.Interrupted)
         {
-            hook.CompletionAction = CompletionAction.None;
+            completeAction = CompletionAction.None;
         }
         else if (hook.Reason == EndReason.ErrorOccurred && !completeAllowerror)
         {
-            hook.CompletionAction = CompletionAction.None;
+            completeAction = CompletionAction.None;
         }
         else if (completeMinimumTime != default && completeMinimumTime.ToTimeSpan().Ticks < hook.Duration.Ticks)
         {
-            hook.CompletionAction = CompletionAction.None;
+            completeAction = CompletionAction.None;
         }
-        else if (hook.Reason == EndReason.Complete)
+        else if (hook.Reason != EndReason.Complete)
         {
-            hook.CompletionAction = completeAction;
+            completeAction = CompletionAction.None;
         }
-        else
+
+        if (completeAction != CompletionAction.None)
         {
-            hook.CompletionAction = CompletionAction.None;
+            hook.OutputStorage.TryAdd("complete_action", completeAction);
         }
     }
 

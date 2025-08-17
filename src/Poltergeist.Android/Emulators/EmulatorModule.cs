@@ -19,32 +19,33 @@ public class EmulatorModule : MacroModule
     public const string CapturingModeKey = "adb.capturingmode";
     public const string InputModeKey = "adb.inputmode";
 
-    static EmulatorModule()
-    {
-        GlobalOptions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
-        {
-            DisplayLabel = "IP Address",
-            Category = "ADB",
-        });
-
-        GlobalOptions.Add(new PathOption(AdbService.ExePathKey)
-        {
-            DisplayLabel = "Exe file",
-            Category = "ADB",
-        });
-
-        GlobalOptions.Add(new OptionDefinition<bool>(CapturingProvider.PreviewCaptureKey)
-        {
-            DisplayLabel = "Preview captured image",
-            Category = "Debug",
-        });
-    }
-
     public override void OnMacroInitialize(IInitializableMacro macro)
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
+        macro.OptionDefinitions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
+        {
+            DisplayLabel = "IP Address",
+            Category = "ADB",
+            IsGlobal = true,
+        });
+
+        macro.OptionDefinitions.Add(new PathOption(AdbService.ExePathKey)
+        {
+            DisplayLabel = "Exe file",
+            Category = "ADB",
+            IsGlobal = true,
+        });
+
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>(CapturingProvider.PreviewCaptureKey)
+        {
+            DisplayLabel = "Preview captured image",
+            Category = "Debug",
+            Status = ParameterStatus.DevelopmentOnly,
+            IsGlobal = true,
+        });
+
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Keep adb server alive",
             Description = "Skips killing the adb server when the macro is completed. " +
@@ -53,13 +54,13 @@ public class EmulatorModule : MacroModule
             Category = "ADB",
         });
 
-        macro.UserOptions.Add(new OptionDefinition<EmulatorOperationMode>(CapturingModeKey, EmulatorOperationMode.ADB)
+        macro.OptionDefinitions.Add(new OptionDefinition<EmulatorOperationMode>(CapturingModeKey, EmulatorOperationMode.ADB)
         {
             DisplayLabel = "Capturing mode",
             Category = "ADB",
         });
 
-        macro.UserOptions.Add(new OptionDefinition<EmulatorOperationMode>(InputModeKey, EmulatorOperationMode.ADB)
+        macro.OptionDefinitions.Add(new OptionDefinition<EmulatorOperationMode>(InputModeKey, EmulatorOperationMode.ADB)
         {
             DisplayLabel = "Input mode",
             Category = "ADB",

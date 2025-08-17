@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Principal;
 using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Helpers;
@@ -20,32 +21,54 @@ public abstract partial class PoltergeistApplication : Application
 {
     public const string ApplicationName = "Poltergeist";
 
-    private static WindowEx? _mainWindow;
-    public static WindowEx MainWindow => _mainWindow!;
+    public static new PoltergeistApplication Current => (PoltergeistApplication)Application.Current;
 
-    public static UIElement? AppTitlebar { get; set; }
+    private WindowEx? _mainWindow;
+    public WindowEx MainWindow => _mainWindow!;
 
-    public static bool IsAdministrator { get; private set; }
-    public static bool IsDevelopment { get; set; }
-    public static string? SingleMacroMode { get; set; }
-    public static string? StartPageKey { get; set; }
+    public UIElement? AppTitlebar { get; set; }
 
-    public static PoltergeistApplication CurrentPoltergeist => (PoltergeistApplication)Current;
+    public CommandLineOptionCollection StartupOptions { get; }
 
-    public IHost? Host { get; private set; }
+    public bool IsAdministrator { get; }
+    public bool IsDevelopment { get; }
+    public string? ExclusiveMacroMode { get; set; }
+    public string? StartPageKey { get; set; }
 
     public static PathProvider Paths { get; } = new();
 
-    protected static AppLogWrapper? Logger { get; set; }
+    public AppSettings Settings { get; }
+
+    public AppInternalSettings InternalSettings { get; }
+
+    public IHost? Host { get; private set; }
+
+    public ApplicationState State { get; private set; }
+
+    public bool IsReady => State == ApplicationState.Launched;
+
+    public DispatcherQueue DispatcherQueue => MainWindow.DispatcherQueue;
+
+    private AppLogWrapper? Logger;
 
     protected PoltergeistApplication()
     {
-        IsDevelopment = Debugger.IsAttached;
-        IsDevelopment |= CommandLineService.StartupOptions.Contains("dev");
+        State = ApplicationState.Launching;
+
+        StartupOptions = new(Environment.GetCommandLineArgs()[1..]);
 
         using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
         IsAdministrator = principal.IsInRole(WindowsBuiltInRole.Administrator);
+        
+        IsDevelopment = Debugger.IsAttached;
+        IsDevelopment |= StartupOptions.Contains("dev");
+
+        Settings = new(Paths.AppSettingsFile);
+
+        InternalSettings = new(Paths.AppInternalSettingsFile);
+
+        UnhandledException += App_UnhandledException;
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -66,37 +89,45 @@ public abstract partial class PoltergeistApplication : Application
             return;
         }
 
+        Initialize();
+
         _mainWindow = new MainWindow();
         _mainWindow.Closed += AppWindow_Closed;
         MainWindow.Show();
 
-        Initialize();
+        GetService<AppEventService>().Subscribe<AppShellPageLoadedEvent>(_ =>
+        {
+            GetService<AppEventService>().Publish<AppWindowLoadedEvent>();
+
+            Logger?.Debug("Application initialized.");
+
+            Logger?.Trace(new string('-', 64));
+
+            State = ApplicationState.Launched;
+
+            GetService<AppEventService>().Publish<AppLaunchedEvent>();
+        });
 
         Task.Run(() =>
         {
+            GetService<AppEventService>().Publish<AppWindowActivatedEvent>();
+
             ConfigureAutoLoadServices();
 
             OnContentLoading();
 
-            GetService<AppEventService>().Raise<AppContentLoadedHandler>();
+            GetService<AppEventService>().Publish<AppContentLoadingEvent>();
 
             TryEnqueue(() =>
             {
-                MainWindow.Content = GetService<ShellPage>();
-
-                GetService<AppEventService>().Raise<AppWindowLoadedHandler>();
-
-                Logger?.Debug("Application initialized.");
-
-                Logger?.Trace(new string('-', 64));
+                var shellpage = GetService<ShellPage>();
+                MainWindow.Content = shellpage; // emits AppShellPageLoadedEvent on loaded
             });
         });
     }
 
     private void Initialize()
     {
-        AppSettingsService.Load();
-
         ConfigureResources(Resources.MergedDictionaries);
 
         Host = Microsoft.Extensions.Hosting.Host
@@ -107,7 +138,7 @@ public abstract partial class PoltergeistApplication : Application
 
         Logger = new AppLogWrapper(this);
 
-        UnhandledException += App_UnhandledException;
+        GetService<AppEventService>().Publish<AppInitializedEvent>();
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -123,20 +154,27 @@ public abstract partial class PoltergeistApplication : Application
 
     private void AppWindow_Closed(object sender, WindowEventArgs args)
     {
-        SingleInstanceHelper.Close();
+        State = ApplicationState.Exiting;
 
-        App.GetService<AppEventService>().Raise<AppWindowClosedHandler>();
+        App.GetService<AppEventService>().Publish<AppWindowClosedEvent>();
+
+        App.GetService<AppEventService>().Publish<AppExitingEvent>();
 
         Host?.Dispose();
+        
+        SingleInstanceHelper.Close();
+
+        State = ApplicationState.Exited;
     }
 
     private void OnContentLoading()
     {
-        GetService<AppEventService>().SubscribeMethods(this);
+        var eventService = GetService<AppEventService>();
+        eventService.SubscribeMethods(this);
 
         ConfigureInstruments(GetService<InstrumentManager>());
         ConfigureNavigations(GetService<INavigationService>());
-        ConfigureSettings(GetService<AppSettingsService>());
+        ConfigureSettings(GetService<AppSettingsService>().Settings);
         ConfigureHotKeys(GetService<HotKeyService>());
         ConfigureCommandLineParsers(GetService<CommandLineService>());
 
@@ -144,8 +182,6 @@ public abstract partial class PoltergeistApplication : Application
         {
             await InteractionHelper.Interact(e.Model);
         };
-
-        GetService<AppEventService>().Raise<AppContentLoadingHandler>();
     }
 
 }

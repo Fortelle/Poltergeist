@@ -17,7 +17,7 @@ public class HotKeyService : ServiceBase, IDisposable
 
     public HotKeyService(AppEventService eventService)
     {
-        eventService.Subscribe<AppWindowLoadedHandler>(OnAppWindowLoaded);
+        eventService.Subscribe<AppWindowLoadedEvent>(OnAppWindowLoaded);
     }
 
     public void Add(HotKeyInformation info)
@@ -31,7 +31,7 @@ public class HotKeyService : ServiceBase, IDisposable
 
         if (info.SettingDefinition is not null)
         {
-            PoltergeistApplication.GetService<AppSettingsService>().Add(info.SettingDefinition);
+            PoltergeistApplication.GetService<AppSettingsService>().Settings.AddDefinition(info.SettingDefinition);
         }
 
         Logger.Trace($"Added hot key '{info.Name}'.", new
@@ -76,7 +76,7 @@ public class HotKeyService : ServiceBase, IDisposable
         Logger.Trace($"Changed hot key '{info.Name}' from '{newHotKey}' to '{newHotKey}'.");
     }
 
-    private void OnAppWindowLoaded(AppWindowLoadedHandler e)
+    private void OnAppWindowLoaded(AppWindowLoadedEvent _)
     {
         Listener = new();
         Listener.HotkeyPressed += HotKeyPressed;
@@ -114,7 +114,7 @@ public class HotKeyService : ServiceBase, IDisposable
         var hotkey = info.HotKey;
         if (hotkey is null && info.SettingDefinition is not null)
         {
-            hotkey = PoltergeistApplication.GetService<AppSettingsService>().Get(info.SettingDefinition);
+            hotkey = PoltergeistApplication.GetService<AppSettingsService>().Settings.Get(info.SettingDefinition);
             if (hotkey is null)
             {
                 return;

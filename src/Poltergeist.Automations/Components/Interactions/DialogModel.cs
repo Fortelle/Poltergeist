@@ -6,7 +6,7 @@ namespace Poltergeist.Automations.Components.Interactions;
 public class DialogModel : InteractionModel
 {
     public const string DialogResultKey = "dialog_result";
-    public const string DialogValueKey = "dialog_value_{0}";
+    public const string DialogParameterKey = "dialog_parameter_{0}";
     private static readonly string YesButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Yes");
     private static readonly string NoButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_No");
     private static readonly string OkButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Ok");
@@ -22,7 +22,7 @@ public class DialogModel : InteractionModel
     public string? CloseButtonText { get; set; }
 
     public DialogResult Result { get; set; }
-    public object?[]? Values { get; set; }
+    public IReadOnlyDictionary<string, object?>? Parameters { get; set; }
 
     public override void Callback(InteractionCallbackArguments args)
     {

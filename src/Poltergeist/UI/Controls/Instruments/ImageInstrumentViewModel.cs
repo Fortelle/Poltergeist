@@ -15,7 +15,7 @@ public class ImageInstrumentViewModel : IInstrumentViewModel
         Title = gi.Title;
         MaximumColumns = gi.MaximumColumns ?? -1;
 
-        Items = new(gi.Items, ModelToViewModel, PoltergeistApplication.MainWindow.DispatcherQueue);
+        Items = new(gi.Items, ModelToViewModel, PoltergeistApplication.Current.DispatcherQueue);
     }
 
     private ImageInstrumentItemViewModel? ModelToViewModel(ImageInstrumentItem? item)

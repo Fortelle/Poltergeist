@@ -8,7 +8,7 @@ public interface IInstrumentModel
 
     public string MacroKey { get; }
 
-    public string ProcessId { get; }
+    public string ProcessorId { get; }
 
     public bool AutoScroll { get; }
 

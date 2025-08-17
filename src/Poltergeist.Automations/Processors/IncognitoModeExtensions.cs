@@ -2,10 +2,10 @@
 
 public static class IncognitoModeExtensions
 {
-    public static string Key { get; } = "incognito_mode";
+    public const string EnvironmentKey = "is_incognitomode";
 
     public static bool IsIncognitoMode(this IProcessor processor)
     {
-        return processor.Environments.GetValueOrDefault<bool>(Key) == true;
+        return processor.Environments.GetValueOrDefault<bool>(EnvironmentKey) == true;
     }
 }

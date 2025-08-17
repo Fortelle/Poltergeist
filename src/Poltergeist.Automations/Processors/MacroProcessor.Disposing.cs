@@ -14,6 +14,7 @@ public partial class MacroProcessor : IDisposable
         if (disposing)
         {
             ServiceProvider?.Dispose();
+            ServiceProvider = null;
 
             foreach (var value in SessionStorage.Values)
             {

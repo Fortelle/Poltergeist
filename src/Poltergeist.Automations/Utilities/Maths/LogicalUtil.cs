@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Utilities.Maths;
 
 public static class LogicalUtil
 {
-    public static bool IsTruthy(object value)
+    public static bool IsTruthy(object? value)
     {
         return value switch
         {
@@ -14,7 +14,7 @@ public static class LogicalUtil
             string s => !string.IsNullOrEmpty(s),
             Array a => a.Length > 0,
             IEnumerable e => e.GetEnumerator().MoveNext(),
-            var x when x.GetType().IsValueType => x != Activator.CreateInstance(x.GetType()),
+            var x when x.GetType().IsValueType => !x.Equals(Activator.CreateInstance(x.GetType())),
             _ => true,
         };
     }

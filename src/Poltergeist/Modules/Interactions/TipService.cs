@@ -8,6 +8,11 @@ public class TipService
 {
     public static void Show(TipModel model)
     {
+        if (!PoltergeistApplication.Current.IsReady)
+        {
+            return;
+        }
+
         PoltergeistApplication.TryEnqueue(() =>
         {
             var teachingTip = new TeachingTip()
@@ -57,6 +62,11 @@ public class TipService
 
     private static void Show(TeachingTip teachingTip)
     {
+        if (!PoltergeistApplication.Current.IsReady)
+        {
+            return;
+        }
+
         teachingTip.PreferredPlacement = TeachingTipPlacementMode.Top;
         teachingTip.IsLightDismissEnabled = true;
 
@@ -64,6 +74,7 @@ public class TipService
         {
             PoltergeistApplication.GetService<ShellPage>().Resources.Remove(teachingTip.Name);
         };
+
         PoltergeistApplication.GetService<ShellPage>().Resources.Add(teachingTip.Name, teachingTip);
 
         teachingTip.IsOpen = true;

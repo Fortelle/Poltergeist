@@ -92,7 +92,7 @@
                                 FontSize="12"
                                 VerticalAlignment="Center" 
                                 HorizontalAlignment="Right"
-                                Visibility="{Binding Buttons, Converter={StaticResource FalsyToVisibilityConverter}, ConverterParameter=True}"
+                                Visibility="{Binding Buttons, Converter={StaticResource TruthyToCollapsedConverter}}"
                                 />
 
                             <ItemsControl 
@@ -100,7 +100,7 @@
                                 VerticalAlignment="Center" 
                                 HorizontalAlignment="Right"
                                 ItemsSource="{Binding Buttons, Mode=OneTime}"
-                                Visibility="{Binding Buttons, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                Visibility="{Binding Buttons, Converter={StaticResource FalsyToCollapsedConverter}}"
                                 >
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>

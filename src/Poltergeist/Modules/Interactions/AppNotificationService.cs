@@ -2,7 +2,6 @@
 using Microsoft.Windows.AppNotifications.Builder;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Modules.Macros;
-using Poltergeist.Modules.Navigation;
 
 namespace Poltergeist.Modules.Interactions;
 
@@ -38,13 +37,14 @@ public class AppNotificationService
         {
             if (args.Arguments.TryGetValue("macro", out var value))
             {
-                PoltergeistApplication.GetService<INavigationService>().NavigateTo("macro:" + value);
+                var pageKey = MacroManager.GetPageKey(value);
+                PoltergeistApplication.GetService<MacroManager>().OpenPage(pageKey);
             }
 
             var msg = new InteractionMessage(args.Argument);
             PoltergeistApplication.GetService<MacroManager>().SendMessage(msg);
 
-            PoltergeistApplication.MainWindow.BringToFront();
+            PoltergeistApplication.Current.MainWindow.BringToFront();
         });
     }
 
@@ -64,13 +64,10 @@ public class AppNotificationService
     {
         var builder = new AppNotificationBuilder()
             .AddArgument("conversationId", model.Id)
-            .AddArgument(InteractionMessage.MacroKeyName, model.ShellKey)
-            .AddArgument(InteractionMessage.ProcessIdName, model.ProcessId)
+            .AddArgument(InteractionMessage.ProcessorIdName, model.ProcessorId)
             ;
 
-        var macro = PoltergeistApplication.GetService<MacroManager>().GetShell(model.ShellKey!);
-
-        builder.AddText(model.Title ?? macro?.Title ?? model.ShellKey);
+        builder.AddText(model.Title);
 
         if (model.Text is not null)
         {

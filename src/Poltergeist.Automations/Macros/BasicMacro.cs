@@ -1,14 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Macros;
 
-public class BasicMacro : MacroBase
+public class BasicMacro : CommonMacroBase
 {
     public bool ShowStatusBar { get; set; }
 
@@ -20,11 +18,7 @@ public class BasicMacro : MacroBase
 
     public Func<BasicMacroExecutionArguments, Task>? ExecuteAsync;
 
-    public BasicMacro() : base()
-    {
-    }
-
-    public BasicMacro(string name) : base(name)
+    public BasicMacro(string? name = null) : base(name)
     {
     }
 
@@ -40,14 +34,11 @@ public class BasicMacro : MacroBase
     protected override void OnPrepare(IPreparableProcessor processor)
     {
         base.OnPrepare(processor);
-
+        
         if (ShowStatusBar)
         {
             InstallStatusBar(processor);
         }
-
-        var loopService = processor.GetService<LoopService>();
-        var hookService = processor.GetService<HookService>();
 
         if (Execute is not null)
         {
@@ -72,7 +63,6 @@ public class BasicMacro : MacroBase
                 IsDefault = true,
             });
         }
-
     }
 
     private static void InstallStatusBar(IPreparableProcessor processor)
@@ -109,7 +99,7 @@ public class BasicMacro : MacroBase
         });
     }
 
-    protected override bool OnValidating([MaybeNullWhen(false)] out string invalidationMessage)
+    protected override bool OnValidating([MaybeNullWhen(true)] out string invalidationMessage)
     {
         if (!base.OnValidating(out invalidationMessage))
         {

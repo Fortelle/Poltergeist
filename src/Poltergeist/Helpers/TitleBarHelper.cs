@@ -24,7 +24,7 @@ internal class TitleBarHelper
 
     public static void UpdateTitleBar(ElementTheme theme)
     {
-        if (PoltergeistApplication.MainWindow.ExtendsContentIntoTitleBar)
+        if (PoltergeistApplication.Current.MainWindow.ExtendsContentIntoTitleBar)
         {
             if (theme == ElementTheme.Default)
             {
@@ -84,7 +84,7 @@ internal class TitleBarHelper
             Application.Current.Resources["WindowCaptionBackground"] = new SolidColorBrush(Colors.Transparent);
             Application.Current.Resources["WindowCaptionBackgroundDisabled"] = new SolidColorBrush(Colors.Transparent);
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PoltergeistApplication.MainWindow);
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PoltergeistApplication.Current.MainWindow);
             if (hwnd == GetActiveWindow())
             {
                 SendMessage(hwnd, WMACTIVATE, WAINACTIVE, nint.Zero);
@@ -101,7 +101,7 @@ internal class TitleBarHelper
     public static void ApplySystemThemeToCaptionButtons()
     {
         var res = Application.Current.Resources;
-        if (PoltergeistApplication.AppTitlebar is FrameworkElement frame)
+        if (PoltergeistApplication.Current.AppTitlebar is FrameworkElement frame)
         {
             if (frame.ActualTheme == ElementTheme.Dark)
             {
@@ -111,7 +111,6 @@ internal class TitleBarHelper
             {
                 res["WindowCaptionForeground"] = Colors.Black;
             }
-
             UpdateTitleBar(frame.ActualTheme);
         }
     }

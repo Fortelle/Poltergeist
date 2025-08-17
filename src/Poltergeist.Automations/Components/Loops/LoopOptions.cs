@@ -1,4 +1,4 @@
-﻿using Poltergeist.Automations.Attributes;
+﻿using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Components.Loops;
 

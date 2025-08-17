@@ -8,6 +8,11 @@ public class CommandLineOptionCollection
     {
     }
 
+    public CommandLineOptionCollection(string[] args)
+    {
+        Load(args);
+    }
+
     public string this[string name]
     {
         get
@@ -18,7 +23,7 @@ public class CommandLineOptionCollection
 
     public void Add(string name, string? value)
     {
-        name = CommandLineService.NormalizeName(name)!;
+        name = NormalizeName(name)!;
         Options.Add(new CommandLineOption(name, value));
     }
 
@@ -34,8 +39,48 @@ public class CommandLineOptionCollection
         return Options.Any(x => x.Name == name);
     }
 
+    private void Load(string[] args)
+    {
+        for (var i = 0; i < args.Length; i++)
+        {
+            var option = "";
+            var value = default(string?);
+            if (args[i].StartsWith("--"))
+            {
+                var parts = args[i][2..].Split('=', 2);
+                option = parts[0];
+                if (parts.Length == 2)
+                {
+                    value = parts[1];
+                }
+            }
+            else if (args[i].StartsWith('/'))
+            {
+                var parts = args[i][1..].Split(':', 2);
+                option = parts[0];
+                if (parts.Length == 2)
+                {
+                    value = parts[1];
+                }
+            }
+            if (value is null && i < args.Length - 1 && !args[i + 1].StartsWith('-') && !args[i + 1].StartsWith('/'))
+            {
+                value = args[i + 1];
+                i++;
+            }
+            option = NormalizeName(option);
+            Add(option, value);
+        }
+    }
+
     private static string NormalizeName(string name)
     {
-        return CommandLineService.NormalizeName(name)!;
+        return name
+            .ToLower()
+            .Replace(" ", "")
+            .Replace("-", "")
+            .Replace("_", "")
+            ;
     }
+
 }

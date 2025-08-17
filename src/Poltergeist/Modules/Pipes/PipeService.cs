@@ -13,17 +13,17 @@ public class PipeService : ServiceBase
 
     public PipeService(AppEventService eventService)
     {
-        eventService.Subscribe<AppWindowLoadedHandler>(OnAppWindowLoaded);
-        eventService.Subscribe<AppWindowClosedHandler>(OnAppWindowClosed);
+        eventService.Subscribe<AppWindowLoadedEvent>(OnAppWindowLoaded);
+        eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed);
     }
 
-    private void OnAppWindowLoaded(AppWindowLoadedHandler handler)
+    private void OnAppWindowLoaded(AppWindowLoadedEvent _)
     {
         Server = new(PipeKey);
         Server.MessageReceived += Server_MessageReceived;
     }
 
-    private void OnAppWindowClosed(AppWindowClosedHandler handler)
+    private void OnAppWindowClosed(AppWindowClosedEvent _)
     {
         if (Server is not null)
         {
@@ -46,7 +46,7 @@ public class PipeService : ServiceBase
             Logger.Error($"Failed to deserialize pipe message: {ex.Message}");
             return;
         }
-        PoltergeistApplication.GetService<AppEventService>().Raise<PipeMessageReceivedHandler>(new(pipemsg));
+        PoltergeistApplication.GetService<AppEventService>().Publish(new PipeMessageReceivedEvent(pipemsg));
     }
 
     public static void Send(string key, object? value)

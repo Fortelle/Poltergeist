@@ -22,7 +22,7 @@ public class ListInstrumentItem
 
     public string? InstrumentKey { get; set; }
     public string? MacroKey { get; set; }
-    public string? ProcessId { get; set; }
+    public string? ProcessorId { get; set; }
 
     public ListInstrumentButton[]? Buttons { get; set; }
 

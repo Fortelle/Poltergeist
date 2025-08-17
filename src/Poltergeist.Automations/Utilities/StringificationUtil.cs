@@ -7,15 +7,15 @@ namespace Poltergeist.Automations.Utilities;
 
 public static class StringificationUtil
 {
-    public static string Stringify(object item)
+    public static string Stringify(object? item)
     {
         return item switch
         {
             null => "(null)",
             string s => s,
             IDictionary => SerializeObject(item),
-            IEnumerable ie => '[' + string.Join(", ", ie.Cast<object>().Select(Stringify)) + ']',
-            _ when HasToStringOverload(item.GetType()) => $"{item}",
+            IEnumerable ie => SerializeObject(ie),
+            _ when IsToStringOverridden(item.GetType()) => $"{item}",
             _ => SerializeObject(item),
         };
     }
@@ -36,11 +36,11 @@ public static class StringificationUtil
         }
         catch (Exception exception)
         {
-            return $"????? ({exception.Message})";
+            return $"<{exception.Message}>";
         }
     }
 
-    public static bool HasToStringOverload(Type type)
+    public static bool IsToStringOverridden(Type type)
     {
         var toStringMethod = type.GetMethod("ToString", []);
 

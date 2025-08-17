@@ -79,7 +79,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
 
         item.InstrumentKey = Key;
         item.MacroKey = MacroKey;
-        item.ProcessId = ProcessId;
+        item.ProcessorId = ProcessorId;
         if (index == -1)
         {
             item.Index = Buffer.Count;
@@ -100,8 +100,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
             {
                 item.Buttons[i].Argument = new InteractionMessage()
                 {
-                    MacroKey = item.MacroKey,
-                    ProcessId = item.ProcessId,
+                    ProcessorId = item.ProcessorId,
                     ["instrument_key"] = $"{item.InstrumentKey}",
                     ["item_key"] = $"{item.Key}",
                     ["item_index"] = $"{item.Index}",

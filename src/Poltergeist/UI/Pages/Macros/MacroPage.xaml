@@ -51,13 +51,13 @@
                     Width="32"
                     Height="32"
                     FontSize="24"
-                    DataContext="{x:Bind ViewModel.Shell.Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist.Automations/Assets/macro_32px.png}"
+                    DataContext="{x:Bind ViewModel.Instance.Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist/Assets/macro_32px.png}"
                     />
                 
                 <TextBlock
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    Text="{x:Bind ViewModel.Shell.Title, Mode=OneTime}"
+                    Text="{x:Bind ViewModel.Instance.Title, Mode=OneTime}"
                     Style="{StaticResource Header1Style}"
                     Margin="0"
                     />
@@ -85,14 +85,14 @@
                                 />
 
                             <TextBlock
-                                Text="{x:Bind ViewModel.Shell.Template.Description, Mode=OneTime}"
+                                Text="{x:Bind ViewModel.Instance.Template.Description, Mode=OneTime}"
                                 Style="{StaticResource DetailBodyBaseMediumStyle}"
                                 Margin="0, 0, 0, 16"
                                 TextWrapping="Wrap" 
                                 />
 
                             <ItemsControl
-                                ItemsSource="{x:Bind ViewModel.Shell.Template.Details, Mode=OneTime}"
+                                ItemsSource="{x:Bind ViewModel.Instance.Template.Details, Mode=OneTime}"
                                 Margin="0, 0, 0, 16"
                                 >
                                 <ItemsControl.ItemTemplate>
@@ -131,18 +131,20 @@
                     >
                     <controls:OptionListView
                         Options="{x:Bind ViewModel.UserOptions, Mode=OneTime}"
-                        IsLocked="{x:Bind ViewModel.IsRunning, Mode=OneWay}" 
+                        IsEnabled="{x:Bind ViewModel.Instance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
+                        IsLocked="{x:Bind ViewModel.IsRunning, Mode=OneWay}"
                         />
                 </PivotItem>
 
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/ActionsPivotItem"
+                    IsEnabled="{x:Bind ViewModel.Instance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
                     >
                     <ScrollViewer
                         Style="{StaticResource VerticalScrollViewerStyle}"
                         >
                         <ItemsControl
-                            ItemsSource="{x:Bind ViewModel.Shell.Template.Actions, Mode=OneTime}"
+                            ItemsSource="{x:Bind ViewModel.Instance.Template.Actions, Mode=OneTime}"
                             >
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -179,8 +181,8 @@
                                                 FontSize="12"
                                                 TextWrapping="Wrap"
                                                 Margin="0, 2, 0, 0"
-                                                Text="{Binding Description}"
-                                                Visibility="{Binding Description, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                                Text="{Binding Description, Mode=OneTime}"
+                                                Visibility="{Binding Description, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                                 />
 
                                         </StackPanel>
@@ -219,14 +221,14 @@
                                         <ColumnDefinition Width="4*" />
                                         <ColumnDefinition Width="6*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Definition.DisplayLabel, Mode=OneTime}" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{Binding DisplayValue, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="0" Text="{Binding Key, Mode=OneTime}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Value, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ListView>
                 </PivotItem>
-
+                
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/HistoryPivotItem"
                     >
@@ -321,10 +323,10 @@
                 </PivotItem>
                 
                 <PivotItem
-                    x:Uid="/Poltergeist/Macros/PropertiesPivotItem"
+                    x:Uid="/Poltergeist/Macros/MetadataPivotItem"
                     >
                     <ListView
-                        ItemsSource="{x:Bind ViewModel.Properties, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.Metadata, Mode=OneWay}"
                         Margin="0"
                         >
                         <ListView.Resources>
@@ -383,12 +385,13 @@
                     OverflowButtonVisibility="Collapsed"
                     HorizontalAlignment="Left"
                     IsOpen="False"
+                    IsEnabled="{x:Bind ViewModel.Instance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
                     >
 
                     <AppBarElementContainer>
                         <SplitButton
                             Command="{x:Bind ViewModel.StartCommand, Mode=OneTime}"
-                            IsEnabled="{x:Bind ViewModel.IsRunnable, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource NotConverter}}"
                             >
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -501,7 +504,7 @@
                                 HorizontalAlignment="Center"
                                 Foreground="Red"
                                 ToolTipService.ToolTip="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                Visibility="{x:Bind ViewModel.ExceptionMessage, Mode=OneWay, Converter={StaticResource FalsyToCollapsedConverter}}"
                                 />
                         </Grid>
                     </AppBarElementContainer>
@@ -511,7 +514,7 @@
 
             <Grid
                 Grid.Row="1"
-                Visibility="{x:Bind ViewModel.IsValid, Converter={StaticResource FalsyToVisibilityConverter}, ConverterParameter=True, Mode=OneTime}"
+                Visibility="{x:Bind ViewModel.IsValid, Converter={StaticResource TruthyToCollapsedConverter}, Mode=OneTime}"
                 >
                 <TextBlock
                     HorizontalAlignment="Center"

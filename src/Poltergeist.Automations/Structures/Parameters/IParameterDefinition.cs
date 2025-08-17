@@ -8,7 +8,8 @@ public interface IParameterDefinition
     public string? Category { get; }
     public string? Description { get; }
     public ParameterStatus Status { get; }
-
+    public bool IsGlobal { get; }
+    
     public Type BaseType { get; }
 
     public object? DefaultValue { get; }

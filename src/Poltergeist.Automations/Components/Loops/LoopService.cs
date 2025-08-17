@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using Poltergeist.Automations.Components.Hooks;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -16,23 +15,22 @@ public class LoopService : MacroService
     public const string ConfigEnableKey = "loop-enable";
     public const string ConfigCountKey = "loop-count";
     public const string ConfigDurationKey = "loop-duration";
-    public const string StatisticTotalIterationCountKey = "loop-totalcount";
+    public const string StatisticTotalIterationCountKey = "loop_total_iterations";
+    public const string ReportIterationCountKey = "loop_iterations";
 
     public int MaxCount { get; private set; }
     public TimeSpan MaxDuration { get; private set; }
 
-    private readonly LoopOptions Options;
     private readonly HookService Hooks;
+    private LoopOptions Options = new();
     private LoopResult Result;
     private int TotalIterations;
 
     public LoopService(MacroProcessor processor,
-        HookService hooks,
-        IOptions<LoopOptions> options
+        HookService hooks
         ) : base(processor)
     {
         Hooks = hooks;
-        Options = options.Value;
 
         processor.AddStep(new("loop-initialization", DoInitialization)
         {
@@ -75,6 +73,8 @@ public class LoopService : MacroService
 
     private bool DoInitialization(WorkflowStepArguments args)
     {
+        Options = Processor.SessionStorage.GetValueOrDefault<LoopOptions>("loop-options") ?? Options;
+        
         CheckLimit();
 
         switch (Options.Instrument)
@@ -127,7 +127,7 @@ public class LoopService : MacroService
         Hooks.Raise(startHook);
         if (startHook.Cancel)
         {
-            Processor.Comment = startHook.CancelReason;
+            Processor.Report.TryAdd("comment_message", startHook.CancelReason);
             Result = LoopResult.Unstarted;
             return false;
         }
@@ -325,7 +325,7 @@ public class LoopService : MacroService
             if (duration > MaxDuration)
             {
                 Result = LoopResult.Complete;
-                Logger.Debug($"The loop will be stopped because the run duration has reached the specified time.", new { Processor.StartTime, duration, MaxDuration });
+                Logger.Debug($"The loop will be stopped because the run duration has reached the specified time.", new { duration, MaxDuration });
                 return true;
             }
 
@@ -347,24 +347,24 @@ public class LoopService : MacroService
 
     private void DoEnd(WorkflowStepArguments stepArguments)
     {
-        var beginHook = new LoopEndingHook()
+        Processor.Report.TryAdd("comment_message", ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", TotalIterations));
+
+        var endingHook = new LoopEndingHook()
         {
             Result = Result,
             TotalIterations = TotalIterations,
-            Comment = Processor.Comment ?? ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Comment", TotalIterations),
         };
-        Hooks.Raise(beginHook);
+        Hooks.Raise(endingHook);
 
-        Processor.Comment ??= beginHook.Comment;
-
-        Processor.Statistics.AddOrUpdate(StatisticTotalIterationCountKey, TotalIterations, x => x + TotalIterations);
-        Processor.OutputStorage.TryAdd(StatisticTotalIterationCountKey, TotalIterations);
+        Hooks.Register<ProcessorEndingHook>(e =>
+        {
+            e.Report.Add(ReportIterationCountKey, TotalIterations);
+        });
 
         var endHook = new LoopEndedHook()
         {
             Result = Result,
             TotalIterations = TotalIterations,
-            Comment = beginHook.Comment,
         };
         Hooks.Raise(endHook);
     }

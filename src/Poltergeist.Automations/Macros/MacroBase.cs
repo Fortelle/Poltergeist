@@ -24,9 +24,9 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
     public string? Icon { get; set; }
     public Version? Version { get; set; }
 
-    public ParameterDefinitionCollection UserOptions { get; } = new();
-    public ParameterDefinitionCollection Statistics { get; } = new();
-    public ParameterDefinitionCollection Properties { get; } = new();
+    public ParameterDefinitionCollection OptionDefinitions { get; } = new();
+    public StatisticDefinitionCollection StatisticDefinitions { get; } = new();
+    public ParameterDefinitionCollection Metadata { get; } = new();
 
     public List<MacroAction> Actions { get; } = new();
     public List<MacroModule> Modules { get; } = new();
@@ -38,8 +38,6 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
     public MacroStatus Status { get; protected set; }
     public Exception? Exception { get; protected set; }
-
-    public bool IsSingleton { get; set; }
 
     protected virtual void OnConfigure(IConfigurableProcessor processor) { }
     protected virtual void OnPrepare(IPreparableProcessor processor) { }
@@ -56,17 +54,19 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
         Key = GetType().Name;
     }
 
-    public MacroBase(string name)
+    public MacroBase(string? name)
     {
-        Key = string.Join(null, name.Select(c => InvalidKeyChars.Contains(c) ? '_' : c));
+        if (string.IsNullOrEmpty(name))
+        {
+            Key = GetType().Name;
+        }
+        else
+        {
+            Key = string.Join(null, name.Select(c => InvalidKeyChars.Contains(c) ? '_' : c));
+        }
     }
 
-    public T As<T>() where T : MacroBase
-    {
-        return (T)this;
-    }
-
-    protected virtual bool OnValidating([MaybeNullWhen(false)] out string invalidationMessage)
+    protected virtual bool OnValidating([MaybeNullWhen(true)] out string invalidationMessage)
     {
         if (Status == MacroStatus.Uninitialized)
         {
@@ -110,24 +110,6 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
         try
         {
-            Actions.Add(ActionHelper.OpenLocalFolder);
-            Actions.Add(ActionHelper.CreateShortcut);
-
-            Statistics.Add(new ParameterDefinition<int>("total_run_count")
-            {
-                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
-            });
-            Statistics.Add(new ParameterDefinition<TimeSpan>("total_run_duration")
-            {
-                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
-                Format = x => $"{x.TotalHours:00}:{x.Minutes:00}:{x.Seconds:00}",
-            });
-            Statistics.Add(new ParameterDefinition<DateTime?>("last_run_time")
-            {
-                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_LastRunTime"),
-                Format = x => x?.ToString() ?? "-",
-            });
-
             foreach (var module in Modules)
             {
                 module.OnMacroInitialize(this);
@@ -146,7 +128,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
         }
     }
 
-    bool IFrontBackMacro.CheckValidity([MaybeNullWhen(false)] out string invalidationMessage)
+    bool IFrontBackMacro.CheckValidity([MaybeNullWhen(true)] out string invalidationMessage)
     {
         return OnValidating(out invalidationMessage);
     }

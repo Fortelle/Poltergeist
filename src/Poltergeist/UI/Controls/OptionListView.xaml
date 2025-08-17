@@ -57,7 +57,7 @@
                                                 Margin="0, 2, 0, 0"
                                                 TextWrapping="Wrap"
                                                 Text="{Binding Definition.Description}"
-                                                Visibility="{Binding Definition.Description, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                                Visibility="{Binding Definition.Description, Converter={StaticResource FalsyToCollapsedConverter}}"
                                                 />
                                         </StackPanel>
 

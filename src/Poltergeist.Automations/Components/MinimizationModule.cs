@@ -23,7 +23,7 @@ public class MinimizationModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new OptionDefinition<bool>("minimization", true)
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>("minimization", true)
         {
             DisplayLabel = "Minimize application",
             Status = IsConfigurable ? ParameterStatus.Normal : ParameterStatus.Hidden,

@@ -4,7 +4,7 @@ public class ObservableParameterItem
 {
     public IParameterDefinition Definition { get; }
     public bool HasChanged { get; set; }
-    public event Action? Changed;
+    public event ObservableParameterCollection.ChangedEventHandler? Changed;
 
     private object? _value;
     public object? Value
@@ -18,8 +18,9 @@ public class ObservableParameterItem
                 return;
             }
 
+            var oldValue = _value;
             _value = value;
-            Changed?.Invoke();
+            Changed?.Invoke(Definition.Key, oldValue, value);
             HasChanged = true;
         }
     }

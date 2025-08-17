@@ -20,8 +20,7 @@ public class InteractionService : MacroService
 
     public void Show(InteractionModel model)
     {
-        model.ShellKey = Processor.Macro.Key;
-        model.ProcessId = Processor.ProcessId;
+        model.ProcessorId = Processor.ProcessorId;
         Models.Add(model);
 
         var args = new InteractingEventArgs(model);
@@ -33,8 +32,7 @@ public class InteractionService : MacroService
 
     public async Task ShowAsync(InteractionModel model)
     {
-        model.ShellKey = Processor.Macro.Key;
-        model.ProcessId = Processor.ProcessId;
+        model.ProcessorId = Processor.ProcessorId;
         Models.Add(model);
 
         var args = new InteractingEventArgs(model, true);
@@ -42,7 +40,7 @@ public class InteractionService : MacroService
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
 
-        await Processor.Pause(PauseReason.Input);
+        await Processor.Pause(PauseReason.WaitForInput);
     }
 
     public void ShowTip(string message)

@@ -4,12 +4,12 @@ using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Processors;
 
-public class ArgumentService : IDisposable, IUserLogger
+public class ArgumentService : IDisposable
 {
     public IUserProcessor Processor { get; }
     public string? Comment { get; set; }
 
-    public IUserLogger Logger => this; // todo: change to wrapper
+    public LoggerWrapper Logger { get; }
     public OutputService Outputer => Processor.GetService<OutputService>();
     public IUserMacro Macro => Processor.Macro;
 
@@ -21,11 +21,8 @@ public class ArgumentService : IDisposable, IUserLogger
         Processor = processor;
 
         SenderName = GetType().Name;
-    }
 
-    void IUserLogger.Log(string message)
-    {
-        Processor.GetService<MacroLogger>().Log(LogLevel.Information, SenderName, message);
+        Logger = new(processor.GetService<MacroLogger>(), SenderName);
     }
 
     protected virtual void Dispose(bool disposing)

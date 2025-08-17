@@ -6,4 +6,5 @@ public enum ProcessorEvent
     Completed,
     PanelCreated,
     Interacting,
+    LogWritten,
 }

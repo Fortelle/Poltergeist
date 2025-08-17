@@ -6,7 +6,9 @@ public class InputDialogModel : DialogModel
 {
     public required IParameterDefinition[] Inputs { get; init; }
 
-    public Func<string>? Valid { get; set; }
+    public InputDialogLabelLayout LabelLayout { get; set; }
+
+    public Func<IReadOnlyDictionary<string, object?>?, string?>? Valid { get; set; }
 
     public InputDialogModel()
     {

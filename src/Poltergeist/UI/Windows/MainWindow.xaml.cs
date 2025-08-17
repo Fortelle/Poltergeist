@@ -45,18 +45,19 @@ public sealed partial class MainWindow : WindowEx
 
     private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        var handler = App.GetService<AppEventService>().Raise<AppWindowClosingHandler>();
+        var appWindowClosingEvent = new AppWindowClosingEvent();
+        App.GetService<AppEventService>().Publish(appWindowClosingEvent);
 
-        if (handler.Cancel)
+        if (appWindowClosingEvent.Cancel)
         {
             args.Cancel = true;
 
-            if (handler.CancelMessage is not null)
+            if (appWindowClosingEvent.CancelMessage is not null)
             {
                 TipService.Show(new TipModel()
                 {
                     Type = TipType.Disabled,
-                    Title = handler.CancelMessage,
+                    Title = appWindowClosingEvent.CancelMessage,
                 });
             }
         }

@@ -15,8 +15,13 @@ public partial class PoltergeistApplication
 	}
 
 	public static object GetService(Type type)
-	{
-		var service = CurrentPoltergeist.Host?.Services.GetService(type);
+    {
+        if (Current.Host is null)
+        {
+            throw new ArgumentException($"{nameof(PoltergeistApplication)}.{nameof(Host)} is not ready yet.");
+        }
+
+        var service = Current.Host?.Services.GetService(type);
 		if (service is null)
 		{
 			throw new ArgumentException($"{type} needs to be registered in ConfigureServices within App.xaml.cs.");
@@ -25,16 +30,16 @@ public partial class PoltergeistApplication
 	}
 
 	public static void ShowTeachingTip(string message)
-	{
-		TipService.Show(new TipModel()
+    {
+        TipService.Show(new TipModel()
 		{
 			Text = message,
 		});
 	}
 
 	public static void ShowException(Exception exception)
-	{
-		TipService.Show(new TipModel()
+    {
+        TipService.Show(new TipModel()
 		{
 			Type = TipType.Error,
 			Text = exception.Message,
@@ -48,7 +53,7 @@ public partial class PoltergeistApplication
 
 	public static void TryEnqueue(DispatcherQueueHandler callback)
 	{
-		MainWindow.DispatcherQueue.TryEnqueue(callback);
+        App.Current.DispatcherQueue.TryEnqueue(callback);
 	}
 
 }

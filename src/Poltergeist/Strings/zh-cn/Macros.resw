@@ -141,7 +141,7 @@
   <data name="EndReason_Unstarted" xml:space="preserve">
     <value>未启动</value>
   </data>
-  <data name="EndReason_Stopped" xml:space="preserve">
+  <data name="EndReason_Interrupted" xml:space="preserve">
     <value>中止</value>
   </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
@@ -177,31 +177,31 @@
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>参数设置</value>
   </data>
-  <data name="PropertiesPivotItem.Header" xml:space="preserve">
+  <data name="MetadataPivotItem.Header" xml:space="preserve">
     <value>属性</value>
   </data>
-  <data name="PropertyLabel_assembly_location" xml:space="preserve">
+  <data name="MetadataLabel_assembly_location" xml:space="preserve">
     <value>程序集路径</value>
   </data>
-  <data name="PropertyLabel_assembly_name" xml:space="preserve">
+  <data name="MetadataLabel_assembly_name" xml:space="preserve">
     <value>程序集名</value>
   </data>
-  <data name="PropertyLabel_assembly_version" xml:space="preserve">
+  <data name="MetadataLabel_assembly_version" xml:space="preserve">
     <value>程序集版本</value>
   </data>
-  <data name="PropertyLabel_shell_created_time" xml:space="preserve">
+  <data name="MetadataLabel_instance_created_time" xml:space="preserve">
     <value>创建日期</value>
   </data>
-  <data name="PropertyLabel_shell_key" xml:space="preserve">
+  <data name="MetadataLabel_instance_id" xml:space="preserve">
     <value>实例键名</value>
   </data>
-  <data name="PropertyLabel_shell_private_folder" xml:space="preserve">
+  <data name="MetadataLabel_instance_private_folder" xml:space="preserve">
     <value>宏文件夹路径</value>
   </data>
-  <data name="PropertyLabel_template_key" xml:space="preserve">
+  <data name="MetadataLabel_template_key" xml:space="preserve">
     <value>框架键名</value>
   </data>
-  <data name="PropertyLabel_template_version" xml:space="preserve">
+  <data name="MetadataLabel_template_version" xml:space="preserve">
     <value>框架版本</value>
   </data>
   <data name="RunAppBarButton.Label" xml:space="preserve">

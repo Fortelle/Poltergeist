@@ -1,14 +1,24 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json.Linq;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
 /// <summary>
 /// Represents a thread-safe dictionary of key-value pairs.
 /// </summary>
-public class ParameterValueCollection : ObservableConcurrentDictionary<string, object?>
+public class ParameterValueCollection : ObservableConcurrentDictionary<string, object?>, IReadOnlyParameterValueCollection, IAddOnlyParameterValueCollection
 {
+    public ParameterValueCollection()
+    {
+    }
+
+    public ParameterValueCollection(IEnumerable<KeyValuePair<string, object?>> items)
+    {
+        foreach (var kvp in items)
+        {
+            Add(kvp.Key, kvp.Value);
+        }
+    }
     /// <summary>
     /// Adds a new key-value pair to the dictionary if the key does not exist, or updates the value associated with the specified key by using the specified function if the key already exists.
     /// </summary>
@@ -68,7 +78,7 @@ public class ParameterValueCollection : ObservableConcurrentDictionary<string, o
     /// <exception cref="KeyNotFoundException">The specified key does not exist in the dictionary.</exception>
     /// <exception cref="InvalidCastException">The existing value associated with the specified key cannot be cast to the specified type.</exception>
     /// <exception cref="NullReferenceException">The existing value associated with the specified key is <see langword="null"/> but the specified type is non-nullable.</exception>
-    public T Get<T>(string key)
+    public virtual T Get<T>(string key)
     {
         return (T)Get(key)!;
     }
@@ -257,7 +267,7 @@ public class ParameterValueCollection : ObservableConcurrentDictionary<string, o
     /// <returns><see langword="true"/> if the key was found and the value can be cast to type <typeparamref name="T"/>; <see langword="false"/> if the key does not exist.</returns>
     /// <exception cref="InvalidCastException">The existing value associated with the specified key cannot be cast to the specified type.</exception>
     /// <exception cref="NullReferenceException">The existing value associated with the specified key is <see langword="null"/> but the specified type is non-nullable.</exception>
-    public bool TryGetValue<T>(string key, [MaybeNullWhen(false)] out T value)
+    public virtual bool TryGetValue<T>(string key, [MaybeNullWhen(false)] out T value)
     {
         if (!TryGetValue(key, out var oldValue))
         {

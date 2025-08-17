@@ -71,7 +71,7 @@ public class AppLogWrapper
             string s => s,
             IDictionary id => id.Cast<DictionaryEntry>().ToDictionary(x => x.Key, x => ConvertToObject(x)),
             IEnumerable ie => ie.Cast<object>().Select(x => ConvertToObject(x)),
-            _ when StringificationUtil.HasToStringOverload(item.GetType()) => $"{item}",
+            _ when StringificationUtil.IsToStringOverridden(item.GetType()) => $"{item}",
             _ => ConvertToDictionary(item),
         }; ;
     }

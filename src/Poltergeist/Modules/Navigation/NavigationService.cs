@@ -1,6 +1,10 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
+using Poltergeist.Modules.Macros;
+using Poltergeist.UI;
 using Poltergeist.UI.Pages;
 
 namespace Poltergeist.Modules.Navigation;
@@ -13,8 +17,9 @@ public class NavigationService : ServiceBase, INavigationService
 
     public NavigationView? NavigationView { get; set; }
 
-    public NavigationService()
+    public NavigationService(AppEventService eventService)
     {
+        eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed);
     }
 
     public void AddInfo(NavigationInfo info)
@@ -31,9 +36,7 @@ public class NavigationService : ServiceBase, INavigationService
             return false;
         }
 
-        var navkey = pageKey.Split(":")[0];
-
-        var info = Informations.FirstOrDefault(x => x.Key == navkey);
+        var info = GetInformation(pageKey);
         if (info is null)
         {
             Logger.Error($"Failed to navigate: Invalid page key '{pageKey}'.");
@@ -47,54 +50,15 @@ public class NavigationService : ServiceBase, INavigationService
             return true;
         }
 
-        if (PoltergeistApplication.SingleMacroMode is not null && pageKey != "macro:" + PoltergeistApplication.SingleMacroMode)
+        if (!CanCreateTab(pageKey))
         {
-            Logger.Error($"Could not switch to tab page '{pageKey}' in single macro mode.");
+            Logger.Error($"Could not switch to tab page '{pageKey}' in exclusive macro mode.");
             return false;
         }
 
-        var tab = TabView!.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
-        if (tab is null)
+        if (!TryGetTab(pageKey, out var tab))
         {
-            try
-            {
-                var content = info.CreateContent!.Invoke(pageKey, data);
-                var header = info.CreateHeader?.Invoke(content) ?? info.Header ?? info.Text ?? info.Key;
-                var icon = info.CreateIcon?.Invoke(content) ?? info.Icon?.ToIconSource();
-                var menuItems = info.CreateMenu?.Invoke(content) ?? info.Menu;
-
-                tab = new TabViewItem
-                {
-                    Header = header,
-                    Content = content,
-                    Tag = pageKey,
-                    IconSource = icon,
-                };
-
-                tab.RightTapped += (_, e) =>
-                {
-                    tab.ContextFlyout ??= CreateTabPageContextFlyout(menuItems, pageKey);
-                };
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to create tab page: {ex.Message}");
-                PoltergeistApplication.ShowException(ex);
-                return false;
-            }
-
-            if (pageKey == "home")
-            {
-                TabView.TabItems.Insert(0, tab);
-            }
-            else
-            {
-                TabView.TabItems.Add(tab);
-            }
-
-            Logger.Trace($"Created tab page '{pageKey}'.");
-
-            PoltergeistApplication.GetService<AppEventService>().Raise(new PageCreatedHandler(pageKey));
+            tab = CreateTabInternal(pageKey, info, data);
         }
         else if (info.UpdateArguments is not null)
         {
@@ -112,6 +76,90 @@ public class NavigationService : ServiceBase, INavigationService
         return true;
     }
 
+    public bool CreateTab(string pageKey, object? data = null)
+    {
+        if (TabView is null)
+        {
+            return false;
+        }
+
+        if (!CanCreateTab(pageKey))
+        {
+            return false;
+        }
+
+        var info = GetInformation(pageKey);
+        if (info is null)
+        {
+            return false;
+        }
+
+        if (TryGetTab(pageKey, out _))
+        {
+            return false;
+        }
+
+        var tab = CreateTabInternal(pageKey, info, data);
+        return tab is not null;
+    }
+
+    private TabViewItem? CreateTabInternal(string pageKey, NavigationInfo info, object? data = null)
+    {
+        try
+        {
+            var content = info.CreateContent!.Invoke(pageKey, data);
+            var header = info.CreateHeader?.Invoke(content) ?? info.Header ?? info.Text ?? info.Key;
+            var icon = info.CreateIcon?.Invoke(content) ?? IconInfoHelper.ConvertToIconSource(info.Icon);
+            var menuItems = info.CreateMenu?.Invoke(content) ?? info.Menu;
+
+            var tab = new TabViewItem
+            {
+                Header = header,
+                Content = content,
+                Tag = pageKey,
+                IconSource = icon,
+            };
+
+            tab.RightTapped += (_, e) =>
+            {
+                tab.ContextFlyout ??= CreateTabPageContextFlyout(menuItems, pageKey);
+            };
+
+            if (pageKey == "home")
+            {
+                TabView!.TabItems.Insert(0, tab);
+            }
+            else
+            {
+                TabView!.TabItems.Add(tab);
+            }
+
+            Logger.Trace($"Created tab page '{pageKey}'.");
+
+            PoltergeistApplication.GetService<AppEventService>().Publish(new AppWindowPageCreatedEvent(pageKey));
+
+            return tab;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to create tab page: {ex.Message}");
+            PoltergeistApplication.ShowException(ex);
+            return null;
+        }
+    }
+
+    public bool TryGetTab(string pageKey, [MaybeNullWhen(false)] out TabViewItem tab)
+    {
+        if (TabView is null)
+        {
+            tab = null;
+            return false;
+        }
+
+        tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
+        return tab is not null;
+    }
+
     public bool TryCloseTab(string pageKey)
     {
         if (TabView is null)
@@ -119,9 +167,7 @@ public class NavigationService : ServiceBase, INavigationService
             return true;
         }
 
-        var tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
-
-        if (tab is null)
+        if (!TryGetTab(pageKey, out var tab))
         {
             return true;
         }
@@ -155,9 +201,25 @@ public class NavigationService : ServiceBase, INavigationService
         Logger.Trace($"Removed tab page '{tab.Tag}'.");
 
         var pageKey = (string)tab.Tag;
-        PoltergeistApplication.GetService<AppEventService>().Raise(new PageClosedHandler(pageKey));
+        PoltergeistApplication.GetService<AppEventService>().Publish(new AppWindowPageClosedEvent(pageKey));
 
         return true;
+    }
+
+    private bool CanCreateTab(string pageKey)
+    {
+        if (!string.IsNullOrEmpty(PoltergeistApplication.Current.ExclusiveMacroMode) && pageKey != MacroManager.GetPageKey(PoltergeistApplication.Current.ExclusiveMacroMode))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private NavigationInfo? GetInformation(string pageKey)
+    {
+        var navkey = pageKey.Split(":")[0];
+        return Informations.FirstOrDefault(x => x.Key == navkey);
     }
 
     private MenuFlyout CreateTabPageContextFlyout(MenuItemInfo[]? infos, string pageKey)
@@ -171,7 +233,7 @@ public class NavigationService : ServiceBase, INavigationService
                 var menuItem = new MenuFlyoutItem
                 {
                     Text = info.Text,
-                    Icon = info.Icon?.ToIconElement(),
+                    Icon = IconInfoHelper.ConvertToIconElement(info.Icon),
                     Command = info.CanExecute is null ? new RelayCommand(info.Execute) : new RelayCommand(info.Execute, info.CanExecute),
                 };
                 flyout.Items.Add(menuItem);
@@ -189,6 +251,23 @@ public class NavigationService : ServiceBase, INavigationService
         });
 
         return flyout;
+    }
+
+    private void OnAppWindowClosed(AppWindowClosedEvent _)
+    {
+        if (TabView is null)
+        {
+            return;
+        }
+
+        var tabs = TabView.TabItems.OfType<TabViewItem>();
+        foreach (var tab in tabs)
+        {
+            if (tab.Content is IPageClosed pageclosed)
+            {
+                pageclosed.OnPageClosed();
+            }
+        }
     }
 
 }

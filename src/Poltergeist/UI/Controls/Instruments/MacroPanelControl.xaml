@@ -48,7 +48,7 @@
                                 <TextBlock
                                     Text="{Binding Title}"
                                     Margin="8"
-                                    Visibility="{Binding Title, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    Visibility="{Binding Title, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                                 <ContentControl
                                     HorizontalContentAlignment="Stretch"

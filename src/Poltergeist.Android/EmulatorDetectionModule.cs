@@ -21,9 +21,11 @@ public class EmulatorDetectionModule : MacroModule
         { "Nox", DetectNox },
     };
 
-    static EmulatorDetectionModule()
+    public override void OnMacroInitialize(IInitializableMacro macro)
     {
-        GlobalOptions.Add(new ChoiceOption<string>(ConfigKey,
+        base.OnMacroInitialize(macro);
+
+        macro.OptionDefinitions.Add(new ChoiceOption<string>(ConfigKey,
         [
             "Custom",
             .. EmulatorDetections.Keys,
@@ -31,6 +33,7 @@ public class EmulatorDetectionModule : MacroModule
         {
             DisplayLabel = "Emulator",
             Category = "ADB",
+            IsGlobal = true,
         });
     }
 

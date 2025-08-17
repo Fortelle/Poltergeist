@@ -17,6 +17,8 @@ public abstract class ParameterDefinitionBase
 
     public ParameterStatus Status { get; set; }
 
+    public bool IsGlobal { get; set; }
+
     public ParameterDefinitionBase(string key)
     {
         Key = key;

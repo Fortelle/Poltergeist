@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
@@ -15,8 +16,7 @@ public class DialogService
 
     public static async Task ShowAsync(DialogModel model)
     {
-        ObservableParameterItem[]? parameters = null;
-
+        List<ObservableParameterItem>? parameters = null;
         var stackPanel = new StackPanel();
 
         if (!string.IsNullOrEmpty(model.Text))
@@ -31,14 +31,56 @@ public class DialogService
         {
             case InputDialogModel inputDialogModel:
                 {
-                    parameters = inputDialogModel.Inputs.Select(input => new ObservableParameterItem(input)).ToArray();
-                    foreach (var p in parameters)
+                    parameters ??= new();
+                    foreach (var parameterDefinition in inputDialogModel.Inputs)
                     {
-                        stackPanel.Children.Add(new OptionControl()
+                        var omi = new ObservableParameterItem(parameterDefinition);
+                        parameters.Add(omi);
+
+                        var grid = new Grid()
                         {
-                            DataContext = p,
-                            Margin = new Microsoft.UI.Xaml.Thickness(0, 16, 0, 0),
-                        });
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                            ColumnSpacing = 16,
+                            RowSpacing = 8,
+                            Margin = new Thickness(0, 0, 0, 16),
+                        };
+                        var optionControl = new OptionControl()
+                        {
+                            DataContext = omi,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                        };
+                        var labelControl = new TextBlock()
+                        {
+                            Text = parameterDefinition.DisplayLabel ?? "",
+                            VerticalAlignment = VerticalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Stretch,
+                        };
+
+                        switch (inputDialogModel.LabelLayout)
+                        {
+                            case InputDialogLabelLayout.Hidden:
+                            case InputDialogLabelLayout.Top when labelControl.Text.Length == 0:
+                                grid.Children.Add(optionControl);
+                                break;
+                            case InputDialogLabelLayout.Top:
+                                grid.RowDefinitions.Add(new());
+                                grid.RowDefinitions.Add(new());
+                                Grid.SetRow(labelControl, 0);
+                                Grid.SetRow(optionControl, 1);
+                                grid.Children.Add(labelControl);
+                                grid.Children.Add(optionControl);
+                                break;
+                            case InputDialogLabelLayout.Left:
+                                grid.ColumnDefinitions.Add(new() { Width = new(0.3, GridUnitType.Star) });
+                                grid.ColumnDefinitions.Add(new() { Width = new(0.6, GridUnitType.Star) });
+                                Grid.SetColumn(optionControl, 1);
+                                grid.Children.Add(labelControl);
+                                grid.Children.Add(optionControl);
+                                break;
+                        }
+
+                        stackPanel.Children.Add(grid);
                     }
                 }
                 break;
@@ -91,7 +133,8 @@ public class DialogService
                         {
                             if (args.Result == ContentDialogResult.Primary)
                             {
-                                if (inputDialogModel.Valid() is not null)
+                                var paramArgs = parameters?.ToDictionary(x => x.Definition.Key, x => x.Value);
+                                if (inputDialogModel.Valid(paramArgs) is not null)
                                 {
                                     args.Cancel = true;
                                 }
@@ -125,17 +168,16 @@ public class DialogService
 
         model.Result = model.GetDialogResult(dialogResult);
 
-        if (parameters?.Length > 0)
+        if (parameters is not null)
         {
-            model.Values = parameters.Select(x => x.Value).ToArray();
+            model.Parameters = parameters.ToDictionary(x => x.Definition.Key, x => x.Value);
         }
 
-        if (model.ShellKey is not null && model.ProcessId is not null)
+        if (model.ProcessorId is not null)
         {
             var msg = new InteractionMessage()
             {
-                MacroKey = model.ShellKey,
-                ProcessId = model.ProcessId,
+                ProcessorId = model.ProcessorId,
 
                 [InteractionService.InteractionIdKey] = model.Id,
                 [DialogModel.DialogResultKey] = dialogResult switch
@@ -147,11 +189,11 @@ public class DialogService
                 },
             };
 
-            if (parameters?.Length > 0)
+            if (parameters is not null)
             {
-                for (var i = 0; i < parameters.Length; i++)
+                foreach (var parameter in parameters)
                 {
-                    msg.Add(string.Format(DialogModel.DialogValueKey, i), $"{parameters[i].Value}");
+                    msg.Add(string.Format(DialogModel.DialogParameterKey, parameter.Definition.Key), $"{parameter.Value}");
                 }
             }
 
@@ -260,7 +302,7 @@ public class DialogService
 
     public static async Task ShowMessage(string message, string title = "")
     {
-        await PoltergeistApplication.MainWindow.ShowMessageDialogAsync(message, title);
+        await PoltergeistApplication.Current.MainWindow.ShowMessageDialogAsync(message, title);
     }
 
     private static ContentDialog? ProgressDialog { get; set; }
@@ -303,7 +345,7 @@ public class DialogService
 
     private static void SetWindow(object picker)
     {
-        var hWnd = PoltergeistApplication.MainWindow.GetWindowHandle();
+        var hWnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
         InitializeWithWindow.Initialize(picker, hWnd);
     }
 

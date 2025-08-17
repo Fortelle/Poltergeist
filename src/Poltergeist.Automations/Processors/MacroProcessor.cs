@@ -9,10 +9,7 @@ namespace Poltergeist.Automations.Processors;
 
 public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfigurableProcessor, IUserProcessor, IPreparableProcessor
 {
-    public string ProcessId { get; }
-
-    public DateTime StartTime { get; private set; }
-    public DateTime EndTime { get; private set; }
+    public string ProcessorId { get; }
 
     public ServiceCollection? ServiceCollection { get; private set; }
     public ServiceProvider? ServiceProvider { get; private set; }
@@ -33,11 +30,6 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     public ParameterValueCollection Environments { get; } = new();
 
     /// <summary>
-    /// Gets a collection that contains the statistics for the macro processor.
-    /// </summary>
-    public ParameterValueCollection Statistics { get; } = new();
-
-    /// <summary>
     /// Gets a collection that contains temporary data for the macro processor.
     /// </summary>
     /// <remarks>
@@ -50,9 +42,10 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     /// </summary>
     public ParameterValueCollection OutputStorage { get; } = new();
 
-    public LaunchReason Reason { get; private set; }
-
-    public string? Comment { get; set; }
+    /// <summary>
+    /// Gets a collection that contains the processing report.
+    /// </summary>
+    public ParameterValueCollection Report { get; } = new();
 
     public Exception? Exception { get; private set; }
 
@@ -68,7 +61,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     public MacroProcessor(MacroBase macro)
     {
         Macro = macro;
-        ProcessId = Guid.NewGuid().ToString();
+        ProcessorId = Guid.NewGuid().ToString();
 
         Macro.Initialize();
 
@@ -79,26 +72,21 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
             return;
         }
 
-        if (macro.UserOptions?.Count > 0)
+        if (macro.OptionDefinitions?.Count > 0)
         {
-            foreach (var entry in macro.UserOptions)
+            foreach (var entry in macro.OptionDefinitions)
             {
                 Options.TryAdd(entry.Key, entry.DefaultValue);
-            }
-        }
-
-        if (macro.Statistics?.Count > 0)
-        {
-            foreach (var entry in macro.Statistics)
-            {
-                Statistics.TryAdd(entry.Key, entry.DefaultValue);
             }
         }
     }
 
     public MacroProcessor(MacroBase macro, MacroProcessorArguments arguments) : this(macro)
     {
-        Reason = arguments.LaunchReason;
+        if (Status != ProcessorStatus.Idle)
+        {
+            return;
+        }
 
         if (arguments.Options?.Count > 0)
         {
@@ -124,12 +112,9 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
             }
         }
 
-        if (arguments.Statistics is not null && !this.IsIncognitoMode())
+        if (arguments.LaunchReason != LaunchReason.Unknown)
         {
-            foreach (var (key, value) in arguments.Statistics)
-            {
-                Statistics.AddOrUpdate(key, value);
-            }
+            Report.Add("launch_reason", arguments.LaunchReason);
         }
     }
 

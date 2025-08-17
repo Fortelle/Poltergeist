@@ -5,6 +5,7 @@ using Poltergeist.Modules.Events;
 using Poltergeist.Modules.Macros;
 using Poltergeist.Modules.Navigation;
 using Poltergeist.Modules.Settings;
+using Poltergeist.UI.Pages.Macros;
 
 namespace Poltergeist.Helpers;
 
@@ -17,70 +18,64 @@ namespace Poltergeist.Helpers;
 public static class RestorePreviousTabsHelper
 {
     private const string ConfigKey = "restore_previous_tabs";
-    private const string DataKey = "previous_tabs";
+    private const string DataKey = "previous_instances";
 
     public static bool IsEnabled { get; set; } = true;
 
     public static void Inject()
     {
         var eventService = PoltergeistApplication.GetService<AppEventService>();
-        eventService.Subscribe<AppWindowLoadedHandler>(OnAppWindowLoaded);
-        eventService.Subscribe<AppSettingsSavingHandler>(OnAppSettingsSaving);
+        eventService.Subscribe<AppWindowLoadedEvent>(OnAppWindowLoaded);
+        eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed, new() { Priority = 100 });
     }
 
-    private static void OnAppWindowLoaded(AppWindowLoadedHandler e)
+    private static void OnAppWindowLoaded(AppWindowLoadedEvent _)
     {
         var settingsService = PoltergeistApplication.GetService<AppSettingsService>();
-        settingsService.Add(new OptionDefinition<bool>(ConfigKey, false)
+        settingsService.Settings.AddDefinition(new OptionDefinition<bool>(ConfigKey, false)
         {
             Category = PoltergeistApplication.Localize($"Poltergeist/Resources/AppSettings_App"),
             DisplayLabel = PoltergeistApplication.Localize($"Poltergeist/Resources/AppSettings_App_RestorePreviousTabs"),
         });
 
-        if (IsEnabled && settingsService.Get<bool>(ConfigKey))
+        if (IsEnabled && settingsService.Settings.Get<bool>(ConfigKey))
         {
-            var openedPages = settingsService.Get<string[]>(DataKey);
-            if (openedPages?.Length > 0)
+            var previousInstances = settingsService.InternalSettings.Get<string[]>(DataKey);
+            if (previousInstances?.Length > 0)
             {
-                var navigationService = PoltergeistApplication.GetService<INavigationService>();
+                var instanceManager = PoltergeistApplication.GetService<MacroInstanceManager>();
                 var macroManager = PoltergeistApplication.GetService<MacroManager>();
-                foreach (var pageKey in openedPages)
+                foreach (var instanceId in previousInstances)
                 {
-                    if (pageKey.StartsWith("macro:"))
+                    var instance = instanceManager.GetInstance(instanceId);
+                    if (instance is not null)
                     {
-                        var shellKey = pageKey.Split(':', 2)[1];
-                        if (macroManager.GetShell(shellKey)?.Template is null)
-                        {
-                            continue;
-                        }
-                        navigationService.NavigateTo(pageKey);
+                        macroManager.OpenPage(instance);
                     }
                 }
             }
         }
-
-        settingsService.Remove(DataKey);
     }
 
-    private static void OnAppSettingsSaving(AppSettingsSavingHandler e)
+    private static void OnAppWindowClosed(AppWindowClosedEvent _)
     {
-        if (IsEnabled && e.Settings.Get<bool>(ConfigKey))
+        var settingsService = PoltergeistApplication.GetService<AppSettingsService>();
+        if (IsEnabled && settingsService.Settings.Get<bool>(ConfigKey))
         {
             var navigationService = PoltergeistApplication.GetService<INavigationService>();
             var openedTabs = navigationService.TabView?.TabItems
                 .OfType<TabViewItem>()
-                .Where(x => x.Tag is string s && s.StartsWith("macro:"))
-                .Select(x => (string)x.Tag)
+                .Where(x => x.Content is MacroPage macroPage && macroPage.ViewModel.Instance.IsPersistent)
+                .Select(x => ((MacroPage)x.Content).ViewModel.Instance.InstanceId)
                 .ToArray();
             if (openedTabs?.Length > 0)
             {
-                e.Settings.Set(DataKey, openedTabs);
+                settingsService.InternalSettings.Set(DataKey, openedTabs);
             }
         }
         else
         {
-            e.Settings.Remove(DataKey);
+            settingsService.InternalSettings.Remove(DataKey);
         }
     }
-
 }

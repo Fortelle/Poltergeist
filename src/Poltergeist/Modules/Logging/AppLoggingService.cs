@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Modules.Logging;
 
@@ -18,8 +19,18 @@ public class AppLoggingService : IDisposable
     {
 #if DEBUG
         IsTraceEnabled = true;
-        OpenFile(PoltergeistApplication.Paths.LogFolder);
 #endif
+
+        PoltergeistApplication.Current.Settings.AddDefinition(new OptionDefinition<bool>("applogtofile", false)
+        {
+            Category = PoltergeistApplication.Localize($"Poltergeist/Resources/AppSettings_App"),
+            DisplayLabel = PoltergeistApplication.Localize($"Poltergeist/Resources/AppSettings_LogToFile"),
+        });
+
+        if (PoltergeistApplication.Current.Settings.Get<bool>("applogtofile") || PoltergeistApplication.Current.StartupOptions.Contains("applogtofile"))
+        {
+            OpenFile(PoltergeistApplication.Paths.LogFolder);
+        }
     }
 
     private void OpenFile(string folder)
@@ -35,6 +46,11 @@ public class AppLoggingService : IDisposable
 
     public void Log(AppLogEntry entry)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (entry.Level == AppLogLevel.Trace && !IsTraceEnabled)
         {
             return;
@@ -76,6 +92,7 @@ public class AppLoggingService : IDisposable
         if (disposing)
         {
             LogFileWriter?.Dispose();
+            LogFileWriter = null;
         }
 
         IsDisposed = true;

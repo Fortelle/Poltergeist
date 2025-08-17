@@ -1,8 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Helpers;
-using Poltergeist.Modules.Navigation;
-using Poltergeist.UI.Pages.Macros;
 
 namespace Poltergeist.Modules.App;
 
@@ -36,73 +33,6 @@ public class ActionService
             case CompletionAction.RestoreApplication:
                 ApplicationHelper.BringToFront();
                 break;
-        }
-    }
-
-    public static void RunMacro(LaunchReason reason, bool toggle)
-    {
-        var navigationService = PoltergeistApplication.GetService<INavigationService>();
-        if (navigationService.TabView!.SelectedItem is not TabViewItem tabViewItem)
-        {
-            return;
-        }
-
-        if (tabViewItem.Content is not MacroPage macroPage)
-        {
-            return;
-        }
-
-        if (macroPage.ViewModel!.IsRunning)
-        {
-            if (toggle)
-            {
-                macroPage.ViewModel.Stop();
-            }
-            else
-            {
-                PoltergeistApplication.ShowTeachingTip(PoltergeistApplication.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Shell.Title));
-                return;
-            }
-        }
-        else
-        {
-            macroPage.ViewModel.Start(new()
-            {
-                ShellKey = macroPage.ViewModel.Shell.ShellKey,
-                Reason = reason,
-            });
-        }
-    }
-
-    public static void RunMacro(MacroStartArguments args)
-    {
-        var pageKey = "macro:" + args.ShellKey;
-
-        var navigationService = PoltergeistApplication.GetService<INavigationService>();
-        if (!navigationService.NavigateTo(pageKey))
-        {
-            return;
-        }
-        if (navigationService.TabView!.SelectedItem is not TabViewItem tabViewItem)
-        {
-            return;
-        }
-        if (tabViewItem.Tag.ToString() != pageKey)
-        {
-            return;
-        }
-        if (tabViewItem.Content is not MacroPage macroPage)
-        {
-            return;
-        }
-        if (macroPage.ViewModel!.IsRunning)
-        {
-            PoltergeistApplication.ShowTeachingTip(PoltergeistApplication.Localize($"Poltergeist/Macro/MacroAlreadyRunning", macroPage.ViewModel.Shell.Title));
-            return;
-        }
-        else
-        {
-            macroPage.ViewModel.Start(args);
         }
     }
 

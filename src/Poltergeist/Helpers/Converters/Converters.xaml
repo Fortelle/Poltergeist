@@ -4,7 +4,8 @@
     xmlns:local="using:Poltergeist.Helpers.Converters"
     >
 
-    <local:FalsyToVisibilityConverter x:Key="FalsyToVisibilityConverter" />
+    <local:FalsyToCollapsedConverter x:Key="FalsyToCollapsedConverter" />
+    <local:TruthyToCollapsedConverter x:Key="TruthyToCollapsedConverter" />
     <local:EnumToStringConverter x:Key="EnumToStringConverter" />
     <local:NotConverter x:Key="NotConverter" />
     

@@ -8,7 +8,7 @@ public class ConfigVariation
 
     public string? Icon { get; set; }
 
-    public bool IgnoresUserOptions { get; set; }
+    public bool IncognitoMode { get; set; }
 
     public bool IsDevelopmentOnly { get; set; }
 

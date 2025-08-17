@@ -4,7 +4,7 @@ using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Components.Loops;
 
-public class LoopMacro : MacroBase
+public class LoopMacro : CommonMacroBase
 {
     public LoopOptions LoopOptions { get; } = new()
     {
@@ -18,10 +18,9 @@ public class LoopMacro : MacroBase
     public Action<LoopCheckContinueArguments>? CheckContinue;
     public Action<ArgumentService>? After;
 
-    public LoopMacro(string name) : base(name)
+    public LoopMacro(string? name = null) : base(name)
     {
         Modules.Add(new LoopModule(LoopOptions));
-        Modules.Add(new CompleteModule());
     }
 
     protected override void OnConfigure(IConfigurableProcessor processor)

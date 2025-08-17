@@ -25,12 +25,14 @@ public class LoopModule : MacroModule
     {
         base.OnMacroInitialize(macro);
 
-        macro.Statistics.Add(new ParameterDefinition<int>(LoopService.StatisticTotalIterationCountKey)
+        macro.StatisticDefinitions.Add(new StatisticDefinition<int>(LoopService.StatisticTotalIterationCountKey)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
+            TargetKey = LoopService.ReportIterationCountKey,
+            Update = (total, next) => total + next,
         });
 
-        macro.UserOptions.Add(new OptionDefinition<bool>(LoopService.ConfigEnableKey, true)
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>(LoopService.ConfigEnableKey, true)
         {
             DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Enable"),
             Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
@@ -38,7 +40,7 @@ public class LoopModule : MacroModule
 
         if (Options?.IsCountLimitable == true)
         {
-            macro.UserOptions.Add(new OptionDefinition<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
+            macro.OptionDefinitions.Add(new OptionDefinition<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
             {
                 DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Count"),
                 Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
@@ -47,7 +49,7 @@ public class LoopModule : MacroModule
 
         if (Options?.IsDurationLimitable == true)
         {
-            macro.UserOptions.Add(new OptionDefinition<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
+            macro.OptionDefinitions.Add(new OptionDefinition<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
             {
                 DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Duration"),
                 Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
@@ -59,10 +61,14 @@ public class LoopModule : MacroModule
     {
         base.OnProcessorConfigure(processor);
 
-        processor.Services.AddSingleton<IOptions<LoopOptions>>(new OptionsWrapper<LoopOptions>(Options));
-
         processor.Services.AddTransient<LoopBeforeArguments>();
         processor.Services.AddSingleton<LoopService>();
     }
 
+    public override void OnProcessorPrepare(IPreparableProcessor processor)
+    {
+        base.OnProcessorPrepare(processor);
+
+        processor.SessionStorage.TryAdd("loop-options", Options);
+    }
 }

@@ -27,7 +27,7 @@ public class GridInstrumentViewModel : IInstrumentViewModel
         IconWidth = model.IconWidth ?? model.IconSize ?? DefaultIconSize;
         IconHeight = model.IconHeight ?? model.IconSize ?? DefaultIconSize;
 
-        Items = new(model.Items, ModelToViewModel, PoltergeistApplication.MainWindow.DispatcherQueue);
+        Items = new(model.Items, ModelToViewModel, PoltergeistApplication.Current.DispatcherQueue);
     }
 
     private GridInstrumentItemViewModel? ModelToViewModel(GridInstrumentItem? item)

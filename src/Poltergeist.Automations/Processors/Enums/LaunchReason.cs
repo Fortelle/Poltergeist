@@ -3,8 +3,8 @@
 public enum LaunchReason
 {
     Unknown,
-    ByUser,
-    ByCommandLine,
-    ByAnotherMacro,
-    ByScheduler,
+    Manual,
+    CommandLine,
+    PipeMessage,
+    Invocation,
 }

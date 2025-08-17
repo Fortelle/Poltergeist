@@ -141,8 +141,8 @@
   <data name="EndReason_Unstarted" xml:space="preserve">
     <value>Unstarted</value>
   </data>
-  <data name="EndReason_Stopped" xml:space="preserve">
-    <value>Aborted</value>
+  <data name="EndReason_Interrupted" xml:space="preserve">
+    <value>Stopped</value>
   </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
     <value>Comment</value>
@@ -177,31 +177,31 @@
   <data name="OptionsPivotItem.Header" xml:space="preserve">
     <value>Options</value>
   </data>
-  <data name="PropertiesPivotItem.Header" xml:space="preserve">
-    <value>Properties</value>
+  <data name="MetadataPivotItem.Header" xml:space="preserve">
+    <value>Metadata</value>
   </data>
-  <data name="PropertyLabel_assembly_location" xml:space="preserve">
+  <data name="MetadataLabel_assembly_location" xml:space="preserve">
     <value>Assembly Location</value>
   </data>
-  <data name="PropertyLabel_assembly_name" xml:space="preserve">
+  <data name="MetadataLabel_assembly_name" xml:space="preserve">
     <value>Assembly Name</value>
   </data>
-  <data name="PropertyLabel_assembly_version" xml:space="preserve">
+  <data name="MetadataLabel_assembly_version" xml:space="preserve">
     <value>Assembly Version</value>
   </data>
-  <data name="PropertyLabel_shell_created_time" xml:space="preserve">
+  <data name="MetadataLabel_instance_created_time" xml:space="preserve">
     <value>Created Time</value>
   </data>
-  <data name="PropertyLabel_shell_key" xml:space="preserve">
-    <value>Shell Key</value>
+  <data name="MetadataLabel_instance_id" xml:space="preserve">
+    <value>Instance Id</value>
   </data>
-  <data name="PropertyLabel_shell_private_folder" xml:space="preserve">
+  <data name="MetadataLabel_instance_private_folder" xml:space="preserve">
     <value>Private Folder Location</value>
   </data>
-  <data name="PropertyLabel_template_key" xml:space="preserve">
+  <data name="MetadataLabel_template_key" xml:space="preserve">
     <value>Template Key</value>
   </data>
-  <data name="PropertyLabel_template_version" xml:space="preserve">
+  <data name="MetadataLabel_template_version" xml:space="preserve">
     <value>Template Version</value>
   </data>
   <data name="RunAppBarButton.Label" xml:space="preserve">

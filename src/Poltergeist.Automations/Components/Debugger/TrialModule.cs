@@ -1,5 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components.Debugger;
@@ -19,6 +20,7 @@ public class TrialModule : MacroModule
         macro.ConfigVariations.Add(new()
         {
             Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/TrialModule_ConfigTitle"),
+            IncognitoMode = true,
             OptionOverrides = new()
             {
                 {LoopService.ConfigEnableKey, false},
@@ -26,7 +28,6 @@ public class TrialModule : MacroModule
             EnvironmentOverrides = new()
             {
                 {TrialModeKey, true },
-                {"incognito_mode", true },
             }
         });
     }

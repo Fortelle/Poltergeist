@@ -117,11 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChangeIconDialog_Title" xml:space="preserve">
-    <value>Change Icon</value>
-  </data>
-  <data name="ChangeIconMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Change Icon</value>
+  <data name="EditPropertiesMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Properties</value>
   </data>
   <data name="DateTimeToAgo_1" xml:space="preserve">
     <value>a minute ago</value>
@@ -158,26 +155,14 @@ All data and files of this macro will be lost permanently.</value>
   <data name="MacroListViewHeader.Text" xml:space="preserve">
     <value>Macros</value>
   </data>
-  <data name="NewMacroButton.Label" xml:space="preserve">
+  <data name="NewInstanceButton.Label" xml:space="preserve">
     <value>New Macro</value>
   </data>
-  <data name="NewMacroDialog_Name.Text" xml:space="preserve">
-    <value>Name:</value>
-  </data>
-  <data name="NewMacroDialog_Template.Text" xml:space="preserve">
-    <value>Template:</value>
-  </data>
-  <data name="NewMacroDialog_Title" xml:space="preserve">
+  <data name="NewInstanceDialog_Title" xml:space="preserve">
     <value>New Macro</value>
   </data>
   <data name="OpenMenuFlyoutItem.Text" xml:space="preserve">
     <value>Open</value>
-  </data>
-  <data name="RenameMacroDialog_Title" xml:space="preserve">
-    <value>Rename Macro</value>
-  </data>
-  <data name="RenameMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Rename</value>
   </data>
   <data name="TemplateListViewHeader.Text" xml:space="preserve">
     <value>Template</value>
@@ -185,7 +170,52 @@ All data and files of this macro will be lost permanently.</value>
   <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
     <value>Total run count</value>
   </data>
-  <data name="StickyMenuFlyoutItem.Text" xml:space="preserve">
-    <value>Sticky</value>
+  <data name="MacroPropertyLabel_IsFavorite" xml:space="preserve">
+    <value>Sticky:</value>
+  </data>
+  <data name="EditInstancePropertiesDialog_Title" xml:space="preserve">
+    <value>Macro Properties</value>
+  </data>
+  <data name="MacroPropertyLabel_Key" xml:space="preserve">
+    <value>Key:</value>
+  </data>
+  <data name="MacroPropertyLabel_Title" xml:space="preserve">
+    <value>Title:</value>
+  </data>
+  <data name="MacroPropertyLabel_Description" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="MacroPropertyLabel_Icon" xml:space="preserve">
+    <value>Icon:</value>
+  </data>
+  <data name="InstanceKeyExistsMessage" xml:space="preserve">
+    <value>Key already exists</value>
+  </data>
+  <data name="CreateShortcutMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Create shortcut</value>
+  </data>
+  <data name="CreateShortcut_Dialog_Title" xml:space="preserve">
+    <value>Create Shortcut</value>
+  </data>
+  <data name="CreateShortcut_Dialog_AutoStart" xml:space="preserve">
+    <value>Run the macro on startup</value>
+  </data>
+  <data name="CreateShortcut_Dialog_AutoClose" xml:space="preserve">
+    <value>Exit the application on complete</value>
+  </data>
+  <data name="CreateShortcut_Dialog_ExclusiveMode" xml:space="preserve">
+    <value>Use the exclusive macro layout</value>
+  </data>
+  <data name="CreateShortcut_Dialog_OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="CreateShortcut_Dialog_Message" xml:space="preserve">
+    <value>A shortcut has been created successfully.</value>
+  </data>
+  <data name="CreateShortcut_Filter" xml:space="preserve">
+    <value>Desktop shortcut (*.lnk)</value>
+  </data>
+  <data name="OpenPrivateFolderMenuFlyoutItem.Text" xml:space="preserve">
+    <value>Open macro folder</value>
   </data>
 </root>

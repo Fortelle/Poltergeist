@@ -2,7 +2,7 @@
 
 namespace Poltergeist.UI.Pages.Settings;
 
-public sealed partial class SettingsPage : Page
+public sealed partial class SettingsPage : Page, IPageClosed 
 {
     public SettingsViewModel ViewModel { get; }
 
@@ -11,5 +11,10 @@ public sealed partial class SettingsPage : Page
         ViewModel = viewmodel;
 
         InitializeComponent();
+    }
+
+    public void OnPageClosed()
+    {
+        ViewModel.Save(true);
     }
 }

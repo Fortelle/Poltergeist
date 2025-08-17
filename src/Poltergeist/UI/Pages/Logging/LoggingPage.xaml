@@ -67,7 +67,7 @@
                                 TextAlignment="Center"
                                 VerticalAlignment="Top"
                                 Text="{Binding Sender, Mode=OneTime}"
-                                Visibility="{Binding ViewModel.ShowsSender, ElementName=Root, Converter={StaticResource FalsyToVisibilityConverter}, Mode=OneWay}"
+                                Visibility="{Binding ViewModel.ShowsSender, ElementName=Root, Converter={StaticResource FalsyToCollapsedConverter}, Mode=OneWay}"
                                 />
                             <TextBlock
                                 Grid.Column="3"

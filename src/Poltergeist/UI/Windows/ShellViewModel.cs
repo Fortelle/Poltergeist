@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Poltergeist.Modules.CommandLine;
 
 namespace Poltergeist.UI.Windows;
 
@@ -18,7 +17,7 @@ public partial class ShellViewModel : ObservableRecipient
 
     public bool IsDevelopment { get; }
     public bool IsAdministrator { get; }
-    public bool IsSingleMacroMode { get; }
+    public bool IsExclusiveMacroMode { get; }
 
     private bool _showPerformance;
     public bool ShowPerformance
@@ -50,10 +49,10 @@ public partial class ShellViewModel : ObservableRecipient
 
     public ShellViewModel()
     {
-        IsDevelopment = App.IsDevelopment;
-        IsSingleMacroMode = App.SingleMacroMode is not null;
-        IsAdministrator = PoltergeistApplication.IsAdministrator;
-        ShowPerformance = CommandLineService.StartupOptions.Contains("ShowPerformance");
+        IsDevelopment = App.Current.IsDevelopment;
+        IsExclusiveMacroMode = App.Current.ExclusiveMacroMode is not null;
+        IsAdministrator = App.Current.IsAdministrator;
+        ShowPerformance = App.Current.StartupOptions.Contains("ShowPerformance");
     }
 
     private void Timer_Elapsed(object? sender, ElapsedEventArgs e)

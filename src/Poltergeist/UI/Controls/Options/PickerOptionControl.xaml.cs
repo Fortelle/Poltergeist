@@ -117,7 +117,7 @@ public sealed partial class PickerOptionControl : UserControl
 
     private static void SetWindow(object picker)
     {
-        var hWnd = App.MainWindow.GetWindowHandle();
+        var hWnd = App.Current.MainWindow.GetWindowHandle();
         WinRT.Interop.InitializeWithWindow.Initialize(picker, hWnd);
     }
 

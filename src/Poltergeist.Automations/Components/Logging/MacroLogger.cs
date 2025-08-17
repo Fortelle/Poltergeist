@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
-using Microsoft.Extensions.Options;
 using Microsoft.UI;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
@@ -12,8 +12,11 @@ namespace Poltergeist.Automations.Components.Logging;
 
 public class MacroLogger : KernelService
 {
-    public const string FileLogLevelKey = "logger.tofile";
-    public const string FrontLogLevelKey = "logger.toconsole";
+    public const string ToFileLevelKey = "macrologger_tofile";
+    public const string ToDashboardLevelKey = "macrologger_todashboard";
+    public const string ToProcessorLevelKey = "macrologger_toprocessor";
+    public const string ToDebugLevelKey = "macrologger_todebug";
+    public const string ToConsoleLevelKey = "macrologger_toconsole";
 
     private readonly Dictionary<LogLevel, Color> LogColors = new()
     {
@@ -26,8 +29,6 @@ public class MacroLogger : KernelService
         [LogLevel.None] = Colors.Black,
     };
 
-    private readonly LoggerOptions Options;
-
     private Stream? LogFileStream;
     private TextWriter? LogFileWriter;
     private BlockingCollection<string>? WritingQueue;
@@ -39,31 +40,61 @@ public class MacroLogger : KernelService
 
     public int IndentLevel { get; set; }
     private readonly bool IsTraceEnabled = false;
-    private bool CanLogToFile { get; set; }
 
-    public MacroLogger(MacroProcessor processor, IOptions<LoggerOptions> options) : base(processor)
+    private readonly LogLevel ToFileLevel;
+    private readonly LogLevel ToFrontLevel;
+    private readonly LogLevel ToProcessorLevel;
+    private readonly LogLevel ToDebugLevel;
+    private readonly LogLevel ToConsoleLevel;
+
+    public MacroLogger(MacroProcessor processor) : base(processor)
     {
-        Options = options.Value;
-        CanLogToFile = Options.Filename is not null && Options.FileLogLevel < LogLevel.None && !processor.IsIncognitoMode();
+        ToFileLevel = processor.Options.GetValueOrDefault(ToFileLevelKey, LogLevel.None);
+        ToFrontLevel = processor.Options.GetValueOrDefault(ToDashboardLevelKey, LogLevel.None);
+        ToProcessorLevel = processor.Options.GetValueOrDefault(ToProcessorLevelKey, LogLevel.None);
+        ToDebugLevel = processor.Options.GetValueOrDefault(ToDebugLevelKey, LogLevel.None);
+        ToConsoleLevel = processor.Options.GetValueOrDefault(ToConsoleLevelKey, LogLevel.None);
+
 #if DEBUG
         IsTraceEnabled = true;
 #endif
     }
 
+    private string? GetLogFilename()
+    {
+        if (Processor.IsIncognitoMode())
+        {
+            return null;
+        }
+
+        if (ToFileLevel == LogLevel.None)
+        {
+            return null;
+        }
+
+        if (!Processor.Environments.TryGetValue<string>("private_folder", out var privateFolder))
+        {
+            return null;
+        }
+
+        return Path.Combine(privateFolder, "Logs", $"{Processor.ProcessorId}.log");
+    }
+
     internal void Load()
     {
-        if (CanLogToFile)
+        var logFilename = GetLogFilename();
+        if (logFilename is not null)
         {
             WritingQueue = new(256);
 
             try
             {
-                var fileInfo = new FileInfo(Options.Filename!);
+                var fileInfo = new FileInfo(logFilename);
                 if (fileInfo.Directory is not null && fileInfo.Directory.FullName != fileInfo.Directory.Root.FullName)
                 {
                     fileInfo.Directory.Create();
                 }
-                LogFileStream = new FileStream(Options.Filename!, FileMode.OpenOrCreate, FileAccess.Write);
+                LogFileStream = new FileStream(logFilename, FileMode.OpenOrCreate, FileAccess.Write);
                 LogFileWriter = new StreamWriter(LogFileStream);
 
                 Task.Factory.StartNew(WriteFile, this, TaskCreationOptions.LongRunning);
@@ -119,11 +150,6 @@ public class MacroLogger : KernelService
             return;
         }
 
-        if (logLevel < Options.FileLogLevel && logLevel < Options.FrontLogLevel)
-        {
-            return;
-        }
-
         var entry = new LogEntry()
         {
             Sender = sender,
@@ -145,16 +171,28 @@ public class MacroLogger : KernelService
 
     private void Log(LogEntry entry)
     {
-        if (entry.Level >= Options.FileLogLevel)
+        if (entry.Level >= ToFileLevel)
         {
             ToFile(entry);
         }
-        if (entry.Level >= Options.FrontLogLevel)
+        if (entry.Level >= ToFrontLevel)
         {
             ToFront(entry);
         }
+        if (entry.Level >= ToProcessorLevel)
+        {
+            ToProcessor(entry);
+        }
+        if (entry.Level >= ToDebugLevel)
+        {
+            ToDebugOutput(entry);
+        }
+        if (entry.Level >= ToConsoleLevel)
+        {
+            ToConsoleOutput(entry);
+        }
     }
-
+    
     private void ToFile(LogEntry entry)
     {
         if (WritingQueue is null)
@@ -192,7 +230,7 @@ public class MacroLogger : KernelService
         {
             message = $"[{entry.Sender}] {message}";
         }
-        if (entry.IndentLevel > 0 && Options.FrontLogLevel <= LogLevel.Trace)
+        if (entry.IndentLevel > 0 && ToFrontLevel <= LogLevel.Trace)
         {
             message = new string(' ', 4 * entry.IndentLevel) + message;
         }
@@ -204,6 +242,22 @@ public class MacroLogger : KernelService
         };
 
         LogInstrument?.WriteLine(line);
+    }
+
+    private void ToProcessor(LogEntry entry)
+    {
+        var args = new LogWrittenEventArgs(entry);
+        Processor.RaiseEvent(ProcessorEvent.LogWritten, args);
+    }
+
+    private void ToDebugOutput(LogEntry entry)
+    {
+        Debug.WriteLine(entry.Message);
+    }
+
+    private void ToConsoleOutput(LogEntry entry)
+    {
+        Console.WriteLine(entry.Message);
     }
 
     private static string ToShortLevel(LogLevel level)

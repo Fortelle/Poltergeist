@@ -8,12 +8,12 @@ public class DateTimeToAgoConverter : IValueConverter
     {
         if (value is not DateTime datetime)
         {
-            return null;
+            return "--";
         }
 
         if (datetime == default)
         {
-            return null;
+            return "--";
         }
 
         var timespan = DateTime.Now - datetime;

@@ -6,7 +6,7 @@ using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Operations.Macros;
 
-public class AndroidEmulatorMacro : MacroBase
+public class AndroidEmulatorMacro : CommonMacroBase
 {
     public Action<ArgumentService>? BeforeConnect;
     public Action<ArgumentService, AndroidEmulatorOperator>? AfterConnect;

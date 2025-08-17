@@ -1,168 +1,191 @@
 ﻿using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Poltergeist.Modules.Events;
 
 public class AppEventService : ServiceBase
 {
-    private readonly Dictionary<Type, AppEventDelegator> Delegators = new();
+    private readonly Dictionary<Type, AppEventChannel> Channels = new();
 
-    public void Subscribe<T>(Action<T> handler, bool once = false, int priority = 0) where T : AppEventHandler
+    public AppEventService()
     {
-        var eventType = typeof(T);
-        AddEventListener(new AppEventListener(eventType, handler)
+    }
+
+    public void Subscribe<T>(Action<T> callback, AppEventSubscriptionOptions? options = null) where T : AppEvent
+    {
+        AddSubscription(new AppEventSubscription(typeof(T), callback, options ?? new())
         {
-            Once = once,
-            Priority = priority,
             Subscriber = GetCallingClassName(2),
-            IsAsync = eventType.GetCustomAttribute<AsyncStateMachineAttribute>() is not null,
         });
     }
 
-    public void Subscribe<T>(Func<T, Task> handler, bool once = false, int priority = 0) where T : AppEventHandler
+    public void Subscribe(Type type, Delegate callback, AppEventSubscriptionOptions? options = null)
     {
-        AddEventListener(new AppEventListener(typeof(T), handler)
+        AddSubscription(new (type, callback, options ?? new())
         {
-            Once = once,
-            Priority = priority,
             Subscriber = GetCallingClassName(2),
-            IsAsync = true,
         });
     }
 
-    public void Unsubscribe<T>(Action<T> handler) where T : AppEventHandler
+    private void AddSubscription(AppEventSubscription subscription)
     {
-        var eventName = typeof(T).Name.Replace("Handler", null);
+        var channel = GetOrCreateEventChannel(subscription.EventType);
 
-        if (!Delegators.TryGetValue(typeof(T), out var delegator))
+        if (channel.IsStrictOneTime && channel.HasFired)
         {
-            Logger.Trace($"Failed to unsubscribe to event '{eventName}': Delegator not found.");
-            return;
+            throw new InvalidOperationException($"Cannot subscribe to one-time event {channel.EventName} after it has been fired.");
         }
 
-        var listener = delegator.GetListener(handler);
+        channel.Subscriptions.Add(subscription);
 
-        if (listener is null)
+        Logger.Trace($"'{subscription.Subscriber}' subscribed to event '{subscription.EventName}'.", new
         {
-            Logger.Trace($"Failed to unsubscribe to event '{eventName}': Listener not found.");
-            return;
+            subscription.EventName,
+            subscription.Subscriber,
+            subscription.Options,
+        });
+    }
+
+    private void ExecuteSubscription(AppEventSubscription subscription, AppEvent? @event)
+    {
+        subscription.Callback.DynamicInvoke(@event);
+    }
+
+    public bool Unsubscribe<T>(Action<T> handler) where T : AppEvent
+    {
+        var eventName = AppEvent.GetEventName(typeof(T));
+
+        if (!Channels.TryGetValue(typeof(T), out var channel))
+        {
+            Logger.Trace($"Failed to unsubscribe to event '{eventName}': The handler is not registered.");
+            return false;
         }
 
-        delegator.Listeners.Remove(listener);
-        Logger.Trace($"Removed the listener from event '{eventName}'.");
+        var subscription = channel.Subscriptions.FirstOrDefault(x => x.Callback.Equals(handler));
+
+        if (subscription is null)
+        {
+            Logger.Trace($"Failed to unsubscribe to event '{eventName}': The handler is not registered.");
+            return false;
+        }
+
+        channel.Subscriptions.Remove(subscription);
+
+        Logger.Trace($"Removed the subscription from event '{eventName}'.");
+
+        return true;
     }
 
-    public void Raise<T>(T handler, bool dispose = false) where T : AppEventHandler
+    public void Publish<T>(T handler) where T : AppEvent
     {
-        InternalRaise(handler, dispose);
+        PublishInternal(handler);
     }
 
-    public T Raise<T>(bool dispose = false) where T : AppEventHandler, new()
+    public T Publish<T>() where T : AppEvent, new()
     {
         var handler = new T();
-        InternalRaise(handler, dispose);
+        PublishInternal(handler);
         return handler;
     }
 
     public void SubscribeMethods(object target)
     {
-        var subscriberType = typeof(AppEventSubscriberAttribute);
         var targetType = target.GetType();
         var targetMethods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var method in targetMethods)
         {
-            if (method.GetCustomAttribute(subscriberType, true) is not AppEventSubscriberAttribute subscriberAttribute)
+            var subscriberAttribute = method.GetCustomAttribute<AppEventSubscriberAttribute>(inherit: true);
+            if (subscriberAttribute is null)
             {
                 continue;
             }
-            var methodParameters = method.GetParameters();
-            var handlerType = methodParameters[0].ParameterType;
-            var delegateType = Expression.GetDelegateType([.. methodParameters.Select(x => x.ParameterType), method.ReturnType]);
-            var del = method.CreateDelegate(delegateType, target);
-            var listener = new AppEventListener(handlerType, del)
+            var options = new AppEventSubscriptionOptions()
             {
                 Once = subscriberAttribute.Once,
                 Priority = subscriberAttribute.Priority,
-                Subscriber = targetType.Name
             };
-            AddEventListener(listener);
+            var methodParameters = method.GetParameters();
+            var eventType = methodParameters[0].ParameterType;
+            var handlerType = Expression.GetDelegateType([.. methodParameters.Select(x => x.ParameterType), method.ReturnType]);
+            var handler = method.CreateDelegate(handlerType, target);
+            AddSubscription(new(eventType, handler, options)
+            {
+                Subscriber = targetType.Name,
+            });
         }
     }
 
-    private void AddEventListener(AppEventListener listener)
+    private AppEventChannel GetOrCreateEventChannel(Type eventType)
     {
-        if (!Delegators.TryGetValue(listener.Type, out var delegator))
+        if (!Channels.TryGetValue(eventType, out var channel))
         {
-            delegator = new(listener.Type);
-            Delegators.Add(listener.Type, delegator);
+            channel = new AppEventChannel(eventType);
+            Channels.Add(eventType, channel);
+            Logger.Trace($"Created event channel '{channel.EventName}'.");
         }
-        delegator.Listeners.Add(listener);
 
-        Logger.Trace($"'{listener.Subscriber}' subscribed to event '{delegator.EventName}'.", new
-        {
-            delegator.EventName,
-            listener.Subscriber,
-            listener.Once,
-            listener.Priority,
-            listener.IsAsync,
-        });
+        return channel;
     }
 
-    private void InternalRaise(AppEventHandler handler, bool dispose)
+    private void PublishInternal(AppEvent @event)
     {
-        var eventType = handler.GetType();
-        var eventName = eventType.Name.Replace("Handler", null);
+        var eventType = @event.GetType();
+        var eventName = AppEvent.GetEventName(eventType);
         var publisher = GetCallingClassName(3);
 
         Logger.Trace($"Event '{eventName}' is emitted.", new { publisher });
 
-        if (!Delegators.TryGetValue(eventType, out var delegator))
+        var channel = GetOrCreateEventChannel(eventType);
+
+        if (channel.IsStrictOneTime && channel.HasFired)
         {
-            Logger.Trace($"Executed event '{eventName}': No listener is registered.");
-            return;
+            throw new InvalidOperationException("Cannot publish a one-time event after it has been fired.");
         }
 
-        var listeners = delegator.Listeners.OrderByDescending(x => x.Priority).ToArray();
+        var subscriptions = channel.Subscriptions.OrderByDescending(x => x.Options.Priority).ToArray();
         var index = 0;
-        foreach (var listener in listeners)
+        foreach (var subscription in subscriptions)
         {
-            Logger.Trace($"Executing the listener registered by '{listener.Subscriber}' for event '{eventName}'. ({index + 1}/{listeners.Length})", new
+            Logger.Trace($"Executing the subscription registered by '{subscription.Subscriber}' for event '{eventName}'. ({index + 1}/{subscriptions.Length})", new
             {
-                eventType.Name,
+                eventName,
                 publisher,
-                listener.Subscriber,
-                listener.IsAsync,
+                subscription.Subscriber,
             });
 
-            listener.Callback.DynamicInvoke(handler);
+            ExecuteSubscription(subscription, @event);
 
-            if (listener.Once)
+            if (channel.IsStrictOneTime)
             {
-                delegator.Listeners.Remove(listener);
-                Logger.Trace($"Removed the listener from event '{eventName}'.", new
+                channel.Subscriptions.Remove(subscription);
+                Logger.Trace($"Removed the subscription from one-time event '{eventName}'.", new
                 {
-                    Handler = eventType.Name,
-                    Publisher = publisher,
-                    Subscriber = listener.Subscriber,
+                    eventName,
+                    publisher,
+                    subscription.Subscriber,
+                });
+            }
+            else if (subscription.Options.Once)
+            {
+                channel.Subscriptions.Remove(subscription);
+                Logger.Trace($"Removed the one-time subscription from event '{eventName}'.", new
+                {
+                    eventName,
+                    publisher,
+                    subscription.Subscriber,
                 });
             }
 
             index += 1;
         }
 
-        if (dispose && delegator.Listeners.Count > 0)
+        if (channel.IsStrictOneTime)
         {
-            delegator.Listeners.Clear();
-            Logger.Trace($"Removed all listeners from event '{eventName}'.", new
-            {
-                Handler = eventType.Name,
-                Publisher = publisher,
-            });
+            channel.HasFired = true;
         }
 
-        Logger.Trace($"Executed event '{eventName}' with {listeners.Length} listeners.");
+        Logger.Trace($"Executed event '{eventName}' with {subscriptions.Length} subscriptions.");
     }
 
     private static string? GetCallingClassName(int skipFrames)

@@ -3,15 +3,13 @@ using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
-using Poltergeist.Modules.Navigation;
-using Poltergeist.UI.Pages.Macros;
 
 namespace Poltergeist.Modules.Macros;
 
 public class MacroCommandLineParser : CommandLineParser
 {
     [CommandLineOption(LongName = "Macro")]
-    public required string ShellKey { get; set; }
+    public required string InstanceIdentifier { get; set; }
 
     [CommandLineOption]
     public bool AutoStart { get; set; }
@@ -20,13 +18,13 @@ public class MacroCommandLineParser : CommandLineParser
     public bool AutoClose { get; set; }
 
     [CommandLineOption]
-    public bool SingleMode { get; set; }
+    public bool ExclusiveMode { get; set; }
 
     public override bool AllowsPassed => true;
 
     public override void Parse(CommandLineOptionArguments args)
     {
-        if (string.IsNullOrEmpty(ShellKey))
+        if (string.IsNullOrEmpty(InstanceIdentifier))
         {
             return;
         }
@@ -38,7 +36,7 @@ public class MacroCommandLineParser : CommandLineParser
         else
         {
             OnAppContentLoading();
-            PoltergeistApplication.GetService<AppEventService>().Subscribe<AppWindowLoadedHandler>(_ =>
+            PoltergeistApplication.GetService<AppEventService>().Subscribe<AppShellPageLoadedEvent>(_ =>
             {
                 Parse(args.IsPassed);
             });
@@ -47,17 +45,17 @@ public class MacroCommandLineParser : CommandLineParser
 
     private void OnAppContentLoading()
     {
-        var macroManager = PoltergeistApplication.GetService<MacroManager>();
-        var shell = macroManager.GetShell(ShellKey);
-        if (shell is null)
+        var instanceManager = PoltergeistApplication.GetService<MacroInstanceManager>();
+        var instance = instanceManager.GetInstance(InstanceIdentifier);
+        if (instance is null)
         {
             return;
         }
 
-        if (SingleMode)
+        if (ExclusiveMode)
         {
-            PoltergeistApplication.SingleMacroMode = ShellKey;
-            PoltergeistApplication.StartPageKey = "macro:" + ShellKey;
+            PoltergeistApplication.Current.ExclusiveMacroMode = instance.InstanceId;
+            PoltergeistApplication.Current.StartPageKey = MacroManager.GetPageKey(instance.InstanceId);
         }
 
         RestorePreviousTabsHelper.IsEnabled = false;
@@ -65,26 +63,22 @@ public class MacroCommandLineParser : CommandLineParser
 
     private void Parse(bool isPassed)
     {
-        var macroManager = PoltergeistApplication.GetService<MacroManager>();
-        var shell = macroManager.GetShell(ShellKey);
-        if (shell is null)
+        var instanceManager = PoltergeistApplication.GetService<MacroInstanceManager>();
+        var instance = instanceManager.GetInstance(InstanceIdentifier);
+        if (instance is null)
         {
             return;
         }
 
-        var nav = PoltergeistApplication.GetService<INavigationService>();
-        if (!nav.NavigateTo("macro:" + shell.ShellKey))
+        var macroManager = PoltergeistApplication.GetService<MacroManager>();
+        if (!macroManager.OpenPage(instance, out var viewmodel))
         {
             return;
         }
 
         if (AutoStart)
         {
-            var startArguments = new MacroStartArguments()
-            {
-                ShellKey = shell.ShellKey,
-                Reason = LaunchReason.ByCommandLine,
-            };
+            var startArguments = new MacroStartArguments();
             if (AutoClose && !isPassed)
             {
                 startArguments.OptionOverrides = new()
@@ -93,7 +87,9 @@ public class MacroCommandLineParser : CommandLineParser
                 };
             }
 
-            ActionService.RunMacro(startArguments);
+            var launchReason = isPassed ? LaunchReason.PipeMessage : LaunchReason.CommandLine;
+
+            viewmodel.Start(startArguments, launchReason);
         }
     }
 }

@@ -8,6 +8,7 @@ using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Components.Storages;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Parameters;
@@ -25,6 +26,12 @@ public partial class MacroProcessor
     private Thread? WorkflowThread;
 
     private bool CanInterrupt;
+
+    private DateTime StartTime;
+
+    private EndReason EndReason;
+
+    private ProcessorResult? Result;
 
     private void InternalStart()
     {
@@ -68,8 +75,9 @@ public partial class MacroProcessor
         StartTime = DateTime.Now;
         Timer.Start();
 
-        Statistics.AddOrUpdate("last_run_time", StartTime);
-        Statistics.AddOrUpdate("total_run_count", 1, x => x + 1);
+        Report.Add("macro_key", Macro.Key);
+        Report.Add("processor_id", ProcessorId);
+        Report.Add("start_time", StartTime);
 
         ServiceCollection = new();
         ConfigureBasicServices(ServiceCollection);
@@ -108,23 +116,11 @@ public partial class MacroProcessor
 
         Status = ProcessorStatus.Running;
 
-        try
-        {
-            ProcessStart();
-
-            WorkflowThread = new Thread(ProcessWorkflow);
-            WorkflowThread.SetApartmentState(ApartmentState.STA);
-            WorkflowThread.Start();
-            WorkflowThread.Join();
-            WorkflowThread = null;
-
-            ProcessEnd();
-        }
-        catch (Exception exception)
-        {
-            Logger?.Error(exception);
-            throw;
-        }
+        WorkflowThread = new Thread(ProcessWorkflow);
+        WorkflowThread.SetApartmentState(ApartmentState.STA);
+        WorkflowThread.Start();
+        WorkflowThread.Join();
+        WorkflowThread = null;
     }
 
     private void ProcessStart()
@@ -167,14 +163,6 @@ public partial class MacroProcessor
     {
         services.AddSingleton(this);
 
-        services.AddOptions<LoggerOptions>();
-        services.Configure<LoggerOptions>(options =>
-        {
-            options.FileLogLevel = Environments.GetValueOrDefault<LogLevel>(MacroLogger.FileLogLevelKey);
-            options.FrontLogLevel = Environments.GetValueOrDefault<LogLevel>(MacroLogger.FrontLogLevelKey);
-            var privateFolder = Environments.GetValueOrDefault<string>("private_folder");
-            options.Filename = privateFolder is null ? null : Path.Combine(privateFolder, "Logs", $"{ProcessId}.log");
-        });
         services.AddSingleton<MacroLogger>();
 
         services.AddSingleton<DashboardService>();
@@ -185,7 +173,10 @@ public partial class MacroProcessor
         services.AddSingleton<InteractionService>();
         services.AddSingleton<OutputService>();
         services.AddSingleton<DebugService>();
-        services.AddSingleton<StorageService>();
+        services.AddSingleton<RuntimeStorageService>();
+        services.AddSingleton<SessionStorageService>();
+        services.AddSingleton<LocalStorageService>();
+        services.AddSingleton<GlobalStorageService>();
 
         if (Environments.GetValueOrDefault<bool>("is_development"))
         {
@@ -289,7 +280,7 @@ public partial class MacroProcessor
         Logger?.ResetIndent();
         Logger?.Trace("---");
 
-        EndTime = DateTime.Now;
+        var endTime = DateTime.Now;
         Timer.Stop();
 
         Status = Status switch
@@ -312,13 +303,18 @@ public partial class MacroProcessor
 
         var duration = GetElapsedTime();
 
+        Report.Add("end_time", endTime);
+        Report.Add("run_duration", duration);
+        Report.Add("end_reason", endReason);
+
         var endingHook = new ProcessorEndingHook()
         {
             Reason = endReason,
             StartTime = StartTime,
+            EndTime = endTime,
             Duration = duration,
-            CompletionAction = CompletionAction.None,
             OutputStorage = OutputStorage,
+            Report = Report,
         };
 
         try
@@ -330,27 +326,10 @@ public partial class MacroProcessor
             Logger?.Warn(exception.Message);
         }
 
-        var completionAction = endingHook.CompletionAction;
-        Comment ??= endingHook.Comment;
-
-        Statistics.AddOrUpdate("total_run_duration", duration, x => x + duration);
-
-        var history = new ProcessHistoryEntry()
-        {
-            MacroKey = Macro.Key,
-            ProcessId = ProcessId,
-            StartTime = StartTime,
-            EndTime = EndTime,
-            EndReason = endReason,
-            Comment = Comment,
-            Duration = duration,
-        };
-
         var endedHook = new ProcessorEndedHook()
         {
-            HistoryEntry = history,
-            CompletionAction = completionAction,
-            OutputStorage = OutputStorage,
+            Reason = endReason,
+            Report = Report,
         };
 
         try
@@ -366,14 +345,15 @@ public partial class MacroProcessor
         {
             if (GetService<DashboardService>().IsEmpty)
             {
-                var (level, comment) = endReason switch
+                var (level, text) = endReason switch
                 {
-                    EndReason.Interrupted => (OutputLevel.Attention, Comment ?? "User Stop"),
-                    EndReason.ErrorOccurred => (OutputLevel.Failure, Comment ?? "Error Occurred"),
-                    EndReason.Complete => (OutputLevel.Success, Comment ?? "Complete"),
-                    _ => (OutputLevel.Failure, Comment ?? "Unexpected Error"),
+                    EndReason.Interrupted => (OutputLevel.Attention, "User Stop"),
+                    EndReason.ErrorOccurred => (OutputLevel.Failure, "Error Occurred"),
+                    EndReason.Complete => (OutputLevel.Success, "Complete"),
+                    _ => (OutputLevel.Failure, "Unexpected Error"),
                 };
-                GetService<OutputService>().Write(level, comment);
+                SessionStorage.TryGetValue("processor_comment", out string? comment);
+                GetService<OutputService>().Write(level, comment ?? text);
             }
         }
         catch (Exception exception)
@@ -390,26 +370,30 @@ public partial class MacroProcessor
             _ => "The macro has ended due to an unexpected reason.",
         }); // this should be the last log
 
-        SessionStorage.TryAdd("processor_end_reason", endReason);
-        SessionStorage.TryAdd("processor_history_entry", history);
-        SessionStorage.TryAdd("processor_completion_action", completionAction);
+        EndReason = endReason;
     }
 
     private void Finally()
     {
         ProcessThread = null;
 
-        var endReason = SessionStorage.GetValueOrDefault("processor_end_reason", EndReason.Crushed);
-        var historyEntry = SessionStorage.GetValueOrDefault<ProcessHistoryEntry>("processor_history_entry");
-        var completionAction = SessionStorage.GetValueOrDefault("processor_completion_action", CompletionAction.None);
-        
+        ServiceProvider?.Dispose();
+        ServiceProvider = null;
+
+        Result = new ProcessorResult()
+        {
+            Reason = EndReason,
+            Report = new ProcessorReport(Report),
+            Output = new ParameterValueCollection(OutputStorage),
+            Exception = Exception,
+        };
+
         var args = new ProcessorCompletedEventArgs()
         {
-            Reason = endReason,
-            HistoryEntry = historyEntry,
-            Exception = Exception,
-            CompletionAction = completionAction,
+            Reason = EndReason,
+            Result = Result,
         };
+
         RaiseEvent(ProcessorEvent.Completed, args);
     }
 
@@ -420,11 +404,24 @@ public partial class MacroProcessor
 
     private void ProcessWorkflow()
     {
-        if (Status != ProcessorStatus.Running)
+        try
         {
-            return;
-        }
+            ProcessStart();
 
+            ProcessMain();
+
+            ProcessEnd();
+        }
+        catch (Exception exception)
+        {
+            Exception = exception;
+            Status = ProcessorStatus.Faulting;
+            Logger?.Critical(exception);
+        }
+    }
+
+    private void ProcessMain()
+    {
         Logger?.ResetIndent();
         Logger?.Trace("---");
 
@@ -476,8 +473,7 @@ public partial class MacroProcessor
             var step = Steps.FirstOrDefault(x => x.Id == nextStepId);
             if (step is null)
             {
-                Logger?.Trace($"Workflow step '{nextStepId}' is not found.");
-                break;
+                throw new Exception($"Workflow step '{nextStepId}' is not found.");
             }
 
             report = ProcessStep(step, report);
@@ -515,6 +511,12 @@ public partial class MacroProcessor
         try
         {
             stepResult = step.Action.Invoke(stepArguments) ? WorkflowStepResult.Success : WorkflowStepResult.Failed;
+
+            if (Status == ProcessorStatus.Stopping && previousResult?.Result != WorkflowStepResult.Interrupted)
+            {
+                stepResult = WorkflowStepResult.Interrupted;
+                Logger?.Trace($"The stop request has been performed.");
+            }
         }
         catch (Exception exception) when (IsInterruptionException(exception))
         {
@@ -573,8 +575,8 @@ public partial class MacroProcessor
         {
             StepId = step.Id,
             Result = stepResult,
-            NextStepId = nextStepId,
-            Output = stepArguments.Output,
+            NextStepId = finallyArguments.NextStepId,
+            Output = finallyArguments.Output,
         };
 
         Logger?.Trace($"Finished running workflow step '{step.Id}'.", new {

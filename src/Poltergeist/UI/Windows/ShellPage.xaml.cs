@@ -2,7 +2,6 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
@@ -17,39 +16,41 @@ public sealed partial class ShellPage : Page
     public ShellViewModel ViewModel { get; }
 
     private readonly INavigationService Navigation;
-    private readonly MacroManager MacroManager;
+    private readonly MacroInstanceManager MacroInstanceManager;
 
-    public ShellPage(ShellViewModel viewModel, MacroManager macroManager, INavigationService navigationService, AppEventService eventService)
+    public ShellPage(ShellViewModel viewModel, MacroInstanceManager macroInstanceManager, INavigationService navigationService, AppEventService eventService)
     {
         ViewModel = viewModel;
         InitializeComponent();
 
         Navigation = navigationService;
-        MacroManager = macroManager;
+        MacroInstanceManager = macroInstanceManager;
 
         navigationService.TabView = NavigationTabView;
         navigationService.NavigationView = NavigationViewControl;
 
-        var startPageKey = App.StartPageKey ?? "home";
+        var startPageKey = PoltergeistApplication.Current.StartPageKey ?? "home";
         navigationService.NavigateTo(startPageKey);
 
         // A custom title bar is required for full window theme and Mica support.
         // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-        App.MainWindow.ExtendsContentIntoTitleBar = true;
-        App.MainWindow.SetTitleBar(AppTitleBar);
-        App.MainWindow.Activated += MainWindow_Activated;
+        App.Current.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.Current.MainWindow.SetTitleBar(AppTitleBar);
+        App.Current.MainWindow.Activated += MainWindow_Activated;
 
         AppTitleBarText.Text = "Poltergeist";
 
-        eventService.Subscribe<AppWindowClosingHandler>(OnAppWindowClosing);
-        eventService.Subscribe<MacroCollectionChangedHandler>(OnMacroCollectionChanged);
-        eventService.Subscribe<MacroPropertyChangedHandler>(OnMacroPropertyChanged);
+        eventService.Subscribe<AppWindowClosingEvent>(OnAppWindowClosing);
+        eventService.Subscribe<MacroInstanceCollectionChangedEvent>(OnMacroInstanceCollectionChanged);
+        eventService.Subscribe<MacroInstancePropertyChangedEvent>(OnMacroInstancePropertyChanged);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
         CreateNavigationMenu();
+
+        PoltergeistApplication.GetService<AppEventService>().Publish<AppShellPageLoadedEvent>();
     }
 
     private void RefreshHeaderMenu()
@@ -67,7 +68,7 @@ public sealed partial class ShellPage : Page
             {
                 Content = item.Text ?? item.Header ?? item.Key,
                 Tag = item.Key,
-                Icon = item.Icon?.ToIconElement(),
+                Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
                 SelectsOnInvoked = item.CreateContent is not null,
             };
             NavigationViewControl.MenuItems.Add(nvi);
@@ -79,25 +80,19 @@ public sealed partial class ShellPage : Page
             Content = App.Localize($"Poltergeist/Resources/MacroNavigationViewItemHeader"),
         });
 
-        var sortedShells = MacroManager.Shells
+        var sortedInstances = MacroInstanceManager.GetInstances<MacroInstance>()
             .Where(x => x.Template is not null)
-            //.Where(x => x.Template?.IsSingleton == false)
-            .OrderBy(x => x.Properties.IsFavorite)
+            .OrderBy(x => x.Properties?.IsFavorite == true)
             .ThenBy(x => x.Title)
             .ToArray();
-        foreach (var shell in sortedShells)
+        foreach (var instance in sortedInstances)
         {
-            var pageKey = "macro:" + shell.ShellKey;
             var nvi = new NavigationViewItem()
             {
-                Content = shell.Title,
-                Tag = pageKey,
+                Content = instance.Title,
+                Tag = instance.GetPageKey(),
+                Icon = instance.GetIconElement(),
             };
-            if (shell.Icon is not null)
-            {
-                nvi.Icon = new IconInfo(shell.Icon).ToIconElement();
-            }
-            nvi.Icon ??= new IconInfo(MacroShell.DefaultIconUri).ToIconElement();
             NavigationViewControl.MenuItems.Add(nvi);
             if ((string)nvi.Tag == selectedPageKey)
             {
@@ -120,7 +115,7 @@ public sealed partial class ShellPage : Page
             {
                 Content = item.Text ?? item.Header ?? item.Key,
                 Tag = item.Key,
-                Icon = item.Icon?.ToIconElement(),
+                Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
                 SelectsOnInvoked = item.CreateContent is not null,
             };
             NavigationViewControl.FooterMenuItems.Add(nvi);
@@ -133,7 +128,7 @@ public sealed partial class ShellPage : Page
         RefreshFooterMenu();
     }
 
-    private void OnMacroCollectionChanged(MacroCollectionChangedHandler handler)
+    private void OnMacroInstanceCollectionChanged(MacroInstanceCollectionChangedEvent _)
     {
         App.TryEnqueue(() =>
         {
@@ -141,29 +136,24 @@ public sealed partial class ShellPage : Page
         });
     }
 
-    private void OnMacroPropertyChanged(MacroPropertyChangedHandler handler)
+    private void OnMacroInstancePropertyChanged(MacroInstancePropertyChangedEvent e)
     {
+        var instance = e.Instance;
+
         App.TryEnqueue(() =>
         {
-            var pageKey = "macro:" + handler.Shell.ShellKey;
+            var pageKey = instance.GetPageKey();
             var nvi = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == pageKey);
             if (nvi is null)
             {
                 return;
             }
 
-            nvi.Content = handler.Shell.Title;
-            if (handler.Shell.Icon is not null)
-            {
-                nvi.Icon = new IconInfo(handler.Shell.Icon).ToIconElement();
-            }
-            else
-            {
-                nvi.Icon = new IconInfo(MacroShell.DefaultIconUri).ToIconElement();
-            }
+            nvi.Content = instance.Title;
+            nvi.Icon = instance.GetIconElement();
         });
     }
-
+    
     private void SelectMenu(string pageKey)
     {
         var menuItems = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().Concat(NavigationViewControl.FooterMenuItems.OfType<NavigationViewItem>());
@@ -191,7 +181,7 @@ public sealed partial class ShellPage : Page
         var resource = args.WindowActivationState == WindowActivationState.Deactivated ? "WindowCaptionForegroundDisabled" : "WindowCaptionForeground";
 
         AppTitleBarText.Foreground = (SolidColorBrush)App.Current.Resources[resource];
-        App.AppTitlebar = AppTitleBarText as UIElement;
+        App.Current.AppTitlebar = AppTitleBarText as UIElement;
     }
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -250,7 +240,7 @@ public sealed partial class ShellPage : Page
         Navigation.TryCloseTab(args.Tab);
     }
 
-    private void OnAppWindowClosing(AppWindowClosingHandler handler)
+    private void OnAppWindowClosing(AppWindowClosingEvent e)
     {
         foreach (var tabviewitem in NavigationTabView.TabItems.OfType<TabViewItem>())
         {
@@ -262,7 +252,7 @@ public sealed partial class ShellPage : Page
             var canClose = closing.OnApplicationClosing();
             if (!canClose)
             {
-                handler.Cancel = true;
+                e.Cancel = true;
             }
         }
     }

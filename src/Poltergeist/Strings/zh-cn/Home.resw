@@ -117,11 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ChangeIconDialog_Title" xml:space="preserve">
-    <value>更改图标</value>
-  </data>
-  <data name="ChangeIconMenuFlyoutItem.Text" xml:space="preserve">
-    <value>更改图标</value>
+  <data name="EditPropertiesMenuFlyoutItem.Text" xml:space="preserve">
+    <value>属性</value>
   </data>
   <data name="DateTimeToAgo_1" xml:space="preserve">
     <value>1分钟前</value>
@@ -158,26 +155,14 @@
   <data name="MacroListViewHeader.Text" xml:space="preserve">
     <value>宏</value>
   </data>
-  <data name="NewMacroButton.Label" xml:space="preserve">
+  <data name="NewInstanceButton.Label" xml:space="preserve">
     <value>新建宏</value>
   </data>
-  <data name="NewMacroDialog_Name.Text" xml:space="preserve">
-    <value>名字：</value>
-  </data>
-  <data name="NewMacroDialog_Template.Text" xml:space="preserve">
-    <value>框架：</value>
-  </data>
-  <data name="NewMacroDialog_Title" xml:space="preserve">
+  <data name="NewInstanceDialog_Title" xml:space="preserve">
     <value>新建宏</value>
   </data>
   <data name="OpenMenuFlyoutItem.Text" xml:space="preserve">
     <value>打开</value>
-  </data>
-  <data name="RenameMacroDialog_Title" xml:space="preserve">
-    <value>重命名</value>
-  </data>
-  <data name="RenameMenuFlyoutItem.Text" xml:space="preserve">
-    <value>重命名</value>
   </data>
   <data name="TemplateListViewHeader.Text" xml:space="preserve">
     <value>框架</value>
@@ -185,7 +170,52 @@
   <data name="TotalRunCountListViewHeader.Text" xml:space="preserve">
     <value>总计运行次数</value>
   </data>
-  <data name="StickyMenuFlyoutItem.Text" xml:space="preserve">
-    <value>置顶</value>
+  <data name="MacroPropertyLabel_IsFavorite" xml:space="preserve">
+    <value>置顶：</value>
+  </data>
+  <data name="EditInstancePropertiesDialog_Title" xml:space="preserve">
+    <value>宏属性</value>
+  </data>
+  <data name="MacroPropertyLabel_Key" xml:space="preserve">
+    <value>键名：</value>
+  </data>
+  <data name="MacroPropertyLabel_Title" xml:space="preserve">
+    <value>标题：</value>
+  </data>
+  <data name="MacroPropertyLabel_Description" xml:space="preserve">
+    <value>描述：</value>
+  </data>
+  <data name="MacroPropertyLabel_Icon" xml:space="preserve">
+    <value>图标：</value>
+  </data>
+  <data name="InstanceKeyExistsMessage" xml:space="preserve">
+    <value>已经存在相同键名的宏</value>
+  </data>
+  <data name="CreateShortcutMenuFlyoutItem.Text" xml:space="preserve">
+    <value>创建快捷方式</value>
+  </data>
+  <data name="CreateShortcut_Dialog_Title" xml:space="preserve">
+    <value>创建快捷方式</value>
+  </data>
+  <data name="CreateShortcut_Dialog_AutoStart" xml:space="preserve">
+    <value>程序启动时直接运行宏</value>
+  </data>
+  <data name="CreateShortcut_Dialog_AutoClose" xml:space="preserve">
+    <value>宏完成时退出程序</value>
+  </data>
+  <data name="CreateShortcut_Dialog_ExclusiveMode" xml:space="preserve">
+    <value>界面采用独占模式</value>
+  </data>
+  <data name="CreateShortcut_Dialog_OpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="CreateShortcut_Dialog_Message" xml:space="preserve">
+    <value>快捷方式已经创建。</value>
+  </data>
+  <data name="CreateShortcut_Filter" xml:space="preserve">
+    <value>桌面快捷方式 (*.lnk)</value>
+  </data>
+  <data name="OpenPrivateFolderMenuFlyoutItem.Text" xml:space="preserve">
+    <value>打开宏文件夹</value>
   </data>
 </root>

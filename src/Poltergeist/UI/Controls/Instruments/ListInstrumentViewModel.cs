@@ -14,7 +14,7 @@ public class ListInstrumentViewModel : IInstrumentViewModel
     {
         Title = model.Title;
 
-        Items = new(model.Items, ModelToViewModel, PoltergeistApplication.MainWindow.DispatcherQueue);
+        Items = new(model.Items, ModelToViewModel, PoltergeistApplication.Current.DispatcherQueue);
     }
 
     private ListInstrumentItemViewModel? ModelToViewModel(ListInstrumentItem? item)

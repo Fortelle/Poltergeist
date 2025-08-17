@@ -8,7 +8,7 @@ public abstract class InstrumentModel : MacroService, IInstrumentModel
     public string? Key { get; set; }
     public string? Title { get; set; }
     public string MacroKey { get; set; }
-    public string ProcessId { get; set; }
+    public string ProcessorId { get; set; }
 
     public bool AutoScroll { get; set; }
     public bool Stretch { get; set; }
@@ -18,6 +18,6 @@ public abstract class InstrumentModel : MacroService, IInstrumentModel
     public InstrumentModel(MacroProcessor processor) : base(processor)
     {
         MacroKey = Processor.Macro.Key;
-        ProcessId = Processor.ProcessId;
+        ProcessorId = Processor.ProcessorId;
     }
 }

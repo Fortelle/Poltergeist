@@ -6,101 +6,30 @@ namespace Poltergeist.Modules.Settings;
 
 public class AppSettingsService : ServiceBase
 {
-    private static string? FilePath { get; set; }
-    private static Exception? LoadingException { get; set; }
-
-    private static readonly ParameterDefinitionValueCollection settings = new();
-    public ParameterDefinitionValueCollection Settings => settings;
-
-    public static void Load()
-    {
-        FilePath = Path.Combine(PoltergeistApplication.Paths.DocumentDataFolder, "Settings.json");
-
-        try
-        {
-            settings.Load(FilePath);
-
-            PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsLoadedHandler(settings));
-        }
-        catch (Exception ex)
-        {
-            LoadingException = ex;
-        }
-    }
+    public SavablePredefinedCollection Settings => PoltergeistApplication.Current.Settings;
+    public SavablePredefinedCollection InternalSettings => PoltergeistApplication.Current.InternalSettings;
 
     public AppSettingsService(AppEventService eventService)
     {
-        eventService.Subscribe<AppContentLoadingHandler>(OnAppContentLoading);
-        eventService.Subscribe<AppWindowClosedHandler>(OnAppWindowClosed);
+        eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed);
     }
 
-    public void Add(IParameterDefinition definition)
+    private void OnAppWindowClosed(AppWindowClosedEvent _)
     {
-        Settings.AddDefinition(definition);
-        Logger.Trace($"Added application settings definition '{definition.Key}'.", new { definition });
-    }
-
-    public T? Get<T>(string key)
-    {
-        return Settings.Get<T>(key);
-    }
-
-    public T? Get<T>(ParameterDefinition<T> definition)
-    {
-        return Settings.Get<T>(definition.Key);
-    }
-
-    public void Set<T>(string key, T value)
-    {
-        if (Settings is null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        Settings.Set(key, value);
-        Logger.Trace($"Set the application settings variable: {key} = {value}");
-
-        PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsChangedHandler() {
-            Key = key,
-            NewValue = value,
-        });
-    }
-
-    public void Remove(string key)
-    {
-        Settings.Remove(key);
-        Logger.Trace($"Removed the application settings variable: {key}");
-    }
-
-    private void OnAppContentLoading(AppContentLoadingHandler e)
-    {
-        switch (LoadingException)
-        {
-            case FileNotFoundException:
-                Logger.Trace($"The application settings were not loaded: File does not exist.", new { FilePath });
-                break;
-            case Exception ex:
-                Logger.Warn($"The application settings were not loaded successfully: {ex.Message}");
-                break;
-            default:
-                Logger.Trace($"The application settings were loaded successfully.", new { FilePath });
-                break;
-        }
-    }
-
-    private void OnAppWindowClosed(AppWindowClosedHandler e)
-    {
-        PoltergeistApplication.GetService<AppEventService>().Raise(new AppSettingsSavingHandler(Settings));
-
         try
         {
             Settings.Save();
-
-            Logger.Trace("Saved the application settings.", new { FilePath });
         }
-        catch (Exception ex)
+        catch
         {
-            Logger.Warn($"Failed to save the application settings: {ex.Message}");
+        }
+
+        try
+        {
+            InternalSettings.Save();
+        }
+        catch
+        {
         }
     }
 }

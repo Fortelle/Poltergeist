@@ -153,12 +153,6 @@
   <data name="AppSettings_Macro" xml:space="preserve">
     <value>宏</value>
   </data>
-  <data name="AppSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>记录日志到控制台</value>
-  </data>
-  <data name="AppSettings_Macro_LogToFile" xml:space="preserve">
-    <value>记录日志到文件</value>
-  </data>
   <data name="AppSettings_Macro_UseStatistics" xml:space="preserve">
     <value>启用统计</value>
   </data>
@@ -209,5 +203,8 @@
   </data>
   <data name="AppSettings_App_RestorePreviousTabs" xml:space="preserve">
     <value>启动时恢复上次打开的页面</value>
+  </data>
+  <data name="AppSettings_LogToFile" xml:space="preserve">
+    <value>将应用日志写入文件</value>
   </data>
 </root>

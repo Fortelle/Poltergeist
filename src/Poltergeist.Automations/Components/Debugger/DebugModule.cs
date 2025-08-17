@@ -23,7 +23,7 @@ public class DebugModule : MacroModule
         {
             Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/DebugModule_ConfigTitle"),
             Icon = "\uEBE8",
-            IgnoresUserOptions = true,
+            IncognitoMode = true,
             OptionOverrides = new()
             {
                 {LoopService.ConfigEnableKey, false},
@@ -31,7 +31,6 @@ public class DebugModule : MacroModule
             EnvironmentOverrides = new()
             {
                 {DebugModeKey, true},
-                {"incognito_mode", true},
             }
         });
     }

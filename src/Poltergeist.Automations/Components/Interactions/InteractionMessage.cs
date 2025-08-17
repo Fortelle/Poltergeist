@@ -4,12 +4,10 @@ namespace Poltergeist.Automations.Components.Interactions;
 
 public class InteractionMessage
 {
-    public const string MacroKeyName = "macro_key";
-    public const string ProcessIdName = "process_id";
+    public const string ProcessorIdName = "processor_id";
     private const char Separater = ';';
 
-    public string? MacroKey { get; set; }
-    public string? ProcessId { get; set; }
+    public string? ProcessorId { get; set; }
 
     private readonly Dictionary<string, string> Arguments = new();
 
@@ -36,11 +34,8 @@ public class InteractionMessage
         {
             switch (key)
             {
-                case MacroKeyName:
-                    MacroKey = value;
-                    break;
-                case ProcessIdName:
-                    ProcessId = value;
+                case ProcessorIdName:
+                    ProcessorId = value;
                     break;
                 default:
                     Add(key, value);
@@ -62,9 +57,8 @@ public class InteractionMessage
     public string ToArgument()
     {
         var sb = new StringBuilder();
-        sb.Append($"macro_key={MacroKey}");
         sb.Append(Separater);
-        sb.Append($"process_id={ProcessId}");
+        sb.Append($"{ProcessorIdName}={ProcessorId}");
         foreach(var (key, value) in Arguments)
         {
             sb.Append(Separater);

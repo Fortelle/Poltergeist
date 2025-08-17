@@ -96,19 +96,19 @@
                                 >
                                 <TextBlock
                                     Text="{x:Bind ViewModel.CpuValue, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                                 <TextBlock
                                     Text="{x:Bind ViewModel.RamValue, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                                 <TextBlock
                                     x:Uid="/Poltergeist/Resources/TabViewDebugTextBlock"
-                                    Visibility="{x:Bind ViewModel.IsDevelopment, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    Visibility="{x:Bind ViewModel.IsDevelopment, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                                 <TextBlock
                                     x:Uid="/Poltergeist/Resources/TabViewAdministratorTextBlock"
-                                    Visibility="{x:Bind ViewModel.IsAdministrator, Mode=OneTime, Converter={StaticResource FalsyToVisibilityConverter}}"
+                                    Visibility="{x:Bind ViewModel.IsAdministrator, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                             </StackPanel>
                         </Grid>
@@ -119,7 +119,7 @@
         </NavigationView>
         <Grid>
             <interactivity:Interaction.Behaviors>
-                <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsSingleMacroMode, Mode=OneTime}" ComparisonCondition="Equal" Value="True">
+                <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsExclusiveMacroMode, Mode=OneTime}" ComparisonCondition="Equal" Value="True">
                     <interactions:ChangePropertyAction TargetObject="{Binding ElementName=NavigationViewControl}" PropertyName="IsPaneVisible" Value="False"/>
                     <interactions:ChangePropertyAction TargetObject="{Binding ElementName=AppTitleBar}" PropertyName="Margin" Value="16, 0, 0, 0"/>
                     <interactions:ChangePropertyAction TargetObject="{Binding ElementName=NavigationTabView}" PropertyName="Margin" Value="0, -48, 0, 0"/>

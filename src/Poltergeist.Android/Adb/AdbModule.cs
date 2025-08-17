@@ -9,26 +9,25 @@ namespace Poltergeist.Android.Adb;
 
 public class AdbModule : MacroModule
 {
-    static AdbModule()
-    {
-        GlobalOptions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
-        {
-            DisplayLabel = "IP Address",
-            Category = "ADB",
-        });
-
-        GlobalOptions.Add(new PathOption(AdbService.ExePathKey)
-        {
-            DisplayLabel = "Exe file",
-            Category = "ADB",
-        });
-    }
-
     public override void OnMacroInitialize(IInitializableMacro macro)
     {
         base.OnMacroInitialize(macro);
 
-        macro.UserOptions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
+        macro.OptionDefinitions.Add(new OptionDefinition<string>(AdbService.IpAddressKey)
+        {
+            DisplayLabel = "IP Address",
+            Category = "ADB",
+            IsGlobal = true,
+        });
+
+        macro.OptionDefinitions.Add(new PathOption(AdbService.ExePathKey)
+        {
+            DisplayLabel = "Exe file",
+            Category = "ADB",
+            IsGlobal = true,
+        });
+
+        macro.OptionDefinitions.Add(new OptionDefinition<bool>(AdbService.KeepAliveKey, true)
         {
             DisplayLabel = "Auto close adb",
             Category = "ADB",

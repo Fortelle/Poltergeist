@@ -29,30 +29,32 @@ public partial class MacroProcessor
     /// <summary>
     /// Executes the processor synchronously. Blocks the current thread until the processor is completed.
     /// </summary>
-    public void Execute()
+    public ProcessorResult Execute()
     {
         if (Status != ProcessorStatus.Idle)
         {
             throw new InvalidOperationException();
         }
 
-        var mre = new ManualResetEvent(false);
+        using var mre = new ManualResetEvent(false);
 
         Completed += (_, _) =>
         {
             mre.Set();
         };
-
+        
         InternalExecute();
 
         mre.WaitOne();
+
+        return Result!;
     }
 
     /// <summary>
     /// Executes the processor asynchronously.
     /// </summary>
     /// <returns></returns>
-    public async Task ExecuteAsync()
+    public async Task<ProcessorResult> ExecuteAsync()
     {
         if (Status != ProcessorStatus.Idle)
         {
@@ -69,6 +71,8 @@ public partial class MacroProcessor
         InternalExecute();
 
         await tcs.Task.ConfigureAwait(false);
+
+        return Result!;
     }
 
     /// <summary>
@@ -81,8 +85,8 @@ public partial class MacroProcessor
 
         Logger?.Debug(reason switch
         {
-            PauseReason.User => "The macro is paused by the user.",
-            PauseReason.Input => "The macro is paused for user input.",
+            PauseReason.Manual => "The macro is paused by the user.",
+            PauseReason.WaitForInput => "The macro is paused for user input.",
             _ => "The macro is paused."
         });
 

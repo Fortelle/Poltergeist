@@ -153,12 +153,6 @@
   <data name="AppSettings_Macro" xml:space="preserve">
     <value>Macro</value>
   </data>
-  <data name="AppSettings_Macro_LogToConsole" xml:space="preserve">
-    <value>Log to console</value>
-  </data>
-  <data name="AppSettings_Macro_LogToFile" xml:space="preserve">
-    <value>Log to file</value>
-  </data>
   <data name="AppSettings_Macro_UseStatistics" xml:space="preserve">
     <value>Use statistics</value>
   </data>
@@ -209,5 +203,8 @@
   </data>
   <data name="AppSettings_App_RestorePreviousTabs" xml:space="preserve">
     <value>Restore previous tabs at startup</value>
+  </data>
+  <data name="AppSettings_LogToFile" xml:space="preserve">
+    <value>Write application logs to file</value>
   </data>
 </root>

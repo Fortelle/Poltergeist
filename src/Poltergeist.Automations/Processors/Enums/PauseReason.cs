@@ -3,6 +3,6 @@
 public enum PauseReason
 {
     Unknown,
-    User,
-    Input,
+    Manual,
+    WaitForInput,
 }

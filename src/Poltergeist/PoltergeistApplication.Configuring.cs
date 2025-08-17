@@ -2,11 +2,8 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
-using Poltergeist.Automations.Utilities;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.CommandLine;
@@ -44,11 +41,12 @@ public partial class PoltergeistApplication
 
     protected virtual void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-        // Services
+        // Services<>
         services.AddSingleton<AppSettingsService>();
         services.AddSingleton<PipeService>();
         services.AddSingleton<CommandLineService>();
         services.AddSingleton<AppLoggingService>();
+        services.AddSingleton<AppEventService>();
 
         services.AddSingleton<INavigationService, NavigationService>();
 
@@ -64,17 +62,18 @@ public partial class PoltergeistApplication
         services.AddTransient<LoggingPage>();
         services.AddTransient<LoggingViewModel>();
 
-        services.AddSingleton<PluginService>();
-
         services.AddSingleton<ActionService>();
         services.AddSingleton<MacroManager>();
+        services.AddSingleton<MacroInstanceManager>();
+        services.AddSingleton<MacroTemplateManager>();
         services.AddSingleton<HotKeyService>();
         services.AddSingleton<InstrumentManager>();
         services.AddSingleton<TipService>();
         services.AddSingleton<DialogService>();
         services.AddSingleton<AppNotificationService>();
+        services.AddSingleton<GlobalOptionsService>();
+        services.AddSingleton<MacroStatisticsService>();
 
-        services.AddSingleton<AppEventService>();
     }
 
     protected virtual void ConfigureCommandLineParsers(CommandLineService commandLineService)
@@ -84,10 +83,9 @@ public partial class PoltergeistApplication
 
     protected virtual void ConfigureAutoLoadServices()
     {
-        GetService<AppSettingsService>();
-        GetService<PluginService>();
         GetService<MacroManager>();
         GetService<PipeService>();
+        GetService<AppEventService>();
 
         RestorePreviousTabsHelper.Inject();
     }
@@ -102,8 +100,6 @@ public partial class PoltergeistApplication
 
     protected virtual void ConfigureNavigations(INavigationService navigationService)
     {
-        StartPageKey ??= "home";
-
         navigationService.AddInfo(new()
         {
             Key = "home",
@@ -150,46 +146,14 @@ public partial class PoltergeistApplication
         navigationService.AddInfo(MacroPage.NavigationInfo);
     }
 
-    protected virtual void ConfigureSettings(AppSettingsService settingsService)
+    protected virtual void ConfigureSettings(ParameterDefinitionValueCollection settings)
     {
-        settingsService.Add(new OptionDefinition<int>(MacroBrowserViewModel.LastSortIndexKey)
-        {
-            Status = ParameterStatus.Hidden,
-        });
 
-        // Macro
-
-        settingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FileLogLevelKey, LogLevel.None)
-        {
-            Category = App.Localize($"Poltergeist/Resources/AppSettings_Macro"),
-            DisplayLabel = App.Localize($"Poltergeist/Resources/AppSettings_Macro_LogToFile"),
-        });
-
-        settingsService.Add(new OptionDefinition<LogLevel>(MacroLogger.FrontLogLevelKey, LogLevel.Information)
-        {
-            Category = App.Localize($"Poltergeist/Resources/AppSettings_Macro"),
-            DisplayLabel = App.Localize($"Poltergeist/Resources/AppSettings_Macro_LogToConsole"),
-        });
     }
 
     protected virtual void ConfigureHotKeys(HotKeyService hotkeyService)
     {
-        hotkeyService.Add(new("macrostartkey")
-        {
-            SettingDefinition = new("macro.startkey")
-            {
-                Category = ResourceHelper.Localize("Poltergeist/Resources/AppSettings_Macro"),
-                DisplayLabel = ResourceHelper.Localize("Poltergeist/Resources/AppSettings_Macro_StartMacroHotKey"),
-            },
-
-            Callback = () =>
-            {
-                TryEnqueue(() =>
-                {
-                    ActionService.RunMacro(LaunchReason.ByUser, true);
-                });
-            },
-        });
+        hotkeyService.Add(MacroStartKeyHelper.HotKeyInformation);
     }
 
 }

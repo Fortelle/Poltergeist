@@ -19,31 +19,13 @@
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock
-            x:Uid="/Poltergeist/Home/NewMacroDialog_Template"
-            Grid.Row="0"
-            VerticalAlignment="Center"
-            />
         <ListBox
             Grid.Row="1"
             HorizontalAlignment="Stretch"
-            IsEnabled="{x:Bind IsNew, Mode=OneTime}"
             ItemsSource="{x:Bind Templates, Mode=OneTime}"
             DisplayMemberPath="Value"
             SelectedValuePath="Key"
             SelectedValue="{x:Bind SelectedTemplateKey, Mode=TwoWay}"
             />
-
-        <TextBlock
-            Grid.Row="2"
-            VerticalAlignment="Center"
-            x:Uid="/Poltergeist/Home/NewMacroDialog_Name"
-            />
-        <TextBox
-            Grid.Row="3"
-            HorizontalAlignment="Stretch"
-            Text="{x:Bind MacroName, Mode=TwoWay}"
-            />
-        
     </Grid>
 </UserControl>

@@ -8,6 +8,4 @@ public interface IFrontMacro : IMacroBase, IFrontBackMacro
     public string[]? Tags { get; }
     public string? Icon { get; }
     public Version? Version { get; }
-
-    public bool IsSingleton { get; }
 }

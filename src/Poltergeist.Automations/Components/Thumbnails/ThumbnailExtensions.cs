@@ -1,37 +1,20 @@
 ﻿using System.Drawing;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Components.Thumbnails;
 
 public static class ThumbnailExtensions
 {
-    private const string ThumbnailFilename = "thumbnail.png";
+    public const string ThumbnailFilename = "thumbnail.png";
 
-    public static string? GetThumbnailFile(this MacroShell shell)
+    public static void SetThumbnailFile(this IServiceProcessor processor, Bitmap image)
     {
-        if (shell.PrivateFolder is null)
-        {
-            return null;
-        }
-
-        var path = Path.Combine(shell.PrivateFolder, ThumbnailFilename);
-
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        return path;
-    }
-
-    public static void SetThumbnailFile(this MacroShell shell, Bitmap image)
-    {
-        if (shell.PrivateFolder is null)
+        if (!processor.Environments.TryGetValue<string>("private_folder", out var privateFolder))
         {
             return;
         }
 
-        var path = Path.Combine(shell.PrivateFolder, ThumbnailFilename);
+        var path = Path.Combine(privateFolder, ThumbnailFilename);
 
         if (!File.Exists(path))
         {

@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json.Linq;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
@@ -11,7 +10,7 @@ namespace Poltergeist.Automations.Structures.Parameters;
 /// </summary>
 /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
 /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
-public class ObservableConcurrentDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : notnull
+public class ObservableConcurrentDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
     protected readonly ConcurrentDictionary<TKey, TValue> Collection = new();
 
@@ -393,6 +392,11 @@ public class ObservableConcurrentDictionary<TKey, TValue> : IEnumerable<KeyValue
     }
 
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => Collection.GetEnumerator();
-
+    bool IDictionary<TKey, TValue>.Remove(TKey key) => TryRemove(key);
+    void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item) => Add(item.Key, item.Value);
+    bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item) => TryGetValue(item.Key, out var value) && EqualityComparer<TValue>.Default.Equals(value, item.Value);
+    void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) => ((IDictionary<TKey, TValue>)Collection).CopyTo(array, arrayIndex);
+    bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item) => TryRemove(item.Key);
+    bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

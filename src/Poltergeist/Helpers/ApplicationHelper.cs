@@ -16,14 +16,14 @@ public static class ApplicationHelper
 
     public static void Minimize()
     {
-        var hwnd = PoltergeistApplication.MainWindow.GetWindowHandle();
+        var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
         var wh = new WindowHelper(hwnd);
         wh.Minimize();
     }
 
     public static void Restore()
     {
-        var hwnd = PoltergeistApplication.MainWindow.GetWindowHandle();
+        var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
         var wh = new WindowHelper(hwnd);
         wh.Unminimize();
     }
@@ -31,7 +31,7 @@ public static class ApplicationHelper
     public static void BringToFront()
     {
         Restore();
-        PoltergeistApplication.MainWindow.BringToFront();
+        PoltergeistApplication.Current.MainWindow.BringToFront();
     }
 
     public static void Restart()

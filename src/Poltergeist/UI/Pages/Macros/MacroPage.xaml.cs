@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -13,26 +14,35 @@ using Poltergeist.Modules.Navigation;
 
 namespace Poltergeist.UI.Pages.Macros;
 
-public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
+public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
 {
     public static readonly NavigationInfo NavigationInfo = new()
     {
         Key = "macro",
         CreateContent = (pageKey, data) =>
         {
-            var shellKey = pageKey.Split(':')[1];
-            var macroManager = App.GetService<MacroManager>();
-            var shell = macroManager.GetShell(shellKey);
-            if (shell is null)
+            MacroInstance? instance;
+
+            if (data is MacroInstance _instance)
             {
-                throw new Exception($"Invalid shell key '{shellKey}'.");
+                instance = _instance;
             }
-            if (shell.Template is null)
+            else
             {
-                throw new Exception(App.Localize($"Poltergeist/Macros/MacroNotExist", shell.TemplateKey));
+                var instanceId = pageKey.Split(':')[1];
+
+                instance = App.GetService<MacroInstanceManager>().GetInstance(instanceId);
+                if (instance is null)
+                {
+                    throw new Exception($"Invalid macro instance id '{instanceId}'.");
+                }
+                if (instance.Template is null)
+                {
+                    throw new Exception(App.Localize($"Poltergeist/Macros/MacroNotExist", instance.TemplateKey));
+                }
             }
 
-            var macroPage = new MacroPage(new(shell));
+            var macroPage = new MacroPage(new(instance));
             return macroPage;
         },
         CreateHeader = page =>
@@ -40,7 +50,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             var macroPage = (MacroPage)page;
             var textblock = new TextBlock()
             {
-                Text = macroPage.ViewModel?.Shell.Title,
+                Text = macroPage.ViewModel?.Instance.Title,
             };
             var icon = new FontIcon()
             {
@@ -53,7 +63,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             {
                 Path = new PropertyPath("IsRunning"),
                 Mode = BindingMode.OneWay,
-                Converter = new FalsyToVisibilityConverter(),
+                Converter = new FalsyToCollapsedConverter(),
             };
             icon.SetBinding(FontIcon.VisibilityProperty, binding);
 
@@ -83,17 +93,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
         CreateIcon = page =>
         {
             var macroPage = (MacroPage)page;
-            if (macroPage.ViewModel.Shell.Icon is string s)
-            {
-                var icon = new IconInfo(s);
-                var source = icon.ToIconSource();
-                if (source is not null)
-                {
-                    return source;
-                }
-            }
-
-            return new IconInfo(MacroShell.DefaultIconUri).ToIconSource();
+            return macroPage.ViewModel.Instance.GetIconSource();
         },
     };
 
@@ -110,18 +110,22 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
 
     private void LoadConfigVariations()
     {
-        if (ViewModel.Shell.Template!.ConfigVariations.Count == 0)
+        if (ViewModel.Instance.Template is null)
+        {
+            return;
+        }
+        if (ViewModel.Instance.Template.ConfigVariations.Count == 0)
         {
             return;
         }
 
         RunMenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
-        for (var i = 0; i < ViewModel.Shell.Template.ConfigVariations.Count; i++)
+        for (var i = 0; i < ViewModel.Instance.Template.ConfigVariations.Count; i++)
         {
-            var variation = ViewModel.Shell.Template.ConfigVariations[i];
+            var variation = ViewModel.Instance.Template.ConfigVariations[i];
 
-            if (variation.IsDevelopmentOnly && !App.IsDevelopment)
+            if (variation.IsDevelopmentOnly && !App.Current.IsDevelopment)
             {
                 continue;
             }
@@ -132,15 +136,13 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
                 Command = ViewModel.StartCommand,
                 CommandParameter = new MacroStartArguments()
                 {
-                    ShellKey = ViewModel.Shell.ShellKey,
-                    Reason = LaunchReason.ByUser,
-                    IgnoresUserOptions = variation.IgnoresUserOptions,
+                    IncognitoMode = variation.IncognitoMode,
                     OptionOverrides = variation.OptionOverrides,
                     EnvironmentOverrides = variation.EnvironmentOverrides,
                     SessionStorage = variation.SessionStorage,
                 },
-                Icon = new IconInfo(variation.Icon ?? "\uE768").ToIconElement(),
-        };
+                Icon = IconInfoHelper.ConvertToIconElement(new IconInfo(variation.Icon ?? "\uE768")),
+            };
             RunMenuFlyout.Items.Add(mfi);
         }
     }
@@ -152,11 +154,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return;
         }
 
-        var macroManager = App.GetService<MacroManager>();
-
-        var macro = ViewModel.Shell.Template;
-        var options = macroManager.GetOptions(ViewModel.Shell);
-        var environments = macroManager.GetEnvironments(ViewModel.Shell);
+        var macro = ViewModel.Instance.Template;
 
         if (macro is null)
         {
@@ -179,6 +177,18 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
         static void OnMessageReceived(string message)
         {
             App.ShowTeachingTip(message);
+        }
+
+        var environments = App.GetService<MacroManager>().GlobalEnvironments;
+        foreach (var (key, value) in ViewModel.Instance.GetEnvironments())
+        {
+            environments[key] = value;
+        }
+
+        var options = PoltergeistApplication.GetService<GlobalOptionsService>().GlobalOptions.GetValueDictionary();
+        foreach (var (key, value) in ViewModel.Instance.GetOptions())
+        {
+            options[key] = value;
         }
 
         var args = new MacroActionArguments((IUserMacro)macro)
@@ -268,55 +278,41 @@ public sealed partial class MacroPage : Page, IPageClosing, IApplicationClosing
             return false;
         }
 
-        try
-        {
-            ViewModel.Shell.UserOptions?.Save();
-        }
-        catch (Exception exception)
-        {
-            App.ShowException(exception);
-        }
-
         return true;
     }
 
-    public bool OnApplicationClosing()
+    public void OnPageClosed()
     {
-        if (ViewModel is null)
-        {
-            return true;
-        }
-
-        ViewModel.Shell.UserOptions?.Save();
-
-        return true;
+        ViewModel.SaveOptions(true);
     }
 
     private void HistoryListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        if (((FrameworkElement)e.OriginalSource).DataContext is ProcessHistoryEntry historyEntry)
+        if (ViewModel.Instance.PrivateFolder is null)
         {
-            if(ViewModel.Shell.PrivateFolder is null)
-            {
-                return;
-            }
-
-            var logFile = Path.Combine(ViewModel.Shell.PrivateFolder, "Logs", historyEntry.ProcessId + ".log");
-            if(!File.Exists(logFile))
-            {
-                App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));
-                return;
-            }
-
-            var process = new Process
-            {
-                StartInfo = new (logFile)
-                {
-                    UseShellExecute = true
-                }
-            };
-            process.Start();
+            return;
         }
+
+        if (((FrameworkElement)e.OriginalSource).DataContext is not ProcessorHistoryEntry historyEntry)
+        {
+            return;
+        }
+
+        var logFile = Path.Combine(ViewModel.Instance.PrivateFolder, "Logs", historyEntry.ProcessorId + ".log");
+        if (!File.Exists(logFile))
+        {
+            App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));
+            return;
+        }
+
+        var process = new Process
+        {
+            StartInfo = new(logFile)
+            {
+                UseShellExecute = true
+            }
+        };
+        process.Start();
     }
 
 }
