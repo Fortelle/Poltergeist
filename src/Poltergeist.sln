@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Android", "Polt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Tests", "Poltergeist.Tests\Poltergeist.Tests.csproj", "{0DBBB68F-FCB8-C2CD-3EBD-B5F46B77E085}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poltergeist.Examples", "Poltergeist.Examples\Poltergeist.Examples.csproj", "{456BB551-A7F9-AE75-B970-4C90BB10C97A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +140,22 @@ Global
 		{0DBBB68F-FCB8-C2CD-3EBD-B5F46B77E085}.Release|x64.Build.0 = Release|x64
 		{0DBBB68F-FCB8-C2CD-3EBD-B5F46B77E085}.Release|x86.ActiveCfg = Release|x86
 		{0DBBB68F-FCB8-C2CD-3EBD-B5F46B77E085}.Release|x86.Build.0 = Release|x86
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|Any CPU.Build.0 = Debug|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|arm64.ActiveCfg = Debug|arm64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|arm64.Build.0 = Debug|arm64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|x64.ActiveCfg = Debug|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|x64.Build.0 = Debug|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|x86.ActiveCfg = Debug|x86
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Debug|x86.Build.0 = Debug|x86
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|Any CPU.ActiveCfg = Release|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|Any CPU.Build.0 = Release|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|arm64.ActiveCfg = Release|arm64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|arm64.Build.0 = Release|arm64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|x64.ActiveCfg = Release|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|x64.Build.0 = Release|x64
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|x86.ActiveCfg = Release|x86
+		{456BB551-A7F9-AE75-B970-4C90BB10C97A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

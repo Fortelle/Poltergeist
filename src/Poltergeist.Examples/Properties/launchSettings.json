@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poltergeist.Examples (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Poltergeist.Examples (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
