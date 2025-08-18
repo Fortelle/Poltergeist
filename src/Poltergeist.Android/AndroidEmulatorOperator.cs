@@ -1,10 +1,10 @@
-﻿using Poltergeist.Android;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Operations;
 using Poltergeist.Operations.Timers;
 
-namespace Poltergeist.Operations.Macros;
+namespace Poltergeist.Android;
 
 public class AndroidEmulatorOperator : MacroService, IOperator
 {

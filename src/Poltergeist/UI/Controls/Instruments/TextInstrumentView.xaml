@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-             xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              >
@@ -23,11 +22,11 @@
                 x:Name="TextPanelBox"
                 TextWrapping="Wrap"
                 >
-                
+
                 <interactivity:Interaction.Behaviors>
-                    <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.Foreground, Mode=OneTime}" ComparisonCondition="NotEqual" Value="{x:Null}">
-                        <interactions:ChangePropertyAction TargetObject="{Binding ElementName=TextPanelBox, Mode=OneTime}" PropertyName="Foreground" Value="{x:Bind ViewModel.Foreground, Mode=OneTime}"/>
-                    </interactions:DataTriggerBehavior>
+                    <interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Foreground, Mode=OneTime}" ComparisonCondition="NotEqual" Value="{x:Null}">
+                        <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=TextPanelBox, Mode=OneTime}" PropertyName="Foreground" Value="{x:Bind ViewModel.Foreground, Mode=OneTime}"/>
+                    </interactivity:DataTriggerBehavior>
                 </interactivity:Interaction.Behaviors>
 
                 <RichTextBlock.Resources>

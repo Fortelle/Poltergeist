@@ -6,16 +6,17 @@ using Windows.Storage.Pickers;
 namespace Poltergeist.UI.Controls.Options;
 
 // bug: https://github.com/files-community/Files/issues/11440
+// warn: FileSavePicker must have at least one file type choice and does not support wildcard.
 [ObservableObject]
 public sealed partial class PickerOptionControl : UserControl
 {
+    [ObservableProperty]
+    public partial string? Filepath { get; set; }
+
+    [ObservableProperty]
+    public partial string? Filename { get; set; }
+
     private ObservableParameterItem Item { get; }
-
-    [ObservableProperty]
-    private string? _filepath;
-
-    [ObservableProperty]
-    private string? _filename;
 
     public PickerOptionControl(ObservableParameterItem item)
     {
@@ -78,10 +79,6 @@ public sealed partial class PickerOptionControl : UserControl
                         {
                             savePicker.FileTypeChoices.Add(key, value);
                         }
-                    }
-                    else
-                    {
-                        savePicker.FileTypeChoices.Add("All files", ["."]);
                     }
                     SetWindow(savePicker);
                     var file = await savePicker.PickSaveFileAsync();

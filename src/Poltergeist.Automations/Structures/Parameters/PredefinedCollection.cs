@@ -14,7 +14,7 @@ public class PredefinedCollection
     protected readonly Dictionary<string, IParameterDefinition> DefinitionCollection = new();
     protected readonly Dictionary<string, object?> ValueCollection = new();
 
-    protected readonly object _lock = new();
+    protected readonly Lock _lock = new();
 
     public PredefinedCollection()
     {

@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <converters:DateTimeToAgoConverter x:Key="DateTimeToAgoConverter" />
+        <converters:FalsyToFadeConverter x:Key="FalsyToFadeConverter" />
     </UserControl.Resources>
 
     <Grid>
@@ -105,13 +106,14 @@
                             <Setter Property="VerticalContentAlignment" Value="Stretch" />
                         </Style>
                     </ListView.ItemContainerStyle>
-
+                    
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid
                                 Padding ="8, 16"
                                 DoubleTapped="Grid_DoubleTapped"
                                 Background="Transparent"
+                                Opacity="{Binding Template, Converter={StaticResource FalsyToFadeConverter}, Mode=OneTime}"
                                 >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
@@ -128,6 +130,7 @@
                                             x:Uid="/Poltergeist/Home/OpenMenuFlyoutItem"
                                             FontWeight="Bold"
                                             Click="OpenMenuFlyoutItem_Click"
+                                            IsEnabled="{Binding Template, Converter={StaticResource IsTruthyConverter}, Mode=OneTime}"
                                             >
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE8A7;" />
@@ -215,10 +218,6 @@
                                     Orientation="Horizontal"
                                     Spacing="8"
                                     >
-                                    <SymbolIcon
-                                        Symbol="Help"
-                                        Visibility="{Binding Template, Mode=OneTime, Converter={StaticResource TruthyToCollapsedConverter}}"
-                                        />
                                     <SymbolIcon
                                         Symbol="OutlineStar"
                                         Visibility="{Binding Properties.IsFavorite, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"

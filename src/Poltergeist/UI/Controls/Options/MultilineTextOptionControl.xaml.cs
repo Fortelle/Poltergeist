@@ -10,12 +10,12 @@ namespace Poltergeist.UI.Controls.Options;
 [ObservableObject]
 public sealed partial class MultilineTextOptionControl : UserControl
 {
+    [ObservableProperty]
+    public partial string? Text { get; set; }
+
     private const int MaxLength = 100;
 
     private ObservableParameterItem Item { get; }
-
-    [ObservableProperty]
-    private string? _text;
 
     public MultilineTextOptionControl(ObservableParameterItem item)
     {
@@ -32,8 +32,8 @@ public sealed partial class MultilineTextOptionControl : UserControl
             return "";
         }
 
+        value = value.Replace("\r", string.Empty).Replace("\n", string.Empty);
         value = value.Length < MaxLength ? value : value[..MaxLength];
-        value = value.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
 
         return value;
     }
@@ -75,7 +75,7 @@ public sealed partial class MultilineTextOptionControl : UserControl
         }
         else
         {
-            Item.Value = textbox.Text.Replace("\n\r", "\n").Replace("\r", "").TrimEnd('\n');
+            Item.Value = textbox.Text;
         }
 
         Text = Truncate(Item.Value as string);

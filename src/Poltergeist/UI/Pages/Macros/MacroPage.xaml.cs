@@ -1,11 +1,9 @@
-using System;
 using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers;
 using Poltergeist.Helpers.Converters;
@@ -16,9 +14,8 @@ namespace Poltergeist.UI.Pages.Macros;
 
 public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
 {
-    public static readonly NavigationInfo NavigationInfo = new()
+    public static readonly PageInfo PageInfo = new("macro")
     {
-        Key = "macro",
         CreateContent = (pageKey, data) =>
         {
             MacroInstance? instance;
@@ -259,7 +256,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
         }
         else
         {
-            _ = InteractionService.UIShowAsync(new TipModel()
+            _ = InteractionHelper.Interact(new TipModel()
             {
                 Text = "The action is empty.",
             });

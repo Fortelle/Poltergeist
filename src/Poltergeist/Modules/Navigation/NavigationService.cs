@@ -1,17 +1,18 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
 using Poltergeist.Modules.Macros;
-using Poltergeist.UI;
 using Poltergeist.UI.Pages;
 
 namespace Poltergeist.Modules.Navigation;
 
-public class NavigationService : ServiceBase, INavigationService
+public class NavigationService : ServiceBase
 {
-    public List<NavigationInfo> Informations { get; } = new();
+    public List<SidebarItemInfo> SidebarItemInformations { get; } = new();
+    public List<PageInfo> PageInformations { get; } = new();
 
     public TabView? TabView { get; set; }
 
@@ -22,11 +23,14 @@ public class NavigationService : ServiceBase, INavigationService
         eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed);
     }
 
-    public void AddInfo(NavigationInfo info)
+    public void AddSidebarItemInfo(SidebarItemInfo info)
     {
-        Informations.Add(info);
+        SidebarItemInformations.Add(info);
+    }
 
-        Logger.Trace($"Added navigation information '{info.Key}'.");
+    public void AddPageInfo(PageInfo info)
+    {
+        PageInformations.Add(info);
     }
 
     public bool NavigateTo(string pageKey, object? data = null)
@@ -36,18 +40,11 @@ public class NavigationService : ServiceBase, INavigationService
             return false;
         }
 
-        var info = GetInformation(pageKey);
+        var info = GetPageInfo(pageKey);
         if (info is null)
         {
             Logger.Error($"Failed to navigate: Invalid page key '{pageKey}'.");
             return false;
-        }
-
-        if (info.Action is not null)
-        {
-            Logger.Trace($"Executing the action of navagation '{pageKey}'.");
-            info.Action();
-            return true;
         }
 
         if (!CanCreateTab(pageKey))
@@ -58,12 +55,12 @@ public class NavigationService : ServiceBase, INavigationService
 
         if (!TryGetTab(pageKey, out var tab))
         {
-            tab = CreateTabInternal(pageKey, info, data);
+            tab = CreateTab(pageKey, info, data);
         }
-        else if (info.UpdateArguments is not null)
+        else if (info.UpdateArgument is not null)
         {
             var page = (Page)tab.Content;
-            info.UpdateArguments.Invoke(page, data);
+            info.UpdateArgument.Invoke(page, data);
         }
 
         if (TabView.SelectedItem is not TabViewItem tvi || tvi != tab)
@@ -76,47 +73,49 @@ public class NavigationService : ServiceBase, INavigationService
         return true;
     }
 
-    public bool CreateTab(string pageKey, object? data = null)
+    public bool NavigateTo(NavigationInfo info)
     {
-        if (TabView is null)
-        {
-            return false;
-        }
-
-        if (!CanCreateTab(pageKey))
-        {
-            return false;
-        }
-
-        var info = GetInformation(pageKey);
-        if (info is null)
-        {
-            return false;
-        }
-
-        if (TryGetTab(pageKey, out _))
-        {
-            return false;
-        }
-
-        var tab = CreateTabInternal(pageKey, info, data);
-        return tab is not null;
+        return NavigateTo(info.PageKey, info.Argument);
     }
 
-    private TabViewItem? CreateTabInternal(string pageKey, NavigationInfo info, object? data = null)
+    public bool NavigateTo(PageInfo info, object? data = null)
+    {
+        var pageKey = info.Key;
+
+        if (!TryGetTab(pageKey, out var tab))
+        {
+            tab = CreateTab(pageKey, info, data);
+        }
+        else if (info.UpdateArgument is not null)
+        {
+            var page = (Page)tab.Content;
+            info.UpdateArgument.Invoke(page, data);
+        }
+
+        if (TabView?.SelectedItem is not TabViewItem tvi || tvi != tab)
+        {
+            TabView?.SelectedItem = tab;
+        }
+
+        Logger.Trace($"Navigated to tab page '{pageKey}'.");
+
+        return true;
+    }
+
+    private TabViewItem? CreateTab(string pageKey, PageInfo info, object? data = null)
     {
         try
         {
             var content = info.CreateContent!.Invoke(pageKey, data);
-            var header = info.CreateHeader?.Invoke(content) ?? info.Header ?? info.Text ?? info.Key;
+            var header = info.CreateHeader?.Invoke(content) ?? info.Header ?? info.Key;
             var icon = info.CreateIcon?.Invoke(content) ?? IconInfoHelper.ConvertToIconSource(info.Icon);
             var menuItems = info.CreateMenu?.Invoke(content) ?? info.Menu;
 
             var tab = new TabViewItem
             {
+                Name = pageKey,
                 Header = header,
                 Content = content,
-                Tag = pageKey,
                 IconSource = icon,
             };
 
@@ -156,7 +155,7 @@ public class NavigationService : ServiceBase, INavigationService
             return false;
         }
 
-        tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Tag is string s && s == pageKey);
+        tab = TabView.TabItems.OfType<TabViewItem>().FirstOrDefault(x => x.Name == pageKey);
         return tab is not null;
     }
 
@@ -198,9 +197,9 @@ public class NavigationService : ServiceBase, INavigationService
             pageclosed.OnPageClosed();
         }
 
-        Logger.Trace($"Removed tab page '{tab.Tag}'.");
+        Logger.Trace($"Removed tab page '{tab.Name}'.");
 
-        var pageKey = (string)tab.Tag;
+        var pageKey = tab.Name;
         PoltergeistApplication.GetService<AppEventService>().Publish(new AppWindowPageClosedEvent(pageKey));
 
         return true;
@@ -208,7 +207,8 @@ public class NavigationService : ServiceBase, INavigationService
 
     private bool CanCreateTab(string pageKey)
     {
-        if (!string.IsNullOrEmpty(PoltergeistApplication.Current.ExclusiveMacroMode) && pageKey != MacroManager.GetPageKey(PoltergeistApplication.Current.ExclusiveMacroMode))
+        var exclusiveMacroMode = PoltergeistApplication.Current.ExclusiveMacroMode;
+        if (!string.IsNullOrEmpty(exclusiveMacroMode) && pageKey != MacroManager.GetPageKey(exclusiveMacroMode))
         {
             return false;
         }
@@ -216,10 +216,10 @@ public class NavigationService : ServiceBase, INavigationService
         return true;
     }
 
-    private NavigationInfo? GetInformation(string pageKey)
+    private PageInfo? GetPageInfo(string pageKey)
     {
-        var navkey = pageKey.Split(":")[0];
-        return Informations.FirstOrDefault(x => x.Key == navkey);
+        var infoKey = pageKey.Split(":")[0];
+        return PageInformations.FirstOrDefault(x => x.Key == infoKey);
     }
 
     private MenuFlyout CreateTabPageContextFlyout(MenuItemInfo[]? infos, string pageKey)

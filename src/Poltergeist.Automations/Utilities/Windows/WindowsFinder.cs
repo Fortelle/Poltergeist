@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Poltergeist.Automations.Utilities.Windows;
 
-public static class WindowsFinder
+public static partial class WindowsFinder
 {
     public static Size GetScreenSize()
     {
@@ -138,37 +138,37 @@ public static class WindowsFinder
         return NativeMethods.GetForegroundWindow();
     }
 
-    private static class NativeMethods
+    private static partial class NativeMethods
     {
         public const int SM_CXSCREEN = 0;
         public const int SM_CYSCREEN = 1;
 
-        [DllImport("User32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
-        public static extern int GetSystemMetrics(int nIndex);
+        [LibraryImport("user32.dll")]
+        public static partial int GetSystemMetrics(int nIndex);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Unicode)]
-        public static extern IntPtr FindWindow(string? lpClassName, string? lpWindowName);
+        [LibraryImport("user32.dll", EntryPoint = "FindWindowW", StringMarshalling = StringMarshalling.Utf16)]
+        public static partial IntPtr FindWindow(string? lpClassName, string? lpWindowName);
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
+        [LibraryImport("user32.dll", EntryPoint = "FindWindowExW", StringMarshalling = StringMarshalling.Utf16)]
+        public static partial IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
-        [DllImport("USER32.DLL")]
+        [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsIconic(IntPtr hWnd);
+        public static partial bool IsIconic(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
+        [LibraryImport("user32.dll")]
+        public static partial IntPtr EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
 
-        [DllImport("user32.dll")]
+        [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+        public static partial bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
         public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetForegroundWindow();
+        [LibraryImport("user32.dll")]
+        public static partial IntPtr GetForegroundWindow();
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
     }
 }

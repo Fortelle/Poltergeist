@@ -1,16 +1,15 @@
-﻿using Microsoft.UI;
+﻿using System.Drawing;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Utilities;
-using Windows.UI;
 
 namespace Poltergeist.Automations.Components.Terminals;
 
 // todo: move to default transient
 public class TerminalService : MacroService
 {
-    public string PanelHeader { get; set; } = ResourceHelper.Localize("Poltergeist.Automations/Resources/Terminal_Header");
+    public string PanelHeader { get; set; } = LocalizationUtil.Localize("Terminal_Header");
     public string PanelName { get; set; } = "poltergeist-terminal";
     public string? WorkingDirectory { get; set; }
 
@@ -30,8 +29,8 @@ public class TerminalService : MacroService
         TerminalInstrument.AutoScroll = true;
         TerminalInstrument.BackgroundColor = Color.FromArgb(255, 16, 16, 16);
         TerminalInstrument.ForegroundColor = Color.FromArgb(255, 252, 252, 252);
-        TerminalInstrument.Templates.Add("input", new() { Foreground = Colors.LimeGreen });
-        TerminalInstrument.Templates.Add("output", new() { Foreground = Colors.White });
+        TerminalInstrument.Templates.Add("input", new() { Foreground = Color.LimeGreen });
+        TerminalInstrument.Templates.Add("output", new() { Foreground = Color.White });
 
         Processor.GetService<PanelService>().Create(new(PanelName, PanelHeader, TerminalInstrument)
         {

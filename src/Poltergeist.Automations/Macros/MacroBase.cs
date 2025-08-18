@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Security.Principal;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
@@ -75,7 +76,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
         if (Exception is not null)
         {
-            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_ExceptionOccurred", Exception.Message);
+            invalidationMessage = LocalizationUtil.Localize("Validation_ExceptionOccurred", Exception.Message);
             return false;
         }
 
@@ -86,7 +87,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
             var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
             if (!isAdmin)
             {
-                invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_RequiresAdmin");
+                invalidationMessage = LocalizationUtil.Localize("Validation_RequiresAdmin");
                 return false;
             }
         }
@@ -110,6 +111,29 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
         try
         {
+            var dependentModuleTypes = new HashSet<Type>();
+            foreach (var module in Modules)
+            {
+                dependentModuleTypes.Add(module.GetType());
+                var dependencyAttributes = module.GetType().GetCustomAttributes(typeof(ModuleDependencyAttribute<>));
+                foreach (var dependencyAttribute in dependencyAttributes)
+                {
+                    var moduleType = dependencyAttribute.GetType().GetGenericArguments()[0];
+                    dependentModuleTypes.Add(moduleType);
+                }
+            }
+
+            foreach (var module in Modules)
+            {
+                dependentModuleTypes.Remove(module.GetType());
+            }
+
+            foreach (var moduleType in dependentModuleTypes)
+            {
+                var module = (MacroModule)Activator.CreateInstance(moduleType)!;
+                Modules.Add(module);
+            }
+
             foreach (var module in Modules)
             {
                 module.OnMacroInitialize(this);

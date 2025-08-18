@@ -9,7 +9,6 @@ using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations;
 using Poltergeist.Operations.Background;
 using Poltergeist.Operations.Foreground;
-using Poltergeist.Operations.Macros;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.Emulators;

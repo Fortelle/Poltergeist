@@ -5,9 +5,9 @@ namespace Poltergeist.Automations.Macros;
 
 public interface IBackMacro : IFrontBackMacro
 {
-    public ParameterValueCollection ExtraData { get; }
-    public List<MacroModule> Modules { get; }
+    ParameterValueCollection ExtraData { get; }
+    List<MacroModule> Modules { get; }
 
-    public void Configure(IConfigurableProcessor processor);
-    public void Prepare(IPreparableProcessor processor);
+    void Configure(IConfigurableProcessor processor);
+    void Prepare(IPreparableProcessor processor);
 }

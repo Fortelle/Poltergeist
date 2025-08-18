@@ -62,7 +62,7 @@ public static class RestorePreviousTabsHelper
         var settingsService = PoltergeistApplication.GetService<AppSettingsService>();
         if (IsEnabled && settingsService.Settings.Get<bool>(ConfigKey))
         {
-            var navigationService = PoltergeistApplication.GetService<INavigationService>();
+            var navigationService = PoltergeistApplication.GetService<NavigationService>();
             var openedTabs = navigationService.TabView?.TabItems
                 .OfType<TabViewItem>()
                 .Where(x => x.Content is MacroPage macroPage && macroPage.ViewModel.Instance.IsPersistent)
@@ -71,6 +71,10 @@ public static class RestorePreviousTabsHelper
             if (openedTabs?.Length > 0)
             {
                 settingsService.InternalSettings.Set(DataKey, openedTabs);
+            }
+            else
+            {
+                settingsService.InternalSettings.Remove(DataKey);
             }
         }
         else

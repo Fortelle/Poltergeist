@@ -108,13 +108,13 @@ public class BasicMacro : CommonMacroBase
 
         if (Validate?.Invoke() == false)
         {
-            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_Failed");
+            invalidationMessage = LocalizationUtil.Localize("Validation_Failed");
             return false;
         }
 
         if (Execute is null && ExecuteAsync is null)
         {
-            invalidationMessage = ResourceHelper.Localize("Poltergeist.Automations/Resources/Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
+            invalidationMessage = LocalizationUtil.Localize("Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
             return false;
         }
         

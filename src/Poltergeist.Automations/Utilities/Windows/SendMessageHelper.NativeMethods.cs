@@ -4,11 +4,11 @@ namespace Poltergeist.Automations.Utilities.Windows;
 
 public partial class SendMessageHelper
 {
-    private static class NativeMethods
+    private static partial class NativeMethods
     {
         public static uint MK_LBUTTON = 0x0001;
         public static uint MK_RBUTTON = 0x0002;
-        public static uint MK_SHIFT =0x0004;
+        public static uint MK_SHIFT = 0x0004;
         public static uint MK_CONTROL = 0x0008;
         public static uint MK_MBUTTON = 0x0010;
         public static uint MK_XBUTTON1 =0x0020;
@@ -33,11 +33,11 @@ public partial class SendMessageHelper
         public const uint WM_KEYDOWN = 0x100;
         public const uint WM_KEYUP = 0x0101;
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        [LibraryImport("user32.dll", EntryPoint = "SendMessageA")]
+        public static partial IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        [LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
+        public static partial IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT

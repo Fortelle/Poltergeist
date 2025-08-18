@@ -14,23 +14,23 @@ public class CompleteModule : MacroModule
 
         macro.OptionDefinitions.Add(new EnumOption<CompletionAction>("aftercompletion.action", CompletionAction.None)
         {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_Action"),
-            Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
-            GetText = x => ResourceHelper.Localize($"Poltergeist.Automations/Resources/AfterCompletion_CompletionAction_{x}"),
+            DisplayLabel = LocalizationUtil.Localize("AfterCompletion_Option_Action"),
+            Category = LocalizationUtil.Localize("AfterCompletion_Category"),
+            GetText = x => LocalizationUtil.Localize($"AfterCompletion_CompletionAction_{x}"),
         });
 
         macro.OptionDefinitions.Add(new OptionDefinition<TimeOnly>("aftercompletion.minimumtime")
         {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime"),
-            Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
-            Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_MinimumTime_Description"),
+            DisplayLabel = LocalizationUtil.Localize("AfterCompletion_Option_MinimumTime"),
+            Category = LocalizationUtil.Localize("AfterCompletion_Category"),
+            Description = LocalizationUtil.Localize("AfterCompletion_Option_MinimumTime_Description"),
         });
 
         macro.OptionDefinitions.Add(new OptionDefinition<bool>("aftercompletion.allowerror")
         {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_AllowError"),
-            Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Category"),
-            Description = ResourceHelper.Localize("Poltergeist.Automations/Resources/AfterCompletion_Option_AllowError_Description"),
+            DisplayLabel = LocalizationUtil.Localize("AfterCompletion_Option_AllowError"),
+            Category = LocalizationUtil.Localize("AfterCompletion_Category"),
+            Description = LocalizationUtil.Localize("AfterCompletion_Option_AllowError_Description"),
         });
     }
 

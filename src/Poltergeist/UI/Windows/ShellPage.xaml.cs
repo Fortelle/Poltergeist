@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Poltergeist.Automations.Macros;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
@@ -15,10 +14,10 @@ public sealed partial class ShellPage : Page
 {
     public ShellViewModel ViewModel { get; }
 
-    private readonly INavigationService Navigation;
+    private readonly NavigationService Navigation;
     private readonly MacroInstanceManager MacroInstanceManager;
 
-    public ShellPage(ShellViewModel viewModel, MacroInstanceManager macroInstanceManager, INavigationService navigationService, AppEventService eventService)
+    public ShellPage(ShellViewModel viewModel, MacroInstanceManager macroInstanceManager, NavigationService navigationService, AppEventService eventService)
     {
         ViewModel = viewModel;
         InitializeComponent();
@@ -55,21 +54,22 @@ public sealed partial class ShellPage : Page
 
     private void RefreshHeaderMenu()
     {
-        var selectedPageKey = NavigationViewControl.SelectedItem is NavigationViewItem x ? x.Tag as string : null;
-        
+        var selectedItem = NavigationViewControl.SelectedItem is NavigationViewItem x ? x.Name : null;
+
         NavigationViewControl.MenuItems.Clear();
 
-        var headerItems = Navigation.Informations
-            .Where(x => x.PositionInSidebar == NavigationItemPosition.Top)
+        var headerItems = Navigation.SidebarItemInformations
+            .Where(x => x.Position == SidebarItemPosition.Top)
             ;
         foreach (var item in headerItems)
         {
             var nvi = new NavigationViewItem()
             {
-                Content = item.Text ?? item.Header ?? item.Key,
-                Tag = item.Key,
+                Name = item.Navigation?.PageKey,
+                Content = item.Text,
+                Tag = item.Navigation,
                 Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
-                SelectsOnInvoked = item.CreateContent is not null,
+                SelectsOnInvoked = item.Navigation is not null,
             };
             NavigationViewControl.MenuItems.Add(nvi);
         }
@@ -90,11 +90,11 @@ public sealed partial class ShellPage : Page
             var nvi = new NavigationViewItem()
             {
                 Content = instance.Title,
-                Tag = instance.GetPageKey(),
+                Tag = new NavigationInfo(instance.GetPageKey()),
                 Icon = instance.GetIconElement(),
             };
             NavigationViewControl.MenuItems.Add(nvi);
-            if ((string)nvi.Tag == selectedPageKey)
+            if (nvi.Name == selectedItem)
             {
                 NavigationViewControl.SelectedItem = nvi;
             }
@@ -105,18 +105,18 @@ public sealed partial class ShellPage : Page
     {
         NavigationViewControl.FooterMenuItems.Clear();
 
-        var footerItems = Navigation.Informations
-            .Where(x => x.PositionInSidebar == NavigationItemPosition.Bottom)
+        var footerItems = Navigation.SidebarItemInformations
+            .Where(x => x.Position == SidebarItemPosition.Bottom)
             .Reverse()
             ;
         foreach (var item in footerItems)
         {
             var nvi = new NavigationViewItem()
             {
-                Content = item.Text ?? item.Header ?? item.Key,
-                Tag = item.Key,
+                Content = item.Text ?? item.Text,
+                Tag = (object?)item.Navigation ?? (object?)item.Action,
                 Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
-                SelectsOnInvoked = item.CreateContent is not null,
+                SelectsOnInvoked = item.Navigation is not null,
             };
             NavigationViewControl.FooterMenuItems.Add(nvi);
         }
@@ -143,7 +143,7 @@ public sealed partial class ShellPage : Page
         App.TryEnqueue(() =>
         {
             var pageKey = instance.GetPageKey();
-            var nvi = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == pageKey);
+            var nvi = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => x.Name == pageKey);
             if (nvi is null)
             {
                 return;
@@ -157,12 +157,12 @@ public sealed partial class ShellPage : Page
     private void SelectMenu(string pageKey)
     {
         var menuItems = NavigationViewControl.MenuItems.OfType<NavigationViewItem>().Concat(NavigationViewControl.FooterMenuItems.OfType<NavigationViewItem>());
-        var selectedItem = menuItems.FirstOrDefault(x => ((string)x.Tag) == pageKey);
+        var selectedItem = menuItems.FirstOrDefault(x => x.Tag is NavigationInfo ni && ni.PageKey == pageKey);
         if (selectedItem is null)
         {
             foreach (var menuItem in menuItems.Where(x => x.MenuItems?.Count > 0))
             {
-                selectedItem = menuItem.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => ((string)x.Tag) == pageKey);
+                selectedItem = menuItem.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(x => x.Tag is NavigationInfo ni && ni.PageKey == pageKey);
                 if (selectedItem is not null)
                 {
                     if (NavigationViewControl.IsPaneOpen)
@@ -199,12 +199,15 @@ public sealed partial class ShellPage : Page
             return;
         }
 
-        if (fe.Tag is not string pageKey)
+        if (fe.Tag is NavigationInfo info)
         {
-            return;
+            Navigation.NavigateTo(info.PageKey, info.Argument);
+        }
+        else if (fe.Tag is Action action)
+        {
+            action.Invoke();
         }
 
-        Navigation.NavigateTo(pageKey);
     }
 
     private void NavigationTabView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -217,12 +220,8 @@ public sealed partial class ShellPage : Page
         {
             return;
         }
-        if (tvi.Tag is not string pageKey)
-        {
-            return;
-        }
 
-        SelectMenu(pageKey);
+        SelectMenu(tvi.Name);
 
         if (tvi.Content is IPageNavigating navigating)
         {

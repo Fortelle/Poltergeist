@@ -2,17 +2,17 @@
 
 public interface IInstrumentModel
 {
-    public string? Key { get; }
+    string? Key { get; }
 
-    public string? Title { get; }
+    string? Title { get; }
 
-    public string MacroKey { get; }
+    string MacroKey { get; }
 
-    public string ProcessorId { get; }
+    string ProcessorId { get; }
 
-    public bool AutoScroll { get; }
+    bool AutoScroll { get; }
 
-    public bool Stretch { get; }
+    bool Stretch { get; }
 
-    public bool IsSticky { get; }
+    bool IsSticky { get; }
 }

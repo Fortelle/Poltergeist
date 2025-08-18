@@ -4,6 +4,6 @@ public enum LoopInstrumentType
 {
     None,
     ProgressBar,
-    Grid,
+    Tile,
     List,
 }

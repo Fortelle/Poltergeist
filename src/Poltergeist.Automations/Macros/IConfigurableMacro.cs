@@ -2,5 +2,5 @@
 
 public interface IConfigurableMacro
 {
-    public bool RequiresAdmin { get; }
+    bool RequiresAdmin { get; }
 }

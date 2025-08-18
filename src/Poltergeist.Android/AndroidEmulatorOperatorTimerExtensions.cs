@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Operations.Timers;
 
-namespace Poltergeist.Operations.Macros;
+namespace Poltergeist.Android;
 
 public static class AndroidEmulatorOperatorTimerExtensions
 {

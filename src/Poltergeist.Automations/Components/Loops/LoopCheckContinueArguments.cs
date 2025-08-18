@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Components.Loops;
 
@@ -7,8 +6,7 @@ public class LoopCheckContinueArguments(MacroProcessor processor) : ArgumentServ
 {
     public int IterationIndex { get; set; }
 
-    [AllowNull]
-    public IterationData IterationData { get; set; }
+    public IterationResult IterationResult { get; set; }
 
     public CheckContinueResult Result { get; set; }
 }

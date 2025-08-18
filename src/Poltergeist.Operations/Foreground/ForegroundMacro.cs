@@ -8,7 +8,7 @@ using Poltergeist.Automations.Utilities.Windows;
 namespace Poltergeist.Operations.Foreground;
 
 // todo: close process
-public class ForegroundMacro : MacroBase
+public class ForegroundMacro : CommonMacroBase
 {
     public LoopOptions LoopOptions { get; } = new()
     {
@@ -67,8 +67,8 @@ public class ForegroundMacro : MacroBase
             hookService.Register<LoopCheckContinueHook>(hook =>
             {
                 var args = hook.Processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = hook.Data.Index;
-                args.IterationData = hook.Data;
+                args.IterationIndex = hook.IterationIndex;
+                args.IterationResult = hook.IterationResult;
                 CheckContinue.Invoke(args, hook.Processor.GetService<ForegroundOperator>());
                 hook.Result = args.Result;
             });

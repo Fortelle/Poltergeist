@@ -21,7 +21,7 @@ public class DebugModule : MacroModule
 
         macro.ConfigVariations.Add(new()
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/DebugModule_ConfigTitle"),
+            Title = LocalizationUtil.Localize("DebugModule_ConfigTitle"),
             Icon = "\uEBE8",
             IncognitoMode = true,
             OptionOverrides = new()

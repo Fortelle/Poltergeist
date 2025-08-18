@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Utilities;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.Interactions;
 
 namespace Poltergeist;
@@ -53,6 +53,16 @@ public partial class PoltergeistApplication
 
 	public static void TryEnqueue(DispatcherQueueHandler callback)
 	{
+        if (App.Current is null)
+        {
+            return;
+        }
+
+        if (App.Current.State >= ApplicationState.Exiting)
+        {
+            return;
+        }
+
         App.Current.DispatcherQueue.TryEnqueue(callback);
 	}
 

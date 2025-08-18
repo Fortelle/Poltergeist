@@ -10,18 +10,8 @@ namespace Poltergeist.Helpers;
 // Helper class to workaround custom title bar bugs.
 // DISCLAIMER: The resource key names and color values used below are subject to change. Do not depend on them.
 // https://github.com/microsoft/TemplateStudio/issues/4516
-internal class TitleBarHelper
+internal partial class TitleBarHelper
 {
-    private const int WAINACTIVE = 0x00;
-    private const int WAACTIVE = 0x01;
-    private const int WMACTIVATE = 0x0006;
-
-    [DllImport("user32.dll")]
-    private static extern nint GetActiveWindow();
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern nint SendMessage(nint hWnd, int msg, int wParam, nint lParam);
-
     public static void UpdateTitleBar(ElementTheme theme)
     {
         if (PoltergeistApplication.Current.MainWindow.ExtendsContentIntoTitleBar)
@@ -85,15 +75,15 @@ internal class TitleBarHelper
             Application.Current.Resources["WindowCaptionBackgroundDisabled"] = new SolidColorBrush(Colors.Transparent);
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(PoltergeistApplication.Current.MainWindow);
-            if (hwnd == GetActiveWindow())
+            if (hwnd == NativeMethods.GetActiveWindow())
             {
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, nint.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, nint.Zero);
+                NativeMethods.SendMessage(hwnd, NativeMethods.WMACTIVATE, NativeMethods.WAINACTIVE, nint.Zero);
+                NativeMethods.SendMessage(hwnd, NativeMethods.WMACTIVATE, NativeMethods.WAACTIVE, nint.Zero);
             }
             else
             {
-                SendMessage(hwnd, WMACTIVATE, WAACTIVE, nint.Zero);
-                SendMessage(hwnd, WMACTIVATE, WAINACTIVE, nint.Zero);
+                NativeMethods.SendMessage(hwnd, NativeMethods.WMACTIVATE, NativeMethods.WAACTIVE, nint.Zero);
+                NativeMethods.SendMessage(hwnd, NativeMethods.WMACTIVATE, NativeMethods.WAINACTIVE, nint.Zero);
             }
         }
     }
@@ -113,5 +103,18 @@ internal class TitleBarHelper
             }
             UpdateTitleBar(frame.ActualTheme);
         }
+    }
+
+    private static partial class NativeMethods
+    {
+        public const int WAINACTIVE = 0x00;
+        public const int WAACTIVE = 0x01;
+        public const int WMACTIVATE = 0x0006;
+
+        [LibraryImport("user32.dll")]
+        public static partial nint GetActiveWindow();
+
+        [LibraryImport("user32.dll", EntryPoint = "SendMessageA")]
+        public static partial nint SendMessage(nint hWnd, int msg, int wParam, nint lParam);
     }
 }

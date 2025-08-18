@@ -9,4 +9,10 @@ public class NavigationModel : InteractionModel
     {
         PageKey = pageKey;
     }
+
+    public NavigationModel(string pageKey, object? argumment)
+    {
+        PageKey = pageKey;
+        Argumment = argumment;
+    }
 }

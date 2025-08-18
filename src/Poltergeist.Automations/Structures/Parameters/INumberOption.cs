@@ -2,10 +2,10 @@
 
 public interface INumberOption : IParameterDefinition
 {
-    public NumberOptionLayout Layout { get; }
+    NumberOptionLayout Layout { get; }
 
-    public double? Minimum { get; }
-    public double? Maximum { get; }
-    public double? StepFrequency { get; }
-    public string? ValueFormat { get; }
+    double? Minimum { get; }
+    double? Maximum { get; }
+    double? StepFrequency { get; }
+    string? ValueFormat { get; }
 }

@@ -7,6 +7,6 @@ public class FileOpenModel : InteractionModel
     public List<string>? Filters { get; set; }
 
     public bool Multiselect { get; set; }
-    public string? FileName { get; set; }
+
     public string[]? FileNames { get; set; }
 }

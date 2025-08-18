@@ -12,7 +12,7 @@ public class DashboardService : MacroService
 
     public DashboardService(MacroProcessor processor, PanelService panelService) : base(processor)
     {
-        Panel = panelService.Create(new("poltergeist-dashboard", ResourceHelper.Localize("Poltergeist.Automations/Resources/Dashboard_Header"))
+        Panel = panelService.Create(new("poltergeist-dashboard", LocalizationUtil.Localize("Dashboard_Header"))
         {
             ToLeft = true,
         });

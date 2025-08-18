@@ -6,14 +6,14 @@ namespace Poltergeist.Automations.Processors;
 
 public interface IPreparableProcessor
 {
-    public IUserMacro Macro { get; }
+    IUserMacro Macro { get; }
 
-    public ParameterValueCollection Options { get; }
-    public ParameterValueCollection Environments { get; }
-    public ParameterValueCollection SessionStorage { get; }
+    ParameterValueCollection Options { get; }
+    ParameterValueCollection Environments { get; }
+    ParameterValueCollection SessionStorage { get; }
 
-    public T GetService<T>() where T : class;
-    public void AddStep(WorkflowStep step);
+    T GetService<T>() where T : class;
+    void AddStep(WorkflowStep step);
 
-    public HookService Hooks => GetService<HookService>();
+    HookService Hooks => GetService<HookService>();
 }

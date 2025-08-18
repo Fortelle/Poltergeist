@@ -3,8 +3,9 @@ using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Operations;
 
-namespace Poltergeist.Operations.Macros;
+namespace Poltergeist.Android;
 
 public class AndroidEmulatorMacro : CommonMacroBase
 {
@@ -52,7 +53,6 @@ public class AndroidEmulatorMacro : CommonMacroBase
             {
                 var args = hook.Processor.GetService<IterationArguments>();
                 args.Index = hook.Index;
-                //args.StartTime = hook.StartTime;
                 args.Result = IterationResult.Continue;
 
                 var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
@@ -67,8 +67,8 @@ public class AndroidEmulatorMacro : CommonMacroBase
             hookService.Register<LoopCheckContinueHook>(hook =>
             {
                 var args = hook.Processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = hook.Data.Index;
-                args.IterationData = hook.Data;
+                args.IterationIndex = hook.IterationIndex;
+                args.IterationResult = hook.IterationResult;
                 var ope = hook.Processor.GetService<AndroidEmulatorOperator>();
                 CheckContinue(args, ope);
                 hook.Result = args.Result;

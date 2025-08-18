@@ -19,9 +19,6 @@ public sealed partial class MainWindow : WindowEx
 
     public MainWindow()
     {
-        // https://github.com/microsoft/microsoft-ui-xaml/issues/7164#issuecomment-1171618502
-        _ = Dispatcher;
-
         InitializeComponent();
 
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Poltergeist/Assets/WindowIcon.ico"));

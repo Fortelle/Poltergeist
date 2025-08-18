@@ -13,10 +13,10 @@ public sealed partial class StringArrayOptionControl : UserControl
     private ObservableParameterItem Item { get; }
 
     [ObservableProperty]
-    private string? _text;
+    public partial string? Text { get; set; }
 
     [ObservableProperty]
-    private string? _tooltip;
+    public partial string? Tooltip { get; set; }
 
     public StringArrayOptionControl(ObservableParameterItem item)
     {
@@ -83,8 +83,24 @@ public sealed partial class StringArrayOptionControl : UserControl
         }
         else
         {
-            Item.Value = textbox.Text.Replace("\n\r", "\n").Replace("\r", "").TrimEnd('\n').Split("\r");
+            Item.Value = Split(textbox.Text);
         }
         UpdateText();
+    }
+
+    private static string[] Split(string text)
+    {
+        var lines = text.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+
+        if (lines[^1] == "")
+        {
+            // Remove the last empty line if it exists
+            // "A\nB\nC\n" -> ["A", "B", "C"]
+            // "\n" -> []
+            // "\n\n" -> [""]
+            Array.Resize(ref lines, lines.Length - 1);
+        }
+
+        return lines;
     }
 }

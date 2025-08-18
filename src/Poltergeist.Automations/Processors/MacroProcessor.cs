@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures.Parameters;
@@ -131,11 +130,5 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     public void ReceiveMessage(Dictionary<string, string> paramaters)
     {
         GetService<HookService>().Raise(new MessageReceivedHook(paramaters));
-    }
-
-    public void Interact(InteractionModel model)
-    {
-        var args = new InteractingEventArgs(model);
-        RaiseEvent(ProcessorEvent.Interacting, args);
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text;
-using Microsoft.UI;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Utilities;
-using Windows.UI;
 
 namespace Poltergeist.Automations.Components.Logging;
 
@@ -20,13 +19,13 @@ public class MacroLogger : KernelService
 
     private readonly Dictionary<LogLevel, Color> LogColors = new()
     {
-        [LogLevel.Debug] = Colors.Gray,
-        [LogLevel.Trace] = Colors.DeepSkyBlue,
-        [LogLevel.Information] = Colors.Black,
-        [LogLevel.Warning] = Colors.Orange,
-        [LogLevel.Error] = Colors.Red,
-        [LogLevel.Critical] = Colors.DarkRed,
-        [LogLevel.None] = Colors.Black,
+        [LogLevel.Debug] = Color.Gray,
+        [LogLevel.Trace] = Color.DeepSkyBlue,
+        [LogLevel.Information] = Color.Black,
+        [LogLevel.Warning] = Color.Orange,
+        [LogLevel.Error] = Color.Red,
+        [LogLevel.Critical] = Color.DarkRed,
+        [LogLevel.None] = Color.Black,
     };
 
     private Stream? LogFileStream;
@@ -121,7 +120,7 @@ public class MacroLogger : KernelService
             });
         }
 
-        Processor.GetService<PanelService>().Create(new("poltergeist-logger", ResourceHelper.Localize("Poltergeist.Automations/Resources/Log_Header"), LogInstrument)
+        Processor.GetService<PanelService>().Create(new("poltergeist-logger", LocalizationUtil.Localize("Log_Header"), LogInstrument)
         {
             IsFilled = true,
         });

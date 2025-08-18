@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
@@ -27,38 +26,36 @@ public partial class MacroViewModel : ObservableRecipient
 
     public ObservableCollection<PanelViewModel> Panels { get; } = new();
 
-    [ObservableProperty]
-    private MacroInstance _instance;
+    public MacroInstance Instance { get; }
+
+    public ObservableParameterCollection? UserOptions { get; }
 
     [ObservableProperty]
-    private ObservableParameterCollection? _userOptions;
+    public partial KeyValuePair<string, string>[]? Statistics { get; set; }
 
     [ObservableProperty]
-    private KeyValuePair<string, string>[]? _statistics;
+    public partial KeyValuePair<string, string>[]? Metadata { get; set; }
 
     [ObservableProperty]
-    private KeyValuePair<string, string>[]? _metadata;
+    public partial ProcessorHistoryEntry[]? History { get; set; }
 
     [ObservableProperty]
-    private ProcessorHistoryEntry[]? _history;
+    public partial ImageSource? Thumbnail { get; set; }
 
     [ObservableProperty]
-    private ImageSource? _thumbnail;
+    public partial TimeSpan Duration { get; set; }
 
     [ObservableProperty]
-    private TimeSpan _duration;
+    public partial string? ExceptionMessage { get; set; }
 
     [ObservableProperty]
-    private string? _exceptionMessage;
-
-    [ObservableProperty]
-    private bool _isRunning;
-
-    private DispatcherTimer? Timer;
+    public partial bool IsRunning { get; set; }
 
     public string? InvalidationMessage { get; }
 
     public bool IsValid => string.IsNullOrEmpty(InvalidationMessage);
+
+    private DispatcherTimer? Timer;
 
     private IFrontProcessor? Processor;
 
@@ -136,13 +133,13 @@ public partial class MacroViewModel : ObservableRecipient
             {
                 list.Add(new ProcessorHistoryEntry()
                 {
-                    MacroKey = report.Get<string>("macro_key"),
-                    ProcessorId = report.Get<string>("processor_id"),
-                    StartTime = report.Get<DateTime>("start_time"),
-                    EndTime = report.Get<DateTime>("end_time"),
-                    Duration = report.Get<TimeSpan>("run_duration"),
-                    EndReason = report.Get<EndReason>("end_reason"),
-                    Message = report.Get<string>("comment_message"),
+                    MacroKey = report.GetValueOrDefault<string>("macro_key"),
+                    ProcessorId = report.GetValueOrDefault<string>("processor_id"),
+                    StartTime = report.GetValueOrDefault<DateTime>("start_time"),
+                    EndTime = report.GetValueOrDefault<DateTime>("end_time"),
+                    Duration = report.GetValueOrDefault<TimeSpan>("run_duration"),
+                    EndReason = report.GetValueOrDefault<EndReason>("end_reason"),
+                    Comment = report.GetValueOrDefault<string>("comment_message"),
                 });
             }
             History = list
@@ -237,7 +234,7 @@ public partial class MacroViewModel : ObservableRecipient
             RefreshControls();
         });
 
-        SaveOptions();
+        SaveOptions(true);
 
         args ??= Instance.DefaultStartArguments;
 

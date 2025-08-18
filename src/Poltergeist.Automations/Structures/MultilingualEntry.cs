@@ -14,7 +14,7 @@ public class MultilingualEntry : Dictionary<string, string>
         };
     }
 
-    public static implicit operator string?(MultilingualEntry me)
+    public static implicit operator string(MultilingualEntry me)
     {
         var langCode = Language;
 
@@ -50,7 +50,7 @@ public class MultilingualEntry : Dictionary<string, string>
             return me[key2];
         }
 
-        return me.DefaultValue;
+        return me.DefaultValue ?? "";
     }
 
 }

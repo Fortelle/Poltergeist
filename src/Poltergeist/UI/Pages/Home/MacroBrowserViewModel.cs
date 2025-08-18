@@ -17,7 +17,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
     public const string LastSortIndexKey = "last_sort_index";
 
     [ObservableProperty]
-    private MacroInstance[]? _macros;
+    public partial MacroInstance[]? Macros { get; set; }
 
     private int SortIndex;
     private bool disposedValue;
@@ -36,7 +36,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
     {
         var instanceManager = App.GetService<MacroInstanceManager>();
         var macros = instanceManager.GetInstances();
-
+        
         macros = SortIndex switch
         {
             1 => macros.OrderBy(x => x.Title),
@@ -102,7 +102,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
     }
 
     private static async Task<bool> EditInstancePropertiesInternal(MacroInstanceProperties properties, MacroInstance? instance)
-            {
+    {
         var existedKeys = App.GetService<MacroInstanceManager>().GetInstances()
             .Where(x => x != instance)
             .Select(x => x.Properties?.Key)
@@ -130,7 +130,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
                 },
                 new BoolOption("is_favourite", properties.IsFavorite) {
                     DisplayLabel = App.Localize($"Poltergeist/Home/MacroPropertyLabel_IsFavorite"),
-            },
+                },
             ],
             LabelLayout = InputDialogLabelLayout.Top,
             Valid = (parameters) => existedKeys.Contains((string)parameters!["key"]!) == true ? App.Localize($"Poltergeist/Home/InstanceKeyExistsMessage") : null,
@@ -200,7 +200,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
             return;
         }
 
-        if (App.GetService<INavigationService>().TryCloseTab(instance.GetPageKey()) != true)
+        if (App.GetService<NavigationService>().TryCloseTab(instance.GetPageKey()) != true)
         {
             return;
         }
@@ -319,7 +319,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
         }
 
         if (!Directory.Exists(instance.PrivateFolder))
-    {
+        {
             return;
         }
 

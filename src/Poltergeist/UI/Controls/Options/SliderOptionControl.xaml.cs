@@ -7,6 +7,9 @@ namespace Poltergeist.UI.Controls.Options;
 [ObservableObject]
 public sealed partial class SliderOptionControl : UserControl
 {
+    [ObservableProperty]
+    public partial string? Text { get; set; }
+
     private ObservableParameterItem Item { get; }
 
     private double Minimum { get; } = double.MinValue;
@@ -16,9 +19,6 @@ public sealed partial class SliderOptionControl : UserControl
     private double StepFrequency { get; } = 1;
 
     private string? ValueFormat { get; }
-
-    [ObservableProperty]
-    private string? _text;
 
     private double Value
     {

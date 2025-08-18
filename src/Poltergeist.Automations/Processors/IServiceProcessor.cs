@@ -4,6 +4,6 @@ public interface IServiceProcessor : IUserProcessor
 {
     ProcessorStatus Status { get; }
 
-    public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
-    public TimeSpan GetElapsedTime();
+    void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
+    TimeSpan GetElapsedTime();
 }

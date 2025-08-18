@@ -19,13 +19,13 @@ public class MacroManager : ServiceBase
 
     private ConcurrentDictionary<IFrontProcessor, MacroInstance?> InRunningProcessors { get; set; } = new();
 
-    private readonly INavigationService NavigationService;
+    private readonly NavigationService NavigationService;
 
     private readonly MacroInstanceManager InstanceManager;
 
     public MacroManager(
         AppEventService eventService,
-        INavigationService navigationService,
+        NavigationService navigationService,
         MacroInstanceManager macroInstanceManager
         )
     {
@@ -71,7 +71,7 @@ public class MacroManager : ServiceBase
         return OpenPage(instance);
     }
 
-    public IEnumerable<MacroBase> LoadMacrosFromGroup(MacroGroup group)
+    public bool OpenPage(string instanceId, [MaybeNullWhen(false)] out MacroViewModel viewmodel)
     {
         var instance = InstanceManager.GetInstance(instanceId);
 
@@ -94,7 +94,7 @@ public class MacroManager : ServiceBase
         var pageKey = GetPageKey(instanceId);
         var tabViewItem = NavigationService.TabView?.TabItems
             .OfType<TabViewItem>()
-            .SingleOrDefault(x => x.Tag is string s && s == pageKey);
+            .SingleOrDefault(x => x.Name == pageKey);
         if (tabViewItem?.Content is not MacroPage macroPage)
         {
             return null;
@@ -320,7 +320,7 @@ public class MacroManager : ServiceBase
 
     private void OnAppWindowClosing(AppWindowClosingEvent e)
     {
-        if (InRunningProcessors.Count > 0)
+        if (!InRunningProcessors.IsEmpty)
         {
             e.Cancel = true;
             e.CancelMessage = "One or more macros are running.";

@@ -7,7 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
 
     <Grid
@@ -21,16 +20,16 @@
             <ColumnDefinition Width=".4*" />
         </Grid.ColumnDefinitions>
         <interactivity:Interaction.Behaviors>
-            <interactions:DataTriggerBehavior Binding="{x:Bind IsChecked, Mode=OneWay}" ComparisonCondition="Equal" Value="True">
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=LeftTextBlock, Mode=OneTime}" PropertyName="Opacity" Value="1"/>
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=RightTextBlock, Mode=OneTime}" PropertyName="Opacity" Value=".5"/>
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=ToggleFontIcon, Mode=OneTime}" PropertyName="Glyph" Value="&#x25C0;"/>
-            </interactions:DataTriggerBehavior>
-            <interactions:DataTriggerBehavior Binding="{x:Bind IsChecked, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=LeftTextBlock, Mode=OneTime}" PropertyName="Opacity" Value=".5"/>
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=RightTextBlock, Mode=OneTime}" PropertyName="Opacity" Value="1"/>
-                <interactions:ChangePropertyAction TargetObject="{Binding ElementName=ToggleFontIcon, Mode=OneTime}" PropertyName="Glyph" Value="&#x25B6;"/>
-            </interactions:DataTriggerBehavior>
+            <interactivity:DataTriggerBehavior Binding="{x:Bind IsChecked, Mode=OneWay}" ComparisonCondition="Equal" Value="True">
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=LeftTextBlock, Mode=OneTime}" PropertyName="Opacity" Value="1"/>
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=RightTextBlock, Mode=OneTime}" PropertyName="Opacity" Value=".5"/>
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=ToggleFontIcon, Mode=OneTime}" PropertyName="Glyph" Value="&#x25C0;"/>
+            </interactivity:DataTriggerBehavior>
+            <interactivity:DataTriggerBehavior Binding="{x:Bind IsChecked, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=LeftTextBlock, Mode=OneTime}" PropertyName="Opacity" Value=".5"/>
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=RightTextBlock, Mode=OneTime}" PropertyName="Opacity" Value="1"/>
+                <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=ToggleFontIcon, Mode=OneTime}" PropertyName="Glyph" Value="&#x25B6;"/>
+            </interactivity:DataTriggerBehavior>
         </interactivity:Interaction.Behaviors>
         <TextBlock
             Name="LeftTextBlock"

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Structures.Shapes;
 
-namespace Poltergeist.Operations.Macros;
+namespace Poltergeist.Android;
 
 public static class AndroidEmulatorOperatorInputExtensions
 {

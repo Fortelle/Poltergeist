@@ -26,6 +26,7 @@ public abstract class MacroService : IExtensionService, IDisposable
     }
 
     IUserProcessor IExtensionService.GetProcessor() => Processor;
+    LoggerWrapper IExtensionService.Logger => Logger;
 
     protected virtual void Dispose(bool disposing)
     {

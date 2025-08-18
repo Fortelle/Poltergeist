@@ -5,7 +5,7 @@ namespace Poltergeist.Automations.Structures.Parameters;
 
 public interface IStatisticDefinition : IParameterDefinition
 {
-    public string? TargetKey { get; }
+    string? TargetKey { get; }
 
-    public bool TryUpdate(object? accumulatedValue, ProcessorReport report, [MaybeNullWhen(false)] out object? updatedValue);
+    bool TryUpdate(object? accumulatedValue, ProcessorReport report, [MaybeNullWhen(false)] out object? updatedValue);
 }

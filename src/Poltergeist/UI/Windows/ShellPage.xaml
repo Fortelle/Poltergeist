@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:Poltergeist.Helpers"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     Loaded="OnLoaded"
     >
     
@@ -95,12 +94,8 @@
                                 Spacing="8"
                                 >
                                 <TextBlock
-                                    Text="{x:Bind ViewModel.CpuValue, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
-                                    />
-                                <TextBlock
-                                    Text="{x:Bind ViewModel.RamValue, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.ShowPerformance, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
+                                    Text="{x:Bind ViewModel.Performance.Text, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.Performance.Text, Mode=OneWay, Converter={StaticResource FalsyToCollapsedConverter}}"
                                     />
                                 <TextBlock
                                     x:Uid="/Poltergeist/Resources/TabViewDebugTextBlock"
@@ -114,16 +109,15 @@
                         </Grid>
                     </TabView.TabStripFooter>
                 </TabView>
-
             </Grid>
         </NavigationView>
         <Grid>
             <interactivity:Interaction.Behaviors>
-                <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsExclusiveMacroMode, Mode=OneTime}" ComparisonCondition="Equal" Value="True">
-                    <interactions:ChangePropertyAction TargetObject="{Binding ElementName=NavigationViewControl}" PropertyName="IsPaneVisible" Value="False"/>
-                    <interactions:ChangePropertyAction TargetObject="{Binding ElementName=AppTitleBar}" PropertyName="Margin" Value="16, 0, 0, 0"/>
-                    <interactions:ChangePropertyAction TargetObject="{Binding ElementName=NavigationTabView}" PropertyName="Margin" Value="0, -48, 0, 0"/>
-                </interactions:DataTriggerBehavior>
+                <interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.IsExclusiveMacroMode, Mode=OneTime}" ComparisonCondition="Equal" Value="True">
+                    <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=NavigationViewControl}" PropertyName="IsPaneVisible" Value="False"/>
+                    <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=AppTitleBar}" PropertyName="Margin" Value="16, 0, 0, 0"/>
+                    <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=NavigationTabView}" PropertyName="Margin" Value="0, -48, 0, 0"/>
+                </interactivity:DataTriggerBehavior>
             </interactivity:Interaction.Behaviors>
         </Grid>
     </Grid>

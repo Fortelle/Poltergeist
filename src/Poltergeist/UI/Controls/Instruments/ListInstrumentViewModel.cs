@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Structures.Colors;
+using Poltergeist.Helpers;
 using Poltergeist.Models;
 
 namespace Poltergeist.UI.Controls.Instruments;
@@ -29,8 +30,8 @@ public class ListInstrumentViewModel : IInstrumentViewModel
         if (item.Color is not null)
         {
             var colorset = ThemeColors.Colors[item.Color.Value];
-            vm.Foreground = new SolidColorBrush(colorset.Foreground);
-            vm.Background = new SolidColorBrush(colorset.Background);
+            vm.Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
+            vm.Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
         }
 
         return vm;

@@ -1,60 +1,39 @@
 ﻿using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
 [JsonConverter(typeof(PasswordValueConverter))]
 public class PasswordValue
 {
-    public string Value { get; set; }
+    public string Plaintext { get; set; }
 
     public PasswordValue()
     {
-        Value = "";
+        Plaintext = "";
     }
 
-    public PasswordValue(string value)
+    public PasswordValue(string plaintext)
     {
-        Value = value;
+        Plaintext = plaintext;
     }
 
-    public override string? ToString() => Value;
+    public override string? ToString() => Plaintext;
 
-    public class PasswordValueConverter : JsonConverter
+    private class PasswordValueConverter : JsonConverter<PasswordValue>
     {
-        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, PasswordValue value, JsonSerializerOptions options)
         {
-            if (value is null)
-            {
-                return;
-            }
-
-            if (value is not PasswordValue pv)
-            {
-                throw new NotSupportedException();
-            }
-
-            var bytes = Encoding.UTF8.GetBytes(pv.Value);
-            var base64 = Convert.ToBase64String(bytes);
-            writer.WriteValue(base64);
+            var bytes = Encoding.UTF8.GetBytes(value.Plaintext);
+            writer.WriteBase64StringValue(bytes);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+        public override PasswordValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.Value is not string base64)
-            {
-                throw new NotSupportedException();
-            }
-
-            var bytes = Convert.FromBase64String(base64);
-            var text = Encoding.UTF8.GetString(bytes);
-            var pv = new PasswordValue(text);
-            return pv;
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(PasswordValue);
+            var bytes = reader.GetBytesFromBase64();
+            var plaintext = Encoding.UTF8.GetString(bytes);
+            return new PasswordValue(plaintext);
         }
     }
 }

@@ -1,18 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Poltergeist.Automations.Components.Panels;
 
 namespace Poltergeist.Automations.Components.FlowBuilders;
 
-public partial class FlowBuilderArguments : ObservableObject
+public class FlowBuilderExecutionArguments
 {
-    [ObservableProperty]
-    private string? _text;
+    public event Action<ProgressInstrumentInfo>? Updated;
 
-    [ObservableProperty]
-    private string? _subtext;
-
-    [ObservableProperty]
-    private double _max;
-
-    [ObservableProperty]
-    private double _current;
+    public void Update(ProgressInstrumentInfo item)
+    {
+        Updated?.Invoke(item);
+    }
 }

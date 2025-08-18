@@ -8,6 +8,8 @@
     <local:TruthyToCollapsedConverter x:Key="TruthyToCollapsedConverter" />
     <local:EnumToStringConverter x:Key="EnumToStringConverter" />
     <local:NotConverter x:Key="NotConverter" />
+    <local:IsTruthyConverter x:Key="IsTruthyConverter" />
+    <local:IsFalsyConverter x:Key="IsFalsyConverter" />
     
     <local:BitmapToImageSourceConverter x:Key="BitmapToImageSourceConverter" />
 

@@ -2,10 +2,10 @@
 
 public interface IFrontMacro : IMacroBase, IFrontBackMacro
 {
-    public string? Category { get; }
-    public string? Description { get; }
-    public string[]? Details { get; }
-    public string[]? Tags { get; }
-    public string? Icon { get; }
-    public Version? Version { get; }
+    string? Category { get; }
+    string? Description { get; }
+    string[]? Details { get; }
+    string[]? Tags { get; }
+    string? Icon { get; }
+    Version? Version { get; }
 }

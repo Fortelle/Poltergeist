@@ -1,12 +1,8 @@
 ﻿namespace Poltergeist.Automations.Components.Interactions;
 
-public abstract class InteractionModel
+public abstract class InteractionModel : NotificationModel
 {
     public string Id { get; } = Guid.NewGuid().ToString();
-    public string? ProcessorId { get; set; }
-    
-    public virtual void Callback(InteractionCallbackArguments args)
-    {
 
-    }
+    public TimeSpan Timeout { get; set; }
 }

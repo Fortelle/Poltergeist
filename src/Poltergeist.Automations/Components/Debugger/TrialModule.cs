@@ -19,7 +19,7 @@ public class TrialModule : MacroModule
 
         macro.ConfigVariations.Add(new()
         {
-            Title = ResourceHelper.Localize("Poltergeist.Automations/Resources/TrialModule_ConfigTitle"),
+            Title = LocalizationUtil.Localize("TrialModule_ConfigTitle"),
             IncognitoMode = true,
             OptionOverrides = new()
             {

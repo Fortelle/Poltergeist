@@ -6,7 +6,7 @@ namespace Poltergeist.Automations.Utilities.Windows;
 // the class must be created in the UI thread, otherwise the wndProc will not receive any keyboard input.
 // https://github.com/dotnet/maui/blob/main/src/Compatibility/Core/src/WPF/Microsoft.Windows.Shell/Standard/NativeMethods.cs
 // https://github.com/dotnet/maui/blob/main/src/Compatibility/Core/src/WPF/Microsoft.Windows.Shell/Standard/MessageWindow.cs
-public class HotKeyListener : IDisposable
+public partial class HotKeyListener : IDisposable
 {
     public delegate void HotkeyPressHandler(HotKey hotkey);
     public event HotkeyPressHandler? HotkeyPressed;
@@ -158,22 +158,23 @@ public class HotKeyListener : IDisposable
         Dispose(false);
     }
 
-    private static class NativeMethods
+    private static partial class NativeMethods
     {
         public const int WM_HOTKEY = 0x0312;
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
-
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool UnregisterHotKey(nint hWnd, int id);
+        public static partial bool RegisterHotKey(nint hWnd, int id, uint fsModifiers, uint vk);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool UnregisterHotKey(nint hWnd, int id);
 
         /*****/
 
         public const int WS_EX_NOACTIVATE = 0x08000000;
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct WNDCLASSEX
         {
             [MarshalAs(UnmanagedType.U4)]
@@ -187,7 +188,9 @@ public class HotKeyListener : IDisposable
             public nint hIcon;
             public nint hCursor;
             public nint hbrBackground;
+            [MarshalAs(UnmanagedType.LPWStr)]
             public string lpszMenuName;
+            [MarshalAs(UnmanagedType.LPWStr)]
             public string lpszClassName;
             public nint hIconSm;
         }
@@ -196,11 +199,12 @@ public class HotKeyListener : IDisposable
         [return: MarshalAs(UnmanagedType.U2)]
         public static extern short RegisterClassEx([In] ref WNDCLASSEX lpwcx);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool UnregisterClass(string lpClassName, nint hInstance);
+        [LibraryImport("user32.dll", EntryPoint = "UnregisterClassW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool UnregisterClass(string lpClassName, nint hInstance);
 
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CreateWindowExW")]
-        public static extern nint CreateWindowEx(
+        [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        public static partial nint CreateWindowEx(
             uint dwExStyle,
             [MarshalAs(UnmanagedType.LPWStr)] string lpClassName,
             [MarshalAs(UnmanagedType.LPWStr)] string lpWindowName,
@@ -217,14 +221,15 @@ public class HotKeyListener : IDisposable
 
         public delegate nint WndProcDelegate(nint hWnd, uint msg, nint wParam, nint lParam);
 
-        [DllImport("user32.dll")]
-        public static extern nint DefWindowProc(nint hWnd, uint uMsg, nint wParam, nint lParam);
+        [LibraryImport("user32.dll", EntryPoint = "DefWindowProcA")]
+        public static partial nint DefWindowProc(nint hWnd, uint uMsg, nint wParam, nint lParam);
 
-        [DllImport("user32.dll")]
-        public static extern bool DestroyWindow(nint hWnd);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool DestroyWindow(nint hWnd);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        public static extern nint GetModuleHandle(string strModuleName);
+        [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
+        public static partial nint GetModuleHandle([MarshalAs(UnmanagedType.LPWStr)] string strModuleName);
     }
 
 }

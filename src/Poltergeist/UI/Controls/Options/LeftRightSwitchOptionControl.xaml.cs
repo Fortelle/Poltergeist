@@ -33,7 +33,7 @@ public sealed partial class LeftRightSwitchOptionControl : UserControl
         switch (entry.Definition)
         {
             case BoolOption boolOption:
-                LeftContent = boolOption.OnText ?? "£¨left)";
+                LeftContent = boolOption.OnText ?? "(left)";
                 RightContent = boolOption.OffText ?? "(right)";
                 break;
             default:

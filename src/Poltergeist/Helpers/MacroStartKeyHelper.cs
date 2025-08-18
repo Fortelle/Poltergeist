@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Utilities;
+using Poltergeist.Automations.Utilities.Windows;
 using Poltergeist.Modules.HotKeys;
 using Poltergeist.Modules.Navigation;
 using Poltergeist.UI.Pages.Macros;
@@ -26,9 +26,15 @@ public static class MacroStartKeyHelper
         },
     };
 
+    public static void OnSettingChanged(HotKey newKey)
+    {
+        var hotkeyService = PoltergeistApplication.GetService<HotKeyService>();
+        hotkeyService.Change(HotKeyInformation.SettingDefinition!.Key, newKey);
+    }
+
     private static void RunMacro(LaunchReason reason, bool toggle)
     {
-        var navigationService = PoltergeistApplication.GetService<INavigationService>();
+        var navigationService = PoltergeistApplication.GetService<NavigationService>();
         if (navigationService.TabView!.SelectedItem is not TabViewItem tabViewItem)
         {
             return;

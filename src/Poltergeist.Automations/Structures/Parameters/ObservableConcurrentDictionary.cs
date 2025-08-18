@@ -36,19 +36,13 @@ public class ObservableConcurrentDictionary<TKey, TValue> : IDictionary<TKey, TV
     /// Gets or sets the value associated with the specified key.
     /// </summary>
     /// <param name="key">The key of the value to get or set.</param>
-    /// <returns>
-    /// The <see langword="object"/> associated with the specified key; or <see langword="null"/> if the key does not exist in the dictionary.
-    /// </returns>
-    /// <remarks>
-    /// If the specified key is not found, the getter returns <see langword="null"/>, and the setter creates a new entry with the specified key and value.
-    /// </remarks>
-    [MaybeNull]
+    /// <returns>The value associated with the specified key.</returns>
+    /// <exception cref="KeyNotFoundException">The specified key does not exist in the dictionary.</exception>
     public TValue this[TKey key]
     {
-        get => GetValueOrDefault(key);
+        get => Get(key);
         set => AddOrUpdate(key, value);
     }
-
 
     /// <summary>
     /// Adds the specified key-value pair to the dictionary.
@@ -328,8 +322,10 @@ public class ObservableConcurrentDictionary<TKey, TValue> : IDictionary<TKey, TV
     }
 
     /// <summary>
-    /// Attempts to remove the value with the specified key from the dictionary.
+    /// Attempts to remove the value associated with the specified key from the dictionary.
     /// </summary>
+    /// <param name="key">The key of the value to remove.</param>
+    /// <returns><see langword="true"/> if the value was successfully removed; otherwise, <see langword="false"/>.</returns>
     /// <remarks>If the element is successfully removed, the <see cref="HasChanged"/> property is set to <see langword="true"/>.</remarks>
     public bool TryRemove(TKey key)
     {
@@ -344,6 +340,25 @@ public class ObservableConcurrentDictionary<TKey, TValue> : IDictionary<TKey, TV
         }
     }
 
+    /// <summary>
+    /// Attempts to remove the value associated with the specified key from the dictionary.
+    /// </summary>
+    /// <param name="key">The key of the value to remove.</param>
+    /// <param name="value">When this method returns, contains the value associated with the specified key if it was found and removed; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the value was successfully removed; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>If the element is successfully removed, the <see cref="HasChanged"/> property is set to <see langword="true"/>.</remarks>
+    public bool TryRemove(TKey key, [MaybeNullWhen(false)] out TValue value)
+    {
+        if (Collection.TryRemove(key, out value))
+        {
+            HasChanged = true;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     /// <summary>
     /// Removes all elements from the dictionary.

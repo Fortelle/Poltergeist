@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;

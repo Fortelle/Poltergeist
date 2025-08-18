@@ -13,7 +13,7 @@ public sealed partial class PasswordOptionControl : UserControl
 
     private string? Value
     {
-        get => Item.Value is PasswordValue password ? password.Value : null;
+        get => Item.Value is PasswordValue password ? password.Plaintext : null;
         set => Item.Value = new PasswordValue(value!);
     }
 

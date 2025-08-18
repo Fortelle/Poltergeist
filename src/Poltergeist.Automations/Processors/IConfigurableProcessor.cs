@@ -5,8 +5,8 @@ namespace Poltergeist.Automations.Processors;
 
 public interface IConfigurableProcessor
 {
-    public ParameterValueCollection Options { get; }
-    public ParameterValueCollection Environments { get; }
+    ParameterValueCollection Options { get; }
+    ParameterValueCollection Environments { get; }
 
-    public ServiceCollection Services { get; }
+    ServiceCollection Services { get; }
 }

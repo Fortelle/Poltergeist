@@ -9,7 +9,7 @@ public partial class ButtonViewModel : ObservableRecipient
     public string? BaseText { get; init; }
 
     [ObservableProperty]
-    private string? _text;
+    public partial string? Text { get; set; }
 
     public string? Argument { get; init; }
 

@@ -138,7 +138,7 @@ public class ForegroundLocatingService : MacroService, ILocatingProvider
             {
                 if (config.BringToFront)
                 {
-                    helper.Unminimize();
+                    helper.Restore();
                 }
                 else
                 {

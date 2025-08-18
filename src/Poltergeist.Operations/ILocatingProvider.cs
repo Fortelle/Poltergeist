@@ -2,5 +2,5 @@
 
 public interface ILocatingProvider
 {
-    public bool Locate(RegionConfig region);
+    bool Locate(RegionConfig region);
 }

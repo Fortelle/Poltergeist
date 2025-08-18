@@ -1,4 +1,4 @@
-﻿using Microsoft.UI;
+﻿using System.Drawing;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
@@ -112,7 +112,7 @@ public class BackgroundService : MacroService, IAutoloadable
         {
             list.Add(new("\t" + "(None)")
             {
-                Foreground = Colors.Gray,
+                Foreground = Color.Gray,
             });
         }
 

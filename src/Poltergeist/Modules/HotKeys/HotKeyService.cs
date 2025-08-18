@@ -76,6 +76,32 @@ public class HotKeyService : ServiceBase, IDisposable
         Logger.Trace($"Changed hot key '{info.Name}' from '{newHotKey}' to '{newHotKey}'.");
     }
 
+    public void Remove(HotKeyInformation info)
+    {
+        if (!Informations.Contains(info))
+        {
+            throw new ArgumentException($"Hot key '{info.Name}' is not registered.");
+        }
+
+        Informations.Remove(info);
+
+        if (info.SettingDefinition is not null)
+        {
+            PoltergeistApplication.GetService<AppSettingsService>().Settings.Remove(info.SettingDefinition);
+        }
+
+        Logger.Trace($"Removed hot key '{info.Name}'.", new
+        {
+            info.Name,
+            SettingsKey = info.SettingDefinition?.Key
+        });
+
+        if (IsLoaded)
+        {
+            TryUnregister(info);
+        }
+    }
+
     private void OnAppWindowLoaded(AppWindowLoadedEvent _)
     {
         Listener = new();
@@ -115,19 +141,46 @@ public class HotKeyService : ServiceBase, IDisposable
         if (hotkey is null && info.SettingDefinition is not null)
         {
             hotkey = PoltergeistApplication.GetService<AppSettingsService>().Settings.Get(info.SettingDefinition);
-            if (hotkey is null)
-            {
-                return;
-            }
             info.HotKey = hotkey;
         }
-        else
+
+        if (hotkey is null)
         {
             return;
         }
 
-        Listener.Register(hotkey.Value);
-        Logger.Trace($"Registered the hot key '{hotkey}'.");
+        try
+        {
+            Listener.Register(hotkey.Value);
+            Logger.Trace($"Registered the hot key '{hotkey}'.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex.Message);
+        }
+    }
+
+    private void TryUnregister(HotKeyInformation info)
+    {
+        if (Listener is null)
+        {
+            throw new InvalidOperationException($"{nameof(Listener)} should not be null.");
+        }
+
+        if (info.HotKey is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Listener.Unregister(info.HotKey.Value);
+            Logger.Trace($"Unregistered the hot key '{info.HotKey}'.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(ex.Message);
+        }
     }
 
     protected virtual void Dispose(bool disposing)

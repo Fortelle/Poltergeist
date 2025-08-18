@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using Poltergeist.Automations.Components.Thumbnails;
 using Poltergeist.Automations.Structures;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.Macros;
 
 namespace Poltergeist.UI;

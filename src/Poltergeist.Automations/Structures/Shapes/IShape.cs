@@ -4,27 +4,27 @@ namespace Poltergeist.Automations.Structures.Shapes;
 
 public interface IShape : ICloneable
 {
-    public string? Name { get; set; }
+    string? Name { get; set; }
 
-    public Point Location { get; set; }
-    public Rectangle Bounds { get; }
+    Point Location { get; set; }
+    Rectangle Bounds { get; }
 
-    public PointF Centroid { get; }
-    public float Area { get; }
-    public double Perimeter { get; }
+    PointF Centroid { get; }
+    float Area { get; }
+    double Perimeter { get; }
 
-    public bool IsValid { get; }
-    public bool IsRegular { get; }
+    bool IsValid { get; }
+    bool IsRegular { get; }
 
-    public bool Contains(Point pt);
-    public void Pan(int x, int y);
+    bool Contains(Point pt);
+    void Pan(int x, int y);
 
-    public Bitmap ToMask();
-    public Bitmap CropFrom(Bitmap src);
-    public bool[] GetPointAvailabilities();
-    public string GetSignature();
+    Bitmap ToMask();
+    Bitmap CropFrom(Bitmap src);
+    bool[] GetPointAvailabilities();
+    string GetSignature();
 
-    public static IShape? FromSignature(string sign)
+    static IShape? FromSignature(string sign)
     {
         var values = sign.Split('-');
         if (values[0] == "Rectangle")

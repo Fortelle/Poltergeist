@@ -207,4 +207,16 @@
   <data name="AppSettings_LogToFile" xml:space="preserve">
     <value>Write application logs to file</value>
   </data>
+  <data name="DialogButton_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DialogButton_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="DialogButton_Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="DialogButton_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
 </root>

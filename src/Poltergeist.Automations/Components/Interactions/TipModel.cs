@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Components.Interactions;
 
-public class TipModel : InteractionModel
+public class TipModel : NotificationModel
 {
     public string? Title { get; set; }
     public string? Text { get; set; }

@@ -56,7 +56,8 @@ public static class HashUtil
     public static int GetDistance(BitArray bit1, BitArray bit2)
     {
         var dist = 0;
-        for (var i = 0; i < bit1.Length; i++)
+        var length = Math.Min(bit1.Length, bit2.Length);
+        for (var i = 0; i < length; i++)
         {
             if (bit1[i] != bit2[i])
             {
@@ -69,7 +70,8 @@ public static class HashUtil
     public static int GetDistance(bool[] arr1, bool[] arr2)
     {
         var diff = 0;
-        for (var i = 0; i < arr1.Length; i++)
+        var length = Math.Min(arr1.Length, arr2.Length);
+        for (var i = 0; i < length; i++)
         {
             if (arr1[i] != arr2[i])
             {
@@ -82,7 +84,8 @@ public static class HashUtil
     public static int GetDistance(string hash1, string hash2)
     {
         var diff = 0;
-        for (var i = 0; i < hash1.Length; i++)
+        var length = Math.Min(hash1.Length, hash2.Length);
+        for (var i = 0; i < length; i++)
         {
             if (hash1[i] != hash2[i])
             {

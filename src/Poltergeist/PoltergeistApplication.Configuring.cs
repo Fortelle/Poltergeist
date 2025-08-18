@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Helpers;
@@ -48,7 +49,7 @@ public partial class PoltergeistApplication
         services.AddSingleton<AppLoggingService>();
         services.AddSingleton<AppEventService>();
 
-        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<NavigationService>();
 
         // Views and ViewModels
         services.AddSingleton<ShellPage>();
@@ -76,84 +77,153 @@ public partial class PoltergeistApplication
 
     }
 
-    protected virtual void ConfigureCommandLineParsers(CommandLineService commandLineService)
+    protected virtual void OnContentLoading()
     {
-        commandLineService.AddParser<MacroCommandLineParser>();
+        GetService<AppEventService>().SubscribeMethods(this);
+
+        ConfigureServices();
+
+        ConfigureSettings();
+        ConfigureNavigations();
+        ConfigureHotKeys();
+        ConfigureInstruments();
+        ConfigureCommandLineParsers();
+        ConfigureSoundEffects();
+
+        InteractionService.Interacting = async (e) =>
+        {
+            await InteractionHelper.Interact(e.Model);
+        };
+
+        RestorePreviousTabsHelper.Inject();
+
+        GetService<AppEventService>().Publish<AppContentLoadingEvent>();
     }
 
-    protected virtual void ConfigureAutoLoadServices()
+    private static void ConfigureServices()
     {
         GetService<MacroManager>();
         GetService<PipeService>();
-        GetService<AppEventService>();
-
-        RestorePreviousTabsHelper.Inject();
+        GetService<AppSettingsService>();
     }
 
-    protected virtual void ConfigureInstruments(InstrumentManager instrumentManager)
+    private static void ConfigureInstruments()
     {
+        var instrumentManager = GetService<InstrumentManager>();
         instrumentManager.AddInfo<TextInstrument, TextInstrumentView, TextInstrumentViewModel>();
         instrumentManager.AddInfo<IListInstrumentModel, ListInstrumentView, ListInstrumentViewModel>();
-        instrumentManager.AddInfo<IGridInstrumentModel, GridInstrumentView, GridInstrumentViewModel>();
+        instrumentManager.AddInfo<ITileInstrumentModel, TileInstrumentView, TileInstrumentViewModel>();
         instrumentManager.AddInfo<ImageInstrument, ImageInstrumentView, ImageInstrumentViewModel>();
     }
 
-    protected virtual void ConfigureNavigations(INavigationService navigationService)
+    private static void ConfigureSettings()
     {
-        navigationService.AddInfo(new()
+        var settingsService = GetService<AppSettingsService>();
+        settingsService.Settings.AddDefinition(new OptionDefinition<bool>("app_show_performance", false)
         {
-            Key = "home",
+            Status = ParameterStatus.DevelopmentOnly,
+            Category = PoltergeistApplication.Localize($"Poltergeist/Resources/AppSettings_App"),
+            DisplayLabel = "Show performance",
+        });
+    }
+
+    private static void ConfigureNavigations()
+    {
+        var navigationService = GetService<NavigationService>();
+
+        navigationService.AddSidebarItemInfo(new SidebarItemInfo()
+        {
+            Text = Localize($"Poltergeist/Resources/TabHeader_Home"),
+            Icon = new("\uE80F"),
+            Position = SidebarItemPosition.Top,
+            Navigation = new("home"),
+        });
+        navigationService.AddPageInfo(new PageInfo("home")
+        {
             Header = Localize($"Poltergeist/Resources/TabHeader_Home"),
             Icon = new("\uE80F"),
             CreateContent = (_, _) => App.GetService<MainPage>(),
-            PositionInSidebar = NavigationItemPosition.Top,
         });
 
-        navigationService.AddInfo(new()
+        navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
-            Key = "about",
+            Text = Localize($"Poltergeist/Resources/TabHeader_About"),
+            Icon = new("\uE9CE"),
+            Position = SidebarItemPosition.Bottom,
+            Navigation = new("about"),
+        });
+        navigationService.AddPageInfo(new PageInfo("about")
+        {
             Header = Localize($"Poltergeist/Resources/TabHeader_About"),
             Icon = new("\uE9CE"),
             CreateContent = (_, _) => App.GetService<AboutPage>(),
-            PositionInSidebar = NavigationItemPosition.Bottom,
         });
-        navigationService.AddInfo(new()
+
+        navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
-            Key = "settings",
+            Text = Localize($"Poltergeist/Resources/TabHeader_Settings"),
+            Icon = new("\uE713"),
+            Position = SidebarItemPosition.Bottom,
+            Navigation = new("settings"),
+        });
+        navigationService.AddPageInfo(new PageInfo("settings")
+        {
             Header = Localize($"Poltergeist/Resources/TabHeader_Settings"),
             Icon = new("\uE713"),
             CreateContent = (_, _) => App.GetService<SettingsPage>(),
-            PositionInSidebar = NavigationItemPosition.Bottom,
         });
-        navigationService.AddInfo(new()
+
+        navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
-            Key = "log",
+            Text = Localize($"Poltergeist/Resources/TabHeader_Log"),
+            Icon = new("\uF0E3"),
+            Navigation = new("log"),
+            Position = SidebarItemPosition.Bottom,
+        });
+        navigationService.AddPageInfo(new PageInfo("log")
+        {
             Header = Localize($"Poltergeist/Resources/TabHeader_Log"),
             Icon = new("\uF0E3"),
             CreateContent = (_, _) => App.GetService<LoggingPage>(),
-            PositionInSidebar = NavigationItemPosition.Bottom,
         });
+
 #if DEBUG
-        navigationService.AddInfo(new()
+        navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
-            Key = "debug",
-            Header = "Debug",
+            Text = "Debug",
             Icon = new("\uEBE8"),
             Action = DebugHelper.Do,
-            PositionInSidebar = NavigationItemPosition.Bottom,
+            Position = SidebarItemPosition.Bottom,
         });
 #endif
-        navigationService.AddInfo(MacroPage.NavigationInfo);
+
+        navigationService.AddPageInfo(MacroPage.PageInfo);
     }
 
-    protected virtual void ConfigureSettings(ParameterDefinitionValueCollection settings)
+    private static void ConfigureCommandLineParsers()
     {
-
+        var commandLineService = GetService<CommandLineService>();
+        commandLineService.AddParser<MacroCommandLineParser>();
     }
 
-    protected virtual void ConfigureHotKeys(HotKeyService hotkeyService)
+    private static void ConfigureHotKeys()
     {
+        var hotkeyService = GetService<HotKeyService>();
         hotkeyService.Add(MacroStartKeyHelper.HotKeyInformation);
+
+        var settingsService = GetService<AppSettingsService>();
+        settingsService.WatchChange<Automations.Utilities.Windows.HotKey>(MacroStartKeyHelper.HotKeyInformation.SettingDefinition!.Key, MacroStartKeyHelper.OnSettingChanged);
+    }
+
+    private static void ConfigureSoundEffects()
+    {
+        var soundEffectService = GetService<SoundEffectService>();
+        soundEffectService.Add("beep", "ms-appx:///Poltergeist/Assets/SoundEffects/soft-notice.ogg");
+        soundEffectService.Add("success", "ms-appx:///Poltergeist/Assets/SoundEffects/bright-notifications.ogg");
+        soundEffectService.Add("failure", "ms-appx:///Poltergeist/Assets/SoundEffects/error-08.ogg");
+        soundEffectService.Add("pop", "ms-appx:///Poltergeist/Assets/SoundEffects/pop.ogg");
+        soundEffectService.Add("ckick", "ms-appx:///Poltergeist/Assets/SoundEffects/click.ogg");
+        soundEffectService.Add("error", "ms-appx:///Poltergeist/Assets/SoundEffects/error.ogg");
     }
 
 }

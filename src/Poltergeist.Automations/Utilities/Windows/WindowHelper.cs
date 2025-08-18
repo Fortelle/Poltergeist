@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Poltergeist.Automations.Utilities.Windows;
 
-public class WindowHelper
+public partial class WindowHelper
 {
     private readonly IntPtr Handle;
 
@@ -21,9 +20,9 @@ public class WindowHelper
         var stringLength = NativeMethods.GetWindowTextLength(Handle);
         if (stringLength > 0)
         {
-            var sbString = new StringBuilder(stringLength + 1);
-            NativeMethods.GetWindowText(Handle, sbString, sbString.Capacity);
-            return sbString.ToString();
+            var buffer = new char[stringLength + 1];
+            NativeMethods.GetWindowText(Handle, buffer, buffer.Length);
+            return new string(buffer);
         }
         else
         {
@@ -53,21 +52,26 @@ public class WindowHelper
         NativeMethods.SetForegroundWindow(Handle);
     }
 
+    public void Maximize()
+    {
+        NativeMethods.ShowWindow(Handle, NativeMethods.SW_MAXIMIZE);
+    }
+
     public void Minimize()
     {
         NativeMethods.ShowWindow(Handle, NativeMethods.SW_MINIMIZE);
     }
-
-    public void Unminimize()
+    
+    public void Restore()
     {
         NativeMethods.ShowWindow(Handle, NativeMethods.SW_RESTORE);
     }
 
     public static string GetClassName(IntPtr hWnd)
     {
-        var sbString = new StringBuilder(256);
-        NativeMethods.GetClassName(hWnd, sbString, sbString.Capacity);
-        return sbString.ToString();
+        var buffer = new char[256];
+        NativeMethods.GetClassName(hWnd, buffer, buffer.Length);
+        return new string(buffer).Trim('\0');
     }
 
     public static Rectangle? GetBounds(IntPtr hWnd)
@@ -98,37 +102,39 @@ public class WindowHelper
         return bmp;
     }
 
-    private static class NativeMethods
+    private static partial class NativeMethods
     {
-        [DllImport("USER32.DLL")]
+        [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsIconic(IntPtr hWnd);
+        public static partial bool IsIconic(IntPtr hWnd);
 
-        [DllImport("USER32.DLL")]
-        public static extern int GetWindowTextLength(IntPtr hWnd);
+        [LibraryImport("user32.dll", EntryPoint = "GetWindowTextLengthW")]
+        public static partial int GetWindowTextLength(IntPtr hWnd);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Unicode)]
-        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        [LibraryImport("user32.dll", EntryPoint = "GetWindowTextW", StringMarshalling = StringMarshalling.Utf16)]
+        public static partial int GetWindowText(IntPtr hWnd, [Out][MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpString, int nMaxCount);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Unicode)]
-        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+        [LibraryImport("user32.dll", EntryPoint = "GetClassNameW", StringMarshalling = StringMarshalling.Utf16)]
+        public static partial int GetClassName(IntPtr hWnd, [Out][MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpClassName, int nMaxCount);
 
-        [DllImport("USER32.DLL")]
-        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [LibraryImport("user32.dll")]
+        public static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [DllImport("USER32.dll")]
-        public static extern bool SetForegroundWindow(IntPtr hWnd);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("USER32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         public const int SW_SHOWNORMAL = 1;
         public const int SW_MAXIMIZE = 3;
         public const int SW_MINIMIZE = 6;
         public const int SW_RESTORE = 9;
         
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmGetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwAttribute, out RECT pvAttribute, int cbAttribute);
+        [LibraryImport("dwmapi.dll")]
+        public static partial int DwmGetWindowAttribute(IntPtr hwnd, DwmWindowAttribute dwAttribute, out RECT pvAttribute, int cbAttribute);
 
         public enum DwmWindowAttribute : uint
         {
@@ -158,13 +164,14 @@ public class WindowHelper
             public int Bottom;
         }
 
-        [DllImport("USER32.DLL")]
+        [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+        public static partial bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+        public static partial bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+
         public const int PW_CLIENTONLY = 0x00000001;
         public const int PW_RENDERFULLCONTENT = 0x00000002;
     }

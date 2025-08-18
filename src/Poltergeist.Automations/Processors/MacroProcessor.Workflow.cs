@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components;
 using Poltergeist.Automations.Components.Debugger;
@@ -6,7 +7,6 @@ using Poltergeist.Automations.Components.FlowBuilders;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Logging;
-using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Storages;
 using Poltergeist.Automations.Macros;
@@ -166,7 +166,6 @@ public partial class MacroProcessor
         services.AddSingleton<MacroLogger>();
 
         services.AddSingleton<DashboardService>();
-        services.AddTransient<InteractionCallbackArguments>();
 
         services.AddSingleton<HookService>();
         services.AddSingleton<PanelService>();
@@ -188,15 +187,13 @@ public partial class MacroProcessor
         services.AddTransient<TextInstrument>();
         services.AddTransient<ListInstrument>();
         services.AddTransient<ProgressListInstrument>();
-        services.AddTransient<GridInstrument>();
-        services.AddTransient<ProgressGridInstrument>();
+        services.AddTransient<TileInstrument>();
+        services.AddTransient<ProgressTileInstrument>();
         services.AddTransient<ImageInstrument>();
 
         services.AddTransient<FlowBuilderService>();
 
         services.AddTransient<ArgumentService>();
-        services.AddTransient<IterationArguments>();
-        services.AddTransient<LoopCheckContinueArguments>();
     }
 
     private void ConfigureExtraServices(ServiceCollection services)
@@ -255,6 +252,26 @@ public partial class MacroProcessor
 
         foreach (var module in Macro.Modules)
         {
+            foreach (var method in module.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+            {
+                var attr = method.GetCustomAttribute<MacroHookAttribute>();
+                if (attr is not null)
+                {
+                    var methodParameters = method.GetParameters();
+                    var hookType = methodParameters[0].ParameterType;
+                    var handlerType = Expression.GetDelegateType([hookType, method.ReturnType]);
+                    var handler = method.IsStatic
+                        ? Delegate.CreateDelegate(handlerType, method)
+                        : method.CreateDelegate(handlerType, module);
+                    GetService<HookService>().Register(new HookListener(hookType, handler)
+                    {
+                        Priority = attr.Priority,
+                        Once = attr.Once,
+                        Subscriber = module.GetType().Name,
+                    });
+                }
+            }
+
             if (module.GetType().GetMethod(nameof(MacroModule.OnProcessorPrepare))?.DeclaringType != module.GetType())
             {
                 Logger?.Trace($"'{module.Name}.{nameof(MacroModule.OnProcessorPrepare)}' is not overridden.");

@@ -2,5 +2,5 @@
 
 public interface IInstrumentViewModel
 {
-    public string? Title { get; set; }
+    string? Title { get; set; }
 }

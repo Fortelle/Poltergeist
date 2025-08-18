@@ -57,7 +57,6 @@ public class InteractionMessage
     public string ToArgument()
     {
         var sb = new StringBuilder();
-        sb.Append(Separater);
         sb.Append($"{ProcessorIdName}={ProcessorId}");
         foreach(var (key, value) in Arguments)
         {

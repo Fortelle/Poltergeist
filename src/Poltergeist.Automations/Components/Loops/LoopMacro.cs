@@ -54,7 +54,6 @@ public class LoopMacro : CommonMacroBase
             {
                 var args = hook.Processor.GetService<IterationArguments>();
                 args.Index = hook.Index;
-                args.Result = IterationResult.Continue;
                 Iterate(args);
                 hook.Result = args.Result;
             });
@@ -65,8 +64,8 @@ public class LoopMacro : CommonMacroBase
             hookService.Register<LoopCheckContinueHook>(hook =>
             {
                 var args = hook.Processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = hook.Data.Index;
-                args.IterationData = hook.Data;
+                args.IterationIndex = hook.IterationIndex;
+                args.IterationResult = hook.IterationResult;
                 CheckContinue(args);
                 hook.Result = args.Result;
             });

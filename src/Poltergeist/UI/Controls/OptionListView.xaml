@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:options="using:Poltergeist.UI.Controls.Options"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d"
     x:Name="Root"
     >
@@ -67,24 +66,24 @@
                                             ToolTipService.ToolTip="{Binding Definition.Status, Mode=OneTime}"
                                             >
                                             <interactivity:Interaction.Behaviors>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Normal">
-                                                    <interactions:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                                                </interactions:DataTriggerBehavior>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Experimental">
-                                                    <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xE724;"/>
-                                                    <interactions:ChangePropertyAction PropertyName="Foreground" Value="#0000FF"/>
-                                                </interactions:DataTriggerBehavior>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
-                                                    <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xE72E;"/>
-                                                </interactions:DataTriggerBehavior>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="DevelopmentOnly">
-                                                    <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xEBE8;"/>
-                                                    <interactions:ChangePropertyAction PropertyName="Foreground" Value="#FF6600"/>
-                                                </interactions:DataTriggerBehavior>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
-                                                    <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xE74D;"/>
-                                                    <interactions:ChangePropertyAction PropertyName="Foreground" Value="#FF0000"/>
-                                                </interactions:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Normal">
+                                                    <interactivity:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Experimental">
+                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE724;"/>
+                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#0000FF"/>
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
+                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE72E;"/>
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="DevelopmentOnly">
+                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xEBE8;"/>
+                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#FF6600"/>
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
+                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE74D;"/>
+                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#FF0000"/>
+                                                </interactivity:DataTriggerBehavior>
                                             </interactivity:Interaction.Behaviors>
                                         </FontIcon>
 
@@ -95,12 +94,12 @@
                                             IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
                                             >
                                             <interactivity:Interaction.Behaviors>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
-                                                    <interactions:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
-                                                </interactions:DataTriggerBehavior>
-                                                <interactions:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
-                                                    <interactions:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
-                                                </interactions:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
+                                                    <interactivity:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
+                                                </interactivity:DataTriggerBehavior>
+                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
+                                                    <interactivity:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
+                                                </interactivity:DataTriggerBehavior>
                                             </interactivity:Interaction.Behaviors>
                                         </local:OptionControl>
                                     </Grid>

@@ -6,7 +6,7 @@ namespace Poltergeist.Helpers;
 
 public static class InteractionHelper
 {
-    public static async Task Interact(InteractionModel model)
+    public static async Task Interact(NotificationModel model)
     {
         switch (model)
         {
@@ -31,7 +31,7 @@ public static class InteractionHelper
             case NavigationModel navigationModel:
                 App.TryEnqueue(() =>
                 {
-                    PoltergeistApplication.GetService<INavigationService>().NavigateTo(navigationModel.PageKey, navigationModel.Argumment);
+                    PoltergeistApplication.GetService<NavigationService>().NavigateTo(navigationModel.PageKey, navigationModel.Argumment);
                 });
                 break;
             case ProgressModel progressModel:
@@ -43,11 +43,17 @@ public static class InteractionHelper
             case AppWindowModel appWindowModel:
                 switch (appWindowModel.Action)
                 {
+                    case AppWindowAction.Maximize:
+                        ApplicationHelper.Maximize();
+                        break;
                     case AppWindowAction.Minimize:
                         ApplicationHelper.Minimize();
                         break;
                     case AppWindowAction.Restore:
                         ApplicationHelper.Restore();
+                        break;
+                    case AppWindowAction.BringToFront:
+                        ApplicationHelper.BringToFront();
                         break;
                 }
                 break;

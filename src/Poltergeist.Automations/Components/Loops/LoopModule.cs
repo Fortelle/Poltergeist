@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
@@ -27,23 +26,23 @@ public class LoopModule : MacroModule
 
         macro.StatisticDefinitions.Add(new StatisticDefinition<int>(LoopService.StatisticTotalIterationCountKey)
         {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Statistic_TotalIterationCount"),
+            DisplayLabel = LocalizationUtil.Localize("Statistic_TotalIterationCount"),
             TargetKey = LoopService.ReportIterationCountKey,
             Update = (total, next) => total + next,
         });
 
         macro.OptionDefinitions.Add(new OptionDefinition<bool>(LoopService.ConfigEnableKey, true)
         {
-            DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Enable"),
-            Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
+            DisplayLabel = LocalizationUtil.Localize("Loops_Option_Enable"),
+            Category = LocalizationUtil.Localize("Loops_Category"),
         });
 
         if (Options?.IsCountLimitable == true)
         {
             macro.OptionDefinitions.Add(new OptionDefinition<int>(LoopService.ConfigCountKey, Options?.DefaultCount ?? 1)
             {
-                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Count"),
-                Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
+                DisplayLabel = LocalizationUtil.Localize("Loops_Option_Count"),
+                Category = LocalizationUtil.Localize("Loops_Category"),
             });
         }
 
@@ -51,8 +50,8 @@ public class LoopModule : MacroModule
         {
             macro.OptionDefinitions.Add(new OptionDefinition<TimeOnly>(LoopService.ConfigDurationKey, Options?.DefaultDuration ?? default)
             {
-                DisplayLabel = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Option_Duration"),
-                Category = ResourceHelper.Localize("Poltergeist.Automations/Resources/Loops_Category"),
+                DisplayLabel = LocalizationUtil.Localize("Loops_Option_Duration"),
+                Category = LocalizationUtil.Localize("Loops_Category"),
             });
         }
     }
@@ -61,8 +60,10 @@ public class LoopModule : MacroModule
     {
         base.OnProcessorConfigure(processor);
 
-        processor.Services.AddTransient<LoopBeforeArguments>();
         processor.Services.AddSingleton<LoopService>();
+        processor.Services.AddTransient<LoopBeforeArguments>();
+        processor.Services.AddTransient<IterationArguments>();
+        processor.Services.AddTransient<LoopCheckContinueArguments>();
     }
 
     public override void OnProcessorPrepare(IPreparableProcessor processor)

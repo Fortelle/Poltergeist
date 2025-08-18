@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using Poltergeist.Automations.Components.Logging;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -27,6 +28,11 @@ public sealed class HookService : KernelService
             Once = once,
             Subscriber = GetCallingClassName(2),
         });
+    }
+
+    public void Register(HookListener listener)
+    {
+        InternalRegister(listener);
     }
 
     public void Raise<T>(T hook) where T : MacroHook

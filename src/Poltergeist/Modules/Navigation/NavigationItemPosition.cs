@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Modules.Navigation;
 
-public enum NavigationItemPosition
+public enum SidebarItemPosition
 {
     None,
     Top,

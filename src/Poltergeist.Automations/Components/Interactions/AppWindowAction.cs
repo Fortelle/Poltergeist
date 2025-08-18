@@ -3,6 +3,8 @@
 public enum AppWindowAction
 {
     None,
+    Maximize,
     Minimize,
     Restore,
+    BringToFront,
 }

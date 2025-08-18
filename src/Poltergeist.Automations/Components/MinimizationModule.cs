@@ -46,7 +46,7 @@ public class MinimizationModule : MacroModule
         }
 
         var model = new AppWindowModel(AppWindowAction.Minimize);
-        hook.Processor.Interact(model);
+        hook.Processor.GetService<InteractionService>().Push(model);
     }
 
     private void OnProcessorEnding(ProcessorEndingHook hook)
@@ -57,7 +57,7 @@ public class MinimizationModule : MacroModule
         }
 
         var model = new AppWindowModel(AppWindowAction.Restore);
-        hook.Processor.Interact(model);
+        hook.Processor.GetService<InteractionService>().Push(model);
     }
 
 }

@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:instruments="using:Poltergeist.UI.Controls.Instruments"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:converters="using:Poltergeist.Helpers.Converters"
     xmlns:controls="using:Poltergeist.UI.Controls"
     Style="{StaticResource TabPageStyle}"
@@ -403,9 +402,9 @@
                                     FontSize="16"
                                     >
                                     <interactivity:Interaction.Behaviors>
-                                        <interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsValid, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
-                                            <interactions:ChangePropertyAction PropertyName="Glyph" Value="&#xF140;"/>
-                                        </interactions:DataTriggerBehavior>
+                                        <interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.IsValid, Mode=OneWay}" ComparisonCondition="Equal" Value="False">
+                                            <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xF140;"/>
+                                        </interactivity:DataTriggerBehavior>
                                     </interactivity:Interaction.Behaviors>
                                 </FontIcon>
                                 <TextBlock

@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml.Media.Imaging;
 using Poltergeist.Automations.Structures;
 
-namespace Poltergeist.UI;
+namespace Poltergeist.Helpers;
 
 public static class IconInfoHelper
 {

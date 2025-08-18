@@ -207,4 +207,16 @@
   <data name="AppSettings_LogToFile" xml:space="preserve">
     <value>将应用日志写入文件</value>
   </data>
+  <data name="DialogButton_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DialogButton_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="DialogButton_Ok" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="DialogButton_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
 </root>

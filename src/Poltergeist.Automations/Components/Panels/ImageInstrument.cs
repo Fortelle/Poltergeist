@@ -9,7 +9,7 @@ public class ImageInstrument : InstrumentModel
 
     public ObservableCollection<ImageInstrumentItem> Items = new();
 
-    private List<string> Keys = new();
+    private readonly List<string> Keys = new();
 
     public ImageInstrument(MacroProcessor processor) : base(processor)
     {

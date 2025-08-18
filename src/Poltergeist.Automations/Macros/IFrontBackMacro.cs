@@ -5,13 +5,13 @@ namespace Poltergeist.Automations.Macros;
 
 public interface IFrontBackMacro : IMacroBase
 {
-    public ParameterDefinitionCollection OptionDefinitions { get; }
-    public StatisticDefinitionCollection StatisticDefinitions { get; }
-    public ParameterDefinitionCollection Metadata { get; }
-    public List<ConfigVariation> ConfigVariations { get; }
-    public List<MacroAction> Actions { get; }
-    public MacroStatus Status { get; }
+    ParameterDefinitionCollection OptionDefinitions { get; }
+    StatisticDefinitionCollection StatisticDefinitions { get; }
+    ParameterDefinitionCollection Metadata { get; }
+    List<ConfigVariation> ConfigVariations { get; }
+    List<MacroAction> Actions { get; }
+    MacroStatus Status { get; }
 
-    public void Initialize();
-    public bool CheckValidity([MaybeNullWhen(true)] out string invalidationMessage);
+    void Initialize();
+    bool CheckValidity([MaybeNullWhen(true)] out string invalidationMessage);
 }

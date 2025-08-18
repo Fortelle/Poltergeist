@@ -6,20 +6,20 @@ namespace Poltergeist.Automations.Processors;
 
 public interface IFrontProcessor : IProcessor, IDisposable
 {
-    public IFrontMacro Macro { get; }
+    IFrontMacro Macro { get; }
 
-    public void Start();
-    public ProcessorResult Execute();
-    public Task<ProcessorResult> ExecuteAsync();
-    public void Stop(AbortReason reason);
-    public Task Pause(PauseReason reason);
-    public void Terminate();
-    public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
-    public void ReceiveMessage(Dictionary<string, string> paramaters);
-    public void Resume();
+    void Start();
+    ProcessorResult Execute();
+    Task<ProcessorResult> ExecuteAsync();
+    void Stop(AbortReason reason);
+    Task Pause(PauseReason reason);
+    void Terminate();
+    void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
+    void ReceiveMessage(Dictionary<string, string> paramaters);
+    void Resume();
 
-    public event EventHandler<ProcessorLaunchedEventArgs>? Launched;
-    public event EventHandler<ProcessorCompletedEventArgs>? Completed;
-    public event EventHandler<PanelCreatedEventArgs>? PanelCreated;
-    public event EventHandler<InteractingEventArgs>? Interacting;
+    event EventHandler<ProcessorLaunchedEventArgs>? Launched;
+    event EventHandler<ProcessorCompletedEventArgs>? Completed;
+    event EventHandler<PanelCreatedEventArgs>? PanelCreated;
+    event EventHandler<InteractingEventArgs>? Interacting;
 }

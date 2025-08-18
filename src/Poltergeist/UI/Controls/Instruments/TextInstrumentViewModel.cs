@@ -1,8 +1,10 @@
-﻿using Microsoft.UI.Text;
+﻿using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Helpers;
 using Windows.UI;
 using Windows.UI.Text;
 
@@ -26,12 +28,12 @@ public class TextInstrumentViewModel : IInstrumentViewModel
 
         if (model.BackgroundColor.HasValue)
         {
-            Background = new SolidColorBrush(model.BackgroundColor.Value);
+            Background = new SolidColorBrush(ColorUtil.ToColor(model.BackgroundColor.Value));
         }
 
         if (model.ForegroundColor.HasValue)
         {
-            Foreground = new SolidColorBrush(model.ForegroundColor.Value);
+            Foreground = new SolidColorBrush(ColorUtil.ToColor(model.ForegroundColor.Value));
         }
     }
 
@@ -86,7 +88,7 @@ public class TextInstrumentViewModel : IInstrumentViewModel
         };
         if (line.Foreground.HasValue)
         {
-            run.Foreground = GetBrush(line.Foreground.Value);
+            run.Foreground = GetBrush(ColorUtil.ToColor(line.Foreground.Value));
         }
         if (line.IsBold.HasValue && line.IsBold == true)
         {

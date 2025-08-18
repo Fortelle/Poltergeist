@@ -14,27 +14,27 @@ public abstract class CommonMacroBase : MacroBase
     {
         OptionDefinitions.Add(new OptionDefinition<LogLevel>(MacroLogger.ToFileLevelKey, LogLevel.None)
         {
-            Category = ResourceHelper.Localize($"Poltergeist.Automations/Resources/MacroLoggerOption_Category"),
-            DisplayLabel = ResourceHelper.Localize($"Poltergeist.Automations/Resources/MacroLoggerOption_FileLogLevel"),
+            Category = LocalizationUtil.Localize("MacroLoggerOption_Category"),
+            DisplayLabel = LocalizationUtil.Localize("MacroLoggerOption_FileLogLevel"),
             IsGlobal = true,
         });
 
         OptionDefinitions.Add(new OptionDefinition<LogLevel>(MacroLogger.ToDashboardLevelKey, LogLevel.Information)
         {
-            Category = ResourceHelper.Localize($"Poltergeist.Automations/Resources/MacroLoggerOption_Category"),
-            DisplayLabel = ResourceHelper.Localize($"Poltergeist.Automations/Resources/MacroLoggerOption_DashboardLogLevel"),
+            Category = LocalizationUtil.Localize("MacroLoggerOption_Category"),
+            DisplayLabel = LocalizationUtil.Localize("MacroLoggerOption_DashboardLogLevel"),
             IsGlobal = true,
         });
 
         StatisticDefinitions.Add(new StatisticDefinition<int>("total_run_count", 0)
         {
-            DisplayLabel = ResourceHelper.Localize($"Poltergeist.Automations/Resources/Statistic_TotalRunCount"),
+            DisplayLabel = LocalizationUtil.Localize("Statistic_TotalRunCount"),
             Update = (total, _) => total + 1
         });
 
         StatisticDefinitions.Add(new StatisticDefinition<TimeSpan>("total_run_duration")
         {
-            DisplayLabel = ResourceHelper.Localize($"Poltergeist.Automations/Resources/Statistic_TotalRunDuration"),
+            DisplayLabel = LocalizationUtil.Localize("Statistic_TotalRunDuration"),
             TargetKey = "run_duration",
             Update = (total, next) => total + next,
             Format = x => $"{x.TotalHours:00}:{x.Minutes:00}:{x.Seconds:00}",

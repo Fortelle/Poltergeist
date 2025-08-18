@@ -4,24 +4,24 @@ namespace Poltergeist.Automations.Utilities.Windows;
 
 public partial class SendInputHelper
 {
-    private static class NativeMethods
+    private static partial class NativeMethods
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial uint SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern uint MapVirtualKey(uint uCode, MapVirtualKeyMapTypes uMapType);
+        [LibraryImport("user32.dll", EntryPoint = "MapVirtualKeyW", SetLastError = true)]
+        public static partial uint MapVirtualKey(uint uCode, MapVirtualKeyMapTypes uMapType);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern int OemKeyScan(short wAsciiVal);
+        [LibraryImport("user32.dll", SetLastError = true)]
+        public static partial int OemKeyScan(short wAsciiVal);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool SetCursorPos(int x, int y);
+        public static partial bool SetCursorPos(int x, int y);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [LibraryImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetCursorPos(out POINT point);
+        public static partial bool GetCursorPos(out POINT point);
 
         [Flags]
         public enum MouseEventFlags : int
@@ -137,9 +137,8 @@ public partial class SendInputHelper
         }
 
 
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
-        public static extern short GetKeyState(int keyCode);
+        [LibraryImport("user32.dll")]
+        public static partial short GetKeyState(int keyCode);
 
         public const int KEY_TOGGLED = 0x1;
         public const int KEY_PRESSED = 0x8000;

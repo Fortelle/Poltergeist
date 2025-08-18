@@ -1,6 +1,9 @@
-﻿namespace Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Components.Logging;
+
+namespace Poltergeist.Automations.Processors;
 
 public interface IExtensionService
 {
-    public IUserProcessor GetProcessor();
+    IUserProcessor GetProcessor();
+    LoggerWrapper Logger { get; }
 }

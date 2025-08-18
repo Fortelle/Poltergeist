@@ -8,15 +8,15 @@ namespace Poltergeist.UI.Controls.Options;
 [ObservableObject]
 public sealed partial class SliderChoiceOptionControl : UserControl
 {
+    [ObservableProperty]
+    public partial double SelectedIndex { get; set; }
+
+    [ObservableProperty]
+    public partial string SelectedValue { get; set; }
+
     private ObservableParameterItem Item { get; }
 
     private ChoiceEntry[] Choices { get; set; }
-
-    [ObservableProperty]
-    private double _selectedIndex;
-
-    [ObservableProperty]
-    private string _selectedValue;
 
     private double Minimum { get; } = 0;
 

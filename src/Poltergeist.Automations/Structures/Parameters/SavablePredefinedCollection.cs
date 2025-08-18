@@ -33,7 +33,7 @@ public class SavablePredefinedCollection
     private readonly Dictionary<string, JsonNode> JsonCollection = new();
 
     private int Hash;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public SavablePredefinedCollection()
     {

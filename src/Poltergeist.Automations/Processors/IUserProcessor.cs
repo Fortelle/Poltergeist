@@ -1,19 +1,17 @@
-﻿using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Automations.Processors;
 
 public interface IUserProcessor : IProcessor
 {
-    public IUserMacro Macro { get; }
+    IUserMacro Macro { get; }
 
-    public bool IsCancelled { get; }
-    public CancellationToken CancellationToken { get; }
+    bool IsCancelled { get; }
+    CancellationToken CancellationToken { get; }
 
-    public Task Pause(PauseReason reason);
-    public void Resume();
+    Task Pause(PauseReason reason);
+    void Resume();
 
-    public T GetService<T>() where T : class;
-    public void Interact(InteractionModel model);
-    public void ThrowIfInterrupted();
+    T GetService<T>() where T : class;
+    void ThrowIfInterrupted();
 }

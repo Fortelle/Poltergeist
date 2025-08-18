@@ -11,7 +11,7 @@ public class Debouncer : IDisposable
     private long? FirstTriggerTick = null;
     private bool HasExecutedAtLeastOnce = false;
 
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     private bool IsDisposed;
 

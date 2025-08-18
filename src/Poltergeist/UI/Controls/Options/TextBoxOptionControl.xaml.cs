@@ -11,7 +11,7 @@ public sealed partial class TextBoxOptionControl : UserControl
 
     private string? Placeholder { get; }
 
-    private int MaxLenght { get; }
+    private int MaxLength { get; }
 
     private string? Value
     {
@@ -28,14 +28,14 @@ public sealed partial class TextBoxOptionControl : UserControl
     }
 
     [ObservableProperty]
-    private bool _hasError;
+    public partial bool HasError { get; set; }
 
     public TextBoxOptionControl(ObservableParameterItem item)
     {
         if (item.Definition is TextOption textOption)
         {
             Placeholder = textOption.Placeholder;
-            MaxLenght = textOption.MaxLenght;
+            MaxLength = textOption.MaxLength;
             HasError = !textOption.IsValid(item.Value as string);
         }
 

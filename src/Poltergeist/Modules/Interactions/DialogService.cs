@@ -1,8 +1,10 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Structures.Parameters;
-using Poltergeist.Automations.Utilities;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.Macros;
 using Poltergeist.UI.Controls;
 using Poltergeist.UI.Windows;
@@ -13,6 +15,10 @@ namespace Poltergeist.Modules.Interactions;
 
 public class DialogService
 {
+    private static readonly string YesButtonText = PoltergeistApplication.Localize("Poltergeist/Resources/DialogButton_Yes");
+    private static readonly string NoButtonText = PoltergeistApplication.Localize("Poltergeist/Resources/DialogButton_No");
+    private static readonly string OkButtonText = PoltergeistApplication.Localize("Poltergeist/Resources/DialogButton_Ok");
+    private static readonly string CancelButtonText = PoltergeistApplication.Localize("Poltergeist/Resources/DialogButton_Cancel");
 
     public static async Task ShowAsync(DialogModel model)
     {
@@ -42,7 +48,7 @@ public class DialogService
                             HorizontalAlignment = HorizontalAlignment.Stretch,
                             ColumnSpacing = 16,
                             RowSpacing = 8,
-                            Margin = new Thickness(0, 0, 0, 16),
+                            Margin = new Thickness(0, 16, 0, 0),
                         };
                         var optionControl = new OptionControl()
                         {
@@ -86,7 +92,7 @@ public class DialogService
                 break;
             case ContentDialogModel contentDialogModel:
                 {
-                    stackPanel.Children.Add(contentDialogModel.Content);
+                    stackPanel.Children.Add((UIElement)contentDialogModel.Content);
                 }
                 break;
         }
@@ -98,7 +104,7 @@ public class DialogService
             Content = stackPanel,
         };
 
-        var (primaryText, secondaryText, closeText) = model.GetButtonNames();
+        var (primaryText, secondaryText, closeText) = GetButtonNames(model);
         model.PrimaryButtonText ??= primaryText;
         model.SecondaryButtonText ??= secondaryText;
         model.CloseButtonText ??= closeText;
@@ -166,7 +172,7 @@ public class DialogService
 
         var dialogResult = await ShowAsync(contentDialog);
 
-        model.Result = model.GetDialogResult(dialogResult);
+        model.Result = GetDialogResult(model.Type, dialogResult);
 
         if (parameters is not null)
         {
@@ -199,6 +205,31 @@ public class DialogService
 
             PoltergeistApplication.GetService<MacroManager>().SendMessage(msg);
         }
+    }
+
+
+    public static DialogResult GetDialogResult(DialogType Type, ContentDialogResult result)
+    {
+        return (Type, result) switch
+        {
+            (DialogType.None, ContentDialogResult.None) => DialogResult.Close,
+            (DialogType.None, ContentDialogResult.Secondary) => DialogResult.Secondary,
+            (DialogType.None, ContentDialogResult.Primary) => DialogResult.Primary,
+
+            (DialogType.Ok, ContentDialogResult.None) => DialogResult.Ok,
+
+            (DialogType.OkCancel, ContentDialogResult.Primary) => DialogResult.Ok,
+            (DialogType.OkCancel, ContentDialogResult.None) => DialogResult.Cancel,
+
+            (DialogType.YesNo, ContentDialogResult.Primary) => DialogResult.Yes,
+            (DialogType.YesNo, ContentDialogResult.None) => DialogResult.No,
+
+            (DialogType.YesNoCancel, ContentDialogResult.Primary) => DialogResult.Yes,
+            (DialogType.YesNoCancel, ContentDialogResult.Secondary) => DialogResult.No,
+            (DialogType.YesNoCancel, ContentDialogResult.None) => DialogResult.Cancel,
+
+            _ => DialogResult.Unknown,
+        };
     }
 
     public static async Task<ContentDialogResult> ShowAsync(ContentDialog contentDialog)
@@ -245,12 +276,17 @@ public class DialogService
             {
                 return;
             }
-            model.FileName = file.Path;
+            model.FileNames = [file.Path];
         }
     }
 
     public static async Task ShowFileSavePickerAsync(FileSaveModel model)
     {
+        if (model.Filters.Count == 0)
+        {
+            throw new ArgumentException("FileSaveModel must have at least one filter defined.", nameof(model));
+        }
+
         var picker = new FileSavePicker()
         {
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
@@ -261,16 +297,9 @@ public class DialogService
             picker.SuggestedFileName = model.SuggestedFileName;
         }
 
-        if (model.Filters?.Count > 0)
+        foreach (var (key, value) in model.Filters)
         {
-            foreach (var (key, value) in model.Filters)
-            {
-                picker.FileTypeChoices.Add(key, value);
-            }
-        }
-        else
-        {
-            picker.FileTypeChoices.Add("All files", ["."]);
+            picker.FileTypeChoices.Add(key, value);
         }
 
         SetWindow(picker);
@@ -334,7 +363,7 @@ public class DialogService
 
         if (model.CancellationTokenSource is not null)
         {
-            ProgressDialog.PrimaryButtonText = ResourceHelper.Localize("Poltergeist.Automations/Resources/DialogButton_Cancel");
+            ProgressDialog.PrimaryButtonText = ResourceHelper.Localize("Poltergeist/Resources/DialogButton_Cancel");
             ProgressDialog.PrimaryButtonClick += (s, e) =>
             {
                 model.CancellationTokenSource.Cancel();
@@ -349,4 +378,16 @@ public class DialogService
         InitializeWithWindow.Initialize(picker, hWnd);
     }
 
+    private static (string? Primary, string? Secondary, string? Close) GetButtonNames(DialogModel model)
+    {
+        return model.Type switch
+        {
+            DialogType.None => (null, null, OkButtonText),
+            DialogType.Ok => (null, null, OkButtonText),
+            DialogType.OkCancel => (OkButtonText, null, CancelButtonText),
+            DialogType.YesNo => (YesButtonText, null, NoButtonText),
+            DialogType.YesNoCancel => (YesButtonText, NoButtonText, CancelButtonText),
+            _ => (null, null, null),
+        };
+    }
 }

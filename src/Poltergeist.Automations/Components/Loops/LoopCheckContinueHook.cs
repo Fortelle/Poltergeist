@@ -4,7 +4,9 @@ namespace Poltergeist.Automations.Components.Loops;
 
 public class LoopCheckContinueHook : MacroHook
 {
-    public required IterationData Data { get; init; }
+    public int IterationIndex { get; init; }
+
+    public IterationResult IterationResult { get; init; }
 
     public CheckContinueResult Result { get; set; }
 }

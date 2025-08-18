@@ -10,5 +10,5 @@ public class FlowBuilderItem
     public string? IdleText { get; set; }
     public string? ErrorText { get; set; }
 
-    public required Action<FlowBuilderArguments> Execution { get; init; }
+    public required Action<FlowBuilderExecutionArguments> Execution { get; init; }
 }

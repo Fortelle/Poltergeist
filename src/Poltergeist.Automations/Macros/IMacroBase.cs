@@ -2,6 +2,6 @@
 
 public interface IMacroBase
 {
-    public string Key { get; }
-    public string Title { get; }
+    string Key { get; }
+    string Title { get; }
 }

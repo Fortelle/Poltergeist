@@ -1,11 +1,12 @@
-﻿namespace Poltergeist.Automations.Structures;
+﻿
+namespace Poltergeist.Automations.Structures;
 
 public class Throttler
 {
     private readonly Action Action;
     private readonly long IntervalMilliseconds;
     private long LastTriggerTick;
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
 
     public Throttler(Action action, TimeSpan interval)
     {

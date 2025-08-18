@@ -324,4 +324,25 @@ public class ParameterValueCollection : ObservableConcurrentDictionary<string, o
         throw new UnreachableException();
     }
 
+    /// <summary>
+    /// Attempts to remove the value associated with the specified key from the dictionary.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to remove.</typeparam>
+    /// <param name="key">The key of the value to remove.</param>
+    /// <param name="value">When this method returns, contains the value associated with the specified key if it was found and removed; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the value was successfully removed; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>If the element is successfully removed, the <see cref="HasChanged"/> property is set to <see langword="true"/>.</remarks>
+    /// <exception cref="InvalidCastException">The existing value associated with the specified key cannot be cast to the specified type.</exception>
+    /// <exception cref="NullReferenceException">The existing value associated with the specified key is <see langword="null"/> but the specified type is non-nullable.</exception>
+    public bool TryRemove<T>(string key, [MaybeNullWhen(false)] out T value)
+    {
+        if (!TryRemove(key, out var oldValue))
+        {
+            value = default;
+            return false;
+        }
+
+        value = (T)oldValue!;
+        return true;
+    }
 }

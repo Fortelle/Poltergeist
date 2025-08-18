@@ -44,10 +44,10 @@ public partial class LoggingViewModel : ObservableRecipient, IDisposable
     }
 
     [ObservableProperty]
-    private KeyValuePair<string, string>[]? _entryData;
+    public partial KeyValuePair<string, string>[]? EntryData { get; set; }
 
     [ObservableProperty]
-    private string? _totalTime;
+    public partial string? TotalTime { get; set; }
 
     private readonly AppLoggingService LoggingService;
 

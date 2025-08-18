@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Components.Hooks;
+﻿using System.Reflection;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -10,32 +11,34 @@ public class InteractionService : MacroService
 
     public static Func<InteractingEventArgs, Task>? Interacting { get; set; }
 
-    // todo: convert to callback parameter
-    private readonly List<InteractionModel> Models = new();
+    private InteractionModel? InteractingModel;
 
     public InteractionService(MacroProcessor processor, HookService hookService) : base(processor)
     {
         hookService.Register<MessageReceivedHook>(OnMessageReturned);
     }
 
-    public void Show(InteractionModel model)
+    public void Push(NotificationModel model)
     {
         model.ProcessorId = Processor.ProcessorId;
-        Models.Add(model);
 
         var args = new InteractingEventArgs(model);
         Processor.RaiseEvent(ProcessorEvent.Interacting, args);
 
-        Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
-
+        Logger.Debug($"Passed {nameof(NotificationModel)} <{model.GetType().Name}> to UI thread.", model);
     }
 
-    public async Task ShowAsync(InteractionModel model)
+    public async Task Interact(InteractionModel model)
     {
-        model.ProcessorId = Processor.ProcessorId;
-        Models.Add(model);
+        if (InteractingModel is not null)
+        {
+            throw new InvalidOperationException("An interaction is already in progress. Please wait for it to complete before starting a new one.");
+        }
 
-        var args = new InteractingEventArgs(model, true);
+        InteractingModel = model;
+        model.ProcessorId = Processor.ProcessorId;
+
+        var args = new InteractingEventArgs(model);
         Processor.RaiseEvent(ProcessorEvent.Interacting, args);
 
         Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
@@ -43,43 +46,46 @@ public class InteractionService : MacroService
         await Processor.Pause(PauseReason.WaitForInput);
     }
 
-    public void ShowTip(string message)
-    {
-        var model = new TipModel()
-        {
-            Text = message,
-        };
-
-        Show(model);
-    }
-
     private void OnMessageReturned(MessageReceivedHook hook)
     {
-        if (!hook.Arguments.TryGetValue(InteractionIdKey, out var interactionId))
+        if (InteractingModel is null)
         {
             return;
         }
-
-        var model = Models.FirstOrDefault(x => x.Id == interactionId);
-        if (model is null)
+        if (!hook.Arguments.TryGetValue(InteractionIdKey, out var hookInteractionId))
         {
             return;
         }
-
-        var callbackArguments = Processor.GetService<InteractionCallbackArguments>();
-        callbackArguments.Arguments = hook.Arguments;
-        model.Callback(callbackArguments);
-
-        if (callbackArguments.AllowsResume)
+        if (hookInteractionId != InteractingModel.Id)
         {
-            Processor.Resume();
+            throw new InvalidOperationException($"Interaction ID mismatch.");
         }
+
+
+        InteractingModel = null;
+
+        Processor.Resume();
     }
 
-    public static async Task UIShowAsync(InteractionModel model)
+    public static void UIPush(NotificationModel model)
     {
-        var args = new InteractingEventArgs(model, true);
+        if (Interacting is null)
+        {
+            return;
+        }
 
-        await Interacting!.Invoke(args);
+        var args = new InteractingEventArgs(model);
+        Interacting.Invoke(args);
+    }
+
+    public static async Task UIInteract(InteractionModel model)
+    {
+        if (Interacting is null)
+        {
+            return;
+        }
+
+        var args = new InteractingEventArgs(model);
+        await Interacting.Invoke(args);
     }
 }

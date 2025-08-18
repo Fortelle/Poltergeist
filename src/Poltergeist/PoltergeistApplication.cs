@@ -3,15 +3,11 @@ using System.Security.Principal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.CommandLine;
 using Poltergeist.Modules.Events;
-using Poltergeist.Modules.HotKeys;
-using Poltergeist.Modules.Instruments;
 using Poltergeist.Modules.Logging;
-using Poltergeist.Modules.Navigation;
 using Poltergeist.Modules.Settings;
 using Poltergeist.UI.Windows;
 
@@ -112,11 +108,7 @@ public abstract partial class PoltergeistApplication : Application
         {
             GetService<AppEventService>().Publish<AppWindowActivatedEvent>();
 
-            ConfigureAutoLoadServices();
-
             OnContentLoading();
-
-            GetService<AppEventService>().Publish<AppContentLoadingEvent>();
 
             TryEnqueue(() =>
             {
@@ -165,23 +157,6 @@ public abstract partial class PoltergeistApplication : Application
         SingleInstanceHelper.Close();
 
         State = ApplicationState.Exited;
-    }
-
-    private void OnContentLoading()
-    {
-        var eventService = GetService<AppEventService>();
-        eventService.SubscribeMethods(this);
-
-        ConfigureInstruments(GetService<InstrumentManager>());
-        ConfigureNavigations(GetService<INavigationService>());
-        ConfigureSettings(GetService<AppSettingsService>().Settings);
-        ConfigureHotKeys(GetService<HotKeyService>());
-        ConfigureCommandLineParsers(GetService<CommandLineService>());
-
-        InteractionService.Interacting = async (e) =>
-        {
-            await InteractionHelper.Interact(e.Model);
-        };
     }
 
 }

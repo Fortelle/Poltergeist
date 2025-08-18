@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
@@ -8,7 +7,7 @@ using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Operations.Background;
 
-public class BackgroundMacro : MacroBase
+public class BackgroundMacro : CommonMacroBase
 {
     public LoopOptions LoopOptions { get; } = new()
     {
@@ -66,8 +65,8 @@ public class BackgroundMacro : MacroBase
             hookService.Register<LoopCheckContinueHook>(hook =>
             {
                 var args = hook.Processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = hook.Data.Index;
-                args.IterationData = hook.Data;
+                args.IterationIndex = hook.IterationIndex;
+                args.IterationResult = hook.IterationResult;
                 CheckContinue.Invoke(args, hook.Processor.GetService<BackgroundOperator>());
                 hook.Result = args.Result;
             });

@@ -19,7 +19,7 @@ public sealed partial class CheckBoxOptionControl : UserControl
     {
         OnContent = item.Definition switch
         {
-            BoolOption boolOption => boolOption.Text ?? boolOption.OnText,
+            BoolOption boolOption => boolOption.Text,
             _ => throw new NotSupportedException(),
         };
         Item = item;

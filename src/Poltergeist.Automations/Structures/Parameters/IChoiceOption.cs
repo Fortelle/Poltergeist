@@ -2,6 +2,6 @@
 
 public interface IChoiceOption : IParameterDefinition
 {
-    public ChoiceOptionMode Mode { get; }
-    public ChoiceEntry[] GetChoices();
+    ChoiceOptionMode Mode { get; }
+    ChoiceEntry[] GetChoices();
 }

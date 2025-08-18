@@ -18,7 +18,7 @@ public class FlowBuilderService : MacroService
     {
     }
 
-    public void Add(string text, Action<FlowBuilderArguments> action)
+    public void Add(string text, Action<FlowBuilderExecutionArguments> action)
     {
         Steps.Add(new()
         {
@@ -34,8 +34,8 @@ public class FlowBuilderService : MacroService
 
     public void CreateInstrument()
     {
-        var instruments = Processor.GetService<DashboardService>();
-        Instrument = instruments.Create<ProgressListInstrument>(inst =>
+        var dashboard = Processor.GetService<DashboardService>();
+        Instrument = dashboard.Create<ProgressListInstrument>(inst =>
         {
             inst.Title = Title ?? "Steps:";
         });
@@ -45,13 +45,18 @@ public class FlowBuilderService : MacroService
             Instrument.Add(new(ProgressStatus.Idle)
             {
                 Text = item.IdleText ?? item.Text,
-                Subtext = SubtextType switch
+                Subtext = item.Subtext ?? SubtextType switch
                 {
                     FlowBuilderSubtextType.Status => ProgressStatus.Idle.ToString(),
-                    _ => item.Subtext,
+                    _ => null,
                 },
             });
         }
+    }
+
+    private void UpdateItem(int index, ProgressInstrumentInfo info)
+    {
+        Instrument!.Update(index, new(info));
     }
 
     public void Execute()
@@ -63,94 +68,51 @@ public class FlowBuilderService : MacroService
 
         for (var i = 0; i < Steps.Count; i++)
         {
-            double? max = null;
-            double? current = null;
-            var status = ProgressStatus.Idle;
-            var text = Steps[i].StartingText ?? Steps[i].Text;
-            var subtext = Steps[i].Subtext;
-            var startTime = default(DateTime);
-            var endTime = default(DateTime);
-            var startElapsedTime = default(TimeSpan);
-            var endElapsedTime = default(TimeSpan);
+            var startTime = DateTime.Now;
+            var startElapsedTime = Processor.GetElapsedTime();
 
-            void resetSubtext()
+            UpdateItem(i, new()
             {
-                subtext = Steps[i].Subtext;
-            }
-
-            void updateInstrumentItem()
-            {
-                var progress = 1d;
-                if (max.HasValue && current.HasValue)
+                Status = ProgressStatus.Busy,
+                Text = Steps[i].StartingText ?? Steps[i].Text,
+                Subtext = Steps[i].Subtext ?? SubtextType switch
                 {
-                    progress = current.Value / max.Value;
-                    subtext ??= max > 1 ? $"{current:#}/{max:#}" : $"{progress:#%}";
-                }
-                else if (current.HasValue)
-                {
-                    subtext ??= $"{current}";
-                }
-
-                subtext ??= SubtextType switch
-                {
-                    FlowBuilderSubtextType.StartTime when startTime != default => startTime.ToString("HH:mm:ss"),
-                    FlowBuilderSubtextType.EndTime when endTime != default => endTime.ToString("HH:mm:ss"),
-                    FlowBuilderSubtextType.Duration when endElapsedTime != default => (endElapsedTime - startElapsedTime).TotalHours.ToString("X2") + (endElapsedTime - startElapsedTime).ToString("\\:mm\\:ss"),
-                    FlowBuilderSubtextType.Status => status.ToString(),
-                    FlowBuilderSubtextType.None => "",
+                    FlowBuilderSubtextType.StartTime => startTime.ToString("HH:mm:ss"),
                     _ => null,
-                };
+                },
+            });
 
-                Instrument!.Update(i, new(status)
-                {
-                    Text = text,
-                    Subtext = subtext,
-                    Progress = progress,
-                });
-                resetSubtext();
-            }
-
-            status = ProgressStatus.Busy;
-            updateInstrumentItem();
-
-            var args = new FlowBuilderArguments();
-            args.PropertyChanged += (sender, e) =>
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(FlowBuilderArguments.Text):
-                        text = args.Text;
-                        break;
-                    case nameof(FlowBuilderArguments.Subtext):
-                        subtext = args.Subtext;
-                        break;
-                    case nameof(FlowBuilderArguments.Max):
-                        max = args.Max;
-                        break;
-                    case nameof(FlowBuilderArguments.Current):
-                        current = args.Current;
-                        break;
-                }
-                updateInstrumentItem();
-            };
-
-            startTime = DateTime.Now;
+            var isSuccess = false;
             try
             {
+                var args = new FlowBuilderExecutionArguments();
+                args.Updated += info =>
+                {
+                    UpdateItem(i, info);
+                };
                 Steps[i].Execution.Invoke(args);
-                status = ProgressStatus.Success;
-                text = Steps[i].EndingText ?? Steps[i].Text;
+                isSuccess = true;
             }
             catch (Exception e)
             {
-                status = ProgressStatus.Failure;
-                text = Steps[i].ErrorText ?? Steps[i].Text;
                 Logger.Error(e.Message);
             }
-            endTime = DateTime.Now;
-            endElapsedTime = Processor.GetElapsedTime();
 
-            updateInstrumentItem();
+            var status = isSuccess ? ProgressStatus.Success : ProgressStatus.Failure;
+            var duration = Processor.GetElapsedTime() - startElapsedTime;
+
+            UpdateItem(i, new()
+            {
+                Status = status,
+                Text = (isSuccess ? Steps[i].EndingText : Steps[i].ErrorText) ?? Steps[i].Text,
+                Subtext = Steps[i].Subtext ?? SubtextType switch
+                {
+                    FlowBuilderSubtextType.EndTime => $"{DateTime.Now:HH:mm:ss}",
+                    FlowBuilderSubtextType.Duration => $"{duration.TotalHours:X2}:{duration:mm:ss}",
+                    FlowBuilderSubtextType.Status => $"{status}",
+                    _ => null,
+                },
+            });
 
             if (Processor.IsCancelled)
             {
@@ -162,11 +124,10 @@ public class FlowBuilderService : MacroService
                 Thread.Sleep(Interval);
             }
 
-            if (status != ProgressStatus.Success)
+            if (!isSuccess)
             {
                 break;
             }
-
         }
     }
 

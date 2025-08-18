@@ -17,7 +17,7 @@ public class TipService
         {
             var teachingTip = new TeachingTip()
             {
-                Name = model.Id,
+                Name = Guid.NewGuid().ToString(),
                 Title = model.Title,
                 Subtitle = model.Text,
             };

@@ -40,7 +40,7 @@ public sealed partial class OptionListView : UserControl
     }
 
     [ObservableProperty]
-    private OptionGroup[]? _groups;
+    public partial OptionGroup[]? Groups { get; set; }
 
     public OptionListView()
     {

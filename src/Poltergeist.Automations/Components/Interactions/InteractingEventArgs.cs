@@ -2,18 +2,11 @@
 
 public class InteractingEventArgs : EventArgs
 {
-    public InteractionModel Model { get; set; }
-    public bool Suspended { get; set; }
+    public NotificationModel Model { get; set; }
 
-    public InteractingEventArgs(InteractionModel model)
+    public InteractingEventArgs(NotificationModel model)
     {
         Model = model;
-        Suspended = false;
     }
 
-    public InteractingEventArgs(InteractionModel model, bool suspended)
-    {
-        Model = model;
-        Suspended = suspended;
-    }
 }

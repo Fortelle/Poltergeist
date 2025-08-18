@@ -14,6 +14,31 @@ public class AppSettingsService : ServiceBase
         eventService.Subscribe<AppWindowClosedEvent>(OnAppWindowClosed);
     }
 
+    public void WatchChange<T>(string key, Action<T> action)
+    {
+        PoltergeistApplication.GetService<AppEventService>().Subscribe<AppSettingsChangedEvent>(e =>
+        {
+            if (e.Key == key)
+            {
+                var newValue = (T)e.NewValue!;
+                action(newValue);
+            }
+        });
+    }
+
+    public void WatchChange<T>(string key, Action<T?, T?> action)
+    {
+        PoltergeistApplication.GetService<AppEventService>().Subscribe<AppSettingsChangedEvent>(e =>
+        {
+            if (e.Key == key)
+            {
+                var oldValue = (T?)e.OldValue;
+                var newValue = (T?)e.NewValue;
+                action(oldValue, newValue);
+            }
+        });
+    }
+
     private void OnAppWindowClosed(AppWindowClosedEvent _)
     {
         try

@@ -1,6 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
 using Poltergeist.Automations.Utilities.Windows;
-using Poltergeist.Modules.App;
 
 namespace Poltergeist.Helpers;
 
@@ -14,6 +13,13 @@ public static class ApplicationHelper
         });
     }
 
+    public static void Maximize()
+    {
+        var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
+        var wh = new WindowHelper(hwnd);
+        wh.Maximize();
+    }
+
     public static void Minimize()
     {
         var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
@@ -25,7 +31,7 @@ public static class ApplicationHelper
     {
         var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
         var wh = new WindowHelper(hwnd);
-        wh.Unminimize();
+        wh.Restore();
     }
 
     public static void BringToFront()
