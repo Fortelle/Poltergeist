@@ -131,4 +131,36 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     {
         GetService<HookService>().Raise(new MessageReceivedHook(paramaters));
     }
+
+    /// <summary>
+    /// Executes the specified macro using the provided arguments and returns the result.
+    /// </summary>
+    /// <remarks>This method creates a new instance of <see cref="MacroProcessor"/> to process the macro.</remarks>
+    /// <param name="macro">The macro to be processed.</param>
+    /// <param name="arguments">Optional arguments for the macro processor.</param>
+    /// <returns>A <see cref="ProcessorResult"/> representing the outcome of the macro execution.</returns>
+    public static ProcessorResult Execute(MacroBase macro, MacroProcessorArguments? arguments = null)
+    {
+        using var processor = arguments is null
+            ? new MacroProcessor(macro)
+            : new MacroProcessor(macro, arguments);
+        var result = processor.Execute();
+        return result;
+    }
+
+    /// <summary>
+    /// Executes the specified macro asynchronously using the provided processor arguments and returns the result.
+    /// </summary>
+    /// <remarks>This method creates a new instance of <see cref="MacroProcessor"/> to process the macro.</remarks>
+    /// <param name="macro">The macro to be processed.</param>
+    /// <param name="arguments">Optional arguments for the macro processor.</param>
+    /// <returns>A <see cref="ProcessorResult"/> representing the outcome of the macro execution.</returns>
+    public static async Task<ProcessorResult> ExecuteAsync(MacroBase macro, MacroProcessorArguments? arguments = null)
+    {
+        using var processor = arguments is null
+            ? new MacroProcessor(macro)
+            : new MacroProcessor(macro, arguments);
+        var result = await processor.ExecuteAsync();
+        return result;
+    }
 }

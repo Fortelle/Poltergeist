@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Poltergeist.Tests.UI.TestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Poltergeist.Tests.UI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Poltergeist.UI.Controls"
+    mc:Ignorable="d"
+    Style="{StaticResource TabPageStyle}"
+    >
+    
+    <ScrollViewer Style="{StaticResource VerticalScrollViewerStyle}">
+        <ListView
+            ItemsSource="{x:Bind ViewModel.TestTasks, Mode=OneTime}"
+            >
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        Padding ="8, 16"
+                        Background="Transparent"
+                        >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="12*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                                
+                        <FontIcon
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="24"
+                            Width="32"
+                            Height="32"
+                            Glyph="&#xEADF;"
+                            />
+                                
+                        <StackPanel
+                            Grid.Column="1"
+                            Padding="{StaticResource SmallLeftMargin}"
+                            VerticalAlignment="Center"
+                            >
+                            <TextBlock
+                                Text="{Binding Title, Mode=OneTime}"
+                                Style="{StaticResource ListTitleStyle}"
+                                FontWeight="SemiBold"
+                                FontSize="15"
+                                TextTrimming="CharacterEllipsis"
+                                />
+                            <TextBlock 
+                                Opacity=".75"
+                                Text="{Binding Description, Mode=OneTime}"
+                                Style="{StaticResource ListSubTitleStyle}"
+                                Foreground="{StaticResource SecondaryTextColor}"
+                                Visibility="{Binding Description, Converter={StaticResource FalsyToCollapsedConverter}, Mode=OneTime}"
+                                />
+                        </StackPanel>
+
+                        <Button
+                            Content="Execute"
+                            Grid.Column="2"
+                            Command="{Binding ExecuteCommand, Mode=OneTime}"
+                            HorizontalAlignment="Center"
+                            />
+
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ListView>
+    </ScrollViewer>
+</Page>

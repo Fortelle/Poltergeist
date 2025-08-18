@@ -8,7 +8,7 @@ public partial class MacroProcessor
 
     private CancellationTokenSource? Cancellation;
 
-    CancellationToken IUserProcessor.CancellationToken => Cancellation?.Token ?? CancellationToken.None;
+    public CancellationToken CancellationToken => Cancellation?.Token ?? CancellationToken.None;
 
     /// <summary>
     /// Runs the processor in a new thread.
@@ -76,10 +76,38 @@ public partial class MacroProcessor
     }
 
     /// <summary>
+    /// Waits for the processor to complete and returns the result.
+    /// </summary>
+    /// <returns>The result of the processor.</returns>
+    public ProcessorResult GetResult()
+    {
+        if (Result is not null)
+        {
+            return Result;
+        }
+
+        using var mre = new ManualResetEvent(false);
+
+        Completed += (_, e) =>
+        {
+            mre.Set();
+        };
+
+        mre.WaitOne();
+
+        if (Exception is not null)
+        {
+            throw Exception;
+        }
+
+        return Result!;
+    }
+
+    /// <summary>
     /// Pauses the processor.
     /// </summary>
     /// <param name="reason"></param>
-    public async Task Pause(PauseReason reason)
+    public async Task Pause(PauseReason reason = PauseReason.Unknown)
     {
         PauseProvider = new();
 
@@ -132,7 +160,7 @@ public partial class MacroProcessor
     /// Tries to stop the processor.
     /// </summary>
     /// <param name="reason"></param>
-    public void Stop(AbortReason reason)
+    public void Stop(AbortReason reason = AbortReason.Unknown)
     {
         Logger?.Debug("Received a stop request.");
 
