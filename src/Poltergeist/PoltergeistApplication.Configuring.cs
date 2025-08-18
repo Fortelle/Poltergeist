@@ -75,6 +75,9 @@ public partial class PoltergeistApplication
         services.AddSingleton<GlobalOptionsService>();
         services.AddSingleton<MacroStatisticsService>();
 
+        services.AddSingleton<TextToSpeechService>();
+        services.AddSingleton<AudioPlayerService>();
+        services.AddSingleton<SoundEffectService>();
     }
 
     protected virtual void OnContentLoading()
@@ -88,7 +91,6 @@ public partial class PoltergeistApplication
         ConfigureHotKeys();
         ConfigureInstruments();
         ConfigureCommandLineParsers();
-        ConfigureSoundEffects();
 
         InteractionService.Interacting = async (e) =>
         {
@@ -104,6 +106,7 @@ public partial class PoltergeistApplication
     {
         GetService<MacroManager>();
         GetService<PipeService>();
+        //GetService<TextToSpeechService>(); // todo: not now
         GetService<AppSettingsService>();
     }
 
@@ -213,17 +216,6 @@ public partial class PoltergeistApplication
 
         var settingsService = GetService<AppSettingsService>();
         settingsService.WatchChange<Automations.Utilities.Windows.HotKey>(MacroStartKeyHelper.HotKeyInformation.SettingDefinition!.Key, MacroStartKeyHelper.OnSettingChanged);
-    }
-
-    private static void ConfigureSoundEffects()
-    {
-        var soundEffectService = GetService<SoundEffectService>();
-        soundEffectService.Add("beep", "ms-appx:///Poltergeist/Assets/SoundEffects/soft-notice.ogg");
-        soundEffectService.Add("success", "ms-appx:///Poltergeist/Assets/SoundEffects/bright-notifications.ogg");
-        soundEffectService.Add("failure", "ms-appx:///Poltergeist/Assets/SoundEffects/error-08.ogg");
-        soundEffectService.Add("pop", "ms-appx:///Poltergeist/Assets/SoundEffects/pop.ogg");
-        soundEffectService.Add("ckick", "ms-appx:///Poltergeist/Assets/SoundEffects/click.ogg");
-        soundEffectService.Add("error", "ms-appx:///Poltergeist/Assets/SoundEffects/error.ogg");
     }
 
 }

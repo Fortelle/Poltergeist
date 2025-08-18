@@ -57,6 +57,18 @@ public static class InteractionHelper
                         break;
                 }
                 break;
+            case TextToSpeechModel ttsModel:
+                PoltergeistApplication.GetService<TextToSpeechService>().Speech(ttsModel);
+                break;
+            case AudioModel audioModel:
+                PoltergeistApplication.GetService<AudioPlayerService>().Play(audioModel);
+                break;
+            case AudioStopModel audioStopModel:
+                PoltergeistApplication.GetService<AudioPlayerService>().Stop();
+                break;
+            case SoundEffectModel seModel:
+                PoltergeistApplication.GetService<SoundEffectService>().Play(seModel);
+                break;
         }
     }
 
