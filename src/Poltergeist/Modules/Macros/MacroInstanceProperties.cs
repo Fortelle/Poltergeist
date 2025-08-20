@@ -1,4 +1,5 @@
-﻿namespace Poltergeist.Modules.Macros;
+﻿using Poltergeist.Automations.Utilities.Windows;
+namespace Poltergeist.Modules.Macros;
 
 public class MacroInstanceProperties
 {
@@ -11,4 +12,5 @@ public class MacroInstanceProperties
     public DateTime? CreatedTime { get; set; }
     public DateTime? LastRunTime { get; set; }
     public int RunCount { get; set; }
+    public HotKey HotKey { get; set; }
 }

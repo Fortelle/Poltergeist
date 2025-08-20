@@ -28,6 +28,10 @@ public static class MacroInstanceHotKeyHelper
 
     private static void RegisterInstance(MacroInstance instance)
     {
+        if (!instance.IsValid)
+        {
+            return;
+        }
         if (instance.Properties is null)
         {
             return;
@@ -87,6 +91,10 @@ public static class MacroInstanceHotKeyHelper
     private static void OnMacroInstancePropertyChanged(MacroInstancePropertyChangedEvent e)
     {
         var instance = e.Instance;
+        if (!instance.IsValid)
+        {
+            return;
+        }
         if (instance.Properties is null)
         {
             return;

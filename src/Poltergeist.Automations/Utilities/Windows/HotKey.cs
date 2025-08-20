@@ -2,6 +2,8 @@
 
 public readonly struct HotKey : IEquatable<HotKey>
 {
+    public static readonly HotKey Empty;
+
     public VirtualKey KeyCode { get; init; }
 
     public KeyModifiers Modifiers { get; init; }

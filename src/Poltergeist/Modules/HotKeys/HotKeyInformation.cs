@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Structures.Parameters;
+﻿using System.Diagnostics.CodeAnalysis;
+using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Modules.HotKeys;
@@ -7,7 +8,7 @@ public class HotKeyInformation
 {
     public string Name { get; }
 
-    public required Action Callback { get; init; }
+    public required Action<HotKey> Callback { get; init; }
 
     public OptionDefinition<HotKey>? SettingDefinition { get; init; }
 
@@ -18,7 +19,8 @@ public class HotKeyInformation
         Name = name;
     }
 
-    public HotKeyInformation(string name, HotKey hotkey, Action callback) : this(name)
+    [SetsRequiredMembers]
+    public HotKeyInformation(string name, HotKey hotkey, Action<HotKey> callback) : this(name)
     {
         HotKey = hotkey;
         Callback = callback;

@@ -26,4 +26,6 @@ public class MacroInstanceViewModel(MacroInstance instance)
     public string? RunCount => instance.Properties?.RunCount > 0 ? instance.Properties.RunCount.ToString() : null;
 
     public string? LastRunTime => instance.Properties?.LastRunTime is not null ? DateTimeToAgoConverter.Convert(instance.Properties.LastRunTime.Value) : null;
+
+    public string? HotKey => instance.Properties is not null && !instance.Properties.HotKey.Equals(default) ? instance.Properties.HotKey.ToString() : null;
 }

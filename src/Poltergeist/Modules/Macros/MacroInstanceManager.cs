@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.VisualBasic.FileIO;
 using Poltergeist.Automations.Structures;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
 
@@ -41,6 +42,8 @@ public class MacroInstanceManager : ServiceBase
 
         eventService.Subscribe<AppContentLoadingEvent>(OnAppContentLoading, new() { Priority = 100 });
         eventService.Subscribe<AppExitingEvent>(OnAppExiting);
+
+        MacroInstanceHotKeyHelper.Inject();
     }
 
     public MacroInstance? GetInstance(string instanceIdentifier)

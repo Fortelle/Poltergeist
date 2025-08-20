@@ -132,6 +132,9 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
                 new BoolOption("is_favourite", properties.IsFavorite) {
                     DisplayLabel = App.Localize($"Poltergeist/Home/MacroPropertyLabel_IsFavorite"),
                 },
+                new OptionDefinition<HotKey>("hotkey", properties.HotKey) {
+                    DisplayLabel = App.Localize($"Poltergeist/Home/MacroPropertyLabel_HotKey"),
+                },
             ],
             LabelLayout = InputDialogLabelLayout.Top,
             Valid = (parameters) => existedKeys.Contains((string)parameters!["key"]!) == true ? App.Localize($"Poltergeist/Home/InstanceKeyExistsMessage") : null,
@@ -162,6 +165,9 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
 
         var isFavourite = (bool)dialogModel.Parameters["is_favourite"]!;
         properties.IsFavorite = isFavourite;
+
+        var hotkey = (HotKey)dialogModel.Parameters["hotkey"]!;
+        properties.HotKey = hotkey;
 
         return true;
     }
@@ -332,10 +338,6 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
         if (SortKey == key)
         {
             SortKey = $"{key}_desc";
-        }
-        else if (SortKey == $"{key}_desc")
-        {
-            SortKey = key;
         }
         else
         {

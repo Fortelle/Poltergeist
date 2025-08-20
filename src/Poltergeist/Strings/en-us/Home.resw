@@ -218,4 +218,10 @@ All data and files of this macro will be lost permanently.</value>
   <data name="OpenPrivateFolderMenuFlyoutItem.Text" xml:space="preserve">
     <value>Open macro folder</value>
   </data>
+  <data name="HotKeyListViewHeader.Text" xml:space="preserve">
+    <value>Hot key</value>
+  </data>
+  <data name="MacroPropertyLabel_HotKey" xml:space="preserve">
+    <value>Hot key:</value>
+  </data>
 </root>

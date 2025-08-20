@@ -61,6 +61,7 @@
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="2*" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 x:Uid="/Poltergeist/Home/MacroListViewHeader"
@@ -71,8 +72,14 @@
                 Tag="title"
                 />
             <TextBlock
-                x:Uid="/Poltergeist/Home/TotalRunCountListViewHeader"
+                x:Uid="/Poltergeist/Home/HotKeyListViewHeader"
                 Grid.Column="3"
+                TextAlignment="Center"
+                FontWeight="Bold"
+                />
+            <TextBlock
+                x:Uid="/Poltergeist/Home/TotalRunCountListViewHeader"
+                Grid.Column="4"
                 TextAlignment="Center"
                 FontWeight="Bold"
                 Tapped="ListViewHeader_Tapped"
@@ -80,7 +87,7 @@
                 />
             <TextBlock
                 x:Uid="/Poltergeist/Home/LastRunTimeListViewHeader"
-                Grid.Column="4"
+                Grid.Column="5"
                 TextAlignment="Center"
                 FontWeight="Bold"
                 Tapped="ListViewHeader_Tapped"
@@ -116,6 +123,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
                                     <ColumnDefinition Width="12*" />
+                                    <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="2*" />
                                     <ColumnDefinition Width="2*" />
@@ -227,11 +235,19 @@
                                     Foreground="{StaticResource SecondaryTextColor}"
                                     TextAlignment="Center"
                                     VerticalAlignment="Center"
+                                    Text="{Binding HotKey, Mode=OneTime}"
+                                    />
+
+                                <TextBlock
+                                    Grid.Column="4"
+                                    Foreground="{StaticResource SecondaryTextColor}"
+                                    TextAlignment="Center"
+                                    VerticalAlignment="Center"
                                     Text="{Binding RunCount, Mode=OneTime}"
                                     />
                             
                                 <TextBlock
-                                    Grid.Column="4"
+                                    Grid.Column="5"
                                     Foreground="{StaticResource SecondaryTextColor}"
                                     TextAlignment="Center"
                                     VerticalAlignment="Center"

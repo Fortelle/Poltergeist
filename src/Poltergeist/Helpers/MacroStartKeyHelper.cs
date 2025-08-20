@@ -17,7 +17,7 @@ public static class MacroStartKeyHelper
             DisplayLabel = ResourceHelper.Localize("Poltergeist/Resources/AppSettings_Macro_StartMacroHotKey"),
         },
 
-        Callback = () =>
+        Callback = _ =>
         {
             App.TryEnqueue(() =>
             {

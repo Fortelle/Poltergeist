@@ -53,6 +53,12 @@ public class HotKeyService : ServiceBase, IDisposable
             throw new InvalidOperationException($"{nameof(Listener)} should not be null.");
         }
 
+        if (newHotKey == HotKey.Empty)
+        {
+            Remove(name);
+            return;
+        }
+
         var info = Informations.FirstOrDefault(x => x.Name == name);
         if (info is null)
         {
@@ -72,6 +78,7 @@ public class HotKeyService : ServiceBase, IDisposable
 
         Listener.Unregister(oldHotKey.Value);
         Listener.Register(newHotKey);
+        info.HotKey = newHotKey;
 
         Logger.Trace($"Changed hot key '{info.Name}' from '{newHotKey}' to '{newHotKey}'.");
     }
@@ -102,6 +109,20 @@ public class HotKeyService : ServiceBase, IDisposable
         }
     }
 
+    public void Remove(string name)
+    {
+        var info = Informations.FirstOrDefault(x => x.Name == name);
+        if (info is not null)
+        {
+            Remove(info);
+        }
+    }
+
+    public HotKeyInformation? Get(string name)
+    {
+        return Informations.FirstOrDefault(x => x.Name == name);
+    }
+
     private void OnAppWindowLoaded(AppWindowLoadedEvent _)
     {
         Listener = new();
@@ -127,7 +148,10 @@ public class HotKeyService : ServiceBase, IDisposable
             return;
         }
 
-        Task.Run(info.Callback);
+        Task.Run(() =>
+        {
+            info.Callback(hotkey);
+        });
     }
 
     private void TryRegister(HotKeyInformation info)

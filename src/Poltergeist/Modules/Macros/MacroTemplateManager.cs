@@ -78,18 +78,36 @@ public class MacroTemplateManager : ServiceBase
         {
             foreach (var type in assembly.GetTypes())
             {
-                if (type.IsAssignableTo(macroType) && type.GetCustomAttribute<MacroTemplateAttribute>() is not null)
+                if (type.IsAssignableTo(macroType))
                 {
-                    try
+                    if (type.GetCustomAttribute<MacroTemplateAttribute>() is not null)
                     {
-                        var macro = (MacroBase)Activator.CreateInstance(type)!;
-                        RegisterInternal(macro);
-                        Logger.Trace($"Created an instance of macro '{type.Name}'.");
+                        try
+                        {
+                            var macro = (MacroBase)Activator.CreateInstance(type)!;
+                            RegisterInternal(macro);
+                            Logger.Trace($"Created an instance of macro '{type.Name}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error($"Failed to create an instance of macro '{type.Name}': {ex.Message}");
+                            continue;
+                        }
                     }
-                    catch (Exception ex)
+                    else if (type.GetCustomAttribute<MacroInstanceAttribute>() is not null)
                     {
-                        Logger.Error($"Failed to create an instance of macro '{type.Name}': {ex.Message}");
-                        continue;
+                        try
+                        {
+                            var macro = (MacroBase)Activator.CreateInstance(type)!;
+                            var instance = MacroInstance.CreateStaticInstance(macro);
+                            PoltergeistApplication.GetService<MacroInstanceManager>().AddInstance(instance);
+                            Logger.Trace($"Created a static macro instance of template '{type.Name}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error($"Failed to create a macro instance of template '{type.Name}': {ex.Message}");
+                            continue;
+                        }
                     }
                 }
             }
