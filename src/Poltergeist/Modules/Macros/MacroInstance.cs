@@ -94,6 +94,11 @@ public class MacroInstance
     /// </summary>
     public string? Icon => Properties?.Icon ?? Template?.Icon;
 
+    /// <summary>
+    /// Gets a value indicating whether the current template is valid.
+    /// </summary>
+    public bool IsValid => Template is not null;
+
     private bool IsLoaded;
 
     public MacroInstance(IFrontMacro template) : this(template, Guid.NewGuid().ToString())

@@ -10,11 +10,6 @@
     xmlns:controls="using:Poltergeist.UI.Controls"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <converters:DateTimeToAgoConverter x:Key="DateTimeToAgoConverter" />
-        <converters:FalsyToFadeConverter x:Key="FalsyToFadeConverter" />
-    </UserControl.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -73,6 +68,7 @@
                 FontWeight="Bold"
                 TextAlignment="Center"
                 Tapped="ListViewHeader_Tapped"
+                Tag="title"
                 />
             <TextBlock
                 x:Uid="/Poltergeist/Home/TotalRunCountListViewHeader"
@@ -80,6 +76,7 @@
                 TextAlignment="Center"
                 FontWeight="Bold"
                 Tapped="ListViewHeader_Tapped"
+                Tag="runcount"
                 />
             <TextBlock
                 x:Uid="/Poltergeist/Home/LastRunTimeListViewHeader"
@@ -87,6 +84,7 @@
                 TextAlignment="Center"
                 FontWeight="Bold"
                 Tapped="ListViewHeader_Tapped"
+                Tag="lastruntime"
                 >
             </TextBlock>
         </Grid>
@@ -113,7 +111,7 @@
                                 Padding ="8, 16"
                                 DoubleTapped="Grid_DoubleTapped"
                                 Background="Transparent"
-                                Opacity="{Binding Template, Converter={StaticResource FalsyToFadeConverter}, Mode=OneTime}"
+                                Opacity="{Binding Opacity, Mode=OneTime}"
                                 >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="60" />
@@ -130,7 +128,7 @@
                                             x:Uid="/Poltergeist/Home/OpenMenuFlyoutItem"
                                             FontWeight="Bold"
                                             Click="OpenMenuFlyoutItem_Click"
-                                            IsEnabled="{Binding Template, Converter={StaticResource IsTruthyConverter}, Mode=OneTime}"
+                                            IsEnabled="{Binding CanOpen, Mode=OneTime}"
                                             >
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE8A7;" />
@@ -139,7 +137,7 @@
                                         
                                         <MenuFlyoutItem
                                             x:Uid="/Poltergeist/Home/EditPropertiesMenuFlyoutItem"
-                                            IsEnabled="{Binding IsLocked, Converter={StaticResource NotConverter}, Mode=OneTime}"
+                                            IsEnabled="{Binding CanEdit, Mode=OneTime}"
                                             Click="EditPropertiesMenuFlyoutItem_Click"
                                             >
                                             <MenuFlyoutItem.Icon>
@@ -169,7 +167,7 @@
 
                                         <MenuFlyoutItem
                                             x:Uid="/Poltergeist/Home/DeleteMenuFlyoutItem"
-                                            IsEnabled="{Binding IsLocked, Converter={StaticResource NotConverter}, Mode=OneTime}"
+                                            IsEnabled="{Binding CanDelete, Mode=OneTime}"
                                             Click="DeleteMenuFlyoutItem_Click"
                                             >
                                             <MenuFlyoutItem.Icon>
@@ -220,16 +218,16 @@
                                     >
                                     <SymbolIcon
                                         Symbol="OutlineStar"
-                                        Visibility="{Binding Properties.IsFavorite, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
+                                        Visibility="{Binding IsFavorite, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
                                         />
                                 </StackPanel>
 
                                 <TextBlock
                                     Grid.Column="3"
-                                    Text="{Binding Properties.RunCount, Mode=OneTime, TargetNullValue=-}"
                                     Foreground="{StaticResource SecondaryTextColor}"
                                     TextAlignment="Center"
                                     VerticalAlignment="Center"
+                                    Text="{Binding RunCount, Mode=OneTime}"
                                     />
                             
                                 <TextBlock
@@ -237,7 +235,7 @@
                                     Foreground="{StaticResource SecondaryTextColor}"
                                     TextAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Text="{Binding Properties.LastRunTime, Converter={StaticResource DateTimeToAgoConverter}, Mode=OneTime, TargetNullValue=--}" 
+                                    Text="{Binding LastRunTime, Mode=OneTime}" 
                                     />
                             </Grid>
                         </DataTemplate>

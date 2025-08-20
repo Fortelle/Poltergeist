@@ -4,6 +4,7 @@ using IWshRuntimeLibrary;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Automations.Utilities.Windows;
 using Poltergeist.Modules.Events;
 using Poltergeist.Modules.Interactions;
 using Poltergeist.Modules.Macros;
@@ -14,17 +15,17 @@ namespace Poltergeist.UI.Pages.Home;
 
 public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
 {
-    public const string LastSortIndexKey = "last_sort_index";
+    public const string LastSortKey = "last_sort_key";
 
     [ObservableProperty]
-    public partial MacroInstance[]? Macros { get; set; }
+    public partial MacroInstanceViewModel[]? Macros { get; set; }
 
-    private int SortIndex;
+    private string? SortKey;
     private bool disposedValue;
 
     public MacroBrowserViewModel()
     {
-        SortIndex = App.GetService<AppSettingsService>().InternalSettings.Get<int>(LastSortIndexKey);
+        SortKey = App.GetService<AppSettingsService>().InternalSettings.Get<string>(LastSortKey);
 
         RefreshMacroList();
 
@@ -37,20 +38,20 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
         var instanceManager = App.GetService<MacroInstanceManager>();
         var macros = instanceManager.GetInstances();
         
-        macros = SortIndex switch
+        macros = SortKey switch
         {
-            1 => macros.OrderBy(x => x.Title),
-            -1 => macros.OrderByDescending(x => x.Title),
-            3 => macros.OrderBy(x => x.Properties?.RunCount is null).ThenBy(x => x.Properties?.RunCount),
-            -3 => macros.OrderBy(x => x.Properties?.RunCount is null).ThenByDescending(x => x.Properties?.RunCount),
-            4 => macros.OrderBy(x => x.Properties?.LastRunTime is null).ThenBy(x => x.Properties?.LastRunTime),
-            -4 => macros.OrderBy(x => x.Properties?.LastRunTime is null).ThenByDescending(x => x.Properties?.LastRunTime),
+            "title" => macros.OrderBy(x => x.Title),
+            "title_desc" => macros.OrderByDescending(x => x.Title),
+            "runcount" => macros.OrderBy(x => x.Properties?.RunCount is null).ThenBy(x => x.Properties?.RunCount),
+            "runcount_desc" => macros.OrderBy(x => x.Properties?.RunCount is null).ThenByDescending(x => x.Properties?.RunCount),
+            "lastruntime" => macros.OrderBy(x => x.Properties?.LastRunTime is null).ThenBy(x => x.Properties?.LastRunTime),
+            "lastruntime_desc" => macros.OrderBy(x => x.Properties?.LastRunTime is null).ThenByDescending(x => x.Properties?.LastRunTime),
             _ => macros,
         };
 
         macros = macros.OrderByDescending(x => x.Properties?.IsFavorite);
 
-        Macros = macros.ToArray();
+        Macros = [.. macros.Select(x => new MacroInstanceViewModel(x))];
     }
 
     [RelayCommand]
@@ -326,25 +327,24 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
         System.Diagnostics.Process.Start("explorer.exe", instance.PrivateFolder);
     }
 
-    public void Sort(int index)
+    public void Sort(string key)
     {
-        if (index == 0)
+        if (SortKey == key)
         {
-            return;
+            SortKey = $"{key}_desc";
         }
-
-        if (SortIndex == index)
+        else if (SortKey == $"{key}_desc")
         {
-            SortIndex = -index;
+            SortKey = key;
         }
         else
         {
-            SortIndex = index;
+            SortKey = key;
         }
 
         RefreshMacroList();
 
-        App.GetService<AppSettingsService>().InternalSettings.Set(LastSortIndexKey, SortIndex);
+        App.GetService<AppSettingsService>().InternalSettings.Set(LastSortKey, SortKey);
     }
 
     private void OnMacroInstancePropertyChanged(MacroInstancePropertyChangedEvent _)

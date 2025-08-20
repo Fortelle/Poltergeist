@@ -18,77 +18,91 @@ public sealed partial class MacroBrowser : UserControl
 
     private void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (((FrameworkElement)e.OriginalSource).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
         {
             throw new InvalidOperationException();
         }
 
-        if (instance.Template is null)
+        if (!instanceViewModel.CanOpen)
         {
             return;
         }
 
-        App.GetService<MacroManager>().OpenPage(instance);
+        App.GetService<MacroManager>().OpenPage(instanceViewModel.Instance);
     }
 
     private void ListViewHeader_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        var column = Grid.GetColumn((FrameworkElement)sender);
-        ViewModel.Sort(column);
+        if (((FrameworkElement)sender).Tag is not string sortKey)
+        {
+            throw new InvalidOperationException();
+        }
+
+        ViewModel.Sort(sortKey);
     }
 
     private void OpenMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
         {
             throw new InvalidOperationException();
         }
 
-        if (instance.Template is null)
+        if (!instanceViewModel.CanOpen)
         {
             return;
         }
 
-        App.GetService<MacroManager>().OpenPage(instance);
+        App.GetService<MacroManager>().OpenPage(instanceViewModel.Instance);
     }
 
     private void EditPropertiesMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (!instanceViewModel.CanEdit)
         {
             return;
         }
 
-        _ = ViewModel.EditInstanceProperties(instance);
+        _ = ViewModel.EditInstanceProperties(instanceViewModel.Instance);
     }
 
     private void DeleteMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
         {
             throw new InvalidOperationException();
         }
 
-        _ = ViewModel.DeleteInstance(instance);
+        if (!instanceViewModel.CanDelete)
+        {
+            return;
+        }
+
+        _ = ViewModel.DeleteInstance(instanceViewModel.Instance);
     }
 
     private void CreateShortcutMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
         {
             throw new InvalidOperationException();
         }
 
-        _ = ViewModel.CreateShortcut(instance);
+        _ = ViewModel.CreateShortcut(instanceViewModel.Instance);
     }
 
     private void OpenPrivateFolderMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not MacroInstance instance)
+        if (((FrameworkElement)sender).DataContext is not MacroInstanceViewModel instanceViewModel)
         {
             throw new InvalidOperationException();
         }
 
-        ViewModel.OpenPrivateFolder(instance);
+        ViewModel.OpenPrivateFolder(instanceViewModel.Instance);
     }
 }

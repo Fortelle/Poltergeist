@@ -16,23 +16,28 @@ public class DateTimeToAgoConverter : IValueConverter
             return "--";
         }
 
+        return Convert(datetime);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static string? Convert(DateTime datetime)
+    {
         var timespan = DateTime.Now - datetime;
         return timespan switch
         {
-            { TotalMinutes: < 0 } => datetime.ToLocalTime(),
+            { TotalMinutes: < 0 } => datetime.ToLocalTime().ToString(),
             { TotalMinutes: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_1"),
             { TotalMinutes: < 60 } => App.Localize("Poltergeist/Home/DateTimeToAgo_2", timespan.TotalMinutes),
             { TotalHours: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_3"),
             { TotalHours: < 24 } => App.Localize("Poltergeist/Home/DateTimeToAgo_4", timespan.TotalHours),
             { TotalDays: <= 1 } => App.Localize("Poltergeist/Home/DateTimeToAgo_5"),
             { TotalDays: < 30 } => App.Localize("Poltergeist/Home/DateTimeToAgo_6", timespan.TotalDays),
-            _ => datetime.ToLocalTime(),
+            _ => datetime.ToLocalTime().ToString(),
         };
     }
 
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
 }
