@@ -69,22 +69,23 @@ public class WorkflowTests
     [TestMethod]
     public void TestIteration()
     {
-        var b = false;
+        var b = 0;
         var macro = new WorkflowTestMacro([
-            new("step_1", () => {})
+            new("step_1", () =>
+            {
+                b++;
+            })
             {
                 IsDefault = true,
                 SuccessStepId = "step_2",
             },
             new("step_2", e =>
             {
-                if (b)
-                {
-                    return;
-                }
-                e.SuccessStepId = "step_1";
-                b = true;
-            }),
+                return b < 2;
+            })
+            {
+                SuccessStepId = "step_1"
+            },
             ]);
 
         AssertFootsteps(macro, ["step_1", "step_2", "step_1", "step_2"]);
@@ -106,8 +107,8 @@ public class WorkflowTests
             new("step_3", () => {})
             {
                 SuccessStepId = "step_4",
-            }]
-            );
+            }
+            ]);
 
         var result = MacroProcessor.Execute(macro);
 
@@ -119,20 +120,19 @@ public class WorkflowTests
     {
         foreach (var isInterruptable in new[] { true, false })
         {
-            var b = false;
+            var isInterrupted = false;
             var macro = new WorkflowTestMacro([
-                new("begin", e =>{
+                new("begin", e =>
+                {
                     Thread.Sleep(500); // interruption happens here
-                    b = true;
+                    isInterrupted = true;
                 })
                 {
                     IsDefault = true,
                     IsInterruptable = isInterruptable,
                     SuccessStepId = "success",
-                    InterruptionStepId = "interruption",
                 },
                 new("success", () => {}),
-                new("interruption", () => {}),
             ]);
 
             var processor = new MacroProcessor(macro);
@@ -142,63 +142,159 @@ public class WorkflowTests
 
             var result = processor.GetResult();
 
-            Assert.AreNotEqual(isInterruptable, b);
+            Assert.AreNotEqual(isInterruptable, isInterrupted);
             Assert.AreEqual(EndReason.Interrupted, result.Reason);
-            Assert.IsTrue(result.Output.Get<string[]>("footsteps") is ["begin", "interruption"]);
+            Assert.IsTrue(result.Output.Get<string[]>("footsteps") is ["begin"]);
         }
-    }
-    
-    [TestMethod]
-    public void TestFinally()
-    {
-        var macro = new WorkflowTestMacro([
-            new("begin", () => throw new Exception())
-            {
-                IsDefault = true,
-                SuccessStepId = "success",
-                ErrorStepId = "error",
-                Finally = e =>
-                {
-                    e.NextStepId = "finally";
-                }
-            },
-            new("success", () => {}),
-            new("error", () => {}),
-            new("finally", () => {}),
-        ]);
-        AssertFootsteps(macro, ["begin", "finally"]);
     }
 
     [TestMethod]
-    public void TestOutput()
+    public void TestInitially()
     {
         var value = 0;
         var macro = new WorkflowTestMacro([
-            new("step_1", e => {
-                e.Output = 1;
-            })
-            {
-                IsDefault = true,
-                SuccessStepId = "step_2",
-                Finally = e =>
+            new("initially-normal")
                 {
-                    e.Output = (int)e.Output! + 1;
-                }
-            },
-            new("step_2", e => {
-                e.Output = (int)e.PreviousResult!.Output! + 1;
-            })
-            {
-                Finally = e =>
-                {
-                    value = (int)e.Output!;
-                }
-            },
-        ]);
-
-        var result = MacroProcessor.Execute(macro);
-
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    Initially = e =>
+                    {
+                        value++;
+                    },
+                    Action = e =>
+                    {
+                        value++;
+                        return true;
+                    },
+                    Finally = e =>
+                    {
+                        value++;
+                    }
+                },
+                new("success", () => { }),
+            ]);
+        AssertFootsteps(macro, ["initially-normal", "success"]);
         Assert.AreEqual(3, value);
+    }
+
+    [TestMethod]
+    public void TestInitiallyError()
+    {
+        var value = 0;
+        var macro = new WorkflowTestMacro([
+            new("initially-error")
+                {
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    ErrorStepId = "error",
+                    Initially = e =>
+                    {
+                        throw new Exception();
+                    },
+                    Action = e =>
+                    {
+                        value++;
+                        return true;
+                    },
+                    Finally = e =>
+                    {
+                        value++;
+                    }
+                },
+                new("success", () => { }),
+                new("error", () => { }),
+            ]);
+        AssertFootsteps(macro, ["initially-error", "error"]);
+        Assert.AreEqual(1, value);
+    }
+
+    [TestMethod]
+    public void TestFinallyWithInitiallyError()
+    {
+        var b = false;
+        var macro = new WorkflowTestMacro([
+            new("initially-error")
+                {
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    Initially = e =>
+                    {
+                        throw new Exception();
+                    },
+                    Finally = e =>
+                    {
+                        b = true;
+                    }
+                },
+            ]);
+        MacroProcessor.Execute(macro);
+        Assert.IsTrue(b);
+    }
+
+    [TestMethod]
+    public void TestFinallyWithBodyError()
+    {
+        var b = false;
+        var macro = new WorkflowTestMacro([
+            new("action-error")
+                {
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    Action = e =>
+                    {
+                        throw new Exception();
+                    },
+                    Finally = e =>
+                    {
+                        b = true;
+                    }
+                },
+            ]);
+        MacroProcessor.Execute(macro);
+        Assert.IsTrue(b);
+    }
+
+    [TestMethod]
+    public void TestFinallyError()
+    {
+        var macro = new WorkflowTestMacro([
+            new("begin", () => throw new Exception())
+                {
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    ErrorStepId = "error",
+                    Finally = e =>
+                    {
+                        throw new Exception();
+                    }
+                },
+                new("success", () => {}),
+                new("error", () => {}),
+            ]);
+        var result = MacroProcessor.Execute(macro);
+        Assert.IsTrue(result.Output.Get<string[]>("footsteps") is ["begin"]);
+        Assert.AreEqual(EndReason.ErrorOccurred, result.Reason);
+    }
+
+    [TestMethod]
+    public void TestFinallyRedirect()
+    {
+        var macro = new WorkflowTestMacro([
+            new("begin", () => throw new Exception())
+                {
+                    IsDefault = true,
+                    SuccessStepId = "success",
+                    ErrorStepId = "error",
+                    Finally = e =>
+                    {
+                        e.NextStepId = "finally";
+                    }
+                },
+                new("success", () => {}),
+                new("error", () => {}),
+                new("finally", () => {}),
+            ]);
+        AssertFootsteps(macro, ["begin", "finally"]);
     }
 
     [TestMethod]
@@ -221,11 +317,10 @@ public class WorkflowTests
     }
 
     [TestMethod]
-    public void TestErrorStep()
+    public void TestExceptionWithErrorStepId()
     {
-        {
-            var macro = new WorkflowTestMacro([
-                new("begin", () => throw new Exception())
+        var macro = new WorkflowTestMacro([
+            new("begin", () => throw new Exception())
                 {
                     IsDefault = true,
                     SuccessStepId = "success",
@@ -236,12 +331,14 @@ public class WorkflowTests
                 new("failure", () => { }),
                 new("error", () => { }),
                 ]);
-            AssertFootsteps(macro, ["begin", "error"]);
-        }
+        AssertFootsteps(macro, ["begin", "error"]);
+    }
 
-        {
-            var macro = new WorkflowTestMacro([
-                new("begin", () => throw new Exception())
+    [TestMethod]
+    public void TestExceptionWithoutErrorStepId()
+    {
+        var macro = new WorkflowTestMacro([
+            new("begin", () => throw new Exception())
                 {
                     IsDefault = true,
                     SuccessStepId = "success",
@@ -250,21 +347,22 @@ public class WorkflowTests
                 new("success", () => { }),
                 new("failure", () => { }),
                 ]);
-            AssertFootsteps(macro, ["begin", "failure"]);
-        }
+        AssertFootsteps(macro, ["begin"]);
+    }
 
-        {
-            var macro = new WorkflowTestMacro([
-                new("begin", () => throw new Exception())
-                {
-                    IsDefault = true,
-                    SuccessStepId = "success",
-                },
-                new("success", () => { }),
-                new("failure", () => { }),
-                ]);
-            AssertFootsteps(macro, ["begin", "success"]);
-        }
+    [TestMethod]
+    public void TestExceptionWithFailureStepId()
+    {
+        var macro = new WorkflowTestMacro([
+            new("begin", () => throw new Exception())
+            {
+                IsDefault = true,
+                SuccessStepId = "success",
+            },
+            new("success", () => { }),
+            new("failure", () => { }),
+            ]);
+        AssertFootsteps(macro, ["begin"]);
     }
 
 }

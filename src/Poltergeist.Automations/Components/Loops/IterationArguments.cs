@@ -8,7 +8,7 @@ public class IterationArguments(MacroProcessor processor) : ArgumentService(proc
 {
     public int Index { get; set; }
     public DateTime StartTime { get; set; }
-    public IterationResult Result { get; set; }
+    public bool Break { get; set; }
 
     public void Report(ProgressInstrumentInfo info)
     {

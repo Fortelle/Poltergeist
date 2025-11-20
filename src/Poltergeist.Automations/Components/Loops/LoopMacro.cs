@@ -37,38 +37,34 @@ public class LoopMacro : CommonMacroBase
 
         if (Before is not null)
         {
-            hookService.Register<LoopStartingHook>(hook =>
+            loopService.BeforeProc = () =>
             {
-                var args = hook.Processor.GetService<LoopBeforeArguments>();
+                var args = processor.GetService<LoopBeforeArguments>();
                 Before(args);
-                if (args.Cancel)
-                {
-                    hook.Cancel = true;
-                }
-            });
+                return !args.Cancel;
+            };
         }
 
         if (Iterate is not null)
         {
-            hookService.Register<IterationExecutingHook>(hook =>
+            loopService.IterationProc = (index) =>
             {
-                var args = hook.Processor.GetService<IterationArguments>();
-                args.Index = hook.Index;
-                Iterate(args);
-                hook.Result = args.Result;
-            });
+                var args = processor.GetService<IterationArguments>();
+                args.Index = index;
+                Iterate.Invoke(args);
+                return !args.Break;
+            };
         }
 
         if (CheckContinue is not null)
         {
-            hookService.Register<LoopCheckContinueHook>(hook =>
+            loopService.IntermissionProc = (index) =>
             {
-                var args = hook.Processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = hook.IterationIndex;
-                args.IterationResult = hook.IterationResult;
+                var args = processor.GetService<LoopCheckContinueArguments>();
+                args.IterationIndex = index;
                 CheckContinue(args);
-                hook.Result = args.Result;
-            });
+                return !args.Break;
+            };
         }
 
         if (After is not null)

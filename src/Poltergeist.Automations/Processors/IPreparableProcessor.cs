@@ -11,6 +11,7 @@ public interface IPreparableProcessor
     ParameterValueCollection Options { get; }
     ParameterValueCollection Environments { get; }
     ParameterValueCollection SessionStorage { get; }
+    ParameterValueCollection OutputStorage { get; }
 
     T GetService<T>() where T : class;
     void AddStep(WorkflowStep step);

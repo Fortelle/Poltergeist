@@ -253,27 +253,13 @@ public partial class MacroProcessor
         Logger?.Debug("Setting up the preparations.");
         Logger?.IncreaseIndent();
 
+        var hookService = GetService<HookService>();
+
+        RegisterHookMethods(Macro);
+
         foreach (var module in Macro.Modules)
         {
-            foreach (var method in module.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
-            {
-                var attr = method.GetCustomAttribute<MacroHookAttribute>();
-                if (attr is not null)
-                {
-                    var methodParameters = method.GetParameters();
-                    var hookType = methodParameters[0].ParameterType;
-                    var handlerType = Expression.GetDelegateType([hookType, method.ReturnType]);
-                    var handler = method.IsStatic
-                        ? Delegate.CreateDelegate(handlerType, method)
-                        : method.CreateDelegate(handlerType, module);
-                    GetService<HookService>().Register(new HookListener(hookType, handler)
-                    {
-                        Priority = attr.Priority,
-                        Once = attr.Once,
-                        Subscriber = module.GetType().Name,
-                    });
-                }
-            }
+            RegisterHookMethods(module);
 
             if (module.GetType().GetMethod(nameof(MacroModule.OnProcessorPrepare))?.DeclaringType != module.GetType())
             {
@@ -293,6 +279,38 @@ public partial class MacroProcessor
         Logger?.DecreaseIndent();
 
         Logger?.DecreaseIndent();
+
+        void RegisterHookMethods(object obj)
+        {
+            var objectType = obj.GetType();
+            foreach (var method in objectType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+            {
+                var attr = method.GetCustomAttribute<MacroHookAttribute>();
+                if (attr is not null)
+                {
+                    var methodParameters = method.GetParameters();
+                    if (methodParameters.Length != 1)
+                    {
+                        throw new ArgumentException($"The hook method '{objectType.Name}.{method.Name}' must have exactly one parameter.");
+                    }
+                    var hookType = methodParameters[0].ParameterType;
+                    if (typeof(MacroHook).IsAssignableFrom(hookType) == false)
+                    {
+                        throw new ArgumentException($"The hook method '{objectType.Name}.{method.Name}' has an invalid parameter type '{hookType.Name}'. It must be a subclass of '{nameof(MacroHook)}'.");
+                    }
+                    var handlerType = Expression.GetDelegateType([hookType, method.ReturnType]);
+                    var handler = method.IsStatic
+                        ? Delegate.CreateDelegate(handlerType, method)
+                        : method.CreateDelegate(handlerType, obj);
+                    hookService.Register(new HookListener(hookType, handler)
+                    {
+                        Priority = attr.Priority,
+                        Once = attr.Once,
+                        Subscriber = objectType.Name,
+                    });
+                }
+            }
+        }
     }
 
     private void ProcessEnd()
@@ -487,8 +505,7 @@ public partial class MacroProcessor
     private void ProcessQueue(string stepId)
     {
         var nextStepId = stepId;
-        WorkflowStepReport? report = null;
-        while (true)
+        do
         {
             var step = Steps.FirstOrDefault(x => x.Id == nextStepId);
             if (step is null)
@@ -496,118 +513,123 @@ public partial class MacroProcessor
                 throw new Exception($"Workflow step '{nextStepId}' is not found.");
             }
 
-            report = ProcessStep(step, report);
-            Footsteps.Add(step.Id);
-            nextStepId = report.NextStepId;
-
-            if (nextStepId is null)
-            {
-                break;
-            }
-        }
+            nextStepId = ProcessStep(step);
+        } while (nextStepId is not null);
     }
 
-    private WorkflowStepReport ProcessStep(WorkflowStep step, WorkflowStepReport? previousResult)
+    private string? ProcessStep(WorkflowStep step)
     {
         Logger?.ResetIndent();
         Logger?.Trace($"Running workflow step '{step.Id}'.");
         Logger?.IncreaseIndent();
 
+        Footsteps.Add(step.Id);
+
         var startTime = DateTime.Now;
         var startElapsedTime = GetElapsedTime();
-        var stepArguments = new WorkflowStepArguments()
-        {
-            StepId = step.Id,
-            PreviousResult = previousResult,
-            StartTime = startTime,
-            SuccessStepId = step.SuccessStepId,
-            FailureStepId = step.FailureStepId,
-            ErrorStepId = step.ErrorStepId,
-            InterruptionStepId = step.InterruptionStepId,
-        };
+        var state = WorkflowStepState.Idle;
 
-        WorkflowStepResult stepResult;
-        CanInterrupt = step.IsInterruptable;
         try
         {
-            stepResult = step.Action.Invoke(stepArguments) ? WorkflowStepResult.Success : WorkflowStepResult.Failed;
-
-            if (Status == ProcessorStatus.Stopping && previousResult?.Result != WorkflowStepResult.Interrupted)
+            var initiallyArguments = new WorkflowStepInitiallyArguments()
             {
-                stepResult = WorkflowStepResult.Interrupted;
-                Logger?.Trace($"The stop request has been performed.");
-            }
-        }
-        catch (Exception exception) when (IsInterruptionException(exception))
-        {
-            stepResult = WorkflowStepResult.Interrupted;
-            Logger?.Trace($"The stop request has been performed.");
-        }
-        catch (TargetInvocationException exception)
-        {
-            stepResult = WorkflowStepResult.Error;
-            Exception = exception.InnerException;
-            Status = ProcessorStatus.Faulting;
-            Logger?.Error(exception.InnerException!);
+                StepId = step.Id,
+                StartTime = startTime,
+            };
+            step.Initially?.Invoke(initiallyArguments);
+            state = WorkflowStepState.InitiallySuccess;
         }
         catch (Exception exception)
         {
-            stepResult = WorkflowStepResult.Error;
-            Exception = exception;
+            state = WorkflowStepState.InitiallyError;
             Status = ProcessorStatus.Faulting;
             Logger?.Error(exception);
         }
-        CanInterrupt = false;
 
-        var nextStepId = stepResult switch
+        if (state == WorkflowStepState.InitiallySuccess)
         {
-            WorkflowStepResult.Failed => stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
-            WorkflowStepResult.Error => stepArguments.ErrorStepId ?? stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
-            WorkflowStepResult.Interrupted => stepArguments.InterruptionStepId ?? stepArguments.FailureStepId ?? stepArguments.SuccessStepId,
-            WorkflowStepResult.Success => stepArguments.SuccessStepId,
+            CanInterrupt = step.IsInterruptable;
+            try
+            {
+                var stepArguments = new WorkflowStepArguments()
+                {
+                    StepId = step.Id,
+                    //PreviousResult = previousResult,
+                    StartTime = startTime,
+                };
+                var isActionSuccess = step.Action.Invoke(stepArguments);
+                state = isActionSuccess ? WorkflowStepState.Success : WorkflowStepState.Failed;
+
+                if (Status == ProcessorStatus.Stopping)
+                {
+                    state = WorkflowStepState.Interrupted;
+                    Logger?.Trace($"The stop request has been performed.");
+                }
+            }
+            catch (Exception exception) when (IsInterruptionException(exception))
+            {
+                state = WorkflowStepState.Interrupted;
+                Logger?.Trace($"The stop request has been performed.");
+            }
+            catch (TargetInvocationException exception)
+            {
+                state = WorkflowStepState.Error;
+                Exception = exception.InnerException;
+                Status = ProcessorStatus.Faulting;
+                Logger?.Error(exception.InnerException!);
+            }
+            catch (Exception exception)
+            {
+                state = WorkflowStepState.Error;
+                Exception = exception;
+                Status = ProcessorStatus.Faulting;
+                Logger?.Error(exception);
+            }
+            CanInterrupt = false;
+        }
+
+        var nextStepId = state switch
+        {
+            WorkflowStepState.InitiallyError => step.ErrorStepId,
+            WorkflowStepState.Failed => step.FailureStepId,
+            WorkflowStepState.Error => step.ErrorStepId,
+            WorkflowStepState.Success => step.SuccessStepId,
             _ => null,
         };
 
-        var endTime = DateTime.Now;
-        var endElapsedTime = GetElapsedTime();
-        var finallyArguments = new WorkflowStepFinallyArguments()
-        {
-            StepId = step.Id,
-            Result = stepResult,
-            StartTime = startTime,
-            EndTime = endTime,
-            Duration = endElapsedTime - startElapsedTime,
-            Output = stepArguments.Output,
-            NextStepId = nextStepId,
-        };
         try
         {
+            var endTime = DateTime.Now;
+            var endElapsedTime = GetElapsedTime();
+            var finallyArguments = new WorkflowStepFinallyArguments()
+            {
+                StepId = step.Id,
+                State = state,
+                StartTime = startTime,
+                EndTime = endTime,
+                Duration = endElapsedTime - startElapsedTime,
+                NextStepId = nextStepId,
+            };
+
             step.Finally?.Invoke(finallyArguments);
+            nextStepId = finallyArguments.NextStepId;
         }
         catch (Exception exception)
         {
-            stepResult = WorkflowStepResult.Error;
+            // to avoid confusion, the finally phase should not throw any exception
+            // if it does, stop the workflow immediately
             Status = ProcessorStatus.Faulting;
             Logger?.Error(exception);
+            return null;
         }
 
-        var report = new WorkflowStepReport()
-        {
-            StepId = step.Id,
-            Result = stepResult,
-            NextStepId = finallyArguments.NextStepId,
-            Output = finallyArguments.Output,
-        };
-
         Logger?.Trace($"Finished running workflow step '{step.Id}'.", new {
-            report.StepId,
-            report.Result,
-            report.NextStepId,
-            Output = report.Output?.ToString()
+            state,
+            nextStepId,
         });
         Logger?.DecreaseIndent();
 
-        return report;
+        return nextStepId;
 
         static bool IsInterruptionException(Exception exception)
         {

@@ -17,7 +17,7 @@ public class HotKeyServiceTests
         {
             HotKey = new(VirtualKey.F12, KeyModifiers.Control | KeyModifiers.Shift | KeyModifiers.Alt),
 
-            Callback = () =>
+            Callback = _ =>
             {
                 tcs.SetResult();
             },

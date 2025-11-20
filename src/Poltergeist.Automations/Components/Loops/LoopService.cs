@@ -24,7 +24,13 @@ public class LoopService : MacroService
     private readonly HookService Hooks;
     private LoopOptions Options = new();
     private LoopResult Result;
-    private int TotalIterations;
+
+    private int IterationIndex = -1;
+
+    public Func<bool>? BeforeProc { get; set; }
+    public Func<int, bool>? IterationProc { get; set; }
+    public Func<int, bool>? IntermissionProc { get; set; }
+    public Action? AfterProc { get; set; }
 
     public LoopService(MacroProcessor processor,
         HookService hooks
@@ -34,25 +40,43 @@ public class LoopService : MacroService
 
         processor.AddStep(new("loop-initialization", DoInitialization)
         {
-            SuccessStepId = "loop-start",
-            ErrorStepId = "loop-finalization",
+            SuccessStepId = "loop-before",
             IsDefault = true,
         });
 
-        processor.AddStep(new("loop-start", DoStart)
+        processor.AddStep(new("loop-before", DoBefore)
         {
+            IsInterruptable = true,
             SuccessStepId = "loop-iteration",
-            FailureStepId = "loop-end",
+            FailureStepId = "loop-after",
+            ErrorStepId = "loop-error",
         });
 
         processor.AddStep(new("loop-iteration", DoIteration)
         {
             IsInterruptable = true,
             Finally = DoIterationFinally,
-            ErrorStepId = "loop-finalization",
+            SuccessStepId = "loop-intermission",
+            FailureStepId = "loop-after",
+            ErrorStepId = "loop-error",
         });
 
-        processor.AddStep(new("loop-end", DoEnd)
+        processor.AddStep(new("loop-intermission", DoIntermission)
+        {
+            IsInterruptable = true,
+            SuccessStepId = "loop-iteration",
+            FailureStepId = "loop-after",
+            ErrorStepId = "loop-error",
+        });
+
+        processor.AddStep(new("loop-after", DoAfter)
+        {
+            IsInterruptable = true,
+            SuccessStepId = "loop-finalization",
+            ErrorStepId = "loop-error",
+        });
+
+        processor.AddStep(new("loop-error", DoError)
         {
             SuccessStepId = "loop-finalization",
         });
@@ -60,6 +84,8 @@ public class LoopService : MacroService
         processor.AddStep(new("loop-finalization", DoFinalization)
         {
         });
+
+        Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
     }
 
     private bool DoInitialization(WorkflowStepArguments args)
@@ -112,176 +138,116 @@ public class LoopService : MacroService
         }
     }
 
-    private bool DoStart(WorkflowStepArguments stepArguments)
+
+    private bool DoBefore(WorkflowStepArguments stepArguments)
     {
         var startHook = new LoopStartingHook();
         Hooks.Raise(startHook);
-        if (startHook.Cancel)
+
+        var canStart = BeforeProc?.Invoke() != false;
+
+        if (!canStart)
         {
-            Processor.Report.TryAdd("comment_message", startHook.CancelReason);
             Result = LoopResult.Unstarted;
-            return false;
         }
 
-        var afterHook = new LoopStartedHook()
+        var startedHook = new LoopStartedHook()
         {
-            IsCancelled = startHook.Cancel,
-            CancelReason = startHook.CancelReason,
+            IsCancelled = !canStart,
         };
-        Hooks.Raise(afterHook);
+        Hooks.Raise(startedHook);
 
-        return true;
+        return canStart;
     }
 
-    private void DoIteration(WorkflowStepArguments stepArguments)
+    private bool DoIteration(WorkflowStepArguments stepArguments)
     {
-        var iterationIndex = (stepArguments.PreviousResult?.Output as int?) ?? 0;
-        Logger.Info($"Loop: {iterationIndex + 1}");
+        IterationIndex++;
 
-        var beginHook = new IterationStartingHook()
+        Logger.Info($"Loop: {IterationIndex + 1}");
+
+        var startHook = new IterationStartingHook()
         {
-            Index = iterationIndex,
+            Index = IterationIndex,
             StartTime = stepArguments.StartTime,
         };
-        Hooks.Raise(beginHook);
+        Hooks.Raise(startHook);
 
-        var iterationHook = new IterationExecutingHook()
-        {
-            Index = iterationIndex,
-        };
-        Hooks.Raise(iterationHook);
+        var isSuccess = IterationProc?.Invoke(IterationIndex) != false;
 
-        var iterationData = new IterationData()
-        {
-            Index = iterationIndex,
-            IsInvalid = iterationHook.IsInvalid != false,
-            Result = iterationHook.Result,
-        };
-        stepArguments.Output = iterationData;
+        return isSuccess;
     }
 
     private void DoIterationFinally(WorkflowStepFinallyArguments stepArguments)
     {
-        if (stepArguments.Output is not IterationData iterationData)
-        {
-            return;
-        }
+        Result = LoopResult.Broken;
+        var canContinue = CheckContinue(stepArguments.State);
 
-        if (!iterationData.IsInvalid)
-        {
-            TotalIterations += 1;
-        }
-
-        var result = stepArguments.Result switch
-        {
-            WorkflowStepResult.Success => IterationResult.Continue,
-            WorkflowStepResult.Failed => IterationResult.Failed,
-            WorkflowStepResult.Error => IterationResult.Error,
-            WorkflowStepResult.Interrupted => IterationResult.Interrupted,
-            _ => iterationData.Result,
-        };
-
-        var nextIterationIndex = CheckContinue(iterationData.Index, iterationData.Result);
+        stepArguments.NextStepId = canContinue ? "loop-intermission" : "loop-after";
 
         var endHook = new IterationEndHook()
         {
-            Index = iterationData.Index,
-            NextIndex = nextIterationIndex,
+            Index = IterationIndex,
             StartTime = stepArguments.StartTime,
             EndTime = stepArguments.EndTime,
             Duration = stepArguments.Duration,
-            Result = result,
+            State = stepArguments.State,
         };
         Hooks.Raise(endHook);
 
-        stepArguments.Output = nextIterationIndex;
-        stepArguments.NextStepId = nextIterationIndex >= 0 ? "loop-iteration" : "loop-end";
     }
 
-    private int CheckContinue(int iterationIndex, IterationResult iterationResult)
+    private bool DoIntermission(WorkflowStepArguments stepArguments)
     {
-        var nextIterationIndex = -1;
+        return IntermissionProc?.Invoke(IterationIndex) != false;
+    }
 
-        if (iterationResult == IterationResult.Break)
-        {
-            Result = LoopResult.Broken;
-            Logger.Debug($"The loop will be stopped because the previous iteration has returned {iterationResult}.");
-        }
-        else if (iterationResult == IterationResult.Failed)
+    private bool CheckContinue(WorkflowStepState state)//IterationResult iterationResult
+    {
+        if (state == WorkflowStepState.Failed)
         {
             Result = LoopResult.Broken;
             Logger.Debug($"The loop will be stopped because the previous iteration has failed.");
+            return false;
         }
-        else if (iterationResult == IterationResult.Error)
+        else if (state == WorkflowStepState.Error)
         {
             Result = LoopResult.Error;
             Logger.Debug($"The loop will be stopped because an error has occurred in the previous iteration.");
+            return false;
         }
-        else if (iterationResult == IterationResult.Interrupted)
+        else if (state == WorkflowStepState.Interrupted)
         {
             Result = LoopResult.Interrupted;
             Logger.Debug($"The loop will be stopped due to user interruption.");
+            return false;
         }
         else if (Processor.Status == ProcessorStatus.Stopping)
         {
             Result = LoopResult.Interrupted;
             Logger.Debug($"The loop will be stopped because the processor is stopping.");
+            return false;
         }
         else if (CheckTimeout(out var duration))
         {
             Result = LoopResult.Complete;
             Logger.Debug($"The loop will be stopped because the run duration has reached the specified time.", new { duration, MaxDuration });
-        }
-        else if (iterationResult == IterationResult.RestartLoop)
-        {
-            nextIterationIndex = 0;
-            Logger.Debug($"The loop will be restarted because the previous iteration has returned {iterationResult}.");
-        }
-        else if (iterationResult == IterationResult.RestartIteration)
-        {
-            nextIterationIndex = iterationIndex;
-            Logger.Debug($"The iteration will be restarted because the previous iteration has returned {iterationResult}.");
+            return false;
         }
         else if (CheckCount())
         {
             Result = LoopResult.Complete;
-            Logger.Debug($"The loop will be stopped because the number of iterations has reached the specified count.", new { iterationIndex, MaxCount });
+            Logger.Debug($"The loop will be stopped because the number of iterations has reached the specified count.", new { IterationIndex, MaxCount });
+            return false;
         }
-        else if (Options.MaxIterationLimit > 0 && iterationIndex >= Options.MaxIterationLimit - 1)
+        else if (Options.MaxIterationLimit > 0 && IterationIndex >= Options.MaxIterationLimit - 1)
         {
             Result = LoopResult.Complete;
-            Logger.Debug($"The loop will be stopped because the number of iterations has reached the max iteration limit.", new { iterationIndex, Options.MaxIterationLimit });
-        }
-        else if (iterationResult == IterationResult.ForceContinue)
-        {
-            nextIterationIndex = iterationIndex + 1;
-            Logger.Debug($"The loop will be continued because the previous iteration has returned {iterationResult}.");
-        }
-        else
-        {
-            var checkResult = RaiseCheckContinueHook();
-            switch (checkResult)
-            {
-                case CheckContinueResult.Break:
-                    Result = LoopResult.Broken;
-                    Logger.Debug($"The loop will be stopped because the continue check returns {checkResult}.");
-                    break;
-                case CheckContinueResult.RestartLoop:
-                    nextIterationIndex = 0;
-                    Logger.Debug($"The loop will be restarted because the continue check returns {checkResult}.");
-                    break;
-                case CheckContinueResult.RestartIteration:
-                    nextIterationIndex = iterationIndex;
-                    Logger.Debug($"The iteration will be restarted because the continue check returns {checkResult}.");
-                    break;
-                default:
-                    nextIterationIndex = iterationIndex + 1;
-                    Logger.Debug($"The loop will be continued because the continue check returns {checkResult}.");
-                    break;
-            }
+            Logger.Debug($"The loop will be stopped because the number of iterations has reached the max iteration limit.", new { IterationIndex, Options.MaxIterationLimit });
+            return false;
         }
 
-        return nextIterationIndex;
+        return true;
 
         bool CheckCount()
         {
@@ -290,7 +256,7 @@ public class LoopService : MacroService
                 return false;
             }
 
-            if (iterationIndex >= MaxCount - 1)
+            if (IterationIndex >= MaxCount - 1)
             {
                 return true;
             }
@@ -316,57 +282,44 @@ public class LoopService : MacroService
             duration = default;
             return false;
         }
-
-        CheckContinueResult RaiseCheckContinueHook()
-        {
-            var checkContinueHook = new LoopCheckContinueHook()
-            {
-                IterationIndex = iterationIndex,
-                IterationResult = iterationResult,
-                Result = CheckContinueResult.Continue,
-            };
-            Processor.GetService<HookService>().Raise(checkContinueHook);
-
-            return checkContinueHook.Result;
-        }
     }
 
-    private void DoEnd(WorkflowStepArguments stepArguments)
+    private void DoAfter(WorkflowStepArguments stepArguments)
     {
-        Processor.Report.TryAdd("comment_message", LocalizationUtil.Localize("Loops_Comment", TotalIterations));
+        Processor.Report.TryAdd("comment_message", LocalizationUtil.Localize("Loops_Comment", IterationIndex + 1));
 
-        if (Result == LoopResult.Unknown && stepArguments.PreviousResult?.Result == WorkflowStepResult.Error)
-        {
-            Result = LoopResult.Error;
-        }
-        else if (Result == LoopResult.Unknown && stepArguments.PreviousResult?.Result == WorkflowStepResult.Failed)
-        {
-            Result = LoopResult.Broken;
-        }
+        var iterations = IterationIndex + 1;
 
         var endingHook = new LoopEndingHook()
         {
             Result = Result,
-            TotalIterations = TotalIterations,
+            Iterations = iterations,
         };
         Hooks.Raise(endingHook);
+    }
 
-        Hooks.Register<ProcessorEndingHook>(e =>
-        {
-            e.Report.Add(ReportIterationCountKey, TotalIterations);
-        });
-
-        var endHook = new LoopEndedHook()
-        {
-            Result = Result,
-            TotalIterations = TotalIterations,
-        };
-        Hooks.Raise(endHook);
+    private void DoError(WorkflowStepArguments stepArguments)
+    {
+        Result = LoopResult.Error;
     }
 
     private void DoFinalization()
     {
         Hooks.Raise<LoopFinalizedHook>();
+    }
+
+    private void OnProcessorEnding(ProcessorEndingHook hook)
+    {
+        var iterations = IterationIndex + 1;
+
+        var endHook = new LoopEndedHook()
+        {
+            Result = Result,
+            Iterations = iterations,
+        };
+        Hooks.Raise(endHook);
+
+        hook.Report.Add(ReportIterationCountKey, iterations);
     }
 
     private void InstallProgressTile()
@@ -410,11 +363,11 @@ public class LoopService : MacroService
 
         Hooks.Register<IterationEndHook>(e =>
         {
-            var status = e.Result switch
+            var status = e.State switch
             {
-                IterationResult.Failed => ProgressStatus.Failure,
-                IterationResult.Error => ProgressStatus.Failure,
-                IterationResult.Interrupted => ProgressStatus.Warning,
+                WorkflowStepState.Failed => ProgressStatus.Failure,
+                WorkflowStepState.Error => ProgressStatus.Failure,
+                WorkflowStepState.Interrupted => ProgressStatus.Warning,
                 _ => ProgressStatus.Success,
             };
             gridInstrument.Update(e.Index, new(status));
@@ -530,11 +483,11 @@ public class LoopService : MacroService
 
         Hooks.Register<IterationEndHook>(e =>
         {
-            var status = e.Result switch
+            var status = e.State switch
             {
-                IterationResult.Failed => ProgressStatus.Failure,
-                IterationResult.Error => ProgressStatus.Failure,
-                IterationResult.Interrupted => ProgressStatus.Warning,
+                WorkflowStepState.Failed => ProgressStatus.Failure,
+                WorkflowStepState.Error => ProgressStatus.Failure,
+                WorkflowStepState.Interrupted => ProgressStatus.Warning,
                 _ => ProgressStatus.Success,
             };
             listInstrument.Update(e.Index, new(status));

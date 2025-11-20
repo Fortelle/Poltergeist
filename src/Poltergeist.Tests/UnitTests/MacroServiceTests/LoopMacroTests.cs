@@ -90,79 +90,13 @@ public class LoopServiceTests
             },
             CheckContinue = (args) =>
             {
-                args.Result = args.IterationIndex == breakIndex
-                    ? CheckContinueResult.Break
-                    : CheckContinueResult.Continue;
+                args.Break = args.IterationIndex == breakIndex;
             },
         };
 
         var result = MacroProcessor.Execute(macro);
 
         Assert.AreEqual(breakIndex + 1, result.Report[LoopService.ReportIterationCountKey]);
-    }
-
-    [TestMethod]
-    public void TestRestartLoop()
-    {
-        const int count = 10;
-        const int restartIndex = 5;
-
-        var hasRestarted = false;
-        var macro = new LoopMacro()
-        {
-            LoopOptions =
-            {
-                DefaultCount = count
-            },
-            CheckContinue = (args) =>
-            {
-                if (hasRestarted)
-                {
-                    return;
-                }
-                if (args.IterationIndex == restartIndex)
-                {
-                    args.Result = CheckContinueResult.RestartLoop;
-                    hasRestarted = true;
-                }
-            },
-        };
-
-        var result = MacroProcessor.Execute(macro);
-
-        Assert.AreEqual(restartIndex + 1 + count, result.Report[LoopService.ReportIterationCountKey]);
-    }
-
-    [TestMethod]
-    public void TestRestartIteration()
-    {
-        const int count = 10;
-        const int restartIndex = 5;
-
-        var hasRestarted = false;
-        var macro = new LoopMacro()
-        {
-            LoopOptions =
-            {
-                DefaultCount = count
-            },
-            CheckContinue = (args) =>
-            {
-                if (hasRestarted)
-                {
-                    return;
-                }
-                if (args.IterationIndex == restartIndex)
-                {
-                    args.Result = CheckContinueResult.RestartIteration;
-                    hasRestarted = true;
-                }
-            },
-        };
-
-        var result = MacroProcessor.Execute(macro);
-
-        Assert.AreEqual(count + 1, result.Report[LoopService.ReportIterationCountKey]);
     }
 
     [TestMethod]

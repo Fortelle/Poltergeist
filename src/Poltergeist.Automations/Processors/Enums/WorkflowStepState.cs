@@ -1,8 +1,11 @@
 ﻿namespace Poltergeist.Automations.Processors;
 
-public enum WorkflowStepResult
+public enum WorkflowStepState
 {
-    Unknown,
+    Idle,
+    InitiallySuccess,
+    InitiallyError,
+
     Success,
     Failed,
     Error,

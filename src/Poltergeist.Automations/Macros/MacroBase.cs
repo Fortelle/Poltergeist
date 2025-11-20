@@ -111,18 +111,31 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
 
         try
         {
-            var dependentModuleTypes = new HashSet<Type>();
-            foreach (var module in Modules)
+            var dependentModuleTypes = new List<Type>([
+                GetType(),
+                .. Modules.Select(x => x.GetType())
+                ]);
+
+            var tempTypes = new HashSet<Type>(dependentModuleTypes);
+            while (tempTypes.Count > 0)
             {
-                dependentModuleTypes.Add(module.GetType());
-                var dependencyAttributes = module.GetType().GetCustomAttributes(typeof(ModuleDependencyAttribute<>));
-                foreach (var dependencyAttribute in dependencyAttributes)
+                foreach (var type in tempTypes.ToArray())
                 {
-                    var moduleType = dependencyAttribute.GetType().GetGenericArguments()[0];
-                    dependentModuleTypes.Add(moduleType);
+                    var dependencyAttributes = type.GetCustomAttributes(typeof(ModuleDependencyAttribute<>));
+                    foreach (var dependencyAttribute in dependencyAttributes)
+                    {
+                        var moduleType = dependencyAttribute.GetType().GetGenericArguments()[0];
+                        if (!dependentModuleTypes.Contains(moduleType))
+                        {
+                            dependentModuleTypes.Add(moduleType);
+                            tempTypes.Add(moduleType);
+                        }
+                    }
+                    tempTypes.Remove(type);
                 }
             }
 
+            dependentModuleTypes.Remove(GetType());
             foreach (var module in Modules)
             {
                 dependentModuleTypes.Remove(module.GetType());

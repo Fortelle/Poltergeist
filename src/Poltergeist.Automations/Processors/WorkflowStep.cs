@@ -8,6 +8,8 @@ public class WorkflowStep
 
     public required Func<WorkflowStepArguments, bool> Action { get; set; }
 
+    public Action<WorkflowStepInitiallyArguments>? Initially { get; set; }
+
     public Action<WorkflowStepFinallyArguments>? Finally { get; set; }
 
     public string? SuccessStepId { get; set; }
@@ -16,11 +18,15 @@ public class WorkflowStep
 
     public string? ErrorStepId { get; set; }
 
-    public string? InterruptionStepId { get; set; }
-
     public bool IsDefault { get; set; }
 
     public bool IsInterruptable { get; set; }
+
+    [SetsRequiredMembers]
+    public WorkflowStep(string id)
+    {
+        Id = id;
+    }
 
     [SetsRequiredMembers]
     public WorkflowStep(string id, Func<WorkflowStepArguments, bool> action)

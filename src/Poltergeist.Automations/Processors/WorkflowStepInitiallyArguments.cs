@@ -1,10 +1,8 @@
 ﻿namespace Poltergeist.Automations.Processors;
 
-public class WorkflowStepArguments
+public class WorkflowStepInitiallyArguments
 {
     public required string StepId { get; init; }
 
     public required DateTime StartTime { get; init; }
-
-    public object? Output { get; set; }
 }
