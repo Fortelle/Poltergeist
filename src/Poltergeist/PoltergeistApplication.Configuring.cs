@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Components.Journals;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Helpers;
@@ -117,6 +118,7 @@ public partial class PoltergeistApplication
         instrumentManager.AddInfo<IListInstrumentModel, ListInstrumentView, ListInstrumentViewModel>();
         instrumentManager.AddInfo<ITileInstrumentModel, TileInstrumentView, TileInstrumentViewModel>();
         instrumentManager.AddInfo<ImageInstrument, ImageInstrumentView, ImageInstrumentViewModel>();
+        instrumentManager.AddInfo<JournalInstrument, JournalInstrumentView, JournalInstrumentViewModel>();
     }
 
     private static void ConfigureSettings()

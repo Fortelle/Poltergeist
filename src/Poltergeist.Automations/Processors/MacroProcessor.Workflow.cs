@@ -6,6 +6,7 @@ using Poltergeist.Automations.Components.Debugger;
 using Poltergeist.Automations.Components.FlowBuilders;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Interactions;
+using Poltergeist.Automations.Components.Journals;
 using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Components.Storages;
@@ -176,6 +177,7 @@ public partial class MacroProcessor
         services.AddSingleton<SessionStorageService>();
         services.AddSingleton<LocalStorageService>();
         services.AddSingleton<GlobalStorageService>();
+        services.AddSingleton<JournalService>();
 
         if (Environments.GetValueOrDefault<bool>("is_development"))
         {
@@ -190,6 +192,7 @@ public partial class MacroProcessor
         services.AddTransient<TileInstrument>();
         services.AddTransient<ProgressTileInstrument>();
         services.AddTransient<ImageInstrument>();
+        services.AddTransient<JournalInstrument>();
 
         services.AddTransient<FlowBuilderService>();
 

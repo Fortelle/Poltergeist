@@ -526,6 +526,7 @@
             <Pivot
                 Grid.Row="1"
                 ItemsSource="{x:Bind ViewModel.Panels, Mode=OneTime}"
+                SelectedItem="{x:Bind ViewModel.SelectedPanel, Mode=OneWay}"
                 >
                 <Pivot.Resources>
                     <x:Double x:Key="PivotHeaderItemFontSize">16</x:Double>

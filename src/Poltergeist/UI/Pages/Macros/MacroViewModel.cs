@@ -51,6 +51,9 @@ public partial class MacroViewModel : ObservableRecipient
     [ObservableProperty]
     public partial bool IsRunning { get; set; }
 
+    [ObservableProperty]
+    public partial PanelViewModel SelectedPanel { get; set; }
+
     public string? InvalidationMessage { get; }
 
     public bool IsValid => string.IsNullOrEmpty(InvalidationMessage);
@@ -396,6 +399,11 @@ public partial class MacroViewModel : ObservableRecipient
                 {
                     Panels.Add(panelVM);
                 }
+            }
+
+            if (e.Item.Active)
+            {
+                SelectedPanel = panelVM;
             }
         });
     }

@@ -12,6 +12,8 @@ public class PanelModel
 
     public bool IsFilled { get; set; }
 
+    public bool Active { get; set; }
+
     public ObservableCollection<IInstrumentModel> Instruments { get; } = new();
 
     public PanelModel(string key, string header)

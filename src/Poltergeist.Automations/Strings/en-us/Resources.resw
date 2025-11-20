@@ -174,6 +174,12 @@
   <data name="DialogButton_Yes" xml:space="preserve">
     <value>Yes</value>
   </data>
+  <data name="Journal_InstrumentTitle" xml:space="preserve">
+    <value>Journal:</value>
+  </data>
+  <data name="Journal_PanelTitle" xml:space="preserve">
+    <value>Journal</value>
+  </data>
   <data name="Log_Header" xml:space="preserve">
     <value>Log</value>
   </data>
