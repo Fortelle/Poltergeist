@@ -3,6 +3,8 @@
 public enum ShapeDistributionType
 {
     Uniform,
-    Central,
-    Inclination,
+    Gaussian,
+    Eccentric,
+
+    Centroid = -1,
 }

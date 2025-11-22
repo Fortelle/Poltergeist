@@ -8,4 +8,8 @@ public enum RangeDistributionType
 
     Decreasing,
     Increasing,
+
+    Minimum = -1,
+    Maximum = -2,
+    Average = -3,
 }

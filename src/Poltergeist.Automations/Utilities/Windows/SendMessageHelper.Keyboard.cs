@@ -21,6 +21,9 @@ public partial class SendMessageHelper
             | (transition << 31);
 
         NativeMethods.PostMessage(Hwnd, NativeMethods.WM_KEYDOWN, (nint)key, (nint)lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{NativeMethods.WM_KEYDOWN:X8}, 0x{key:X8}, 0x{lParam:X8})");
+
         return this;
     }
 
@@ -42,6 +45,9 @@ public partial class SendMessageHelper
             | (transition << 31);
 
         NativeMethods.PostMessage(Hwnd, NativeMethods.WM_KEYUP, (nint)key, (nint)lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{NativeMethods.WM_KEYUP:X8}, 0x{key:X8}, 0x{lParam:X8})");
+
         return this;
     }
 

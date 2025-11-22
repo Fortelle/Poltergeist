@@ -2,19 +2,25 @@
 
 public partial class SendMessageHelper
 {
-    public SendMessageHelper MouseButtonUp(uint x, uint y, MouseButtons button)
+    public SendMessageHelper MouseButtonUp(int x, int y, MouseButtons button, KeyModifiers modifier)
     {
-        DoMouseButton(x, y, button, true);
+        DoMouseButton(x, y, button, true, modifier);
         return this;
     }
 
-    public SendMessageHelper MouseButtonDown(uint x, uint y, MouseButtons button)
+    public SendMessageHelper MouseButtonDown(int x, int y, MouseButtons button, KeyModifiers modifier)
     {
-        DoMouseButton(x, y, button, false);
+        DoMouseButton(x, y, button, false, modifier);
         return this;
     }
 
-    private void DoMouseButton(uint x, uint y, MouseButtons button, bool isUp)
+    public SendMessageHelper MouseDoubleClick(int x, int y, MouseButtons button, KeyModifiers modifier)
+    {
+        DoMouseDoubleClick(x, y, button, false, modifier);
+        return this;
+    }
+
+    private void DoMouseButton(int x, int y, MouseButtons button, bool isUp, KeyModifiers modifier)
     {
         var wm = button switch
         {
@@ -33,6 +39,38 @@ public partial class SendMessageHelper
             _ => throw new NotImplementedException(),
         };
 
+        var wParam = MakeWParam(button, modifier);
+        var lParam = MakeLParam(x, y);
+
+        NativeMethods.SendMessage(Hwnd, wm, wParam, lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{wm:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
+    }
+
+    private void DoMouseDoubleClick(int x, int y, MouseButtons button, bool isUp, KeyModifiers modifier)
+    {
+        var wm = button switch
+        {
+
+            MouseButtons.Left => NativeMethods.WM_LBUTTONDBLCLK,
+            MouseButtons.Right => NativeMethods.WM_RBUTTONDBLCLK,
+            MouseButtons.Middle => NativeMethods.WM_MBUTTONDBLCLK,
+            MouseButtons.XButton1 => NativeMethods.WM_XBUTTONDBLCLK,
+            MouseButtons.XButton2 => NativeMethods.WM_XBUTTONDBLCLK,
+
+            _ => throw new NotImplementedException(),
+        };
+
+        var wParam = MakeWParam(button, modifier);
+        var lParam = MakeLParam(x, y);
+
+        NativeMethods.SendMessage(Hwnd, wm, wParam, lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{wm:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
+    }
+
+    private static nint MakeWParam(MouseButtons button, KeyModifiers modifier)
+    {
         uint wParam = button switch
         {
             MouseButtons.Left => NativeMethods.MK_LBUTTON,
@@ -42,10 +80,61 @@ public partial class SendMessageHelper
             MouseButtons.XButton2 => NativeMethods.MK_XBUTTON2,
             _ => 0,
         };
-
-        var lParam = (x & 0xFFFF) | (y << 16);
-
-        NativeMethods.SendMessage(Hwnd, wm, (nint)wParam, (nint)lParam);
+        wParam |= modifier switch
+        {
+            KeyModifiers.Shift => NativeMethods.MK_SHIFT,
+            KeyModifiers.Control => NativeMethods.MK_CONTROL,
+            _ => 0,
+        };
+        return (nint)wParam;
     }
 
+    private static nint MakeLParam(int x, int y)
+    {
+        var lParam = (x & 0xFFFF) | (y << 16);
+        return lParam;
+    }
+
+    // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-mousemove
+    public SendMessageHelper MouseMove(int x, int y, MouseButtons button = MouseButtons.None, KeyModifiers modifier = KeyModifiers.None)
+    {
+        var wParam = MakeWParam(button, modifier);
+        var lParam = MakeLParam(x, y);
+
+        NativeMethods.SendMessage(Hwnd, NativeMethods.WM_MOUSEMOVE, wParam, lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{NativeMethods.WM_MOUSEMOVE:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
+
+        return this;
+    }
+
+    // https://learn.microsoft.com/zh-cn/windows/win32/inputdev/wm-mousewheel
+    public SendMessageHelper MouseWheel(int x, int y, int detents, MouseButtons button = MouseButtons.None, KeyModifiers modifier = KeyModifiers.None)
+    {
+        var distance = NativeMethods.WHEEL_DELTA * detents;
+
+        var wParam = MakeWParam(button, modifier) | (distance << 16);
+        var lParam = MakeLParam(x, y);
+
+        NativeMethods.SendMessage(Hwnd, NativeMethods.WM_MOUSEWHEEL, wParam, lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{NativeMethods.WM_MOUSEWHEEL:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
+
+        return this;
+    }
+
+    // https://learn.microsoft.com/zh-cn/windows/win32/inputdev/wm-mousehwheel
+    public SendMessageHelper MouseHWheel(int x, int y, int detents, MouseButtons button = MouseButtons.None, KeyModifiers modifier = KeyModifiers.None)
+    {
+        var distance = NativeMethods.WHEEL_DELTA * detents;
+
+        var wParam = MakeWParam(button, modifier) | (distance << 16);
+        var lParam = MakeLParam(x, y);
+
+        NativeMethods.SendMessage(Hwnd, NativeMethods.WM_MOUSEHWHEEL, wParam, lParam);
+
+        Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{NativeMethods.WM_MOUSEHWHEEL:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
+
+        return this;
+    }
 }

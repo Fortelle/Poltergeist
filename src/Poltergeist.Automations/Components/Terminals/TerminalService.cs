@@ -13,7 +13,7 @@ public class TerminalService : MacroService
     public string PanelName { get; set; } = "poltergeist-terminal";
     public string? WorkingDirectory { get; set; }
 
-    private CmdHost? Host;
+    private CmdHost? CmdHost;
     private readonly TextInstrument TerminalInstrument;
 
     public TerminalService(MacroProcessor processor, TextInstrument terminalInstrument) : base(processor)
@@ -37,22 +37,22 @@ public class TerminalService : MacroService
             IsFilled = true,
         });
 
-        Host = new(WorkingDirectory ?? "");
-        Host.Start();
+        CmdHost = new(WorkingDirectory ?? "");
+        CmdHost.Start();
 
         Logger.Debug($"Started <{nameof(TerminalService)}>.");
     }
 
     public string Execute(string command)
     {
-        Logger.Debug($"Executing command line \"{command}\".");
+        Logger.Debug($"Executing command: \"{command}\"");
 
         TerminalInstrument.WriteLine(new TextLine("> " + command)
         {
             TemplateKey = "input",
         });
 
-        Host!.TryExecute(command, out var output);
+        CmdHost!.TryExecute(command, out var output);
 
         if (!string.IsNullOrEmpty(output))
         {
@@ -62,14 +62,21 @@ public class TerminalService : MacroService
             });
         }
 
-        Logger.Debug($"Executed command line.", new { output });
+        if (string.IsNullOrEmpty(output))
+        {
+            Logger.Debug("Command executed with no output." );
+        }
+        else
+        {
+            Logger.Debug($"Command executed with output: \"{output}\"");
+        }
 
         return output ?? "";
     }
 
     public void Close()
     {
-        Host?.Dispose();
+        CmdHost?.Dispose();
     }
 
     protected override void Dispose(bool disposing)

@@ -6,14 +6,15 @@ public partial class SendMessageHelper
 {
     private static partial class NativeMethods
     {
-        public static uint MK_LBUTTON = 0x0001;
-        public static uint MK_RBUTTON = 0x0002;
-        public static uint MK_SHIFT = 0x0004;
-        public static uint MK_CONTROL = 0x0008;
-        public static uint MK_MBUTTON = 0x0010;
-        public static uint MK_XBUTTON1 =0x0020;
-        public static uint MK_XBUTTON2 =0x0040;
+        public const uint MK_LBUTTON = 0x0001;
+        public const uint MK_RBUTTON = 0x0002;
+        public const uint MK_SHIFT = 0x0004;
+        public const uint MK_CONTROL = 0x0008;
+        public const uint MK_MBUTTON = 0x0010;
+        public const uint MK_XBUTTON1 = 0x0020;
+        public const uint MK_XBUTTON2 = 0x0040;
 
+        public const uint WM_MOUSEMOVE = 0x0200;
         public const uint WM_LBUTTONDOWN = 0x0201;
         public const uint WM_LBUTTONUP = 0x0202;
         public const uint WM_LBUTTONDBLCLK = 0x0203;
@@ -32,6 +33,8 @@ public partial class SendMessageHelper
 
         public const uint WM_KEYDOWN = 0x100;
         public const uint WM_KEYUP = 0x0101;
+
+        public const int WHEEL_DELTA = 120;
 
         [LibraryImport("user32.dll", EntryPoint = "SendMessageA")]
         public static partial IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);

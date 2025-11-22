@@ -541,8 +541,14 @@ public class RandomEx : Random
     /// <returns>A floating-point number that is greater than 0.0 and less than 1.0.</returns>
     private double SampleWithoutZero()
     {
-        var sample = Sample();
-        return sample > 0 ? sample : SampleWithoutZero();
+        double sample;
+        do
+        {
+            sample = Sample();
+        }
+        while (sample <= double.Epsilon);
+
+        return sample;
     }
 
     private double Skew(double x, double mode)

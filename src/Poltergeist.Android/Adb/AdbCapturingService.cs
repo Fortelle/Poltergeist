@@ -1,46 +1,32 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Utilities.Images;
-using Poltergeist.Operations;
+using Poltergeist.Operations.Capturing;
 
 namespace Poltergeist.Android.Adb;
 
 public class AdbCapturingService : CapturingProvider
 {
-    public AdbService Adb { get; }
+    public AdbService AdbService { get; }
 
-    public AdbCapturingService(
-        MacroProcessor processor,
-        AdbService adb
-        ) : base(processor)
+    public AdbCapturingService(MacroProcessor processor, AdbService adbService, AdbLocatingService adbLocatingService) : base(processor, adbLocatingService)
     {
-        Adb = adb;
+        AdbService = adbService;
+
+        CaptureClientFullHandler = CaptureClientFullImpl;
     }
 
     // experimental
-    protected override Bitmap DoCapture()
+    private Bitmap CaptureClientFullImpl()
     {
-        var begintime = DateTime.Now;
+        Logger.Trace($"Capturing a screenshot from the android device.");
 
-        var data = Adb.ExecOut("screencap -p");
-
-        var endtime = DateTime.Now;
-        var duration = endtime - begintime;
+        var data = AdbService.ExecOut("screencap -p");
 
         using var ms = new MemoryStream(data);
         var bmp = (Bitmap)Image.FromStream(ms);
 
-        Logger.Trace($"Captured a screenshot via adb screencap.", new { dataLength = data.Length, screencapSize = bmp.Size, duration });
-
-        Cache(new Bitmap(bmp));
+        Logger.Debug($"Captured a screenshot from the android device.", new { dataLength = data.Length, screencapSize = bmp.Size });
 
         return bmp;
-    }
-
-    protected override Bitmap DoCapture(Rectangle area)
-    {
-        using var bmp = DoCapture();
-        var bmp2 = BitmapUtil.Crop(bmp, area);
-        return bmp2;
     }
 }

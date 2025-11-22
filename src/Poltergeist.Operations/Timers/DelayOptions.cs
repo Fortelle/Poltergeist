@@ -1,4 +1,5 @@
 ﻿using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Operations.Inputing;
 
 namespace Poltergeist.Operations.Timers;
 

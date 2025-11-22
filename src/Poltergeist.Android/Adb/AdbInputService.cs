@@ -4,166 +4,180 @@ using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
 using Poltergeist.Automations.Utilities.Maths;
+using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.Adb;
 
+// todo: support keyevent/motionevent
 public class AdbInputService : MacroService
 {
-    private readonly AdbService Adb;
-    private readonly DistributionService Distribution;
+    private readonly AdbService AdbService;
+    private readonly AdbLocatingService AdbLocatingService;
+    private readonly DeviationService DeviationService;
+    private readonly TimerService TimerService;
     private readonly AdbInputOptions DefaultOptions;
 
+    private WCPoint? LastPosition;
+
     public AdbInputService(MacroProcessor processor,
-        AdbService adb,
-        DistributionService distribution,
+        AdbService adbService,
+        AdbLocatingService adbLocatingService,
+        DeviationService deviationService,
+        TimerService timerService,
         IOptions<AdbInputOptions> options
         ) : base(processor)
     {
-        Adb = adb;
-        Distribution = distribution;
+        AdbService = adbService;
+        AdbLocatingService = adbLocatingService;
+        DeviationService = deviationService;
+        TimerService = timerService;
         DefaultOptions = options.Value;
     }
 
-    #region "Tap"
-    public void Tap(Point targetPoint)
+    public Point Tap(PositionToken position, AdbInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating tap: {{{targetPoint}}}.");
+        Logger.Trace($"Simulating finger tap action.", new { position, options });
+        Logger.IncreaseIndent();
 
-        var point = GetPoint(targetPoint);
-        DoTap(point);
+        var targetPoint = GetTargetPoint(position, options);
+
+        AdbService.Shell($"input tap {targetPoint.ToClient.X} {targetPoint.ToClient.Y}");
+
+        LastPosition = targetPoint;
+
+        Logger.Debug($"Simulated a finger tap action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) on the android device.");
+        Logger.DecreaseIndent();
+
+        return targetPoint.ToWorkspace;
     }
 
-    public void Tap(IShape targetShape)
+    public Point LongTap(PositionToken position, AdbInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating tap: {{{targetShape}}}.");
+        Logger.Trace($"Simulating finger long-tap action.", new { position, options });
+        Logger.IncreaseIndent();
 
-        var point = GetPoint(targetShape);
-        DoTap(point);
+        var targetPoint = GetTargetPoint(position, options);
+        var longPressTime = options?.LongPressTime ?? DefaultOptions?.LongPressTime ?? TimeSpanRange.FromMilliseconds(3000, 3000);
+        var duration = TimerService.GetTimeout(longPressTime);
+
+        AdbService.Shell($"input swipe {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {duration}");
+
+        LastPosition = targetPoint;
+
+        Logger.Debug($"Simulated a long tap action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) for {duration}ms on the android device.");
+        Logger.DecreaseIndent();
+
+        return targetPoint.ToWorkspace;
     }
 
-    public void Tap(Rectangle targetRectangle)
+    public Point DragAndDrop(PositionToken beginPosition, PositionToken endPosition, AdbInputOptions? options = null)
     {
-        //Logger.Debug($"Simulating tap: {{{targetRectangle}}}.");
+        if (endPosition is LastPoint && LastPosition is not null)
+        {
+            return LastPosition.ToWorkspace;
+        }
 
-        var point = GetPoint(targetRectangle);
-        DoTap(point);
-    }
+        Logger.Trace($"Simulating drag and drop action.", new { beginPosition, endPosition, options });
+        Logger.IncreaseIndent();
 
-    public void Tap(int x, int y)
-    {
-        Tap(new Point(x, y));
-    }
-    #endregion
+        var beginPoint = GetTargetPoint(beginPosition, options);
+        var endPoint = GetTargetPoint(endPosition, options);
+        var swipeTime = options?.SwipeTime ?? DefaultOptions?.SwipeTime ?? default;
+        var duration = TimerService.GetTimeout(swipeTime);
 
-    #region "LongTap"
-    public void LongTap(Point targetPoint)
-    {
-        //Logger.Debug($"Simulating long-tap: {{{targetPoint}}}.");
-
-        var point = GetPoint(targetPoint);
-        DoLongTap(point);
-    }
-
-    public void LongTap(IShape targetShape)
-    {
-        //Logger.Debug($"Simulating long-tap: {{{targetShape}}}.");
-
-        var point = GetPoint(targetShape);
-        DoLongTap(point);
-    }
-
-    public void LongTap(Rectangle targetRectangle)
-    {
-        //Logger.Debug($"Simulating long-tap: {{{targetRectangle}}}.");
-
-        var point = GetPoint(new RectangleShape(targetRectangle));
-        DoLongTap(point);
-    }
-
-    public void LongTap(int x, int y)
-    {
-        LongTap(new Point(x, y));
-    }
-    #endregion
-
-
-    public void Swipe(Point p1, Point p2)
-    {
-        //Logger.Debug($"Simulating swipe: {{{p1}}} to {{{p2}}}.");
-
-        DoSwipe(p1, p2);
-    }
-
-    public void Swipe(IShape targetShape1, IShape targetShape2)
-    {
-        //Logger.Debug($"Simulating swipe: {{{targetShape1}}} to {{{targetShape2}}}.");
-
-        var point1 = GetPoint(targetShape1);
-        var point2 = GetPoint(targetShape2);
-        DoSwipe(point1, point2);
-    }
-
-    public void Swipe(Rectangle targetRectangle1, Rectangle targetRectangle2)
-    {
-        //Logger.Debug($"Simulating swipe: {{{targetRectangle1}}} to {{{targetRectangle2}}}.");
-
-        var point1 = GetPoint(targetRectangle1);
-        var point2 = GetPoint(targetRectangle2);
-        DoSwipe(point1, point2);
-    }
-
-    public void Swipe(int x1, int x2, int y1, int y2)
-    {
-        Swipe(new Point(x1, y1), new Point(x2, y2));
-    }
-
-
-    public Point GetPoint(Point targetPoint)
-    {
-        var offsetRange = DefaultOptions?.PointOffsetRange ?? 0;
-        var point = Distribution.GetPointByOffset(targetPoint, offsetRange);
-        return point;
-    }
-
-    public Point GetPoint(IShape targetShape)
-    {
-        var distribution = DefaultOptions?.ShapeDistribution ?? default;
-        var point = Distribution.GetPointByShape(targetShape, distribution);
-        return point;
-    }
-
-    public Point GetPoint(Rectangle targetRectangle) => GetPoint(new RectangleShape(targetRectangle));
-
-    public void DoTap(Point targetPoint)
-    {
-        Adb.Execute($"shell input tap {targetPoint.X} {targetPoint.Y}");
-
-        Logger.Debug($"Simulated tap: {{{targetPoint}}}.");
-
-    }
-
-    public void DoLongTap(Point targetPoint)
-    {
-        var (min, max) = DefaultOptions?.LongPressTime ?? (3000, 3000);
-        var duration = Distribution.Random.Next(min, max);
-        Adb.Execute($"shell input swipe {targetPoint.X} {targetPoint.Y} {targetPoint.X} {targetPoint.Y} {duration}");
-
-        Logger.Debug($"Simulated long-tap: {{{targetPoint}}}.", new { duration });
-    }
-
-    public void DoSwipe(Point p1, Point p2)
-    {
-        var (min, max) = DefaultOptions?.SwipeTime ?? (0, 0);
-        var duration = max == 0 ? 0 : Distribution.Random.Next(min, max);
         if (duration == 0)
         {
-            Adb.Execute($"shell input swipe {p1.X} {p1.Y} {p2.X} {p2.Y}");
+            AdbService.Shell($"input draganddrop {beginPoint.ToClient.X} {beginPoint.ToClient.Y} {endPoint.ToClient.X} {endPoint.ToClient.Y}");
         }
         else
         {
-            Adb.Execute($"shell input swipe {p1.X} {p1.Y} {p2.X} {p2.Y} {duration}");
+            AdbService.Shell($"input draganddrop {beginPoint.ToClient.X} {beginPoint.ToClient.Y} {endPoint.ToClient.X} {endPoint.ToClient.Y} {duration}");
         }
-        Logger.Debug($"Simulated swipe: {{{p1}}} to {{{p2}}}.", new { duration });
+
+        LastPosition = endPoint;
+
+        Logger.Info($"Simulated a drag-and-drop action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
+        Logger.DecreaseIndent();
+
+        return endPoint.ToWorkspace;
     }
 
+    public Point Swipe(PositionToken beginPosition, PositionToken endPosition, AdbInputOptions? options = null)
+    {
+        if (endPosition is LastPoint && LastPosition is not null)
+        {
+            return LastPosition.ToWorkspace;
+        }
+
+        Logger.Trace($"Simulating finger swipe action.", new { beginPosition, endPosition, options });
+        Logger.IncreaseIndent();
+
+        var beginPoint = GetTargetPoint(beginPosition, options);
+        var endPoint = GetTargetPoint(endPosition, options);
+        var swipeTime = options?.SwipeTime ?? DefaultOptions?.SwipeTime ?? default;
+        var duration = TimerService.GetTimeout(swipeTime);
+
+        if (duration == 0)
+        {
+            AdbService.Shell($"input swipe {beginPoint.ToClient.X} {beginPoint.ToClient.Y} {endPoint.ToClient.X} {endPoint.ToClient.Y}");
+        }
+        else
+        {
+            AdbService.Shell($"input swipe {beginPoint.ToClient.X} {beginPoint.ToClient.Y} {endPoint.ToClient.X} {endPoint.ToClient.Y} {duration}");
+        }
+
+        LastPosition = endPoint;
+
+        Logger.Info($"Simulated a finger swipe action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
+        Logger.DecreaseIndent();
+
+        return endPoint.ToWorkspace;
+    }
+
+    public void Text(string text, AdbInputOptions? options = null)
+    {
+        Logger.Trace($"Simulating text input action.", new { text, options });
+        Logger.IncreaseIndent();
+
+        AdbService.Shell($"input text {text}");
+
+        Logger.Info($"Inputed text \"{text}\" to the android service.");
+        Logger.DecreaseIndent();
+    }
+
+    public WCPoint GetTargetPoint(PositionToken position, AdbInputOptions? options = null)
+    {
+        Point pointOnWorkspace;
+        switch (position)
+        {
+            case PrecisePoint precisePoint:
+                {
+                    pointOnWorkspace = precisePoint.Location;
+                }
+                break;
+            case CoarsePoint coarsePoint:
+                {
+                    var maxDeviationRadius = coarsePoint.MaxDeviationRadius ?? options?.MaxDeviationRadius ?? DefaultOptions?.MaxDeviationRadius ?? 0;
+                    var distribution = coarsePoint.DeviationDistribution ?? options?.DeviationDistribution ?? DefaultOptions?.DeviationDistribution ?? ShapeDistributionType.Uniform;
+                    var circle = new CircleShape(coarsePoint.Location, maxDeviationRadius);
+                    pointOnWorkspace = DeviationService.GetRandomPoint(circle, new Rectangle(default, AdbLocatingService.GetWorkspaceSize()), distribution);
+                }
+                break;
+            case ShapePosition shapePosition:
+                {
+                    var shapeDistribution = shapePosition.ShapeDistribution ?? options?.ShapeDistribution ?? DefaultOptions?.ShapeDistribution ?? default;
+                    pointOnWorkspace = DeviationService.GetRandomPoint(shapePosition.Shape, new Rectangle(default, AdbLocatingService.GetWorkspaceSize()), shapeDistribution);
+                }
+                break;
+            case LastPoint when LastPosition is not null:
+                {
+                    return LastPosition;
+                }
+            default:
+                throw new NotImplementedException();
+        }
+        var pointOnClient = AdbLocatingService.WorkspacePointToClient(pointOnWorkspace);
+        return new WCPoint(pointOnWorkspace, pointOnClient);
+    }
 }

@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Utilities.Windows;
 
 public partial class SendInputHelper
 {
-    private static readonly int Size = Marshal.SizeOf(typeof(NativeMethods.INPUT));
+    private static readonly int Size = Marshal.SizeOf<NativeMethods.INPUT>();
 
     private readonly List<NativeMethods.INPUT> InputList = new();
 
@@ -23,9 +23,9 @@ public partial class SendInputHelper
         var nInputs = (uint)InputList.Count;
         var pInputs = InputList.ToArray();
         var result = NativeMethods.SendInput(nInputs, pInputs, Size);
+
         InputList.Clear();
 
         return result == pInputs.Length;
     }
-
 }

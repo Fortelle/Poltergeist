@@ -26,16 +26,33 @@ public class PolygonShape : IShape
         Points = points;
     }
 
-    public Rectangle Bounds => CoordinationUtil.GetWholeRect(Points);
+    public Rectangle Bounds
+    {
+        get
+        {
+            var l = Points.Min(x => x.X);
+            var t = Points.Min(x => x.Y);
+            var r = Points.Max(x => x.X) + 1;
+            var b = Points.Max(x => x.Y) + 1;
+            return Rectangle.FromLTRB(l, t, r, b);
+        }
+    }
 
     [JsonIgnore]
     public Point Location
     {
-        get => new(
-                Points.Min(x => x.X),
-                Points.Min(x => x.Y)
-                );
-        set => Points = Points.Select(pt => new Point(pt.X + value.X, pt.Y + value.Y)).ToArray();
+        get
+        {
+            var l = Points.Min(x => x.X);
+            var t = Points.Min(x => x.Y);
+            return new Point(l, t);
+        }
+        set
+        {
+            var l = Points.Min(x => x.X);
+            var t = Points.Min(x => x.Y);
+            Points = [.. Points.Select(pt => new Point(pt.X - l + value.X, pt.Y - t + value.Y))];
+        }
     }
 
     public double Perimeter

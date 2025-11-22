@@ -5,6 +5,7 @@ using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Utilities;
+using Poltergeist.Operations.Locating;
 
 namespace Poltergeist.Android.Adb;
 
@@ -18,16 +19,14 @@ public class AdbService : MacroService
     public string? Filename { get; set; }
     public string? Address { get; set; }
 
-    private readonly TerminalService Terminal;
+    private readonly TerminalService TerminalService;
 
     private bool IsInitialized;
     private bool IsClosed;
 
-    public AdbService(MacroProcessor processor,
-        TerminalService terminal
-        ) : base(processor)
+    public AdbService(MacroProcessor processor, TerminalService terminalService) : base(processor)
     {
-        Terminal = terminal;
+        TerminalService = terminalService;
     }
 
     private void Initialize()
@@ -82,11 +81,11 @@ public class AdbService : MacroService
             throw new ArgumentException($"{nameof(Address)} is not set.");
         }
 
-        Terminal.WorkingDirectory = WorkingDirectory;
-        Terminal.PanelHeader = "ADB";
-        Terminal.PanelName = "poltergeist-terminal-adb";
+        TerminalService.WorkingDirectory = WorkingDirectory;
+        TerminalService.PanelHeader = "ADB";
+        TerminalService.PanelName = "poltergeist-terminal-adb";
 
-        Terminal.Start();
+        TerminalService.Start();
         IsInitialized = true;
 
         Logger.Debug($"Initialized <{nameof(AdbService)}>.", new { Address, WorkingDirectory, Filename });
@@ -99,9 +98,10 @@ public class AdbService : MacroService
             Initialize();
         }
 
-        var keepalive = Processor.Options.GetValueOrDefault(KeepAliveKey, false);
+        Logger.Trace($"Connecting to adb server {Address}.");
+        Logger.IncreaseIndent();
 
-        Logger.Debug($"Connecting to adb server {Address}.", new { Address, keepalive });
+        var keepalive = Processor.Options.GetValueOrDefault(KeepAliveKey, false);
 
         if (!keepalive)
         {
@@ -116,12 +116,24 @@ public class AdbService : MacroService
         }
 
         Logger.Info($"Connected to adb server {Address}.");
+        Logger.DecreaseIndent();
 
         var size = GetScreenSize();
-        if (size is not null)
+        if (size is null)
         {
-            Processor.SessionStorage.AddOrUpdate("client_size", size.Value);
+            return false;
         }
+        Logger.Info($"Device size: {size}");
+
+        var adbVersion = GetAdbVersion();
+        Logger.Info($"Adb version: {adbVersion}");
+
+        var androidVersion = GetAndroidVersion();
+        Logger.Info($"Android version: {androidVersion}");
+
+        Processor.SessionStorage.AddOrUpdate(LocatingProvider.WorkspaceSizeKey, size.Value);
+
+        Processor.GetService<AdbLocatingService>().SetSize(size.Value);
 
         return true;
     }
@@ -147,27 +159,42 @@ public class AdbService : MacroService
     public string Execute(params string[] args)
     {
         var s = string.Join(' ', args);
-        return Terminal.Execute($"{Filename} {s}");
+        return TerminalService.Execute($"{Filename} {s}");
+    }
+
+    public string Shell(params string[] args)
+    {
+        var s = new List<string>(args);
+        s.Insert(0, "shell");
+        s.Insert(0, $"-s {Address}");
+
+        return TerminalService.Execute($"{Filename} {string.Join(' ', s)}");
     }
 
     public byte[] ExecOut(params string[] args)
     {
+        var s = new List<string>(args);
+        s.Insert(0, "exec-out");
+        s.Insert(0, $"-s {Address}");
+
+        Logger.Debug($"Executing command: \"{string.Join(" ", s)}\".");
+
         var cmd = new CmdExecutor(WorkingDirectory!)
         {
             AsBinary = true,
         };
+        cmd.TryExecute(Filename!, [.. s]);
+        var buff = cmd.OutputData!;
 
-        cmd.TryExecute(Filename!, "exec-out", string.Join(' ', args));
-        var buff = cmd.OutputData;
-        //buff = ConvertCrlfToLf(buff);
-        //todo: requires watching
+        Logger.Debug($"Received {buff.Length} bytes of data from command execution.");
+
         return buff;
     }
 
     private Size? GetScreenSize()
     {
-        var output = Execute($"shell wm size");
-        var match = Regex.Match(output, @"(\d+)x(\d+)");
+        var output = Shell("wm size");
+        var match = Regex.Match(output, @"Physical size: (\d+)x(\d+)");
         if (!match.Success)
         {
             return null;
@@ -178,23 +205,37 @@ public class AdbService : MacroService
         return new Size(w, h);
     }
 
-    private static byte[] ConvertCrLfToLf(byte[] source)
+    private Version? GetAdbVersion()
     {
-        var length = source.Length;
-        var list = new List<byte>(length);
-        for (var i = 0; i < length; i++)
+        var output = TerminalService.Execute($"{Filename} version");
+        var match = Regex.Match(output, @"Android Debug Bridge version ([\d\.]+)");
+        if (!match.Success)
         {
-            var b = source[i];
-            if (b == 0x0D && i + 1 < length && source[i + 1] == 0x0A) // warning: unsafe
-            {
-                list.Add(0x0A);
-                i++;
-            }
-            else
-            {
-                list.Add(b);
-            }
+            return null;
         }
-        return list.ToArray();
+
+        if (!Version.TryParse(match.Groups[1].Value, out var version))
+        {
+            return null;
+        }
+
+        return version;
+    }
+
+    private Version? GetAndroidVersion()
+    {
+        var output = Shell($"getprop ro.build.version.release");
+        var match = Regex.Match(output, @"([\d\.]+)");
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        if (!Version.TryParse(match.Groups[1].Value, out var version))
+        {
+            return null;
+        }
+
+        return version;
     }
 }

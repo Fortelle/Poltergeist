@@ -1,12 +1,24 @@
-﻿namespace Poltergeist.Automations.Utilities.Windows;
+﻿using Poltergeist.Automations.Components.Logging;
+
+namespace Poltergeist.Automations.Utilities.Windows;
 
 public partial class SendMessageHelper
 {
-    public IntPtr Hwnd;
+    public nint Hwnd { get; }
 
-    public SendMessageHelper(IntPtr hwnd)
+    private LoggerWrapper? Logger;
+
+    public SendMessageHelper(nint hwnd)
     {
         Hwnd = hwnd;
     }
 
+    public SendMessageHelper(nint hwnd, LoggerWrapper logger)
+    {
+        Hwnd = hwnd;
+        if (logger.IsTraceEnabled)
+        {
+            Logger = logger;
+        }
+    }
 }
