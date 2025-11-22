@@ -38,10 +38,11 @@ public class MacroLogger : KernelService
     private ConcurrentQueue<LogEntry>? LogPool = new();
 
     public int IndentLevel { get; set; }
-    private readonly bool IsTraceEnabled = false;
+    public bool IsTraceEnabled { get; }
+    public bool IsTraceImageEnabled { get; }
 
     private readonly LogLevel ToFileLevel;
-    private readonly LogLevel ToFrontLevel;
+    private readonly LogLevel ToDashboardLevel;
     private readonly LogLevel ToProcessorLevel;
     private readonly LogLevel ToDebugLevel;
     private readonly LogLevel ToConsoleLevel;
@@ -49,13 +50,14 @@ public class MacroLogger : KernelService
     public MacroLogger(MacroProcessor processor) : base(processor)
     {
         ToFileLevel = processor.Options.GetValueOrDefault(ToFileLevelKey, LogLevel.None);
-        ToFrontLevel = processor.Options.GetValueOrDefault(ToDashboardLevelKey, LogLevel.None);
+        ToDashboardLevel = processor.Options.GetValueOrDefault(ToDashboardLevelKey, LogLevel.None);
         ToProcessorLevel = processor.Options.GetValueOrDefault(ToProcessorLevelKey, LogLevel.None);
         ToDebugLevel = processor.Options.GetValueOrDefault(ToDebugLevelKey, LogLevel.None);
         ToConsoleLevel = processor.Options.GetValueOrDefault(ToConsoleLevelKey, LogLevel.None);
 
 #if DEBUG
         IsTraceEnabled = true;
+        IsTraceImageEnabled = ToDashboardLevel <= LogLevel.Trace;
 #endif
     }
 
@@ -142,7 +144,7 @@ public class MacroLogger : KernelService
     }
 
 
-    public void Log(LogLevel logLevel, string sender, string message)
+    public void Log(LogLevel logLevel, string sender, string message, object? extraData = null)
     {
         if (logLevel == LogLevel.Trace && !IsTraceEnabled)
         {
@@ -157,6 +159,7 @@ public class MacroLogger : KernelService
             Timestamp = DateTime.Now,
             ElapsedTime = Processor.GetElapsedTime(),
             IndentLevel = IndentLevel,
+            ExtraData = extraData,
         };
 
         if (!IsReady)
@@ -174,9 +177,9 @@ public class MacroLogger : KernelService
         {
             ToFile(entry);
         }
-        if (entry.Level >= ToFrontLevel)
+        if (entry.Level >= ToDashboardLevel)
         {
-            ToFront(entry);
+            ToDashboard(entry);
         }
         if (entry.Level >= ToProcessorLevel)
         {
@@ -217,9 +220,10 @@ public class MacroLogger : KernelService
         WritingQueue.Add(line);
     }
 
-    private void ToFront(LogEntry entry)
+    private void ToDashboard(LogEntry entry)
     {
         var message = entry.Message;
+
 #if DEBUG
         if (message == "---")
         {
@@ -227,9 +231,9 @@ public class MacroLogger : KernelService
         }
         else if (entry.Level == LogLevel.Trace && !string.IsNullOrEmpty(entry.Sender))
         {
-            message = $"[{entry.Sender}] {message}";
+            message += $" ({entry.Sender})";
         }
-        if (entry.IndentLevel > 0 && ToFrontLevel <= LogLevel.Trace)
+        if (entry.IndentLevel > 0 && ToDashboardLevel <= LogLevel.Trace)
         {
             message = new string(' ', 4 * entry.IndentLevel) + message;
         }
@@ -238,6 +242,7 @@ public class MacroLogger : KernelService
         var line = new TextLine(message)
         {
             TemplateKey = entry.Level.ToString(),
+            ExtraData = entry.ExtraData,
         };
 
         LogInstrument?.WriteLine(line);
@@ -249,12 +254,12 @@ public class MacroLogger : KernelService
         Processor.RaiseEvent(ProcessorEvent.LogWritten, args);
     }
 
-    private void ToDebugOutput(LogEntry entry)
+    private static void ToDebugOutput(LogEntry entry)
     {
         Debug.WriteLine(entry.Message);
     }
 
-    private void ToConsoleOutput(LogEntry entry)
+    private static void ToConsoleOutput(LogEntry entry)
     {
         Console.WriteLine(entry.Message);
     }

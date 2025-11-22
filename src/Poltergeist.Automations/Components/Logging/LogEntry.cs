@@ -8,4 +8,6 @@ public class LogEntry
     public required DateTime Timestamp { get; init; }
     public required TimeSpan ElapsedTime { get; init; }
     public int IndentLevel { get; init; }
+
+    public object? ExtraData { get; init; }
 }

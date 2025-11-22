@@ -1,5 +1,4 @@
-﻿using Microsoft.UI;
-using Microsoft.UI.Text;
+﻿using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
@@ -101,6 +100,18 @@ public class TextInstrumentViewModel : IInstrumentViewModel
 
         var block = new Paragraph();
         block.Inlines.Add(run);
+
+        if (line.ExtraData is System.Drawing.Bitmap bmp)
+        {
+            block.Inlines.Add(new InlineUIContainer
+            {
+                Child = new Image
+                {
+                    Source = BitmapHelper.ToImageSource(bmp),
+                    Stretch = Stretch.None,
+                },
+            });
+        }
 
         RichTextBlock.Blocks.Add(block);
     }

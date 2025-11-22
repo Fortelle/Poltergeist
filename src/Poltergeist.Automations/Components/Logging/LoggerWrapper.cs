@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.ComponentModel;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -39,6 +40,8 @@ public class LoggerWrapper
         },
     };
 
+    public bool IsTraceEnabled => Logger.IsTraceEnabled;
+
     private readonly MacroLogger Logger;
 
     private readonly string Sender;
@@ -54,7 +57,7 @@ public class LoggerWrapper
         Log(LogLevel.Trace, message, data);
     }
 
-    public void Trace(object variable, [CallerArgumentExpression(nameof(variable))] string? variableName = null)
+    public void TraceVariable(object variable, [CallerArgumentExpression(nameof(variable))] string? variableName = null)
     {
         if (string.IsNullOrEmpty(variableName))
         {
@@ -62,6 +65,27 @@ public class LoggerWrapper
         }
 
         Log(LogLevel.Trace, $"{variableName} = {variable}");
+    }
+
+    public void TraceImage(Bitmap image, string? message = null)
+    {
+        if (!Logger.IsTraceImageEnabled)
+        {
+            return;
+        }
+
+        Logger.Log(LogLevel.Debug, Sender, message ?? "", new Bitmap(image));
+    }
+
+    public void TraceImage(Func<Bitmap> imageProc, string? message = null)
+    {
+        if (!Logger.IsTraceImageEnabled)
+        {
+            return;
+        }
+
+        var image = imageProc.Invoke();
+        Logger.Log(LogLevel.Debug, Sender, message ?? "", image);
     }
 
     public void Debug(string message, object? data = null)
@@ -109,18 +133,6 @@ public class LoggerWrapper
         Logger.IndentLevel = Math.Max(Logger.IndentLevel - 1, 0);
     }
 
-    public void IncreaseIndent(string message)
-    {
-        Trace(message);
-        IncreaseIndent();
-    }
-
-    public void DecreaseIndent(string message)
-    {
-        Trace(message);
-        DecreaseIndent();
-    }
-
     public void ResetIndent()
     {
         Logger.IndentLevel = 0;
@@ -128,6 +140,11 @@ public class LoggerWrapper
 
     public void Log(LogLevel level, string message, object? data = null)
     {
+        if (!Logger.IsTraceEnabled)
+        {
+            return;
+        }
+
         if (data is string[] lines)
         {
             Logger.Log(level, Sender, message);
@@ -150,7 +167,7 @@ public class LoggerWrapper
         }
         else if (data is not null)
         {
-            Logger.Log(level, Sender, message + " (" + ConvertToString(data) + ")");
+            Logger.Log(level, Sender, message + " " + ConvertToString(data));
         }
         else
         {
@@ -173,7 +190,7 @@ public class LoggerWrapper
     {
         return item switch
         {
-            string s => '"' + s + '"',
+            string s => $"(\"{s}\")",
             _ => JsonSerializer.Serialize(item, SerializerOptions),
         };
     }

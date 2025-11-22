@@ -11,6 +11,8 @@ public class TextLine
     public bool? IsBold { get; set; }
     public bool? IsItalic { get; set; }
 
+    public object? ExtraData { get; set; }
+
     public TextLine()
     {
         Text = "";
@@ -20,5 +22,4 @@ public class TextLine
     {
         Text = text;
     }
-
 }
