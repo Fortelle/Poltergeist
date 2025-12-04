@@ -231,7 +231,7 @@ public abstract partial class CapturingProvider : MacroService
         var sizeOnClient = bmp.Size;
         var sizeOnWorkspace = LocatingProvider.ClientSizeToWorkspace(sizeOnClient);
 
-        var newBmp = new Bitmap(bmp, sizeOnWorkspace.Width, sizeOnWorkspace.Height);
+        var newBmp = ResizeImage(bmp, sizeOnWorkspace);
 
         bmp.Dispose();
 
@@ -269,7 +269,7 @@ public abstract partial class CapturingProvider : MacroService
 
     protected static Bitmap CropImage(Bitmap bmpSrc, Rectangle rectSrc)
     {
-        var bmp = new Bitmap(rectSrc.Width, rectSrc.Height, PixelFormat.Format32bppRgb);
+        var bmp = new Bitmap(rectSrc.Width, rectSrc.Height);
         using var gra = Graphics.FromImage(bmp);
         gra.DrawImage(bmpSrc, new Rectangle(0, 0, rectSrc.Width, rectSrc.Height), rectSrc, GraphicsUnit.Pixel);
         return bmp;

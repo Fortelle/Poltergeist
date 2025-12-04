@@ -238,7 +238,7 @@ public class MouseSendInputService : MacroService
                 MoveCursor(endPoint.ToScreen);
                 break;
             case MouseMoveMotion.Linear:
-                var points = CursorHelper.GetLinearPositions(endPoint.ToScreen, endPoint.ToScreen);
+                var points = CursorHelper.GetLinearPositions(beginPoint.ToScreen, endPoint.ToScreen);
                 foreach (var point in points)
                 {
                     MoveCursor(point);
