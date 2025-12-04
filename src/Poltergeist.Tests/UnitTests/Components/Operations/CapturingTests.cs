@@ -9,7 +9,7 @@ namespace Poltergeist.Tests.UnitTests.Components.Operations;
 [TestClass]
 public class CapturingTests : OperationModuleTestBase
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight)]
     [DataRow(WindowWidth * 2, WindowHeight * 3)]
     [DataRow(WindowWidth / 2, WindowHeight / 3)]
@@ -19,7 +19,7 @@ public class CapturingTests : OperationModuleTestBase
     }
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight)]
     [DataRow(WindowWidth * 2, WindowHeight * 3)]
     [DataRow(WindowWidth / 2, WindowHeight / 3)]
@@ -29,7 +29,7 @@ public class CapturingTests : OperationModuleTestBase
     }
 
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight)]
     [DataRow(WindowWidth * 2, WindowHeight * 3)]
     [DataRow(WindowWidth / 2, WindowHeight / 3)]
@@ -78,8 +78,8 @@ public class CapturingTests : OperationModuleTestBase
                 using var sampleImage = CreateTestPattern(width, height);
                 if (!AreEqual(sampleImage, windowImage))
                 {
-                    windowImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_client.png"));
-                    sampleImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_client_sample.png"));
+                    windowImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_client.png"));
+                    sampleImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_client_sample.png"));
                     Assert.Fail("Failed to capture whole client");
                 }
 
@@ -87,8 +87,8 @@ public class CapturingTests : OperationModuleTestBase
                 using var sampleImage2 = BitmapUtil.Crop(sampleImage, new(0, 0, width / 2, height / 2));
                 if (!AreEqual(sampleImage2, areaImage))
                 {
-                    areaImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_area.png"));
-                    sampleImage2.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_area_sample.png"));
+                    areaImage.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_area.png"));
+                    sampleImage2.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_area_sample.png"));
                     Assert.Fail("Failed to capture area");
                 }
 

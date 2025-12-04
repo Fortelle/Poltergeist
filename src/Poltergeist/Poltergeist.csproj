@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Poltergeist</RootNamespace>
     <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
@@ -11,18 +11,18 @@
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
 	  <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <Version>0.9.0</Version>
+    <Version>0.10.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>A .NET framework for desktop automation.</Description>
     <LangVersion>preview</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
   <PropertyGroup>
     <LicenseUrl>https://github.com/Fortelle/Poltergeist/blob/master/LICENSE.txt</LicenseUrl>
     <GitHub>Poltergeist</GitHub>
     <GitHubUrl>https://github.com/Fortelle/Poltergeist</GitHubUrl>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,18 +62,17 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
-    <PackageReference Include="WinUIEx" Version="2.6.0" />
-
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
+    <PackageReference Include="WinUIEx" Version="2.6.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Poltergeist.Automations\Poltergeist.Automations.csproj" />
-    </ItemGroup>
+  </ItemGroup>
+  
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

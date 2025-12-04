@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>Poltergeist.Tests</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -23,9 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.14.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.9.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.9.0" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="18.0.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.0.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.0.2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   

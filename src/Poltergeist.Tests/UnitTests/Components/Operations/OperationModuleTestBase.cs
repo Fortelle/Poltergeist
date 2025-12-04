@@ -36,12 +36,12 @@ public abstract class OperationModuleTestBase : CommonMacroBase
             TestWindow.Build();
 
             TestWindowHelper.TranslateMessage();
-        });
+        }, testContext.CancellationToken);
 
         Thread.Sleep(100);
     }
 
-    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass, ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
     public static void Cleanup()
     {
         TestWindow?.Close();

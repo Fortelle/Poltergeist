@@ -9,7 +9,7 @@ namespace Poltergeist.Tests.UnitTests.Components.Operations;
 [TestClass]
 public class LocatingTests : OperationModuleTestBase
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight, ResizeRule.Disallow, true)]
     [DataRow(WindowWidth * 2, WindowHeight * 2, ResizeRule.ConstrainProportion, true)]
     [DataRow(WindowWidth * 2, WindowHeight * 3, ResizeRule.ConstrainProportion, false)]
@@ -40,7 +40,7 @@ public class LocatingTests : OperationModuleTestBase
         macro.Test().AssertSuccess();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight)]
     [DataRow(WindowWidth * 2, WindowHeight * 3)]
     [DataRow(WindowWidth / 2, WindowHeight / 3)]
@@ -91,7 +91,7 @@ public class LocatingTests : OperationModuleTestBase
         Assert.AreEqual(expectPoint, clickedPosition);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight, ResizeRule.Disallow, true)]
     [DataRow(WindowWidth * 2, WindowHeight * 2, ResizeRule.ConstrainProportion, true)]
     [DataRow(WindowWidth * 2, WindowHeight * 3, ResizeRule.ConstrainProportion, false)]
@@ -122,7 +122,7 @@ public class LocatingTests : OperationModuleTestBase
         macro.Test().AssertSuccess();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(WindowWidth, WindowHeight)]
     [DataRow(WindowWidth * 2, WindowHeight * 3)]
     [DataRow(WindowWidth / 2, WindowHeight / 3)]
