@@ -23,71 +23,47 @@ public partial class CapturingProvider
         return new TextureBrush(bmp);
     });
 
-    private void PushPreview(Bitmap workspaceImage, Rectangle[]? areas = null)
+    private void OnClientCaptured(ClientCapturedHook hook)
     {
         if (!IsPreviewable)
         {
             return;
         }
 
-        var previewImage = new Bitmap(workspaceImage);
+        ArgumentOutOfRangeException.ThrowIfNotEqual(hook.ClipImages?.Length, hook.ClipAreas?.Length);
 
-        if (areas?.Length > 0)
-        {
-            using var gra = Graphics.FromImage(previewImage);
-            DrawHighlights(gra, previewImage.Size, areas);
-        }
+        var clientSize = hook.ClientSize ?? hook.FullImage?.Size;
 
-        Instrument!.Update(0, new ImageInstrumentItem(previewImage));
-    }
-
-    private void PushPreview(Size? canvasSize, Bitmap[] images, Rectangle[] areas)
-    {
-        if (!IsPreviewable)
+        if (clientSize is null)
         {
             return;
         }
 
-        if (canvasSize is null)
-        {
-            return;
-        }
+        var previewImage = new Bitmap(clientSize.Value.Width, clientSize.Value.Height);
 
-        var previewImage = new Bitmap(canvasSize.Value.Width, canvasSize.Value.Height);
         using var gra = Graphics.FromImage(previewImage);
 
-        gra.FillRectangle(TransparentBackgroundBrush.Value, 0, 0, previewImage.Width, previewImage.Height);
-
-        for (var i = 0; i < areas.Length; i++)
+        if (hook.FullImage is not null)
         {
-            gra.DrawImage(images[i], areas[i]);
+            gra.DrawImage(hook.FullImage, 0, 0);
+        }
+        else
+        {
+            gra.FillRectangle(TransparentBackgroundBrush.Value, 0, 0, previewImage.Width, previewImage.Height);
         }
 
-        DrawHighlights(gra, previewImage.Size, areas);
-
-        Instrument!.Update(0, new ImageInstrumentItem(previewImage));
-    }
-
-    private void PushPreview(Size? canvasSize, Bitmap image, Rectangle imageArea, Rectangle[] areas)
-    {
-        if (!IsPreviewable)
+        if (hook.ClipImages?.Length > 0 && hook.ClipImages.Length == hook.ClipAreas?.Length)
         {
-            return;
+            for (var i = 0; i < hook.ClipImages.Length; i++)
+            {
+                gra.DrawImage(hook.ClipImages[i], hook.ClipAreas[i]);
+            }
         }
 
-        if (canvasSize is null)
+        if (hook.TargetAreas?.Length > 0)
         {
-            return;
+            DrawHighlights(gra, clientSize.Value, hook.TargetAreas);
         }
-
-        var previewImage = new Bitmap(canvasSize.Value.Width, canvasSize.Value.Height);
-        using var gra = Graphics.FromImage(previewImage);
-
-        gra.FillRectangle(TransparentBackgroundBrush.Value, 0, 0, previewImage.Width, previewImage.Height);
-
-        gra.DrawImage(image, imageArea);
-
-        DrawHighlights(gra, previewImage.Size, [imageArea, ..areas]);
 
         Instrument!.Update(0, new ImageInstrumentItem(previewImage));
     }

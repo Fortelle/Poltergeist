@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
@@ -16,18 +16,20 @@ public abstract partial class CapturingProvider : MacroService
     protected Func<Rectangle, Bitmap>? CaptureClientPartHandler;
     protected Func<Rectangle[], Bitmap[]>? CaptureClientPartsHandler;
 
+    private readonly HookService HookService;
     private readonly LocatingProvider? LocatingProvider;
 
     protected CapturingProvider(MacroProcessor processor, LocatingProvider? locatingProvider) : base(processor)
     {
         LocatingProvider = locatingProvider;
+        HookService = Processor.GetService<HookService>();
 
         IsPreviewable = Processor.Options.GetValueOrDefault<bool>(PreviewCaptureKey);
         if (IsPreviewable)
         {
             Instrument = processor.GetService<ImageInstrument>();
             Instrument.Key = PreviewCaptureKey;
-            Instrument.Title = "Workspace:";
+            Instrument.Title = "Client:";
             processor.GetService<PanelService>().Create(new("capture_preview_panel", "Capture")
             {
                 Instruments =
@@ -35,6 +37,7 @@ public abstract partial class CapturingProvider : MacroService
                     Instrument
                 }
             });
+            HookService.Register<ClientCapturedHook>(OnClientCaptured);
         }
     }
 
@@ -43,44 +46,56 @@ public abstract partial class CapturingProvider : MacroService
         Logger.Trace($"Capturing the whole workspace.");
         Logger.IncreaseIndent();
 
-        Bitmap bitmap;
+        Bitmap imageOnWorkspace;
 
         if (options?.WorkspaceSnapshot is not null)
         {
-            bitmap = new(options.WorkspaceSnapshot);
+            imageOnWorkspace = new(options.WorkspaceSnapshot);
             Logger.Trace($"Copied an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.");
         }
         else if (options?.SnapshotKey is not null)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            bitmap = new(snapshot);
+            imageOnWorkspace = new(snapshot);
             Logger.Trace($"Copied an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
         else if (CurrentSnapshotKey is not null)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            bitmap = new(snapshot);
+            imageOnWorkspace = new(snapshot);
             Logger.Trace($"Copied an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientFullHandler is not null)
         {
-            bitmap = CaptureClientFullHandler.Invoke();
-            PushPreview(bitmap);
-            bitmap = ClientImageToWorkspace(bitmap);
+            var imageOnClient = CaptureClientFullHandler.Invoke();
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = imageOnClient.Size,
+                FullImage = imageOnClient,
+            });
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else if (CaptureClientPartHandler is not null && LocatingProvider?.ClientSize is not null)
         {
             var clientSize = LocatingProvider.ClientSize.Value;
-            bitmap = CaptureClientPartHandler.Invoke(new Rectangle(default, clientSize));
-            PushPreview(bitmap);
-            bitmap = ClientImageToWorkspace(bitmap);
+            var imageOnClient = CaptureClientPartHandler.Invoke(new Rectangle(default, clientSize));
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = clientSize,
+                FullImage = imageOnClient,
+            });
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else if (CaptureClientPartsHandler is not null && LocatingProvider?.ClientSize is not null)
         {
             var clientSize = LocatingProvider.ClientSize.Value;
-            bitmap = CaptureClientPartsHandler.Invoke([new Rectangle(default, clientSize)])[0];
-            PushPreview(bitmap);
-            bitmap = ClientImageToWorkspace(bitmap);
+            var imageOnClient = CaptureClientPartsHandler.Invoke([new Rectangle(default, clientSize)])[0];
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = clientSize,
+                FullImage = imageOnClient,
+            });
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else
         {
@@ -88,7 +103,7 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return bitmap;
+        return imageOnWorkspace;
     }
 
     public Bitmap Capture(Rectangle rectangleOnWorkspace, CapturingOptions? options = null)
@@ -98,46 +113,63 @@ public abstract partial class CapturingProvider : MacroService
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
 
-        Bitmap bitmap;
+        Bitmap imageOnWorkspace;
 
         if (options?.WorkspaceSnapshot is not null)
         {
-            bitmap = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
+            imageOnWorkspace = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectangleOnWorkspace);
         }
         else if (options?.SnapshotKey is not null)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            bitmap = CropImage(snapshot, rectangleOnWorkspace);
+            imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
         else if (CurrentSnapshotKey is not null)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            bitmap = CropImage(snapshot, rectangleOnWorkspace);
+            imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientPartHandler is not null && !requiresFullSnapshot)
         {
             var rectangleOnClient = WorkspaceRectangleToClient(rectangleOnWorkspace);
-            bitmap = CaptureClientPartHandler.Invoke(rectangleOnClient);
-            PushPreview(LocatingProvider?.ClientSize, [bitmap], [rectangleOnClient]);
-            bitmap = ClientImageToWorkspace(bitmap);
+            var imageOnClient = CaptureClientPartHandler.Invoke(rectangleOnClient);
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = LocatingProvider?.ClientSize,
+                ClipImages = [imageOnClient],
+                ClipAreas = [rectangleOnClient],
+                TargetAreas = [rectangleOnClient],
+            });
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else if (CaptureClientPartsHandler is not null && !requiresFullSnapshot)
         {
             var rectangleOnClient = WorkspaceRectangleToClient(rectangleOnWorkspace);
-            bitmap = CaptureClientPartsHandler.Invoke([rectangleOnClient])[0];
-            PushPreview(bitmap, [rectangleOnClient]);
-            bitmap = ClientImageToWorkspace(bitmap);
+            var imageOnClient = CaptureClientPartsHandler.Invoke([rectangleOnClient])[0];
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = LocatingProvider?.ClientSize,
+                ClipImages = [imageOnClient],
+                ClipAreas = [rectangleOnClient],
+                TargetAreas = [rectangleOnClient],
+            });
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else if (CaptureClientFullHandler is not null)
         {
             using var clientImage = CaptureClientFullHandler.Invoke();
             var rectangleOnClient = WorkspaceRectangleToClient(rectangleOnWorkspace);
-            PushPreview(clientImage, [rectangleOnClient]);
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = clientImage.Size,
+                FullImage = clientImage,
+                TargetAreas = [rectangleOnClient],
+            });
             var imageOnClient = CropImage(clientImage, rectangleOnClient);
-            bitmap = ClientImageToWorkspace(imageOnClient);
+            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
         }
         else
         {
@@ -145,7 +177,7 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return bitmap;
+        return imageOnWorkspace;
     }
 
     public Bitmap[] Capture(Rectangle[] rectanglesOnWorkspace, CapturingOptions? options = null)
@@ -155,31 +187,37 @@ public abstract partial class CapturingProvider : MacroService
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
 
-        Bitmap[] bitmaps;
+        Bitmap[] imagesOnWorkspace;
 
         if (options?.WorkspaceSnapshot is not null)
         {
-            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect))];
+            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect))];
             Logger.Trace($"Cropped images from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectanglesOnWorkspace);
         }
         else if (options?.SnapshotKey is not null)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
         else if (CurrentSnapshotKey is not null)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
             Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientPartsHandler is not null && !requiresFullSnapshot)
         {
             var rectanglesOnClient = rectanglesOnWorkspace.Select(WorkspaceRectangleToClient).ToArray();
             var imagesOnClient = CaptureClientPartsHandler.Invoke(rectanglesOnClient);
-            PushPreview(LocatingProvider?.ClientSize, imagesOnClient, rectanglesOnClient);
-            bitmaps = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = LocatingProvider?.ClientSize,
+                ClipImages = imagesOnClient,
+                ClipAreas = rectanglesOnClient,
+                TargetAreas = rectanglesOnClient,
+            });
+            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
         }
         else if (CaptureClientPartHandler is not null && !requiresFullSnapshot)
         {
@@ -190,17 +228,28 @@ public abstract partial class CapturingProvider : MacroService
             var b = rectanglesOnClient.Max(x => x.Bottom);
             var boundsOnClient = Rectangle.FromLTRB(l, t, r, b);
             var imageOnClient = CaptureClientPartHandler.Invoke(boundsOnClient);
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = LocatingProvider?.ClientSize,
+                ClipImages = [imageOnClient],
+                ClipAreas = [boundsOnClient],
+                TargetAreas = rectanglesOnClient,
+            });
             var imagesOnClient = rectanglesOnClient.Select(rect => CropImage(imageOnClient, new Rectangle(rect.X - boundsOnClient.X, rect.Y - boundsOnClient.Y, rect.Width, rect.Height))).ToArray();
-            PushPreview(LocatingProvider?.ClientSize, imageOnClient, boundsOnClient, rectanglesOnClient);
-            bitmaps = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
         }
         else if (CaptureClientFullHandler is not null)
         {
             var rectanglesOnClient = rectanglesOnWorkspace.Select(WorkspaceRectangleToClient).ToArray();
-            var clientImage = CaptureClientFullHandler.Invoke();
+            using var clientImage = CaptureClientFullHandler.Invoke();
+            HookService.Raise<ClientCapturedHook>(new()
+            {
+                ClientSize = clientImage.Size,
+                FullImage = clientImage,
+                TargetAreas = rectanglesOnClient,
+            });
             var imagesOnClient = rectanglesOnClient.Select(rect => CropImage(clientImage, rect)).ToArray();
-            PushPreview(clientImage, rectanglesOnClient);
-            bitmaps = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
         }
         else
         {
@@ -208,14 +257,14 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return bitmaps;
+        return imagesOnWorkspace;
     }
 
-    private Bitmap ClientImageToWorkspace(Bitmap bmp)
+    private Bitmap ClientImageToWorkspace(Bitmap imageOnClient)
     {
         if (LocatingProvider is null)
         {
-            return bmp;
+            return imageOnClient;
         }
 
         var clientSize = LocatingProvider.ClientSize;
@@ -223,21 +272,19 @@ public abstract partial class CapturingProvider : MacroService
 
         if (clientSize is null || workspaceSize is null || workspaceSize.Value == clientSize.Value)
         {
-            return bmp;
+            return imageOnClient;
         }
 
-        Logger.TraceImage(bmp);
-
-        var sizeOnClient = bmp.Size;
+        var sizeOnClient = imageOnClient.Size;
         var sizeOnWorkspace = LocatingProvider.ClientSizeToWorkspace(sizeOnClient);
 
-        var newBmp = ResizeImage(bmp, sizeOnWorkspace);
+        var imageOnWorkspace = ResizeImage(imageOnClient, sizeOnWorkspace);
 
-        bmp.Dispose();
+        imageOnClient.Dispose();
 
         Logger.Trace($"Resized the captured image to match the workspace size: {sizeOnClient} -> {sizeOnWorkspace}.");
 
-        return newBmp;
+        return imageOnWorkspace;
     }
 
     private Rectangle WorkspaceRectangleToClient(Rectangle rectangleOnWorkspace)
