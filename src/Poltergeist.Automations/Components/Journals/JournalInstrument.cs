@@ -16,4 +16,9 @@ public class JournalInstrument : InstrumentModel
     {
         Lines.Add(text);
     }
+
+    public void Clear()
+    {
+        Lines.Clear();
+    }
 }

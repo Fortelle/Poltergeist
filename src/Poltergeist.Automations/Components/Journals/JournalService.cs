@@ -28,6 +28,16 @@ public class JournalService : MacroService
         JournalInstrument!.Add(text);
     }
 
+    public void Clear()
+    {
+        if (JournalInstrument is null)
+        {
+            return;
+        }
+
+        JournalInstrument.Clear();
+    }
+
     private void ProcessorEndingHook(ProcessorEndingHook hook)
     {
         TrySave(hook.EndTime);
