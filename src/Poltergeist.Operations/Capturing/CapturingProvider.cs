@@ -324,7 +324,7 @@ public abstract partial class CapturingProvider : MacroService
 
     protected static Bitmap ResizeImage(Bitmap bmp, Size newSize)
     {
-        var newBmp = new Bitmap(bmp, newSize.Width, newSize.Height);
+        var newBmp = new Bitmap(newSize.Width, newSize.Height);
         using var gra = Graphics.FromImage(newBmp);
         gra.CompositingQuality = CompositingQuality.HighQuality;
         gra.InterpolationMode = InterpolationMode.HighQualityBicubic;

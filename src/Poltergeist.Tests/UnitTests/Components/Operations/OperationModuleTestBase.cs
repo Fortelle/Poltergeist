@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Poltergeist.Automations.Macros;
@@ -80,7 +81,15 @@ public abstract class OperationModuleTestBase : CommonMacroBase
         
         static bool[] GetFingerprint(Bitmap source, int size)
         {
-            using var hashBitmap = new Bitmap(source, new Size(size, size));
+            using var hashBitmap = new Bitmap(size, size);
+            using (var gra = Graphics.FromImage(hashBitmap))
+            {
+                gra.CompositingQuality = CompositingQuality.HighQuality;
+                gra.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                gra.SmoothingMode = SmoothingMode.HighQuality;
+                gra.DrawImage(source, 0, 0, size, size);
+            }
+
             var bitmapData = hashBitmap.LockBits(new Rectangle(0, 0, size, size), ImageLockMode.ReadOnly, hashBitmap.PixelFormat);
             var byteCount = bitmapData.Stride * size;
             var buffer = new byte[byteCount];
