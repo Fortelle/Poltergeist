@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
@@ -51,6 +52,8 @@ public class MouseSendInputService : MacroService
             SendMouseUpMessage(button);
         }
 
+        Processor.GetService<HookService>().Raise(new MouseClickedHook());
+
         Logger.Debug($"Simulated a mouse click action with the {button} button.");
         Logger.DecreaseIndent();
     }
@@ -78,6 +81,8 @@ public class MouseSendInputService : MacroService
             SendMouseUpMessage(button);
         }
 
+        Processor.GetService<HookService>().Raise(new MouseDoubleClickedHook());
+
         Logger.Debug($"Simulated a mouse double-clicked action with the {button} button.");
         Logger.DecreaseIndent();
     }
@@ -89,6 +94,8 @@ public class MouseSendInputService : MacroService
 
         SendMouseDownMessage(button);
 
+        Processor.GetService<HookService>().Raise(new MouseDownHook());
+
         Logger.Debug($"Simulated a mouse down action with the {button} button.");
         Logger.DecreaseIndent();
     }
@@ -99,6 +106,8 @@ public class MouseSendInputService : MacroService
         Logger.IncreaseIndent();
 
         SendMouseUpMessage(button);
+
+        Processor.GetService<HookService>().Raise(new MouseUpHook());
 
         Logger.Debug($"Simulated a mouse up action with the {button} button.");
         Logger.DecreaseIndent();
@@ -127,31 +136,14 @@ public class MouseSendInputService : MacroService
                 throw new NotSupportedException();
         }
 
-        Logger.Info($"Simulated a mouse wheel action towards {direction} with {detents} detents.");
-        Logger.DecreaseIndent();
-    }
-
-    public Point MoveTo(PositionToken position, MouseInputOptions? options = null)
-    {
-        if (position is LastPoint && LastPosition is not null)
+        Processor.GetService<HookService>().Raise(new MouseWheeledHook()
         {
-            return LastPosition.ToWorkspace;
-        }
+            Direction = direction,
+            Detents = detents
+        });
 
-        Logger.Trace($"Simulating mouse move.", new { position, options });
-        Logger.IncreaseIndent();
-
-        var beginPoint = GetTargetPoint(new LastPoint(), options);
-        var endPoint = GetTargetPoint(position, options);
-
-        DoMove(beginPoint, endPoint, options);
-
-        LastPosition = endPoint;
-
-        Logger.Debug($"Simulated a mouse move action from ({beginPoint.ToScreen.X},{beginPoint.ToScreen.Y}) to ({endPoint.ToScreen.X},{endPoint.ToScreen.Y}) on the screen.");
+        Logger.Debug($"Simulated a mouse wheel action towards {direction} with {detents} detents.");
         Logger.DecreaseIndent();
-
-        return endPoint.ToWorkspace;
     }
 
     public Point Move(PositionToken beginPosition, PositionToken endPosition, MouseInputOptions? options = null)
@@ -164,17 +156,56 @@ public class MouseSendInputService : MacroService
         Logger.Trace($"Simulating mouse move.", new { beginPosition, endPosition, options });
         Logger.IncreaseIndent();
 
-        var beginPoint = GetTargetPoint(beginPosition, options);
         var endPoint = GetTargetPoint(endPosition, options);
+        var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
 
-        DoMove(beginPoint, endPoint, options);
+        if (motion == MouseMoveMotion.Jump)
+        {
+            MoveCursorTo(endPoint.ToScreen);
+
+            Processor.GetService<HookService>().Raise(new MouseMovedHook()
+            {
+                EndLocation = endPoint.ToWorkspace,
+            });
+
+            Logger.Debug($"Simulated a mouse move action at ({endPoint.ToScreen.X},{endPoint.ToScreen.Y}) on the screen.");
+        }
+        else
+        {
+            var beginPoint = GetTargetPoint(beginPosition, options);
+            var path = motion switch
+            {
+                MouseMoveMotion.Linear => CursorHelper.GetLinearPositions(beginPoint.ToScreen, endPoint.ToScreen),
+                _ => throw new NotImplementedException(),
+            };
+            var interval = MouseInputOptions.MouseMoveInterval;
+
+            foreach (var point in path)
+            {
+                MoveCursorTo(point);
+                Delay(interval);
+            }
+
+            Processor.GetService<HookService>().Raise(new MouseMovedHook()
+            {
+                BeginLocation = beginPoint.ToWorkspace,
+                EndLocation = endPoint.ToWorkspace,
+                Path = path,
+            });
+
+            Logger.Debug($"Simulated a mouse move action from ({beginPoint.ToScreen.X},{beginPoint.ToScreen.Y}) to ({endPoint.ToScreen.X},{endPoint.ToScreen.Y}) on the screen.");
+        }
 
         LastPosition = endPoint;
 
-        Logger.Debug($"Simulated a mouse move action from ({beginPoint.ToScreen.X},{beginPoint.ToScreen.Y}) to ({endPoint.ToScreen.X},{endPoint.ToScreen.Y}) on the screen.");
         Logger.DecreaseIndent();
 
         return endPoint.ToWorkspace;
+    }
+
+    public Point MoveTo(PositionToken endPosition, MouseInputOptions? options = null)
+    {
+        return Move(new LastPoint(), endPosition, options);
     }
 
     public WCSPoint GetTargetPoint(PositionToken position, MouseInputOptions? options = null)
@@ -220,34 +251,6 @@ public class MouseSendInputService : MacroService
         var pointOnClient = ScreenLocatingService.WorkspacePointToClient(pointOnWorkspace);
         var pointOnScreen = ScreenLocatingService.ClientPointToScreen(pointOnClient);
         return new WCSPoint(pointOnWorkspace, pointOnClient, pointOnScreen);
-    }
-
-    private void DoMove(WCSPoint beginPoint, WCSPoint endPoint, MouseInputOptions? options)
-    {
-        if (beginPoint.ToWorkspace == endPoint.ToWorkspace)
-        {
-            return;
-        }
-
-        var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
-        var interval = MouseInputOptions.MouseMoveInterval;
-
-        switch (motion)
-        {
-            case MouseMoveMotion.Jump:
-                MoveCursor(endPoint.ToScreen);
-                break;
-            case MouseMoveMotion.Linear:
-                var points = CursorHelper.GetLinearPositions(beginPoint.ToScreen, endPoint.ToScreen);
-                foreach (var point in points)
-                {
-                    MoveCursor(point);
-                    Delay(interval);
-                }
-                break;
-            default:
-                throw new NotImplementedException();
-        }
     }
 
     private void DoVerticalWheel(int detents, MouseInputOptions? options = null)
@@ -353,7 +356,7 @@ public class MouseSendInputService : MacroService
         Logger.Trace($"Simulated mouse hwheel input.", new { detents, movement });
     }
 
-    private void MoveCursor(Point pointOnScreen)
+    private void MoveCursorTo(Point pointOnScreen)
     {
         SendInputHelper.Cursor = pointOnScreen;
 

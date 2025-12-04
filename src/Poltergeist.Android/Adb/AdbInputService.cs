@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
@@ -46,6 +47,11 @@ public class AdbInputService : MacroService
 
         LastPosition = targetPoint;
 
+        Processor.GetService<HookService>().Raise(new AdbTappedHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
+
         Logger.Debug($"Simulated a finger tap action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) on the android device.");
         Logger.DecreaseIndent();
 
@@ -64,6 +70,11 @@ public class AdbInputService : MacroService
         AdbService.Shell($"input swipe {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {duration}");
 
         LastPosition = targetPoint;
+
+        Processor.GetService<HookService>().Raise(new AdbLongTappedHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
 
         Logger.Debug($"Simulated a long tap action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) for {duration}ms on the android device.");
         Logger.DecreaseIndent();
@@ -97,7 +108,14 @@ public class AdbInputService : MacroService
 
         LastPosition = endPoint;
 
-        Logger.Info($"Simulated a drag-and-drop action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
+        Processor.GetService<HookService>().Raise(new AdbDraggedAndDroppedHook()
+        {
+            BeginLocation = beginPoint.ToWorkspace,
+            EndLocation = endPoint.ToWorkspace,
+            Duration = duration,
+        });
+
+        Logger.Debug($"Simulated a drag-and-drop action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
         Logger.DecreaseIndent();
 
         return endPoint.ToWorkspace;
@@ -129,7 +147,14 @@ public class AdbInputService : MacroService
 
         LastPosition = endPoint;
 
-        Logger.Info($"Simulated a finger swipe action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
+        Processor.GetService<HookService>().Raise(new AdbSwipedHook()
+        {
+            BeginLocation = beginPoint.ToWorkspace,
+            EndLocation = endPoint.ToWorkspace,
+            Duration = duration,
+        });
+
+        Logger.Debug($"Simulated a finger swipe action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) for {duration}ms on the android service.");
         Logger.DecreaseIndent();
 
         return endPoint.ToWorkspace;
@@ -142,8 +167,13 @@ public class AdbInputService : MacroService
 
         AdbService.Shell($"input text {text}");
 
-        Logger.Info($"Inputed text \"{text}\" to the android service.");
+        Logger.Debug($"Input text \"{text}\" to the android service.");
         Logger.DecreaseIndent();
+
+        Processor.GetService<HookService>().Raise(new AdbTextInputHook()
+        {
+            Text = text,
+        });
     }
 
     public WCPoint GetTargetPoint(PositionToken position, AdbInputOptions? options = null)

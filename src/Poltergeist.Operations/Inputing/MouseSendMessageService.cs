@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using Microsoft.Extensions.Options;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
@@ -47,6 +48,11 @@ public class MouseSendMessageService : MacroService
 
         LastPosition = targetPoint;
 
+        Processor.GetService<HookService>().Raise(new MouseClickedHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
+
         Logger.Debug($"Simulated a mouse click action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) with the {button} button on the client window.");
         Logger.DecreaseIndent();
 
@@ -72,6 +78,11 @@ public class MouseSendMessageService : MacroService
 
         LastPosition = targetPoint;
 
+        Processor.GetService<HookService>().Raise(new MouseDoubleClickedHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
+
         Logger.Debug($"Simulated a mouse double-click action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) with the {button} button on the client window.");
         Logger.DecreaseIndent();
 
@@ -89,6 +100,11 @@ public class MouseSendMessageService : MacroService
 
         LastPosition = targetPoint;
 
+        Processor.GetService<HookService>().Raise(new MouseDownHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
+
         Logger.Debug($"Simulated a mouse down action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) with the {button} button on the client window.");
         Logger.DecreaseIndent();
 
@@ -105,6 +121,11 @@ public class MouseSendMessageService : MacroService
         SendMouseDownMessage(targetPoint.ToClient, button, modifier);
 
         LastPosition = targetPoint;
+
+        Processor.GetService<HookService>().Raise(new MouseUpHook()
+        {
+            Location = targetPoint.ToWorkspace,
+        });
 
         Logger.Debug($"Simulated a mouse up action at ({targetPoint.ToClient.X},{targetPoint.ToClient.Y}) with the {button} button on the client window.");
         Logger.DecreaseIndent();
@@ -124,26 +145,42 @@ public class MouseSendMessageService : MacroService
 
         var endPoint = GetTargetPoint(endPosition, options);
         var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
-        
-        switch (motion)
+
+        if (motion == MouseMoveMotion.Jump)
         {
-            case MouseMoveMotion.Jump:
-                SendMouseMoveMessage(endPoint.ToClient, button, modifier);
-                Logger.Debug($"Simulated a mouse move action at ({endPoint.ToClient.X},{endPoint.ToClient.Y}) with the {button} button on the client window.");
-                break;
-            case MouseMoveMotion.Linear:
-                var beginPoint = GetTargetPoint(beginPosition, options);
-                var points = CursorHelper.GetLinearPositions(beginPoint.ToClient, endPoint.ToClient);
-                var interval = MouseInputOptions.MouseMoveInterval;
-                foreach (var point in points)
-                {
-                    SendMouseMoveMessage(point, button, modifier);
-                    Delay(interval);
-                }
-                Logger.Debug($"Simulated a mouse move action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) with the {button} button on the client window.");
-                break;
-            default:
-                throw new NotImplementedException();
+            SendMouseMoveMessage(endPoint.ToClient, button, modifier);
+
+            Processor.GetService<HookService>().Raise(new MouseMovedHook()
+            {
+                EndLocation = endPoint.ToWorkspace,
+            });
+
+            Logger.Debug($"Simulated a mouse move action at ({endPoint.ToClient.X},{endPoint.ToClient.Y}) with the {button} button on the client window.");
+        }
+        else
+        {
+            var beginPoint = GetTargetPoint(beginPosition, options);
+            var path = motion switch
+            {
+                MouseMoveMotion.Linear => CursorHelper.GetLinearPositions(beginPoint.ToClient, endPoint.ToClient),
+                _ => throw new NotImplementedException(),
+            };
+            var interval = MouseInputOptions.MouseMoveInterval;
+
+            foreach (var point in path)
+            {
+                SendMouseMoveMessage(point, button, modifier);
+                Delay(interval);
+            }
+
+            Processor.GetService<HookService>().Raise(new MouseMovedHook()
+            {
+                BeginLocation = beginPoint.ToWorkspace,
+                EndLocation = endPoint.ToWorkspace,
+                Path = path,
+            });
+
+            Logger.Debug($"Simulated a mouse move action from ({beginPoint.ToClient.X},{beginPoint.ToClient.Y}) to ({endPoint.ToClient.X},{endPoint.ToClient.Y}) with the {button} button on the client window.");
         }
 
         LastPosition = endPoint;
@@ -155,34 +192,7 @@ public class MouseSendMessageService : MacroService
 
     public Point MoveTo(PositionToken endPosition, MouseButtons button, KeyModifiers modifier = KeyModifiers.None, MouseInputOptions? options = null)
     {
-        if (endPosition is LastPoint && LastPosition is not null)
-        {
-            return LastPosition.ToWorkspace;
-        }
-
-        Logger.Trace($"Simulating mouse move action.", new { endPosition, button, modifier, options });
-        Logger.IncreaseIndent();
-
-        var endPoint = GetTargetPoint(endPosition, options);
-        var motion = options?.Motion ?? DefaultOptions?.Motion ?? MouseMoveMotion.Jump;
-
-        switch (motion)
-        {
-            case MouseMoveMotion.Jump:
-                SendMouseMoveMessage(endPoint.ToClient, button, modifier);
-                break;
-            case MouseMoveMotion.Linear:
-                throw new NotSupportedException();
-            default:
-                throw new NotImplementedException();
-        }
-
-        LastPosition = endPoint;
-
-        Logger.Debug($"Simulated a mouse move action at ({endPoint.ToClient.X},{endPoint.ToClient.Y}) with the {button} button on the client window.");
-        Logger.DecreaseIndent();
-
-        return endPoint.ToWorkspace;
+        return Move(new LastPoint(), endPosition, button, modifier, options);
     }
 
     public void Wheel(PositionToken position, MouseWheelDirection direction, int detents, MouseButtons button = MouseButtons.None, KeyModifiers modifier = KeyModifiers.None, MouseInputOptions? options = null)
@@ -212,6 +222,14 @@ public class MouseSendMessageService : MacroService
 
         LastPosition = targetPoint;
 
+        Processor.GetService<HookService>().Raise(new MouseWheeledHook()
+        {
+            Location = targetPoint.ToWorkspace,
+            Direction = direction,
+            Detents = detents,
+        });
+
+        Logger.Debug($"Simulated a mouse wheel action towards {direction} with the {button} button and {detents} detents on the client window.");
         Logger.DecreaseIndent();
     }
 

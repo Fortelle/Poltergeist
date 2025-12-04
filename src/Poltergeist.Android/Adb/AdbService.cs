@@ -119,10 +119,6 @@ public class AdbService : MacroService
         Logger.DecreaseIndent();
 
         var size = GetScreenSize();
-        if (size is null)
-        {
-            return false;
-        }
         Logger.Info($"Device size: {size}");
 
         var adbVersion = GetAdbVersion();
@@ -131,9 +127,17 @@ public class AdbService : MacroService
         var androidVersion = GetAndroidVersion();
         Logger.Info($"Android version: {androidVersion}");
 
-        Processor.SessionStorage.AddOrUpdate(LocatingProvider.WorkspaceSizeKey, size.Value);
+        Processor.SessionStorage.AddOrUpdate(LocatingProvider.WorkspaceSizeKey, size);
 
-        Processor.GetService<AdbLocatingService>().SetSize(size.Value);
+        Processor.GetService<AdbLocatingService>().SetSize(size);
+
+        Processor.GetService<HookService>().Raise(new AdbConnectedHook()
+        {
+            Address = Address!,
+            ScreenSize = size,
+            AdbVersion = adbVersion,
+            AandroidVersion = androidVersion,
+        });
 
         return true;
     }
@@ -147,10 +151,15 @@ public class AdbService : MacroService
 
         if (!IsInitialized)
         {
-            Initialize();
+            return;
         }
 
         Execute($"kill-server");
+
+        Processor.GetService<HookService>().Raise(new AdbClosedHook()
+        {
+            Address = Address!,
+        });
 
         Logger.Info($"Closed adb server {Address}.");
         IsClosed = true;
@@ -191,13 +200,13 @@ public class AdbService : MacroService
         return buff;
     }
 
-    private Size? GetScreenSize()
+    private Size GetScreenSize()
     {
         var output = Shell("wm size");
         var match = Regex.Match(output, @"Physical size: (\d+)x(\d+)");
         if (!match.Success)
         {
-            return null;
+            throw new Exception("Failed to get the screen size.");
         }
 
         var w = int.Parse(match.Groups[1].Value);
