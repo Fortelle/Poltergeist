@@ -12,13 +12,9 @@ namespace Poltergeist.Operations.Capturing;
 // warning: croping image before resizing may get an unexpected border. try using CapturingOptions.RequiresFullSnapshot = true to avoid it.
 public abstract partial class CapturingProvider : MacroService
 {
-    public bool HasCache => WorkspaceSnapshot is not null;
-
     protected Func<Bitmap>? CaptureClientFullHandler;
     protected Func<Rectangle, Bitmap>? CaptureClientPartHandler;
     protected Func<Rectangle[], Bitmap[]>? CaptureClientPartsHandler;
-
-    private Bitmap? WorkspaceSnapshot;
 
     private readonly LocatingProvider? LocatingProvider;
 
@@ -54,10 +50,17 @@ public abstract partial class CapturingProvider : MacroService
             bitmap = new(options.WorkspaceSnapshot);
             Logger.Trace($"Copied an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.");
         }
-        else if (WorkspaceSnapshot is not null)
+        else if (options?.SnapshotKey is not null)
         {
-            bitmap = new(WorkspaceSnapshot);
-            Logger.Trace($"Copied an image from the cache.");
+            var snapshot = GetSnapshot(options.SnapshotKey);
+            bitmap = new(snapshot);
+            Logger.Trace($"Copied an image from the cached snapshot \"{options.SnapshotKey}\".");
+        }
+        else if (CurrentSnapshotKey is not null)
+        {
+            var snapshot = GetSnapshot(CurrentSnapshotKey);
+            bitmap = new(snapshot);
+            Logger.Trace($"Copied an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientFullHandler is not null)
         {
@@ -102,10 +105,17 @@ public abstract partial class CapturingProvider : MacroService
             bitmap = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectangleOnWorkspace);
         }
-        else if (WorkspaceSnapshot is not null)
+        else if (options?.SnapshotKey is not null)
         {
-            bitmap = CropImage(WorkspaceSnapshot, rectangleOnWorkspace);
-            Logger.Trace($"Cropped an image from the cache.", rectangleOnWorkspace);
+            var snapshot = GetSnapshot(options.SnapshotKey);
+            bitmap = CropImage(snapshot, rectangleOnWorkspace);
+            Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
+        }
+        else if (CurrentSnapshotKey is not null)
+        {
+            var snapshot = GetSnapshot(CurrentSnapshotKey);
+            bitmap = CropImage(snapshot, rectangleOnWorkspace);
+            Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientPartHandler is not null && !requiresFullSnapshot)
         {
@@ -149,13 +159,20 @@ public abstract partial class CapturingProvider : MacroService
 
         if (options?.WorkspaceSnapshot is not null)
         {
-            Logger.Trace($"Cropped images from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectanglesOnWorkspace);
             bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect))];
+            Logger.Trace($"Cropped images from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectanglesOnWorkspace);
         }
-        else if (WorkspaceSnapshot is not null)
+        else if (options?.SnapshotKey is not null)
         {
-            Logger.Trace($"Cropped images from the cache.", rectanglesOnWorkspace);
-            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(WorkspaceSnapshot, rect))];
+            var snapshot = GetSnapshot(options.SnapshotKey);
+            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
+        }
+        else if (CurrentSnapshotKey is not null)
+        {
+            var snapshot = GetSnapshot(CurrentSnapshotKey);
+            bitmaps = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
         }
         else if (CaptureClientPartsHandler is not null && !requiresFullSnapshot)
         {
@@ -235,56 +252,11 @@ public abstract partial class CapturingProvider : MacroService
         }
     }
 
-    public void Cache(bool refresh = false)
-    {
-        if (WorkspaceSnapshot is not null)
-        {
-            if (refresh)
-            {
-                ReleaseCache();
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        WorkspaceSnapshot = Capture();
-
-        Logger.Debug("Cached the snapshot of the workspace.");
-    }
-
-    public void Cache(Bitmap img)
-    {
-        ReleaseCache();
-
-        WorkspaceSnapshot = img;
-
-        Logger.Debug("Set the specified image as the snapshot of the workspace.");
-    }
-
-    public void ReleaseCache(bool dispose = true)
-    {
-        if (WorkspaceSnapshot is null)
-        {
-            return;
-        }
-
-        if (dispose)
-        {
-            WorkspaceSnapshot.Dispose();
-        }
-        WorkspaceSnapshot = null;
-
-        Logger.Debug("Released the cached snapshot of the workspace.");
-    }
-
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            WorkspaceSnapshot?.Dispose();
-            WorkspaceSnapshot = null;
+            ReleaseAllSnapshots();
 
             if (TransparentBackgroundBrush.IsValueCreated)
             {

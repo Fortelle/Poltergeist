@@ -5,5 +5,6 @@ namespace Poltergeist.Operations.Capturing;
 public class CapturingOptions
 {
     public Bitmap? WorkspaceSnapshot { get; set; }
+    public string? SnapshotKey { get; set; }
     public bool? RequiresFullSnapshot { get; set; }
 }
