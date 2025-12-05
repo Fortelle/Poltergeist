@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Components.Interactions;
 
 public class InteractionMessage
 {
-    public const string ProcessorIdName = "processor_id";
+    public const string ProcessorIdKey = "macro_processor_id";
     private const char Separater = ';';
 
     public string? ProcessorId { get; set; }
@@ -26,7 +26,7 @@ public class InteractionMessage
     public InteractionMessage(string argument)
     {
         var args = argument
-            .Split(Separater)
+            .Split(Separater, StringSplitOptions.RemoveEmptyEntries)
             .Select(x => x.Split('='))
             .Select(x => (x[0], x[1]));
 
@@ -34,7 +34,23 @@ public class InteractionMessage
         {
             switch (key)
             {
-                case ProcessorIdName:
+                case ProcessorIdKey:
+                    ProcessorId = value;
+                    break;
+                default:
+                    Add(key, value);
+                    break;
+            }
+        }
+    }
+
+    public InteractionMessage(IDictionary<string, string> arguments)
+    {
+        foreach (var (key, value) in arguments)
+        {
+            switch (key)
+            {
+                case ProcessorIdKey:
                     ProcessorId = value;
                     break;
                 default:
@@ -57,7 +73,7 @@ public class InteractionMessage
     public string ToArgument()
     {
         var sb = new StringBuilder();
-        sb.Append($"{ProcessorIdName}={ProcessorId}");
+        sb.Append($"{ProcessorIdKey}={ProcessorId}");
         foreach(var (key, value) in Arguments)
         {
             sb.Append(Separater);

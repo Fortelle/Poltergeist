@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Poltergeist.Automations.Components.Hooks;
+﻿using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
@@ -24,8 +23,6 @@ public class InteractionService : MacroService
 
         var args = new InteractingEventArgs(model);
         Processor.RaiseEvent(ProcessorEvent.Interacting, args);
-
-        Logger.Debug($"Passed {nameof(NotificationModel)} <{model.GetType().Name}> to UI thread.", model);
     }
 
     public async Task Interact(InteractionModel model)
@@ -40,8 +37,6 @@ public class InteractionService : MacroService
 
         var args = new InteractingEventArgs(model);
         Processor.RaiseEvent(ProcessorEvent.Interacting, args);
-
-        Logger.Debug($"Passed {nameof(InteractionModel)} <{model.GetType().Name}> to UI thread.", model);
 
         await Processor.Pause(PauseReason.WaitForInput);
     }
@@ -60,7 +55,6 @@ public class InteractionService : MacroService
         {
             throw new InvalidOperationException($"Interaction ID mismatch.");
         }
-
 
         InteractingModel = null;
 

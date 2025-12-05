@@ -3,14 +3,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.AppNotifications.Builder;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Helpers;
-using Poltergeist.Modules.App;
 using Poltergeist.Modules.Instruments;
+using Poltergeist.Modules.Interactions;
 using Poltergeist.Modules.Macros;
 using Poltergeist.UI.Controls.Instruments;
 
@@ -23,6 +24,8 @@ public partial class MacroViewModel : ObservableRecipient
     private const int MaxReportCount = 100;
     private const int UserOptionsSaveDelaySeconds = 30;
     private const int CompleteActionDelaySeconds = 1;
+    private const int ShutdownDelaySeconds = 15;
+    private const string InstanceIdKey = "macro_processor_id";
 
     public ObservableCollection<PanelViewModel> Panels { get; } = new();
 
@@ -52,7 +55,7 @@ public partial class MacroViewModel : ObservableRecipient
     public partial bool IsRunning { get; set; }
 
     [ObservableProperty]
-    public partial PanelViewModel SelectedPanel { get; set; }
+    public partial PanelViewModel? SelectedPanel { get; set; }
 
     public string? InvalidationMessage { get; }
 
@@ -308,13 +311,31 @@ public partial class MacroViewModel : ObservableRecipient
     {
         App.TryEnqueue(() =>
         {
-            var macroManager = App.GetService<MacroManager>();
-
             if (e.Result.Output.TryGetValue("complete_action", out var x) && x is CompletionAction action && action != CompletionAction.None)
             {
                 Task.Delay(TimeSpan.FromSeconds(CompleteActionDelaySeconds)).ContinueWith(_ =>
                 {
-                    App.GetService<ActionService>().Execute(action);
+                    switch (action)
+                    {
+                        case CompletionAction.ExitApplication:
+                            ApplicationHelper.Exit();
+                            break;
+                        case CompletionAction.LockScreen:
+                            SystemHelper.LockScreen();
+                            break;
+                        case CompletionAction.ShutdownSystem:
+                        case CompletionAction.RestartSystem:
+                        case CompletionAction.HibernateSystem:
+                        case CompletionAction.LogOffSystem:
+                            Shutdown(e.Reason, e.Result, action);
+                            break;
+                        case CompletionAction.RestoreApplication:
+                            ApplicationHelper.BringToFront();
+                            break;
+                        case CompletionAction.NotifyMe:
+                            Notify(e.Reason, e.Result);
+                            break;
+                    }
                 });
             }
 
@@ -325,6 +346,88 @@ public partial class MacroViewModel : ObservableRecipient
         });
 
         CleanUp();
+    }
+
+    private void Shutdown(EndReason reason, ProcessorResult result, CompletionAction action)
+    {
+        var conversationId = Guid.NewGuid().ToString();
+
+        var builder = CreateAppNotificationBuilder(reason, result)
+            .AddArgument(AppNotificationService.ConversationIdKey, conversationId)
+            .AddArgument(InstanceIdKey, Instance.InstanceId)
+            .AddText(App.Localize($"Poltergeist/Macros/Notification_{action}_message"))
+            .SetDuration(AppNotificationDuration.Long)
+            .AddButton(new AppNotificationButton(App.Localize($"Poltergeist/Macros/Notification_{action}_button"))
+                .AddArgument(AppNotificationService.ConversationIdKey, conversationId)
+                .AddArgument(InstanceIdKey, Instance.InstanceId)
+                .AddArgument("shutdown", action.ToString())
+                )
+            .AddButton(new AppNotificationButton(App.Localize($"Poltergeist/Macros/Notification_Cancel_button"))
+                .AddArgument(AppNotificationService.ConversationIdKey, conversationId)
+                .AddArgument(InstanceIdKey, Instance.InstanceId)
+                )
+            ;
+
+        var delay = new DelayHelper(TimeSpan.FromSeconds(ShutdownDelaySeconds), () =>
+        {
+            switch (action)
+            {
+                case CompletionAction.ShutdownSystem:
+                    SystemHelper.Shutdown();
+                    break;
+                case CompletionAction.RestartSystem:
+                    SystemHelper.Restart();
+                    break;
+                case CompletionAction.HibernateSystem:
+                    SystemHelper.Hibernate();
+                    break;
+                case CompletionAction.LogOffSystem:
+                    SystemHelper.LogOff();
+                    break;
+            }
+        });
+
+        PoltergeistApplication.GetService<AppNotificationService>().Show(builder, conversationId, (args) =>
+        {
+            if (args.ContainsKey("shutdown"))
+            {
+                delay.TriggerNow();
+            }
+            else
+            {
+                delay.Cancel();
+            }
+        });
+
+        delay.Start();
+    }
+
+    private void Notify(EndReason reason, ProcessorResult result)
+    {
+        var builder = CreateAppNotificationBuilder(reason, result);
+
+        PoltergeistApplication.GetService<AppNotificationService>().Show(builder);
+    }
+
+    private AppNotificationBuilder CreateAppNotificationBuilder(EndReason reason, ProcessorResult result)
+    {
+        var builder = new AppNotificationBuilder()
+            .AddText(Instance.Title + ": " + App.Localize($"Poltergeist/Macros/EndReason_{reason}"))
+            .SetAppLogoOverride(new Uri(Path.Combine(AppContext.BaseDirectory, "Poltergeist/Assets/macro_48px.png")))
+            ;
+
+        var comment = result.Report.GetValueOrDefault<string>("comment_message");
+        if (!string.IsNullOrEmpty(comment))
+        {
+            builder.AddText(comment);
+        }
+
+        if (reason != EndReason.Complete)
+        {
+            builder.SetScenario(AppNotificationScenario.Urgent);
+        }
+
+        return builder;
     }
 
     private void CleanUp()

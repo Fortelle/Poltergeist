@@ -64,7 +64,6 @@ public partial class PoltergeistApplication
         services.AddTransient<LoggingPage>();
         services.AddTransient<LoggingViewModel>();
 
-        services.AddSingleton<ActionService>();
         services.AddSingleton<MacroManager>();
         services.AddSingleton<MacroInstanceManager>();
         services.AddSingleton<MacroTemplateManager>();

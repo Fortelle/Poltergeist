@@ -237,4 +237,34 @@
   <data name="EndReason_Crushed" xml:space="preserve">
     <value>致命错误</value>
   </data>
+  <data name="CompletionNotification_Title" xml:space="preserve">
+    <value>任务完成</value>
+  </data>
+  <data name="Notification_Cancel_button" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Notification_HibernateSystem_button" xml:space="preserve">
+    <value>立即休眠</value>
+  </data>
+  <data name="Notification_HibernateSystem_message" xml:space="preserve">
+    <value>系统将在{0}秒后休眠。</value>
+  </data>
+  <data name="Notification_LogOffSystem_button" xml:space="preserve">
+    <value>立即注销</value>
+  </data>
+  <data name="Notification_LogOffSystem_message" xml:space="preserve">
+    <value>系统将在{0}秒后注销。</value>
+  </data>
+  <data name="Notification_RestartSystem_button" xml:space="preserve">
+    <value>立即重启</value>
+  </data>
+  <data name="Notification_RestartSystem_message" xml:space="preserve">
+    <value>系统将在{0}秒后重启。</value>
+  </data>
+  <data name="Notification_ShutdownSystem_button" xml:space="preserve">
+    <value>立即关机</value>
+  </data>
+  <data name="Notification_ShutdownSystem_message" xml:space="preserve">
+    <value>系统将在{0}秒后关机。</value>
+  </data>
 </root>

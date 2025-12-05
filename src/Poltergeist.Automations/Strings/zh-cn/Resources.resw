@@ -135,6 +135,12 @@
   <data name="AfterCompletion_CompletionAction_None" xml:space="preserve">
     <value>无</value>
   </data>
+  <data name="AfterCompletion_CompletionAction_NotifyMe" xml:space="preserve">
+    <value>通知我</value>
+  </data>
+  <data name="AfterCompletion_CompletionAction_RestartSystem" xml:space="preserve">
+    <value>重启</value>
+  </data>
   <data name="AfterCompletion_CompletionAction_RestoreApplication" xml:space="preserve">
     <value>回到程序</value>
   </data>

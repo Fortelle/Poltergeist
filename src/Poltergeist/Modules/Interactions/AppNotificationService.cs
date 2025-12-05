@@ -1,13 +1,18 @@
 ﻿using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using Poltergeist.Automations.Components.Interactions;
-using Poltergeist.Modules.Macros;
+using Poltergeist.Modules.App;
+using Poltergeist.Modules.Events;
 
 namespace Poltergeist.Modules.Interactions;
 
 public class AppNotificationService
 {
+    public const string ConversationIdKey = "conversation_id";
+
     private bool IsInitialized { get; set; }
+
+    private readonly Dictionary<string, Action<IDictionary<string, string>>> Handlers = new();
 
     public AppNotificationService()
     {
@@ -31,21 +36,20 @@ public class AppNotificationService
         IsInitialized = true;
     }
 
-    private static void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+    private void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
     {
-        PoltergeistApplication.TryEnqueue(() =>
+        if (args.Arguments.TryGetValue(ConversationIdKey, out var conversationId) && Handlers.TryGetValue(conversationId, out var action))
         {
-            if (args.Arguments.TryGetValue("macro", out var value))
-            {
-                var pageKey = MacroManager.GetPageKey(value);
-                PoltergeistApplication.GetService<MacroManager>().OpenPage(pageKey);
-            }
+            action.Invoke(args.Arguments);
+            Handlers.Remove(conversationId);
+        }
 
-            var msg = new InteractionMessage(args.Argument);
-            PoltergeistApplication.GetService<MacroManager>().SendMessage(msg);
-
-            PoltergeistApplication.Current.MainWindow.BringToFront();
+        PoltergeistApplication.GetService<AppEventService>().Publish(new AppNotificationReceivedEvent()
+        {
+            Arguments = args.Arguments
         });
+
+        PoltergeistApplication.Current.MainWindow.BringToFront();
     }
 
     private static void Unregister()
@@ -60,11 +64,34 @@ public class AppNotificationService
         Show(builder);
     }
 
+    public bool Show(AppNotificationBuilder builder)
+    {
+        Initialize();
+
+        var appNotification = builder.BuildNotification();
+
+        AppNotificationManager.Default.Show(appNotification);
+
+        return appNotification.Id != 0;
+    }
+
+    public bool Show(AppNotificationBuilder builder, string conversationId, Action<IDictionary<string, string>> handler)
+    {
+        Initialize();
+
+        Handlers.Add(conversationId, handler);
+
+        var appNotification = builder.BuildNotification();
+
+        AppNotificationManager.Default.Show(appNotification);
+
+        return appNotification.Id != 0;
+    }
+
     private static AppNotificationBuilder CreateBuilder(ToastModel model)
     {
         var builder = new AppNotificationBuilder()
-            .AddArgument("conversationId", model.Id)
-            .AddArgument(InteractionMessage.ProcessorIdName, model.ProcessorId)
+            .AddArgument(InteractionMessage.ProcessorIdKey, model.ProcessorId)
             ;
 
         builder.AddText(model.Title);
@@ -80,16 +107,4 @@ public class AppNotificationService
 
         return builder;
     }
-
-    private bool Show(AppNotificationBuilder builder)
-    {
-        Initialize();
-
-        var appNotification = builder.BuildNotification();
-
-        AppNotificationManager.Default.Show(appNotification);
-
-        return appNotification.Id != 0;
-    }
-
 }

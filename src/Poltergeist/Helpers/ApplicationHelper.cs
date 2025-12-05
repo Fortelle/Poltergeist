@@ -37,6 +37,18 @@ public static class ApplicationHelper
         PoltergeistApplication.Current.MainWindow.BringToFront();
     }
 
+    public static bool IsMinimize()
+    {
+        var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
+        return WindowUtil.IsMinimized(hwnd);
+    }
+
+    public static bool IsForeground()
+    {
+        var hwnd = PoltergeistApplication.Current.MainWindow.GetWindowHandle();
+        return WindowUtil.IsForeground(hwnd);
+    }
+
     public static void Restart()
     {
         Microsoft.Windows.AppLifecycle.AppInstance.Restart("");

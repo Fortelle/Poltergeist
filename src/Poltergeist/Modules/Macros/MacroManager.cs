@@ -35,6 +35,7 @@ public class MacroManager : ServiceBase
         GlobalEnvironments = GetGlobalEnvironments();
 
         eventService.Subscribe<AppWindowClosingEvent>(OnAppWindowClosing);
+        eventService.Subscribe<AppNotificationReceivedEvent>(OnAppNotificationReceived);
     }
 
     public bool OpenPage(MacroInstance instance)
@@ -329,6 +330,21 @@ public class MacroManager : ServiceBase
             {
                 InRunningProcessors = InRunningProcessors.Keys.Select(x => x.Macro.Key).ToArray(),
             });
+        }
+    }
+
+    private void OnAppNotificationReceived(AppNotificationReceivedEvent e)
+    {
+        if (e.Arguments.TryGetValue("macroInstanceId", out var value))
+        {
+            var pageKey = GetPageKey(value);
+            OpenPage(pageKey);
+        }
+
+        if (e.Arguments.ContainsKey(InteractionMessage.ProcessorIdKey))
+        {
+            var msg = new InteractionMessage(e.Arguments);
+            SendMessage(msg);
         }
     }
 

@@ -135,11 +135,17 @@
   <data name="AfterCompletion_CompletionAction_None" xml:space="preserve">
     <value>None</value>
   </data>
+  <data name="AfterCompletion_CompletionAction_NotifyMe" xml:space="preserve">
+    <value>Notify me</value>
+  </data>
+  <data name="AfterCompletion_CompletionAction_RestartSystem" xml:space="preserve">
+    <value>Restart system</value>
+  </data>
   <data name="AfterCompletion_CompletionAction_RestoreApplication" xml:space="preserve">
     <value>Restore application</value>
   </data>
   <data name="AfterCompletion_CompletionAction_ShutdownSystem" xml:space="preserve">
-    <value>Shutdown system</value>
+    <value>Shut down system</value>
   </data>
   <data name="AfterCompletion_Option_Action" xml:space="preserve">
     <value>Action</value>

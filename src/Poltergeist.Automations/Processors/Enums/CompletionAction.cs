@@ -9,9 +9,10 @@ public enum CompletionAction
     LockScreen,
 
     ShutdownSystem,
+    RestartSystem,
     HibernateSystem,
     LogOffSystem,
 
+    NotifyMe,
     //todo:RunMacro,
-    //todo:Toast
 }

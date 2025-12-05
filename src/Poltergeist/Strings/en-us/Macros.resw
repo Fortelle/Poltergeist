@@ -237,4 +237,34 @@
   <data name="EndReason_Crushed" xml:space="preserve">
     <value>Crushed</value>
   </data>
+  <data name="CompletionNotification_Title" xml:space="preserve">
+    <value>Macro Complete</value>
+  </data>
+  <data name="Notification_Cancel_button" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Notification_HibernateSystem_button" xml:space="preserve">
+    <value>Hibernate now</value>
+  </data>
+  <data name="Notification_HibernateSystem_message" xml:space="preserve">
+    <value>The system will hibernate in {0} seconds.</value>
+  </data>
+  <data name="Notification_LogOffSystem_button" xml:space="preserve">
+    <value>Log off now</value>
+  </data>
+  <data name="Notification_LogOffSystem_message" xml:space="preserve">
+    <value>The system will log off in {0} seconds.</value>
+  </data>
+  <data name="Notification_RestartSystem_button" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Notification_RestartSystem_message" xml:space="preserve">
+    <value>The system will restart in {0} seconds.</value>
+  </data>
+  <data name="Notification_ShutdownSystem_button" xml:space="preserve">
+    <value>Shut down now</value>
+  </data>
+  <data name="Notification_ShutdownSystem_message" xml:space="preserve">
+    <value>The system will shut down in {0} seconds.</value>
+  </data>
 </root>

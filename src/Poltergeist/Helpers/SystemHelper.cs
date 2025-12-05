@@ -19,7 +19,7 @@ public static class SystemHelper
         Process.Start(new ProcessStartInfo()
         {
             FileName = "shutdown",
-            Arguments = "/s /t 30 /d p:4:1",
+            Arguments = "/s /d p:4:1",
             CreateNoWindow = true,
         });
     }

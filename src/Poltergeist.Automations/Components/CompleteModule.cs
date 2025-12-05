@@ -46,8 +46,12 @@ public class CompleteModule : MacroModule
         var completeAction = hook.Processor.Options.GetValueOrDefault<CompletionAction>("aftercompletion.action");
         var completeAllowerror = hook.Processor.Options.GetValueOrDefault<bool>("aftercompletion.allowerror");
         var completeMinimumTime = hook.Processor.Options.GetValueOrDefault<TimeOnly>("aftercompletion.minimumtime");
-
-        if (hook.Reason == EndReason.Interrupted)
+        
+        if (hook.Reason == EndReason.Crushed)
+        {
+            completeAction = CompletionAction.None;
+        }
+        else if (hook.Reason == EndReason.Interrupted || hook.Reason == EndReason.Terminated)
         {
             completeAction = CompletionAction.None;
         }
@@ -59,15 +63,10 @@ public class CompleteModule : MacroModule
         {
             completeAction = CompletionAction.None;
         }
-        else if (hook.Reason != EndReason.Complete)
-        {
-            completeAction = CompletionAction.None;
-        }
 
         if (completeAction != CompletionAction.None)
         {
             hook.OutputStorage.TryAdd("complete_action", completeAction);
         }
     }
-
 }
