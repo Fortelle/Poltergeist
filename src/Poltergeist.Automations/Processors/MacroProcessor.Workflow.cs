@@ -178,6 +178,7 @@ public partial class MacroProcessor
         services.AddSingleton<LocalStorageService>();
         services.AddSingleton<GlobalStorageService>();
         services.AddSingleton<JournalService>();
+        services.AddSingleton<LabelService>();
 
         if (Environments.GetValueOrDefault<bool>("is_development"))
         {
@@ -193,6 +194,7 @@ public partial class MacroProcessor
         services.AddTransient<ProgressTileInstrument>();
         services.AddTransient<ImageInstrument>();
         services.AddTransient<JournalInstrument>();
+        services.AddTransient<LabelInstrument>();
 
         services.AddTransient<FlowBuilderService>();
 

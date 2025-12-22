@@ -118,6 +118,7 @@ public partial class PoltergeistApplication
         instrumentManager.AddInfo<ITileInstrumentModel, TileInstrumentView, TileInstrumentViewModel>();
         instrumentManager.AddInfo<ImageInstrument, ImageInstrumentView, ImageInstrumentViewModel>();
         instrumentManager.AddInfo<JournalInstrument, JournalInstrumentView, JournalInstrumentViewModel>();
+        instrumentManager.AddInfo<LabelInstrument, LabelInstrumentView, LabelInstrumentViewModel>();
     }
 
     private static void ConfigureSettings()
