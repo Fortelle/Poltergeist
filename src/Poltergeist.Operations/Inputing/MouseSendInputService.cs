@@ -373,5 +373,5 @@ public class MouseSendInputService : MacroService
         Logger.Trace($"Delayed for {timeout}ms.");
     }
 
-    private void Delay(TimeSpanRange range) => Delay(TimerService.GetTimeout(range));
+    private void Delay(TimeSpanRange range) => Delay(TimerService.GetTimeout(new RangeDelay(range)));
 }

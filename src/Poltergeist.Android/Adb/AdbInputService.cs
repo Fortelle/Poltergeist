@@ -65,7 +65,7 @@ public class AdbInputService : MacroService
 
         var targetPoint = GetTargetPoint(position, options);
         var longPressTime = options?.LongPressTime ?? DefaultOptions?.LongPressTime ?? TimeSpanRange.FromMilliseconds(3000, 3000);
-        var duration = TimerService.GetTimeout(longPressTime);
+        var duration = TimerService.GetTimeout(new RangeDelay(longPressTime));
 
         AdbService.Shell($"input swipe {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {targetPoint.ToClient.X} {targetPoint.ToClient.Y} {duration}");
 
@@ -95,7 +95,7 @@ public class AdbInputService : MacroService
         var beginPoint = GetTargetPoint(beginPosition, options);
         var endPoint = GetTargetPoint(endPosition, options);
         var swipeTime = options?.SwipeTime ?? DefaultOptions?.SwipeTime ?? default;
-        var duration = TimerService.GetTimeout(swipeTime);
+        var duration = TimerService.GetTimeout(new RangeDelay(swipeTime));
 
         if (duration == 0)
         {
@@ -134,7 +134,7 @@ public class AdbInputService : MacroService
         var beginPoint = GetTargetPoint(beginPosition, options);
         var endPoint = GetTargetPoint(endPosition, options);
         var swipeTime = options?.SwipeTime ?? DefaultOptions?.SwipeTime ?? default;
-        var duration = TimerService.GetTimeout(swipeTime);
+        var duration = TimerService.GetTimeout(new RangeDelay(swipeTime));
 
         if (duration == 0)
         {

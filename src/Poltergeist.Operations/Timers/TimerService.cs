@@ -21,146 +21,133 @@ public class TimerService : MacroService
         DefaultOptions = options.Value;
     }
 
-    public void Delay(int milliseconds, DelayOptions? options = null)
+    public void Delay(DelayToken token, DelayOptions? options = null)
     {
-        Logger.Trace($"Executing delay: {milliseconds}ms.", new { options });
+        Logger.Trace($"Executing delay.", new { token, options });
         Logger.IncreaseIndent();
 
-        var timeout = GetTimeout(milliseconds, options);
-        DoDelay(timeout);
-
-        Logger.DecreaseIndent();
-    }
-
-    public void Delay(int min, int max, DelayOptions? options = null)
-    {
-        Logger.Trace($"Executing delay: {min}-{max}ms.", new { options });
-        Logger.IncreaseIndent();
-
-        var timeout = GetTimeout(min, max, options);
-        DoDelay(timeout);
-
-        Logger.DecreaseIndent();
-    }
-
-    public void Delay(TimeSpan timespan, DelayOptions? options = null) => Delay((int)timespan.TotalMilliseconds, options);
-
-    public void Delay(TimeSpanRange range, DelayOptions? options = null) => Delay((int)range.Start.TotalMilliseconds, (int)range.End.TotalMilliseconds, options);
-
-    public async Task DelayAsync(int milliseconds, DelayOptions? options = null)
-    {
-        Logger.Trace($"Executing delay: {milliseconds}ms.", new { options });
-        Logger.IncreaseIndent();
-
-        var timeout = GetTimeout(milliseconds, options);
-        await DoDelayAsync(timeout);
-
-        Logger.DecreaseIndent();
-    }
-
-    public async Task DelayAsync(int min, int max, DelayOptions? options = null)
-    {
-        Logger.Trace($"Executing delay: {min}-{max}ms.", new { options });
-        Logger.IncreaseIndent();
-
-        var timeout = GetTimeout(min, max, options);
-        await DoDelayAsync(timeout);
-
-        Logger.DecreaseIndent();
-    }
-
-    public async Task DelayAsync(TimeSpan timespan, DelayOptions? options = null) => await DelayAsync((int)timespan.TotalMilliseconds, options);
-
-    public async Task DelayAsync(TimeSpanRange range, DelayOptions? options = null) => await DelayAsync((int)range.Start.TotalMilliseconds, (int)range.End.TotalMilliseconds, options);
-
-    private void DoDelay(int timeout)
-    {
+        var timeout = GetTimeout(token, options);
         if (timeout > 0)
         {
             Thread.Sleep(timeout);
+            Logger.Debug($"Delayed for {timeout}ms.");
         }
 
-        Logger.Debug($"Delayed for {timeout}ms.");
-
         Processor.ThrowIfInterrupted();
+
+        Logger.DecreaseIndent();
     }
 
-    private async Task DoDelayAsync(int timeout)
+    public async Task DelayAsync(DelayToken token, DelayOptions? options = null)
     {
+        Logger.Trace($"Executing delay.", new { token, options });
+        Logger.IncreaseIndent();
+
+        var timeout = GetTimeout(token, options);
         if (timeout > 0)
         {
             await Task.Delay(timeout);
+            Logger.Debug($"Delayed for {timeout}ms.");
         }
-
-        Logger.Debug($"Delayed for {timeout}ms.");
 
         Processor.ThrowIfInterrupted();
+
+        Logger.DecreaseIndent();
     }
 
-    public int GetTimeout(int milliseconds, DelayOptions? options)
+    public int GetTimeout(DelayToken token, DelayOptions? options = null)
     {
+        return token switch
+        {
+            PreciseDelay preciseDelay => GetTimeoutInternal(preciseDelay),
+            CoarseDelay coarseDelay => GetTimeoutInternal(coarseDelay, options),
+            RangeDelay rangeDelay => GetTimeoutInternal(rangeDelay, options),
+            _ => throw new NotSupportedException(),
+        };
+    }
+
+    private int GetTimeoutInternal(PreciseDelay preciseDelay)
+    {
+        var milliseconds = preciseDelay.Milliseconds;
+        Logger.Trace($"Calculated delay timeout: {milliseconds}ms.", new { preciseDelay });
+        return milliseconds;
+    }
+
+    private int GetTimeoutInternal(CoarseDelay coarseDelay, DelayOptions? options)
+    {
+        var milliseconds = coarseDelay.Milliseconds;
+        if (milliseconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(coarseDelay), "Timeout cannot be negative.");
+        }
+
         if (milliseconds == 0)
         {
-            Logger.Trace($"Calculated delay timeout: {milliseconds}ms.", new { milliseconds });
+            Logger.Trace($"Calculated delay timeout: {milliseconds}ms.", new { coarseDelay });
             return milliseconds;
         }
 
-        var floating = options?.Floating ?? DefaultOptions?.Floating ?? false;
+        var floating = coarseDelay.Floating ?? options?.Floating ?? DefaultOptions?.Floating ?? false;
         if (!floating)
         {
-            Logger.Trace($"Calculated delay timeout: {milliseconds}ms.", new { floating });
+            Logger.Trace($"Calculated delay timeout: {milliseconds}ms.", new { coarseDelay, floating });
             return milliseconds;
         }
 
-        var (rateMin, rateMax) = options?.FloatingRange ?? DefaultOptions?.FloatingRange ?? (1, 1);
-        var distribution = options?.FloatDistribution ?? DefaultOptions?.FloatDistribution ?? RangeDistributionType.Uniform;
-
+        var (rateMin, rateMax) = coarseDelay.FloatingRange ?? options?.FloatingRange ?? DefaultOptions?.FloatingRange ?? (1, 1);
         var min = milliseconds * rateMin;
         var max = milliseconds * rateMax;
-
+        var distribution = coarseDelay.FloatDistribution ?? options?.FloatDistribution ?? DefaultOptions?.FloatDistribution ?? RangeDistributionType.Uniform;
         var sample = DistributionService.NextDouble(distribution);
-        var value = (int)((max - min) * sample + min);
+        var timeout = (int)((max - min) * sample + min);
 
-        Logger.Trace($"Calculated delay timeout: {value}ms.", new { milliseconds, rateMin, rateMax, distribution, sample });
-        return value;
+        Logger.Trace($"Calculated delay timeout: {timeout}ms.", new { milliseconds, rateMin, rateMax, distribution, sample });
+        return timeout;
     }
 
-    public int GetTimeout(int min, int max, DelayOptions? options)
+    private int GetTimeoutInternal(RangeDelay rangeDelay, DelayOptions? options)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(min, 0);
-        ArgumentOutOfRangeException.ThrowIfLessThan(max, 0);
-        ArgumentOutOfRangeException.ThrowIfLessThan(max, min);
+        var min = rangeDelay.StartMilliseconds;
+        var max = rangeDelay.EndMilliseconds;
+
+        if (min < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rangeDelay), "Timeout cannot be negative.");
+        }
+        if (max < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rangeDelay), "Timeout cannot be negative.");
+        }
+        if (max < min)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rangeDelay), "The end of the range cannot be less than the start of the range.");
+        }
 
         if (min == 0 && max == 0)
         {
-            Logger.Trace($"Calculated delay timeout: {0}ms.", new { min, max });
+            Logger.Trace($"Calculated delay timeout: {0}ms.", new { rangeDelay });
             return 0;
         }
 
         if (min == max)
         {
-            Logger.Trace($"Calculated delay timeout: {min}ms.", new { min, max });
+            Logger.Trace($"Calculated delay timeout: {min}ms.", new { rangeDelay });
             return min;
         }
 
-        var floating = options?.Floating ?? DefaultOptions?.Floating ?? false;
+        var floating = rangeDelay.Floating ?? options?.Floating ?? DefaultOptions?.Floating ?? false;
         if (!floating)
         {
-            var avg = (max - min) / 2;
-            Logger.Trace($"Calculated delay timeout: {avg}ms.", new { floating });
+            var avg = (max + min) / 2;
+            Logger.Trace($"Calculated delay timeout: {avg}ms.", new { rangeDelay, floating });
             return avg;
         }
 
-        var distribution = options?.RangeDistribution ?? DefaultOptions?.RangeDistribution ?? RangeDistributionType.Uniform;
-
+        var distribution = rangeDelay.RangeDistribution ?? options?.RangeDistribution ?? DefaultOptions?.RangeDistribution ?? RangeDistributionType.Uniform;
         var sample = DistributionService.NextDouble(distribution);
-        var value = (int)((max - min) * sample + min);
+        var timeout = (int)((max - min) * sample + min);
 
-        Logger.Trace($"Calculated delay timeout: {value}ms.", new { min, max, distribution, sample });
-        return value;
+        Logger.Trace($"Calculated delay timeout: {timeout}ms.", new { rangeDelay, distribution, sample });
+        return timeout;
     }
-
-    public int GetTimeout(TimeSpan timespan, DelayOptions? options = null) => GetTimeout((int)timespan.TotalMilliseconds, options);
-
-    public int GetTimeout(TimeSpanRange range, DelayOptions? options = null) => GetTimeout((int)range.Start.TotalMilliseconds, (int)range.End.TotalMilliseconds, options);
 }

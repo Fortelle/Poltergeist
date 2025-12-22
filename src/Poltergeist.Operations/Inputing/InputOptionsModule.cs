@@ -16,7 +16,6 @@ public class InputOptionsModule : MacroModule
         {
             options.Floating = true;
             options.FloatingRange = (1d, 1.5d);
-            options.ApplyMinimalDelay = false;
             options.RangeDistribution = RangeDistributionType.Uniform;
             options.FloatDistribution = RangeDistributionType.Uniform;
         });

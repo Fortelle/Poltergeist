@@ -18,7 +18,7 @@ public readonly struct TimeSpanRange : IEquatable<TimeSpanRange>
         Start = start;
         End = end;
     }
-        
+
     public TimeSpanRange(TimeSpan start)
     {
         Start = start;
@@ -55,7 +55,10 @@ public readonly struct TimeSpanRange : IEquatable<TimeSpanRange>
         return !(left == right);
     }
 
-    public static TimeSpanRange FromMilliseconds(int milliseconds1, int milliseconds2) => new(TimeSpan.FromMilliseconds(milliseconds1), TimeSpan.FromMilliseconds(milliseconds2));
-
-    public static TimeSpanRange FromSeconds(int seconds1, int seconds2) => new(TimeSpan.FromSeconds(seconds1), TimeSpan.FromSeconds(seconds2));
+    public static TimeSpanRange FromDays(int days1, int days2) => new(TimeSpan.FromDays(days1), TimeSpan.FromDays(days2));
+    public static TimeSpanRange FromHours(int hours1, int hours2) => new(TimeSpan.FromHours(hours1), TimeSpan.FromHours(hours2));
+    public static TimeSpanRange FromMinutes(long minutes1, long minutes2) => new(TimeSpan.FromMinutes(minutes1), TimeSpan.FromMinutes(minutes2));
+    public static TimeSpanRange FromSeconds(long seconds1, long seconds2) => new(TimeSpan.FromSeconds(seconds1), TimeSpan.FromSeconds(seconds2));
+    public static TimeSpanRange FromMilliseconds(long milliseconds1, long milliseconds2) => new(TimeSpan.FromMilliseconds(milliseconds1), TimeSpan.FromMilliseconds(milliseconds2));
+    public static TimeSpanRange FromMicroseconds(long microseconds1, long microseconds2) => new(TimeSpan.FromMicroseconds(microseconds1), TimeSpan.FromMicroseconds(microseconds2));
 }

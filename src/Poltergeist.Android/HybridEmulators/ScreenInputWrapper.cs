@@ -36,7 +36,8 @@ public class ScreenInputWrapper : MacroService, IHybridInputService
     public Point LongTap(PositionToken position)
     {
         var pointOnWorkspace = MouseSendInputService.MoveTo(position);
-        TimerService.GetTimeout(AdbDefaultOptions?.LongPressTime ?? TimeSpanRange.FromMilliseconds(3000, 3000));
+        var duration = AdbDefaultOptions?.LongPressTime ?? TimeSpanRange.FromMilliseconds(3000, 3000);
+        TimerService.Delay(new RangeDelay(duration));
         MouseSendInputService.Click(MouseButtons.Left);
         return pointOnWorkspace;
     }

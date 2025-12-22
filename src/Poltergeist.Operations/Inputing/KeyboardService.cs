@@ -142,5 +142,5 @@ public abstract class KeyboardService : MacroService
         Logger.Trace($"Delayed for {timeout}ms.");
     }
 
-    protected void Delay(TimeSpanRange range) => Delay(TimerService.GetTimeout(range));
+    protected void Delay(TimeSpanRange range) => Delay(TimerService.GetTimeout(new RangeDelay(range)));
 }
