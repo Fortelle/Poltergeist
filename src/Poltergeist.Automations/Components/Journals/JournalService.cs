@@ -28,6 +28,39 @@ public class JournalService : MacroService
         JournalInstrument!.Add(text);
     }
 
+    public void Append(string text)
+    {
+        if (JournalInstrument is null)
+        {
+            CreateInstrument();
+        }
+
+        if (JournalInstrument!.Lines.Count == 0)
+        {
+            JournalInstrument.Add(text);
+            return;
+        }
+
+        var lastline = JournalInstrument.Lines[^1];
+        JournalInstrument!.Lines[^1] = lastline + text;
+    }
+
+    public void OverwriteLastLine(string text)
+    {
+        if (JournalInstrument is null)
+        {
+            CreateInstrument();
+        }
+
+        if (JournalInstrument!.Lines.Count == 0)
+        {
+            JournalInstrument.Add(text);
+            return;
+        }
+
+        JournalInstrument!.Lines[^1] = text;
+    }
+
     public void Clear()
     {
         if (JournalInstrument is null)
