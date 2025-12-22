@@ -46,20 +46,22 @@ public abstract partial class CapturingProvider : MacroService
         Logger.Trace($"Capturing the whole workspace.");
         Logger.IncreaseIndent();
 
+        var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
+
         Bitmap imageOnWorkspace;
 
-        if (options?.WorkspaceSnapshot is not null)
+        if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
             imageOnWorkspace = new(options.WorkspaceSnapshot);
             Logger.Trace($"Copied an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.");
         }
-        else if (options?.SnapshotKey is not null)
+        else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
             imageOnWorkspace = new(snapshot);
             Logger.Trace($"Copied an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
-        else if (CurrentSnapshotKey is not null)
+        else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
             imageOnWorkspace = new(snapshot);
@@ -112,21 +114,22 @@ public abstract partial class CapturingProvider : MacroService
         Logger.IncreaseIndent();
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
+        var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
 
         Bitmap imageOnWorkspace;
 
-        if (options?.WorkspaceSnapshot is not null)
+        if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
             imageOnWorkspace = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectangleOnWorkspace);
         }
-        else if (options?.SnapshotKey is not null)
+        else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
             imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
-        else if (CurrentSnapshotKey is not null)
+        else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
             imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
@@ -186,21 +189,22 @@ public abstract partial class CapturingProvider : MacroService
         Logger.IncreaseIndent();
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
+        var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
 
         Bitmap[] imagesOnWorkspace;
 
-        if (options?.WorkspaceSnapshot is not null)
+        if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
             imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect))];
             Logger.Trace($"Cropped images from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectanglesOnWorkspace);
         }
-        else if (options?.SnapshotKey is not null)
+        else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
             imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
         }
-        else if (CurrentSnapshotKey is not null)
+        else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
             imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];

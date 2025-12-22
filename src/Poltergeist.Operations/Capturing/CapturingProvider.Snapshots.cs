@@ -12,32 +12,49 @@ public partial class CapturingProvider
 
     public string TakeSnapshot()
     {
-        var snapshotKey = Guid.NewGuid().ToString();
-        TakeSnapshot(snapshotKey);
-        return snapshotKey;
+        return TakeSnapshotInternal(null, false);
     }
 
     public void TakeSnapshot(string snapshotKey)
     {
-        ReleaseSnapshot(snapshotKey);
-
-        var snapshotImage = Capture();
-        CachedSnapshots.Add(snapshotKey, snapshotImage);
-
-        Logger.Debug($"Cached snapshot \"{snapshotKey}\".");
+        TakeSnapshotInternal(snapshotKey, false);
     }
 
     public string TakeAndSwitchToSnapshot()
     {
-        var snapshotName = TakeSnapshot();
-        SwitchToSnapshot(snapshotName);
-        return snapshotName;
+        return TakeSnapshotInternal(null, true);
     }
 
     public void TakeAndSwitchToSnapshot(string snapshotKey)
     {
-        TakeSnapshot(snapshotKey);
-        SwitchToSnapshot(snapshotKey);
+        TakeSnapshotInternal(snapshotKey, true);
+    }
+
+    private string TakeSnapshotInternal(string? snapshotKey, bool switchto)
+    {
+        if (string.IsNullOrEmpty(snapshotKey))
+        {
+            snapshotKey = Guid.NewGuid().ToString();
+        }
+        else if (CachedSnapshots.TryGetValue(snapshotKey, out var oldSnapshot))
+        {
+            oldSnapshot.Dispose();
+            CachedSnapshots.Remove(snapshotKey);
+
+            Logger.Debug($"Released the old snapshot \"{snapshotKey}\".");
+        }
+
+        var snapshotImage = Capture(new CapturingOptions() { IgnoresSnapshot = true });
+        CachedSnapshots.Add(snapshotKey, snapshotImage);
+
+        Logger.Debug($"Cached snapshot \"{snapshotKey}\".");
+
+        if (switchto)
+        {
+            SwitchToSnapshot(snapshotKey);
+        }
+
+        return snapshotKey;
     }
 
     public void ReleaseSnapshot(string snapshotKey)
@@ -58,7 +75,7 @@ public partial class CapturingProvider
         }
     }
 
-    public void ReleaseCurrentSnapshot()
+    public void ReleaseSnapshot()
     {
         if (string.IsNullOrEmpty(CurrentSnapshotKey))
         {
