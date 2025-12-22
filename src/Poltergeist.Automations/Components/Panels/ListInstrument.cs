@@ -162,8 +162,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
         item.Subtext ??= template.Subtext;
         item.Progress ??= template.Progress;
         item.Color ??= template.Color;
-        item.Glyph ??= template.Glyph;
-        item.Emoji ??= template.Emoji;
+        item.Icon ??= template.Icon;
         item.Buttons ??= template.Buttons;
         item.TemplateKey ??= template.TemplateKey;
     }

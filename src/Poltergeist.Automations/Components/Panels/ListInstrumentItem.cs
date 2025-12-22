@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Structures.Colors;
+﻿using Poltergeist.Automations.Structures;
+using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;
 
@@ -16,8 +17,7 @@ public class ListInstrumentItem
     public double? Progress { get; set; }
 
     public string? TemplateKey { get; set; }
-    public string? Glyph { get; set; }
-    public string? Emoji { get; set; }
+    public IconInfo? Icon { get; set; }
     public ThemeColor? Color { get; set; }
 
     public string? InstrumentKey { get; set; }

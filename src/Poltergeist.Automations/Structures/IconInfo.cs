@@ -26,7 +26,7 @@ public class IconInfo
         {
             Emoji = value;
         }
-        else if (runes.Length >= 1 && (runes[0].Value is >= 0xE700 and < 0xF8FF))
+        else if (runes.Length >= 1 && IsGlyph(runes[0]))
         {
             Glyph = value;
         }
@@ -40,4 +40,44 @@ public class IconInfo
     {
         return r.Value is (>= 0x1F300 and <= 0x1FFFF) or (>= 0x2300 and <= 0x27FF);
     }
+
+    public static bool IsGlyph(Rune r)
+    {
+        return r.Value is (>= 0xE700 and < 0xF8FF);
+    }
+
+    public static IconInfo FromUri(string uri)
+    {
+        return new IconInfo()
+        {
+            Uri = uri
+        };
+    }
+
+    public static IconInfo FromGlyph(string glyph)
+    {
+        return new IconInfo()
+        {
+            Glyph = glyph
+        };
+    }
+
+    public static IconInfo FromEmoji(string emoji)
+    {
+        return new IconInfo()
+        {
+            Emoji = emoji
+        };
+    }
+
+    public static IconInfo FromText(string text)
+    {
+        return new IconInfo()
+        {
+            Text = text
+        };
+    }
+
+    public static implicit operator IconInfo(string value) => new(value);
+
 }

@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:Poltergeist.UI.Controls"
     mc:Ignorable="d">
 
     <ItemsControl
@@ -54,19 +55,13 @@
                                 <RowDefinition Height="auto" MinHeight="48" />
                             </Grid.RowDefinitions>
 
-                            <FontIcon
+                            <controls:IconControl
                                 Grid.Column="0"
                                 VerticalAlignment="Center" 
                                 HorizontalAlignment="Center"
-                                Glyph="{Binding Glyph, Mode=OneTime}"
+                                FontSize="24"
+                                Icon="{Binding Icon, Mode=OneTime}"
                                 Foreground="{Binding Foreground, Mode=OneTime}" 
-                                />
-                            <FontIcon
-                                Grid.Column="0"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Glyph="{Binding Emoji, Mode=OneTime}"
-                                FontFamily='Segoe UI Emoji'
                                 />
 
                             <TextBlock 

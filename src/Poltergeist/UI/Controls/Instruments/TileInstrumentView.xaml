@@ -6,58 +6,42 @@
     xmlns:local="using:Poltergeist.UI.Controls.Instruments"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Poltergeist.UI.Controls"
     x:Name="TileInstrumentUserControl"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    >
 
-    <ItemsControl
-        ItemsSource="{x:Bind ViewModel.Items}"
+    <ItemsRepeater
+        ItemsSource="{x:Bind ViewModel.Items, Mode=OneTime}"
         >
-        <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-                <ItemsWrapGrid
-                    Orientation="Horizontal"
-                    />
-            </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
+        <ItemsRepeater.Layout>
+            <UniformGridLayout
+                Orientation="Horizontal"
+                MinItemHeight="{x:Bind ViewModel.IconHeight, Mode=OneTime}"
+                MinItemWidth="{x:Bind ViewModel.IconWidth, Mode=OneTime}"
+                MinRowSpacing="4"
+                MinColumnSpacing="4"
+                />
+        </ItemsRepeater.Layout>
+        <ItemsRepeater.ItemTemplate>
             <DataTemplate>
                 <Border
-                    BorderBrush="{Binding Foreground, Mode=OneTime}"
-                    BorderThickness="0"
-                    Background="#DDDDDD"
-                    Margin="4"
+                    Background="{Binding Background, Mode=OneTime, TargetNullValue=#DDDDDD}"
                     CornerRadius="4"
-                    Width="{Binding ViewModel.IconWidth, ElementName=TileInstrumentUserControl, Mode=OneTime}"
-                    Height="{Binding ViewModel.IconHeight, ElementName=TileInstrumentUserControl, Mode=OneTime}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"
                     ToolTipService.ToolTip="{Binding Tooltip, Mode=OneTime}"
                     >
-                    <Border
-                        Background="{Binding Background, Mode=OneTime}"
+                    <controls:IconControl
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        Foreground="{Binding Foreground, Mode=OneTime}" 
+                        FontSize="{Binding ViewModel.FontSize, ElementName=TileInstrumentUserControl, Mode=OneTime}"
+                        Icon="{Binding Icon, Mode=OneTime}"
                         >
-                        <Grid>
-                            <!-- TODO: selector -->
-                            <FontIcon
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Glyph="{Binding Glyph, Mode=OneTime}"
-                                Foreground="{Binding Foreground, Mode=OneTime}" 
-                                />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Text="{Binding Text, Mode=OneTime}"
-                                Foreground="{Binding Foreground, Mode=OneTime}" 
-                                />
-                            <FontIcon
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Glyph="{Binding Emoji, Mode=OneTime}"
-                                FontFamily='Segoe UI Emoji'
-                                />
-                        </Grid>
-                    </Border>
+                    </controls:IconControl>
                 </Border>
             </DataTemplate>
-        </ItemsControl.ItemTemplate>
-    </ItemsControl>
+        </ItemsRepeater.ItemTemplate>
+    </ItemsRepeater>
 </UserControl>

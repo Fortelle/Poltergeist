@@ -1,7 +1,4 @@
-﻿using Microsoft.UI.Xaml.Media;
-using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Structures.Colors;
-using Poltergeist.Helpers;
+﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Models;
 
 namespace Poltergeist.UI.Controls.Instruments;
@@ -11,8 +8,12 @@ public class TileInstrumentViewModel : IInstrumentViewModel
     public const int DefaultIconSize = 48;
 
     public string? Title { get; set; }
+
     public int IconWidth { get; set; }
+
     public int IconHeight { get; set; }
+
+    public double FontSize { get; set; }
 
     public SynchronizableCollection<TileInstrumentItem, TileInstrumentItemViewModel> Items { get; set; }
 
@@ -21,6 +22,7 @@ public class TileInstrumentViewModel : IInstrumentViewModel
         Title = model.Title;
         IconWidth = model.IconWidth ?? model.IconSize ?? DefaultIconSize;
         IconHeight = model.IconHeight ?? model.IconSize ?? DefaultIconSize;
+        FontSize = Math.Min(IconWidth, IconHeight) / 2;
 
         Items = new(model.Items, ModelToViewModel, PoltergeistApplication.Current.DispatcherQueue);
     }
@@ -33,12 +35,6 @@ public class TileInstrumentViewModel : IInstrumentViewModel
         }
 
         var vm = new TileInstrumentItemViewModel(item);
-
-        if (item.Color is not null && ThemeColors.Colors.TryGetValue(item.Color.Value, out var colorset))
-        {
-            vm.Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
-            vm.Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
-        }
 
         return vm;
     }

@@ -1,5 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
@@ -33,7 +34,7 @@ public class ListInstrumentExample : BasicMacro
                     instrument.Add(new()
                     {
                         Color = ThemeColor.Gray,
-                        Glyph = "\uE9AE",
+                        Icon = IconInfo.FromGlyph("\uE9AE"),
                         Text = $"Step {i + 1}"
                     });
                 }
@@ -43,13 +44,13 @@ public class ListInstrumentExample : BasicMacro
                     instrument.Update(i, new()
                     {
                         Color = ThemeColor.Yellow,
-                        Glyph = "\uF16A"
+                        Icon = IconInfo.FromGlyph("\uF16A")
                     });
                     Thread.Sleep(duration);
                     instrument.Update(i, new()
                     {
                         Color = ThemeColor.Green,
-                        Glyph = "\uE930"
+                        Icon = IconInfo.FromGlyph("\uE930")
                     });
                 }
             }
@@ -58,10 +59,10 @@ public class ListInstrumentExample : BasicMacro
                 var instrument = dashboard.Create<ListInstrument>(gi =>
                 {
                     gi.Title = "Using templates:";
-                    gi.Templates.Add("idle", new() { Color = ThemeColor.Gray, Glyph = "\uE9AE" });
-                    gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Glyph = "\uF16A" });
-                    gi.Templates.Add("success", new() { Color = ThemeColor.Green, Glyph = "\uE930" });
-                    gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Glyph = "\uEA39" });
+                    gi.Templates.Add("idle", new() { Color = ThemeColor.Gray, Icon = IconInfo.FromGlyph("\uE9AE") });
+                    gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uF16A") });
+                    gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") });
+                    gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") });
                 });
 
                 for (var i = 0; i < count; i++)

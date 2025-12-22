@@ -14,10 +14,8 @@ public class ProgressTileInstrumentItem : TileInstrumentItem
     public ProgressTileInstrumentItem(ProgressInstrumentInfo info)
     {
         TemplateKey = info.Status?.ToString();
-        Text = info.Text;
         Tooltip = info.Tooltip;
-        Glyph = info.Glyph;
-        Emoji = info.Emoji;
+        Icon = info.Icon;
         Color = info.Color;
     }
 }

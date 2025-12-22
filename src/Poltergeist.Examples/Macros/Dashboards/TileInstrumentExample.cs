@@ -1,5 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
@@ -36,13 +37,13 @@ public class TileInstrumentExample : BasicMacro
                     instrument.Update(i, new()
                     {
                         Color = ThemeColor.Yellow,
-                        Glyph = "\uF16A"
+                        Icon = IconInfo.FromGlyph("\uF16A")
                     });
                     Thread.Sleep(duration);
                     instrument.Update(i, new()
                     {
                         Color = ThemeColor.Green,
-                        Glyph = "\uE73E"
+                        Icon = IconInfo.FromGlyph("\uE73E")
                     });
                 }
             }
@@ -51,11 +52,11 @@ public class TileInstrumentExample : BasicMacro
                 var instrument = dashboard.Create<TileInstrument>(gi =>
                 {
                     gi.Title = "Using templates:";
-                    gi.Templates.Add("idle", new() { Color = ThemeColor.Gray, Glyph = null });
-                    gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Glyph = "\uF16A" });
-                    gi.Templates.Add("success", new() { Color = ThemeColor.Green, Glyph = "\uE73E" });
-                    gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Glyph = "\uEDAE" });
-                    gi.Templates.Add("warning", new() { Color = ThemeColor.Orange, Glyph = "\uEDB1" });
+                    gi.Templates.Add("idle", new() { Color = ThemeColor.Gray });
+                    gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uF16A") });
+                    gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE73E") });
+                    gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEDAE") });
+                    gi.Templates.Add("warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uEDB1") });
                     gi.AddPlaceholders(updateCount, new("idle"));
                 });
 

@@ -2,6 +2,7 @@
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Logging;
@@ -11,10 +12,10 @@ public class OutputService : MacroService
     private readonly Dictionary<OutputLevel, ListInstrumentItem> Templates = new()
     {
         [OutputLevel.None] = new() { Color = ThemeColor.Gray },
-        [OutputLevel.Information] = new() { Color = ThemeColor.Azure, Glyph = "\uE946" },
-        [OutputLevel.Success] = new() { Color = ThemeColor.Green, Glyph = "\uE930" },
-        [OutputLevel.Failure] = new() { Color = ThemeColor.Red, Glyph = "\uEA39" },
-        [OutputLevel.Attention] = new() { Color = ThemeColor.Orange, Glyph = "\uE7BA" },
+        [OutputLevel.Information] = new() { Color = ThemeColor.Azure, Icon = IconInfo.FromGlyph("\uE946") },
+        [OutputLevel.Success] = new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") },
+        [OutputLevel.Failure] = new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") },
+        [OutputLevel.Attention] = new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uE7BA") },
     };
 
     private ListInstrument? OutputInstrument;
@@ -71,6 +72,5 @@ public class OutputService : MacroService
             }
         });
     }
-
 
 }

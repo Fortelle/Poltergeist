@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Structures.Colors;
+﻿using Poltergeist.Automations.Structures;
+using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;
 
@@ -11,8 +12,7 @@ public class ProgressInstrumentInfo
     public int? ProgressValue { get; set; }
     public int? ProgressMax { get; set; }
 
-    public string? Glyph { get; set; }
-    public string? Emoji { get; set; }
+    public IconInfo? Icon { get; set; }
     public ThemeColor? Color { get; set; }
 
     internal ProgressStatus? Status { get; set; }

@@ -2,6 +2,9 @@
 using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Structures;
+using Poltergeist.Automations.Structures.Colors;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.Macros;
 
 namespace Poltergeist.UI.Controls.Instruments;
@@ -20,9 +23,7 @@ public class ListInstrumentItemViewModel : IDisposable
 
     public SolidColorBrush? Foreground { get; set; }
 
-    public string? Glyph { get; set; }
-
-    public string? Emoji { get; set; }
+    public IconInfo? Icon { get; set; }
 
     public GridLength ProgressWidth { get; set; }
 
@@ -30,7 +31,7 @@ public class ListInstrumentItemViewModel : IDisposable
 
     public ButtonViewModel[]? Buttons { get; set; }
 
-    public bool HasIcon => !string.IsNullOrEmpty(Glyph) || !string.IsNullOrEmpty(Emoji);
+    public bool HasIcon => Icon is not null;
 
     private DispatcherTimer? DispatcherTimer { get; set; }
 
@@ -39,8 +40,13 @@ public class ListInstrumentItemViewModel : IDisposable
         Key = item.Key;
         Text = item.Text;
         Subtext = item.Subtext;
-        Glyph = item.Glyph;
-        Emoji = item.Emoji;
+        Icon = item.Icon;
+
+        if (item.Color is not null && ThemeColors.Colors.TryGetValue(item.Color.Value, out var colorset))
+        {
+            Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
+            Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
+        }
 
         var progress = item.Progress.HasValue ? Math.Clamp(item.Progress.Value, 0, 1) : 1;
         ProgressWidth = new(progress, GridUnitType.Star);

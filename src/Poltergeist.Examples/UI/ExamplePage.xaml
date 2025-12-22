@@ -67,7 +67,7 @@
                                         Width="32"
                                         Height="32"
                                         FontSize="24"
-                                        DataContext="{Binding Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist/Assets/macro_32px.png}"
+                                        Icon="{Binding Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist/Assets/macro_32px.png}"
                                         />
                                     
                                     <StackPanel

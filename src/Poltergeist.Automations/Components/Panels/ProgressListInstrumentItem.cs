@@ -16,8 +16,7 @@ public class ProgressListInstrumentItem : ListInstrumentItem
         TemplateKey = info.Status?.ToString();
         Text = info.Text;
         Subtext = info.Subtext;
-        Glyph = info.Glyph;
-        Emoji = info.Emoji;
+        Icon = info.Icon;
         Color = info.Color;
 
         Progress = info.ProgressValue switch

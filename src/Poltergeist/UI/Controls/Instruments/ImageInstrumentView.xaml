@@ -6,6 +6,7 @@
     xmlns:local="using:Poltergeist.UI.Controls.Instruments"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="ImageInstrumentUserControl"
     mc:Ignorable="d">
 
     <ItemsControl
@@ -15,7 +16,7 @@
             <ItemsPanelTemplate>
                 <ItemsWrapGrid
                     Orientation="Horizontal"
-                    MaximumRowsOrColumns="{Binding ViewModel.MaximumColumns, ElementName=GridInstrumentUserControl, Mode=OneTime}"
+                    MaximumRowsOrColumns="{Binding ViewModel.MaximumColumns, ElementName=ImageInstrumentUserControl, Mode=OneTime}"
                     />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>

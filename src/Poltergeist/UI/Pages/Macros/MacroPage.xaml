@@ -50,7 +50,7 @@
                     Width="32"
                     Height="32"
                     FontSize="24"
-                    DataContext="{x:Bind ViewModel.Instance.Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist/Assets/macro_32px.png}"
+                    Icon="{x:Bind ViewModel.Instance.Icon, Mode=OneTime, TargetNullValue=ms-appx:///Poltergeist/Assets/macro_32px.png}"
                     />
                 
                 <TextBlock
@@ -163,7 +163,7 @@
                                             Width="24"
                                             Height="24"
                                             FontSize="20"
-                                            DataContext="{Binding Icon, Mode=OneTime, TargetNullValue=&#xE90F;}"
+                                            Icon="{Binding Icon, Mode=OneTime, TargetNullValue=&#xE90F;}"
                                             />
                                         
                                         <StackPanel

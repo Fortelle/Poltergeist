@@ -4,27 +4,30 @@ namespace Poltergeist.Automations.Structures.Colors;
 
 public class ThemeColorSet
 {
+    public Color Color { get; set; }
     public Color Background { get; set; }
     public Color Foreground { get; set; }
 
-    public ThemeColorSet(Color background)
+    public ThemeColorSet(Color color)
     {
-        Background = background;
+        Color = color;
     }
 
-    public ThemeColorSet(Color background, Color foreground)
+    public ThemeColorSet(Color color, Color background, Color foreground)
     {
+        Color = color;
         Background = background;
         Foreground = foreground;
     }
 
-    public ThemeColorSet(string background)
+    public ThemeColorSet(string color)
     {
-        Background = HexToColor(background);
+        Color = HexToColor(color);
     }
 
-    public ThemeColorSet(string background, string foreground)
+    public ThemeColorSet(string color, string background, string foreground)
     {
+        Color = HexToColor(color);
         Background = HexToColor(background);
         Foreground = HexToColor(foreground);
     }

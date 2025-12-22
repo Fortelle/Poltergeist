@@ -27,13 +27,6 @@ public class ListInstrumentViewModel : IInstrumentViewModel
 
         var vm = new ListInstrumentItemViewModel(item);
 
-        if (item.Color is not null)
-        {
-            var colorset = ThemeColors.Colors[item.Color.Value];
-            vm.Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
-            vm.Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
-        }
-
         return vm;
     }
 }

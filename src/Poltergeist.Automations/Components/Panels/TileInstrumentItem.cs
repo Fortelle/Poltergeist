@@ -1,14 +1,13 @@
-﻿using Poltergeist.Automations.Structures.Colors;
+﻿using Poltergeist.Automations.Structures;
+using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;
 
 public class TileInstrumentItem
 {
-    public int? Index { get; set; }
+    public string? Key { get; set; }
 
-    public string? Glyph { get; set; }
-    public string? Text { get; set; }
-    public string? Emoji { get; set; }
+    public IconInfo? Icon { get; set; }
 
     public string? Tooltip { get; set; }
 

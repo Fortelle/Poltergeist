@@ -7,6 +7,7 @@ public class ImageInstrumentViewModel : IInstrumentViewModel
 {
     public string? Title { get; set; }
     public int MaximumColumns { get; set; }
+    public int ItemWidth { get; set; }
 
     public SynchronizableCollection<ImageInstrumentItem, ImageInstrumentItemViewModel> Items { get; set; }
 
@@ -14,6 +15,7 @@ public class ImageInstrumentViewModel : IInstrumentViewModel
     {
         Title = gi.Title;
         MaximumColumns = gi.MaximumColumns ?? -1;
+        ItemWidth = gi.ItemWidth ?? 200;
 
         Items = new(gi.Items, ModelToViewModel, PoltergeistApplication.Current.DispatcherQueue);
     }

@@ -1,13 +1,14 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Structures;
+using Poltergeist.Automations.Structures.Colors;
+using Poltergeist.Helpers;
 
 namespace Poltergeist.UI.Controls.Instruments;
 
 public class TileInstrumentItemViewModel
 {
-    public string? Text { get; set; }
-
-    public string? Emoji { get; set; }
+    public IconInfo? Icon { get; set; }
 
     public string? Tooltip { get; set; }
 
@@ -15,13 +16,15 @@ public class TileInstrumentItemViewModel
 
     public SolidColorBrush? Foreground { get; set; }
 
-    public string? Glyph { get; set; }
-
     public TileInstrumentItemViewModel(TileInstrumentItem item)
     {
+        Icon = item.Icon;
         Tooltip = item.Tooltip;
-        Text = item.Text;
-        Emoji = item.Emoji;
-        Glyph = item.Glyph;
+
+        if (item.Color is not null && ThemeColors.Colors.TryGetValue(item.Color.Value, out var colorset))
+        {
+            Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
+            Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
+        }
     }
 }

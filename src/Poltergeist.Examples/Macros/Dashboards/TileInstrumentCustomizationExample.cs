@@ -1,5 +1,6 @@
 ﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
@@ -29,17 +30,17 @@ public class TileInstrumentCustomizationExample : BasicMacro
 
                 instrument.Add(new()
                 {
-                    Glyph = "\uE709",
+                    Icon = IconInfo.FromGlyph("\uE709"),
                     Tooltip = $"Custom Item 1",
                 });
                 instrument.Add(new()
                 {
-                    Glyph = "\uE806",
+                    Icon = IconInfo.FromGlyph("\uE806"),
                     Tooltip = $"Custom Item 2",
                 });
                 instrument.Add(new()
                 {
-                    Glyph = "\uE7E3",
+                    Icon = IconInfo.FromGlyph("\uE7E3"),
                     Tooltip = $"Custom Item 3",
                 });
             }
@@ -52,17 +53,17 @@ public class TileInstrumentCustomizationExample : BasicMacro
 
                 instrument.Add(new()
                 {
-                    Emoji = "✈️",
+                    Icon = IconInfo.FromEmoji("✈️"),
                     Tooltip = $"Custom Item 1",
                 });
                 instrument.Add(new()
                 {
-                    Emoji = "🚍",
+                    Icon = IconInfo.FromEmoji("🚍"),
                     Tooltip = $"Custom Item 2",
                 });
                 instrument.Add(new()
                 {
-                    Emoji = "⛴️",
+                    Icon = IconInfo.FromEmoji("⛴️"),
                     Tooltip = $"Custom Item 3",
                 });
             }
@@ -75,17 +76,17 @@ public class TileInstrumentCustomizationExample : BasicMacro
 
                 instrument.Add(new()
                 {
-                    Text = "A",
+                    Icon = IconInfo.FromText("A"),
                     Tooltip = $"Custom Item 1",
                 });
                 instrument.Add(new()
                 {
-                    Text = "B",
+                    Icon = IconInfo.FromText("B"),
                     Tooltip = $"Custom Item 2",
                 });
                 instrument.Add(new()
                 {
-                    Text = "C",
+                    Icon = IconInfo.FromText("C"),
                     Tooltip = $"Custom Item 3",
                 });
             }
@@ -100,17 +101,17 @@ public class TileInstrumentCustomizationExample : BasicMacro
 
                 instrument.Add(new()
                 {
-                    Text = "Item 1",
+                    Icon = IconInfo.FromText("Item 1"),
                     Tooltip = $"Custom Item 1",
                 });
                 instrument.Add(new()
                 {
-                    Text = "Item 2",
+                    Icon = IconInfo.FromText("Item 2"),
                     Tooltip = $"Custom Item 2",
                 });
                 instrument.Add(new()
                 {
-                    Text = "Item 3",
+                    Icon = IconInfo.FromText("Item 3"),
                     Tooltip = $"Custom Item 3",
                 });
             }
@@ -119,9 +120,9 @@ public class TileInstrumentCustomizationExample : BasicMacro
                 var instrument = dashboard.Create<TileInstrument>(gi =>
                 {
                     gi.Title = "Templates:";
-                    gi.Templates.Add($"success", new() { Color = ThemeColor.Green, Glyph = "\uE73E" });
-                    gi.Templates.Add($"failure", new() { Color = ThemeColor.Red, Glyph = "\uEDAE" });
-                    gi.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Glyph = "\uEDB1" });
+                    gi.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE73E") });
+                    gi.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEDAE") });
+                    gi.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uEDB1") });
                 });
 
                 instrument.Add(new()
@@ -153,7 +154,7 @@ public class TileInstrumentCustomizationExample : BasicMacro
                     instrument.Add(new()
                     {
                         Color = values[i],
-                        Glyph = "\uE734",
+                        Icon = IconInfo.FromGlyph("\uE734"),
                         Tooltip = $"Custom Item {i + 1}",
                     });
                 }

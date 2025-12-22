@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace Poltergeist.Helpers.Converters;

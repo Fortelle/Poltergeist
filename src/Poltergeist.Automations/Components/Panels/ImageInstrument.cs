@@ -6,6 +6,7 @@ namespace Poltergeist.Automations.Components.Panels;
 public class ImageInstrument : InstrumentModel
 {
     public int? MaximumColumns { get; set; }
+    public int? ItemWidth { get; set; }
 
     public ObservableCollection<ImageInstrumentItem> Items = new();
 

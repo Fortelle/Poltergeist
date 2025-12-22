@@ -21,7 +21,7 @@ public abstract class TileInstrument<T> : InstrumentModel, ITileInstrumentModel
 
     public void Add(T item)
     {
-        Set(-1, item);
+        Set(-1, item, false);
     }
 
     public void AddPlaceholders(int count)
@@ -52,12 +52,32 @@ public abstract class TileInstrument<T> : InstrumentModel, ITileInstrumentModel
         Set(index, item, true);
     }
 
-    public void Override(int index, T item)
+    public void Update(string key, T item)
     {
-        Set(index, item);
+        var index = Items.FindIndex(x => x.Key == key);
+        if (index == -1)
+        {
+            throw new KeyNotFoundException();
+        }
+        Set(index, item, true);
     }
 
-    private void Set(int index, TileInstrumentItem item, bool shouldUpdate = false)
+    public void Override(int index, T item)
+    {
+        Set(index, item, false);
+    }
+
+    public void Override(string key, T item)
+    {
+        var index = Items.FindIndex(x => x.Key == key);
+        if (index == -1)
+        {
+            throw new KeyNotFoundException();
+        }
+        Set(index, item, false);
+    }
+
+    private void Set(int index, TileInstrumentItem item, bool shouldUpdate)
     {
         if (!string.IsNullOrEmpty(item.TemplateKey) && Templates.TryGetValue(item.TemplateKey, out var template))
         {
@@ -67,13 +87,8 @@ public abstract class TileInstrument<T> : InstrumentModel, ITileInstrumentModel
 
         if (index == -1)
         {
-            item.Index = Buffer.Count;
+            index = Buffer.Count;
         }
-        else
-        {
-            item.Index = index;
-        }
-
 
         if (index > Buffer.Count)
         {
@@ -95,19 +110,15 @@ public abstract class TileInstrument<T> : InstrumentModel, ITileInstrumentModel
             Buffer[index] = item;
             Items[index] = item;
         }
-
     }
 
     private static void ApplyTemplate(TileInstrumentItem item, TileInstrumentItem template)
     {
-        item.Index ??= template.Index;
+        item.Key ??= template.Key;
         item.Tooltip ??= template.Tooltip;
-        item.Text ??= template.Text;
-        item.Emoji ??= template.Emoji;
+        item.Icon ??= template.Icon;
         item.Color ??= template.Color;
-        item.Glyph ??= template.Glyph;
     }
-
 }
 
 public class TileInstrument(MacroProcessor processor) : TileInstrument<TileInstrumentItem>(processor)

@@ -5,25 +5,26 @@ namespace Poltergeist.Automations.Structures.Colors;
 public static class ThemeColors
 {
     private const double BaseSaturation = .8;
+    private const double BaseLightness = .40;
     private const double BaseLightLightness = .85;
     private const double BaseDarkLightness = .15;
 
     public static Dictionary<ThemeColor, ThemeColorSet> Colors { get; } = new()
     {
-        [ThemeColor.Red] = new(HSL(0, BaseSaturation, BaseLightLightness), HSL(0, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Orange] = new(HSL(30, BaseSaturation, BaseLightLightness), HSL(30, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Yellow] = new(HSL(60, BaseSaturation, BaseLightLightness), HSL(60, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Chartreuse] = new(HSL(90, BaseSaturation, BaseLightLightness), HSL(90, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Green] = new(HSL(120, BaseSaturation, BaseLightLightness), HSL(120, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Spring] = new(HSL(150, BaseSaturation, BaseLightLightness), HSL(150, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Cyan] = new(HSL(180, BaseSaturation, BaseLightLightness), HSL(180, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Azure] = new(HSL(210, BaseSaturation, BaseLightLightness), HSL(210, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Blue] = new(HSL(240, BaseSaturation, BaseLightLightness), HSL(240, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Violet] = new(HSL(270, BaseSaturation, BaseLightLightness), HSL(270, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Magenta] = new(HSL(300, BaseSaturation, BaseLightLightness), HSL(300, BaseSaturation, BaseDarkLightness)),
-        [ThemeColor.Rose] = new(HSL(330, BaseSaturation, BaseLightLightness), HSL(330, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Red] = new(HSL(0, BaseSaturation, BaseLightness), HSL(0, BaseSaturation, BaseLightLightness), HSL(0, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Orange] = new(HSL(30, BaseSaturation, BaseLightness), HSL(30, BaseSaturation, BaseLightLightness), HSL(30, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Yellow] = new(HSL(60, BaseSaturation, BaseLightness), HSL(60, BaseSaturation, BaseLightLightness), HSL(60, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Chartreuse] = new(HSL(90, BaseSaturation, BaseLightness), HSL(90, BaseSaturation, BaseLightLightness), HSL(90, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Green] = new(HSL(120, BaseSaturation, BaseLightness), HSL(120, BaseSaturation, BaseLightLightness), HSL(120, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Spring] = new(HSL(150, BaseSaturation, BaseLightness), HSL(150, BaseSaturation, BaseLightLightness), HSL(150, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Cyan] = new(HSL(180, BaseSaturation, BaseLightness), HSL(180, BaseSaturation, BaseLightLightness), HSL(180, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Azure] = new(HSL(210, BaseSaturation, BaseLightness), HSL(210, BaseSaturation, BaseLightLightness), HSL(210, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Blue] = new(HSL(240, BaseSaturation, BaseLightness), HSL(240, BaseSaturation, BaseLightLightness), HSL(240, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Violet] = new(HSL(270, BaseSaturation, BaseLightness), HSL(270, BaseSaturation, BaseLightLightness), HSL(270, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Magenta] = new(HSL(300, BaseSaturation, BaseLightness), HSL(300, BaseSaturation, BaseLightLightness), HSL(300, BaseSaturation, BaseDarkLightness)),
+        [ThemeColor.Rose] = new(HSL(330, BaseSaturation, BaseLightness), HSL(330, BaseSaturation, BaseLightLightness), HSL(330, BaseSaturation, BaseDarkLightness)),
 
-        [ThemeColor.Gray] = new(HSL(0, 0, BaseLightLightness), HSL(0, 0, BaseDarkLightness)),
+        [ThemeColor.Gray] = new(HSL(0, 0, BaseLightness), HSL(0, 0, BaseLightLightness), HSL(0, 0, BaseDarkLightness)),
     };
 
     private static Color HSL(double h, double s, double l)
