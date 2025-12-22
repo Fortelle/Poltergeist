@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Structures.Shapes;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 
 namespace Poltergeist.Android.HybridEmulators;
 

@@ -2,7 +2,7 @@
 using Poltergeist.Android.Adb;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 
 namespace Poltergeist.Android.HybridEmulators;
 

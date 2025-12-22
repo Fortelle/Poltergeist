@@ -1,5 +1,5 @@
 ﻿using System.Drawing;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 
 namespace Poltergeist.Android.HybridEmulators;
 

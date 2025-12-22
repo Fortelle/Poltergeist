@@ -5,7 +5,7 @@ using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
 using Poltergeist.Automations.Utilities.Maths;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.Adb;

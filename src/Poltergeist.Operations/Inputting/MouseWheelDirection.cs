@@ -1,4 +1,4 @@
-﻿namespace Poltergeist.Operations.Inputing;
+﻿namespace Poltergeist.Operations.Inputting;
 
 public enum MouseWheelDirection
 {

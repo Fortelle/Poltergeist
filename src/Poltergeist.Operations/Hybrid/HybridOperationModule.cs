@@ -4,7 +4,6 @@ using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Operations.Capturing;
-using Poltergeist.Operations.Hybrid;
 using Poltergeist.Operations.Locating;
 
 namespace Poltergeist.Operations.Hybrid;

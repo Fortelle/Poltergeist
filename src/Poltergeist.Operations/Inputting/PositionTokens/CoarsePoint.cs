@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Utilities.Maths;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class CoarsePoint : PositionToken
 {

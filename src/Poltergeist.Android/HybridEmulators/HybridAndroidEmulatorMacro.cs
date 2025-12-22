@@ -3,7 +3,7 @@ using Poltergeist.Automations.Components.Loops;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Operations.Hybrid;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 
 namespace Poltergeist.Android.HybridEmulators;
 

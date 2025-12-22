@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Utilities.Windows;
 using Poltergeist.Operations;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 using Poltergeist.Operations.Locating;
 
 namespace Poltergeist.Tests.UnitTests.Components.Operations;

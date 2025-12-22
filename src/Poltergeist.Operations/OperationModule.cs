@@ -3,7 +3,7 @@ using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Capturing;
-using Poltergeist.Operations.Inputing;
+using Poltergeist.Operations.Inputting;
 using Poltergeist.Operations.Locating;
 using Poltergeist.Operations.Timers;
 

@@ -34,7 +34,7 @@ public class BasicMacro : CommonMacroBase
     protected override void OnPrepare(IPreparableProcessor processor)
     {
         base.OnPrepare(processor);
-        
+
         if (ShowStatusBar)
         {
             InstallStatusBar(processor);
@@ -117,7 +117,7 @@ public class BasicMacro : CommonMacroBase
             invalidationMessage = LocalizationUtil.Localize("Validation_BasicMacro_EmptyExecutions", nameof(BasicMacro), nameof(Execute), nameof(ExecuteAsync));
             return false;
         }
-        
+
         return true;
     }
 }

@@ -5,9 +5,9 @@ using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Capturing;
-using Poltergeist.Operations.Inputing;
-using Poltergeist.Operations.Locating;
 using Poltergeist.Operations.Hybrid;
+using Poltergeist.Operations.Inputting;
+using Poltergeist.Operations.Locating;
 using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.HybridEmulators;
@@ -95,7 +95,7 @@ public class HybridAndroidEmulatorModule : HybridOperationModule
         var capturingMode = hook.Processor.Options.Get<string>(CapturingModeKey);
         var mouseMode = hook.Processor.Options.Get<string>(MouseModeKey);
 
-        if (capturingMode == "adb"|| mouseMode == "adb")
+        if (capturingMode == "adb" || mouseMode == "adb")
         {
             var adb = hook.Processor.GetService<AdbService>();
             adb.Close();

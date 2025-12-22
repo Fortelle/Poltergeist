@@ -4,7 +4,7 @@ using Poltergeist.Automations.Services;
 using Poltergeist.Automations.Structures.Shapes;
 using Poltergeist.Automations.Utilities.Maths;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class DeviationService : MacroService
 {

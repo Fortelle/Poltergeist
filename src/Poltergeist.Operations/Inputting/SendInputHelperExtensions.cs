@@ -1,6 +1,6 @@
 ﻿using Poltergeist.Automations.Utilities.Windows;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public static class SendInputHelperExtensions
 {

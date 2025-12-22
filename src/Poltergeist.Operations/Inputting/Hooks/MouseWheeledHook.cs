@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Components.Hooks;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class MouseWheeledHook : MacroHook
 {

@@ -3,7 +3,7 @@ using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities.Windows;
 using Poltergeist.Operations.Timers;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class KeyboardSendInputService : KeyboardService
 {

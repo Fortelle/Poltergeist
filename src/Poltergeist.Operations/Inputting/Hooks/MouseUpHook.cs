@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using Poltergeist.Automations.Components.Hooks;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
-public class MouseClickedHook : MacroHook
+public class MouseUpHook : MacroHook
 {
     public Point? Location { get; init; }
 }

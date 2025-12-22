@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class InputOptions
 {

@@ -4,7 +4,7 @@ using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Timers;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public class InputOptionsModule : MacroModule
 {

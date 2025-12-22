@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Poltergeist.Operations.Inputing;
+namespace Poltergeist.Operations.Inputting;
 
 public static class CursorHelper
 {
