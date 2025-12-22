@@ -180,7 +180,6 @@ public class LoopService : MacroService
 
     private void DoIterationFinally(WorkflowStepFinallyArguments stepArguments)
     {
-        Result = LoopResult.Broken;
         var canContinue = CheckContinue(stepArguments.State);
 
         stepArguments.NextStepId = canContinue ? "loop-intermission" : "loop-after";
@@ -194,7 +193,6 @@ public class LoopService : MacroService
             State = stepArguments.State,
         };
         Hooks.Raise(endHook);
-
     }
 
     private bool DoIntermission(WorkflowStepArguments stepArguments)
@@ -202,7 +200,7 @@ public class LoopService : MacroService
         return IntermissionProc?.Invoke(IterationIndex) != false;
     }
 
-    private bool CheckContinue(WorkflowStepState state)//IterationResult iterationResult
+    private bool CheckContinue(WorkflowStepState state)
     {
         if (state == WorkflowStepState.Failed)
         {

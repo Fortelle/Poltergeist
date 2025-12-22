@@ -21,7 +21,7 @@ public class TimeSpanToHhhmmssConverter : IValueConverter
 
     public static string ToString(TimeSpan timespan)
     {
-        return $"{timespan.TotalHours:00}:{timespan.Minutes:00}:{timespan.Seconds:00}";
+        return $"{Math.Floor(timespan.TotalHours):00}:{timespan.Minutes:00}:{timespan.Seconds:00}";
     }
 
 }
