@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Poltergeist.UI.Controls.Instruments.IndicatorIconView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Poltergeist.UI.Controls.Instruments"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:Poltergeist.UI.Controls"
+    x:Name="TileInstrumentUserControl"
+    mc:Ignorable="d"
+    DataContextChanged="UserControl_DataContextChanged"
+    >
+    
+    <UserControl.Resources>
+
+        <Storyboard x:Name="EnterStoryboard">
+            <DoubleAnimation 
+                Storyboard.TargetName="IconGrid" 
+                Storyboard.TargetProperty="Opacity" 
+                From="1.0"
+                To="0.0"
+                Duration="Automatic"  
+                AutoReverse="True"
+                RepeatBehavior="Forever" >
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Name="FadeoutStoryboard">
+            <DoubleAnimation 
+                Storyboard.TargetName="IconControl" 
+                Storyboard.TargetProperty="Opacity" 
+                From="1.0"
+                To="0"
+                Duration="0:0:1"
+                RepeatBehavior="1x"
+                >
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Name="BreathingStoryboard">
+            <DoubleAnimation 
+                Storyboard.TargetName="IconControl" 
+                Storyboard.TargetProperty="Opacity" 
+                From="1.0"
+                To="0.1"
+                Duration="0:0:1"
+                AutoReverse="True"
+                RepeatBehavior="Forever"
+                >
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Name="BlinkingStoryboard">
+            <DoubleAnimation 
+                Storyboard.TargetName="IconControl" 
+                Storyboard.TargetProperty="Opacity" 
+                From="1.0"
+                To="0.2"
+                Duration="0:0:1"
+                RepeatBehavior="Forever"
+                >
+            </DoubleAnimation>
+        </Storyboard>
+
+    </UserControl.Resources>
+    <Border
+        BorderBrush="{x:Bind ViewModel.BorderColor, Mode=OneWay}"
+        BorderThickness="2"
+        CornerRadius="1000"
+        Background="{x:Bind ViewModel.Background, Mode=OneWay}"
+        >
+        <controls:IconControl
+            x:Name="IconControl"
+            Margin="4"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Icon="{x:Bind ViewModel.Icon, Mode=OneWay}"
+            ToolTipService.ToolTip="{x:Bind ViewModel.Tooltip, Mode=OneWay}"
+            Foreground="{x:Bind ViewModel.Foreground, Mode=OneWay}" 
+            >
+        </controls:IconControl>
+    </Border>
+</UserControl>

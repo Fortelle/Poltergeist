@@ -194,6 +194,7 @@ public partial class MacroProcessor
         services.AddTransient<ProgressTileInstrument>();
         services.AddTransient<ImageInstrument>();
         services.AddTransient<JournalInstrument>();
+        services.AddTransient<IndicatorInstrument>();
         services.AddTransient<LabelInstrument>();
 
         services.AddTransient<FlowBuilderService>();
