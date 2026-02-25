@@ -312,4 +312,38 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
         process.Start();
     }
 
+    private void StopMenuFlyout_Opening(object sender, object e)
+    {
+        var flyout = (MenuFlyout)sender;
+        var terminateMFI = flyout.Items[0];
+
+        flyout.Items.Clear();
+        flyout.Items.Add(terminateMFI);
+
+        if (ViewModel.Instance.Template?.Interventions?.Count > 0)
+        {
+            flyout.Items.Add(new MenuFlyoutSeparator());
+
+            foreach (var intervention in ViewModel.Instance.Template.Interventions)
+            {
+                if (intervention.IsDevelopmentOnly && !App.Current.IsDevelopment)
+                {
+                    continue;
+                }
+
+                var mfi = new MenuFlyoutItem()
+                {
+                    Text = intervention.Title,
+                    Command = ViewModel.InterveneCommand,
+                    CommandParameter = intervention.Key,
+                    Icon = IconInfoHelper.ConvertToIconElement(intervention.Icon ?? new IconInfo("\uE835")),
+                };
+                if (intervention.Description is not null)
+                {
+                    ToolTipService.SetToolTip(mfi, intervention.Description);
+                }
+                flyout.Items.Add(mfi);
+            }
+        }
+    }
 }

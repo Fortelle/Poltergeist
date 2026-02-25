@@ -219,6 +219,15 @@
   <data name="Loops_Option_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
+  <data name="Loops_StopAfterCurrent_Description" xml:space="preserve">
+    <value>Stops the macro after the current iteration is complete</value>
+  </data>
+  <data name="Loops_StopAfterCurrent_Message" xml:space="preserve">
+    <value>The macro will stop after the current iteration finishes</value>
+  </data>
+  <data name="Loops_StopAfterCurrent_Title" xml:space="preserve">
+    <value>Stop after current</value>
+  </data>
   <data name="MacroLoggerOption_Category" xml:space="preserve">
     <value>Logs</value>
   </data>

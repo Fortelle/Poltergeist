@@ -33,6 +33,7 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
     public List<MacroModule> Modules { get; } = new();
     public ParameterValueCollection ExtraData { get; } = new();
     public List<ConfigVariation> ConfigVariations { get; } = new();
+    public List<ProcessorIntervention> Interventions { get; } = new();
 
     private bool _requiresAdmin;
     public bool RequiresAdmin { get => _requiresAdmin; set => _requiresAdmin |= value; }

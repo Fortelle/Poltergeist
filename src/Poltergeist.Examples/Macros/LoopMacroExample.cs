@@ -28,7 +28,7 @@ public class LoopMacroExample : LoopMacro
 
         Iterate = (proc) =>
         {
-            Thread.Sleep(100);
+            Thread.Sleep(1000);
         };
     }
 

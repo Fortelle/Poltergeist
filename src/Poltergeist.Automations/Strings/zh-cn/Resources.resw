@@ -219,6 +219,15 @@
   <data name="Loops_Option_Enable" xml:space="preserve">
     <value>启用</value>
   </data>
+  <data name="Loops_StopAfterCurrent_Description" xml:space="preserve">
+    <value>在当前循环结束后停止宏</value>
+  </data>
+  <data name="Loops_StopAfterCurrent_Message" xml:space="preserve">
+    <value>这个宏将在当前循环结束后停止</value>
+  </data>
+  <data name="Loops_StopAfterCurrent_Title" xml:space="preserve">
+    <value>当前循环结束后停止</value>
+  </data>
   <data name="MacroLoggerOption_Category" xml:space="preserve">
     <value>日志</value>
   </data>

@@ -244,6 +244,12 @@ public class LoopService : MacroService
             Logger.Debug($"The loop will be stopped because the number of iterations has reached the max iteration limit.", new { IterationIndex, Options.MaxIterationLimit });
             return false;
         }
+        else if (CheckStopAfterCurrent())
+        {
+            Result = LoopResult.Complete;
+            Logger.Debug($"The loop will be stopped because the user requested to stop after the current iteration.");
+            return false;
+        }
 
         return true;
 
@@ -279,6 +285,16 @@ public class LoopService : MacroService
 
             duration = default;
             return false;
+        }
+
+        bool CheckStopAfterCurrent()
+        {
+            if (!Processor.SessionStorage.TryGetValue<bool>("stop_after_current", out var stopAfterCurrent))
+            {
+                return false;
+            }
+
+            return stopAfterCurrent;
         }
     }
 

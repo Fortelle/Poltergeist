@@ -157,4 +157,39 @@ public class ControlTests
         Assert.AreEqual(0, value);
     }
 
+    [TestMethod]
+    public void TestIntervene()
+    {
+        var isIntervened = false;
+
+        var macro = new BasicMacro
+        {
+            Execute = (args) =>
+            {
+                Thread.Sleep(1000);
+                isIntervened = args.Processor.SessionStorage.GetValueOrDefault<string>("test_key") == "test_value";
+            },
+            Interventions =
+            {
+                new()
+                {
+                    Key = "test_intervention",
+                    Title = "test_intervention",
+                    Variables = new()
+                    {
+                        { "test_key", "test_value" },
+                    },
+                }
+            },
+        };
+
+        var processor = new MacroProcessor(macro);
+        processor.Start();
+        Thread.Sleep(500);
+        processor.Intervene("test_intervention");
+        processor.GetResult();
+
+        Assert.IsTrue(isIntervened);
+    }
+
 }

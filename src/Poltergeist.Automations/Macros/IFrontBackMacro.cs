@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
@@ -9,6 +10,7 @@ public interface IFrontBackMacro : IMacroBase
     StatisticDefinitionCollection StatisticDefinitions { get; }
     ParameterDefinitionCollection Metadata { get; }
     List<ConfigVariation> ConfigVariations { get; }
+    List<ProcessorIntervention> Interventions { get; }
     List<MacroAction> Actions { get; }
     MacroStatus Status { get; }
 

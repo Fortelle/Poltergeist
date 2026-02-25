@@ -292,6 +292,33 @@ public partial class MacroViewModel : ObservableRecipient
         Processor.Terminate();
     }
 
+    [RelayCommand]
+    public void Intervene(string interventionKey)
+    {
+        if (Processor is null)
+        {
+            return;
+        }
+
+        var intervention = Processor.Macro.Interventions.FirstOrDefault(x => x.Key == interventionKey);
+
+        if (intervention is null)
+        {
+            return;
+        }
+
+        var isSuccess = Processor.Intervene(intervention.Key);
+
+        if (isSuccess)
+        {
+            App.ShowTeachingTip(intervention.Message ?? App.Localize("Poltergeist/Macros/Intervention_succeeded"));
+        }
+        else
+        {
+            App.ShowTeachingTip("The choosing action is currently unavailable.");
+        }
+    }
+
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
         App.TryEnqueue(() =>

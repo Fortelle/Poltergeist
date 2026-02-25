@@ -267,4 +267,10 @@
   <data name="Notification_ShutdownSystem_message" xml:space="preserve">
     <value>系统将在{0}秒后关机。</value>
   </data>
+  <data name="Intervention_failed" xml:space="preserve">
+    <value>该选项目前不可用。</value>
+  </data>
+  <data name="Intervention_succeeded" xml:space="preserve">
+    <value>成功执行“{0}”。</value>
+  </data>
 </root>

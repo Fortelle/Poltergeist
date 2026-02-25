@@ -453,6 +453,7 @@
                                 <MenuFlyout
                                     x:Name="StopMenuFlyout"
                                     Placement="RightEdgeAlignedTop"
+                                    Opening="StopMenuFlyout_Opening"
                                     >
                                     <MenuFlyoutItem
                                         x:Uid="/Poltergeist/Macros/TerminateMenuFlyoutItem"

@@ -267,4 +267,10 @@
   <data name="Notification_ShutdownSystem_message" xml:space="preserve">
     <value>The system will shut down in {0} seconds.</value>
   </data>
+  <data name="Intervention_failed" xml:space="preserve">
+    <value>The choosing action is currently unavailable.</value>
+  </data>
+  <data name="Intervention_succeeded" xml:space="preserve">
+    <value>Invoked "{0}".</value>
+  </data>
 </root>

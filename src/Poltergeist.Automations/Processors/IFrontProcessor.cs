@@ -17,6 +17,7 @@ public interface IFrontProcessor : IProcessor, IDisposable
     void RaiseEvent(ProcessorEvent type, EventArgs eventArgs);
     void ReceiveMessage(Dictionary<string, string> paramaters);
     void Resume();
+    bool Intervene(string interventionKey);
 
     event EventHandler<ProcessorLaunchedEventArgs>? Launched;
     event EventHandler<ProcessorCompletedEventArgs>? Completed;

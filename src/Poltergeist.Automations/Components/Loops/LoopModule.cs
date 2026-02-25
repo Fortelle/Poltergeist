@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
 
@@ -54,6 +55,19 @@ public class LoopModule : MacroModule
                 Category = LocalizationUtil.Localize("Loops_Category"),
             });
         }
+
+        macro.Interventions.Add(new ProcessorIntervention()
+        {
+            Key = "stop_after_current",
+            Title = LocalizationUtil.Localize("Loops_StopAfterCurrent_Title"),
+            Icon = IconInfo.FromGlyph("\uE71A"),
+            Description = LocalizationUtil.Localize("Loops_StopAfterCurrent_Description"),
+            Message = LocalizationUtil.Localize("Loops_StopAfterCurrent_Message"),
+            Variables = new()
+            {
+                { "stop_after_current", true },
+            },
+        });
     }
 
     public override void OnProcessorConfigure(IConfigurableProcessor processor)

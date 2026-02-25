@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Structures.Parameters;
+﻿using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
 
@@ -9,5 +10,6 @@ public interface IInitializableMacro : IMacroBase
     StatisticDefinitionCollection StatisticDefinitions { get; }
     ParameterValueCollection ExtraData { get; }
     List<ConfigVariation> ConfigVariations { get; }
+    List<ProcessorIntervention> Interventions { get; }
     bool RequiresAdmin { get; set; }
 }
