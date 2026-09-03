@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using System.Diagnostics.CodeAnalysis;
+using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Examples.Macros;
 
@@ -8,7 +9,7 @@ public class UnrunnableMacro : MacroBase
     {
     }
 
-    protected override bool OnValidating(out string invalidationMessage)
+    protected override bool CanExecute([MaybeNullWhen(true)] out string invalidationMessage)
     {
         invalidationMessage = $"This macro is unable to run.";
         return false;

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Capturing;
 using Poltergeist.Operations.Inputting;
@@ -11,30 +10,30 @@ namespace Poltergeist.Operations;
 
 public class OperationModule : MacroModule
 {
-    public override void OnProcessorConfigure(IConfigurableProcessor processor)
+    public override void RegisterServices(IServiceCollection services, RegisterServicesArguments args)
     {
-        base.OnProcessorConfigure(processor);
+        base.RegisterServices(services, args);
 
-        processor.Services.AddSingleton<ScreenLocatingService>();
-        processor.Services.AddSingleton<WindowLocatingService>();
+        services.AddSingleton<ScreenLocatingService>();
+        services.AddSingleton<WindowLocatingService>();
 
-        processor.Services.AddSingleton<ScreenCapturingService>();
-        processor.Services.AddSingleton<PrintWindowCapturingService>();
-        processor.Services.AddSingleton<BitBltCapturingService>();
+        services.AddSingleton<ScreenCapturingService>();
+        services.AddSingleton<PrintWindowCapturingService>();
+        services.AddSingleton<BitBltCapturingService>();
 
-        processor.Services.AddSingleton<MouseSendInputService>();
-        processor.Services.AddSingleton<MouseSendMessageService>();
-        processor.Services.AddSingleton<DeviationService>();
-        processor.Services.AddOptions<MouseInputOptions>();
+        services.AddSingleton<MouseSendInputService>();
+        services.AddSingleton<MouseSendMessageService>();
+        services.AddSingleton<DeviationService>();
+        services.AddOptions<MouseInputOptions>();
 
-        processor.Services.AddSingleton<KeyboardSendInputService>();
-        processor.Services.AddSingleton<KeyboardSendMessageService>();
-        processor.Services.AddOptions<KeyboardInputOptions>();
+        services.AddSingleton<KeyboardSendInputService>();
+        services.AddSingleton<KeyboardSendMessageService>();
+        services.AddOptions<KeyboardInputOptions>();
 
-        processor.Services.AddSingleton<TimerService>();
-        processor.Services.AddOptions<DelayOptions>();
+        services.AddSingleton<TimerService>();
+        services.AddOptions<DelayOptions>();
 
-        processor.Services.AddSingleton<RandomEx>();
-        processor.Services.AddSingleton<DistributionService>();
+        services.AddSingleton<RandomEx>();
+        services.AddSingleton<DistributionService>();
     }
 }

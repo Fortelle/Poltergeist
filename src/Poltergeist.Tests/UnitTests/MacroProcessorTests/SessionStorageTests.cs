@@ -1,4 +1,4 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests;
@@ -21,7 +21,7 @@ public class SessionStorageTests
     {
         var obj = new DisposableObject();
 
-        var macro = new BasicMacro()
+        var macro = new OneshotMacro()
         {
             Execute = (args) =>
             {

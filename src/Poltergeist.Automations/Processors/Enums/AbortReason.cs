@@ -6,4 +6,8 @@ public enum AbortReason
     User,
     Error,
     Timeout,
+
+#if DEBUG
+    Test,
+#endif
 }

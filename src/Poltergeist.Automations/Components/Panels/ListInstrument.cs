@@ -129,7 +129,7 @@ public class ListInstrument<T> : InstrumentModel, IListInstrumentModel
 
     }
 
-    private void OnButtonClicked(MessageReceivedHook hook)
+    private void OnButtonClicked(IMacroProcessorShared processor, MessageReceivedHook hook)
     {
         var instrumentKey = Key ?? "";
         if (hook.Arguments["instrument_key"] != instrumentKey)

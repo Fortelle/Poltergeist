@@ -1,11 +1,13 @@
-﻿namespace Poltergeist.Automations.Processors;
+﻿using Poltergeist.Automations.Structures.Parameters;
+
+namespace Poltergeist.Automations.Processors;
 
 public static class IncognitoModeExtensions
 {
-    public const string EnvironmentKey = "is_incognitomode";
+    public static readonly EntryDefinition<bool> EnvironmentEntry = new("is_incognitomode");
 
-    public static bool IsIncognitoMode(this IProcessor processor)
+    public static bool IsIncognitoMode(this IMacroProcessorInformation processor)
     {
-        return processor.Environments.GetValueOrDefault<bool>(EnvironmentKey) == true;
+        return processor.Environments.GetValueOrDefault(EnvironmentEntry) == true;
     }
 }

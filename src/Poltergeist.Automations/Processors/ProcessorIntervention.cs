@@ -14,7 +14,7 @@ public class ProcessorIntervention
 
     public bool IsDevelopmentOnly { get; set; }
 
-    public Func<IUserProcessor, bool>? CanIntervene { get; set; }
+    public Func<IMacroProcessor, bool>? CanIntervene { get; set; }
 
     public required Dictionary<string, object> Variables { get; set; }
 

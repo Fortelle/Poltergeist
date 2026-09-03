@@ -46,7 +46,7 @@ public class LocalStorageTests
         };
 
         var result = MacroProcessor.Execute(macro);
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreEqual(ProcessorConclusion.ErrorOccurred, result.Conclusion);
     }
 
     [TestMethod]
@@ -65,7 +65,7 @@ public class LocalStorageTests
 
         MacroProcessor.Execute(macro, PrivateFolderArguments);
         Assert.AreEqual("test_value", buffer);
-        Assert.IsTrue(File.ReadAllText(LocalStoragePath).Contains("test_value"));
+        Assert.Contains("test_value", File.ReadAllText(LocalStoragePath));
     }
 
     [TestMethod]

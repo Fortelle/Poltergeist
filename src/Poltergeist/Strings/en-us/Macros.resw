@@ -123,25 +123,22 @@
   <data name="ActionsPivotItem.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
-  <data name="EndReason_Complete" xml:space="preserve">
-    <value>Complete</value>
-  </data>
-  <data name="EndReason_Empty" xml:space="preserve">
+  <data name="Conclusion_Empty" xml:space="preserve">
     <value>Empty</value>
   </data>
-  <data name="EndReason_ErrorOccurred" xml:space="preserve">
+  <data name="Conclusion_ErrorOccurred" xml:space="preserve">
     <value>Error</value>
   </data>
-  <data name="EndReason_None" xml:space="preserve">
+  <data name="Conclusion_None" xml:space="preserve">
     <value>None</value>
   </data>
-  <data name="EndReason_SystemShutdown" xml:space="preserve">
+  <data name="Conclusion_SystemShutdown" xml:space="preserve">
     <value>SystemShutdown</value>
   </data>
-  <data name="EndReason_Unstarted" xml:space="preserve">
+  <data name="Conclusion_Unstarted" xml:space="preserve">
     <value>Unstarted</value>
   </data>
-  <data name="EndReason_Interrupted" xml:space="preserve">
+  <data name="Conclusion_Canceled" xml:space="preserve">
     <value>Stopped</value>
   </data>
   <data name="HistoryCommentTextBlock.Text" xml:space="preserve">
@@ -228,14 +225,11 @@
   <data name="TerminateMenuFlyoutItem.Text" xml:space="preserve">
     <value>Terminate</value>
   </data>
-  <data name="EndReason_Unknown" xml:space="preserve">
+  <data name="Conclusion_Unknown" xml:space="preserve">
     <value>Unknown</value>
   </data>
-  <data name="EndReason_Terminated" xml:space="preserve">
+  <data name="Conclusion_Terminated" xml:space="preserve">
     <value>Terminated</value>
-  </data>
-  <data name="EndReason_Crushed" xml:space="preserve">
-    <value>Crushed</value>
   </data>
   <data name="CompletionNotification_Title" xml:space="preserve">
     <value>Macro Complete</value>
@@ -272,5 +266,23 @@
   </data>
   <data name="Intervention_succeeded" xml:space="preserve">
     <value>Invoked "{0}".</value>
+  </data>
+  <data name="Validation_RequiresAdmin" xml:space="preserve">
+    <value>This macro requires administrator privileges to run.</value>
+  </data>
+  <data name="Validation_ExceptionOccurred" xml:space="preserve">
+    <value>This macro is unable to run because the following exception occurred: {0}</value>
+  </data>
+  <data name="Conclusion_Failure" xml:space="preserve">
+    <value>Failure</value>
+  </data>
+  <data name="Conclusion_Crushed" xml:space="preserve">
+    <value>Crushed</value>
+  </data>
+  <data name="Conclusion_Success" xml:space="preserve">
+    <value>Complete</value>
+  </data>
+  <data name="MetadataLabel_template_classname" xml:space="preserve">
+    <value>Template Class</value>
   </data>
 </root>

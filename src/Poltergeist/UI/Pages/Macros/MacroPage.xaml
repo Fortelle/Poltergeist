@@ -17,7 +17,7 @@
     <Page.Resources>
         <converters:TypeNameConverter x:Key="TypeNameConverter"/>
         <converters:TimeSpanToHhhmmssConverter x:Key="TimeSpanToHhhmmssConverter"/>
-        <local:EndReasonToTextConverter x:Key="EndReasonToTextConverter"/>
+        <local:ConclusionToTextConverter x:Key="ConclusionToTextConverter"/>
     </Page.Resources>
     
     <Grid
@@ -306,7 +306,7 @@
                                             Grid.Column="2"
                                             TextAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Text="{Binding EndReason, Converter={StaticResource EndReasonToTextConverter}, Mode=OneTime}"
+                                            Text="{Binding Conclusion, Converter={StaticResource ConclusionToTextConverter}, Mode=OneTime}"
                                             />
                                         <TextBlock
                                             Grid.Column="3"

@@ -1,85 +1,70 @@
-﻿using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Loops;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Loops;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Operations.Hybrid;
 using Poltergeist.Operations.Inputting;
 
 namespace Poltergeist.Android.HybridEmulators;
 
-public class HybridAndroidEmulatorMacro : CommonMacroBase
+public class HybridAndroidEmulatorMacro : CommonLoopMacroBase
 {
-    public Action<ArgumentService>? BeforeConnect;
-    public Action<ArgumentService, HybridOperator>? AfterConnect;
-    public Action<IterationArguments, HybridOperator>? Execute;
-    public Action<LoopCheckContinueArguments, HybridOperator>? CheckContinue;
-    public Action<ArgumentService>? Finally;
+    public Action<WorkflowController>? BeforeConnect;
+    public Action<WorkflowController, HybridOperator>? AfterConnect;
+    public Action<WorkflowController, IterationContext, HybridOperator>? Execute;
+    public Action<WorkflowController, TransitionContext, HybridOperator>? Transition;
+    public Action<WorkflowController>? End;
 
-    public LoopOptions LoopOptions { get; } = new()
+    public HybridAndroidEmulatorMacro(string? name = null) : base(name)
     {
-        IsCountLimitable = true,
-        IsDurationLimitable = true,
-        Instrument = LoopInstrumentType.List,
-    };
-
-    public HybridAndroidEmulatorMacro(string name) : base(name)
-    {
-        Modules.Add(new LoopModule(LoopOptions));
         Modules.Add(new HybridAndroidEmulatorModule());
-        Modules.Add(new InputOptionsModule());
+        Modules.Add(new HumanizationOptionsModule());
+        Modules.Add(new AdbHumanizationOptionsModule());
     }
 
-    protected override void OnPrepare(IPreparableProcessor processor)
+    protected override Task<bool> OnStartAsync(WorkflowController controller)
     {
-        base.OnPrepare(processor);
+        BeforeConnect?.Invoke(controller);
 
-        var loopService = processor.GetService<LoopService>();
-        var hookService = processor.GetService<HookService>();
+        var emulatorService = controller.Processor.GetService<HybridOperationService>();
+        emulatorService.Connect();
 
-        loopService.BeforeProc = () =>
+        if (AfterConnect is not null)
         {
-            BeforeConnect?.Invoke(processor.GetService<ArgumentService>());
+            var ope = controller.Processor.GetService<HybridOperator>();
+            AfterConnect.Invoke(controller, ope);
+        }
 
-            var emulatorService = processor.GetService<HybridOperationService>();
-            emulatorService.Connect();
+        return Task.FromResult(true);
+    }
 
-            var ope = processor.GetService<HybridOperator>();
-            AfterConnect?.Invoke(processor.GetService<ArgumentService>(), ope);
-
-            return true;
-        };
-
+    protected override Task OnExecuteAsync(WorkflowController controller, IterationContext context)
+    {
         if (Execute is not null)
         {
-            loopService.IterationProc = (index) =>
-            {
-                var args = processor.GetService<IterationArguments>();
-                args.Index = index;
-                var ope = processor.GetService<HybridOperator>();
-                Execute(args, ope);
-                return !args.Break;
-            };
+            var @operator = controller.Processor.GetService<HybridOperator>();
+            Execute.Invoke(controller, context, @operator);
         }
 
-        if (CheckContinue is not null)
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnTransitionAsync(WorkflowController controller, TransitionContext context)
+    {
+        if (Transition is not null)
         {
-            loopService.IntermissionProc = (index) =>
-            {
-                var args = processor.GetService<LoopCheckContinueArguments>();
-                args.IterationIndex = index;
-                var ope = processor.GetService<HybridOperator>();
-                CheckContinue(args, ope);
-                return !args.Break;
-            };
+            var @operator = controller.Processor.GetService<HybridOperator>();
+            Transition.Invoke(controller, context, @operator);
         }
 
-        if (Finally is not null)
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnEndAsync(WorkflowController controller)
+    {
+        if (End is not null)
         {
-            hookService.Register<LoopEndingHook>(hook =>
-            {
-                var args = hook.Processor.GetService<ArgumentService>();
-                Finally(args);
-            });
+            End.Invoke(controller);
         }
+
+        return Task.CompletedTask;
     }
 }

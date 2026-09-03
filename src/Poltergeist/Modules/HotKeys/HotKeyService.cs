@@ -94,7 +94,7 @@ public class HotKeyService : ServiceBase, IDisposable
 
         if (info.SettingDefinition is not null)
         {
-            PoltergeistApplication.GetService<AppSettingsService>().Settings.Remove(info.SettingDefinition);
+            PoltergeistApplication.GetService<AppSettingsService>().Settings.Remove(info.SettingDefinition.Key);
         }
 
         Logger.Trace($"Removed hot key '{info.Name}'.", new

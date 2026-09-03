@@ -1,5 +1,7 @@
-﻿using Poltergeist.Automations.Components.Interactions;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
@@ -19,9 +21,9 @@ public class MinimizationModule : MacroModule
         IsConfigurable = isConfigurable;
     }
 
-    public override void OnMacroInitialize(IInitializableMacro macro)
+    public override void OnMacroInitialized(IMacroInformation macro)
     {
-        base.OnMacroInitialize(macro);
+        base.OnMacroInitialized(macro);
 
         macro.OptionDefinitions.Add(new OptionDefinition<bool>("minimization", true)
         {
@@ -30,34 +32,28 @@ public class MinimizationModule : MacroModule
         });
     }
 
-    public override void OnProcessorPrepare(IPreparableProcessor processor)
+    [MacroHook]
+    public static void OnProcessorStarted(IMacroProcessorShared processor, ProcessorStartupHook hook)
     {
-        base.OnProcessorPrepare(processor);
-
-        processor.Hooks.Register<ProcessorStartedHook>(OnProcessorStarted);
-        processor.Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
-    }
-
-    private void OnProcessorStarted(ProcessorStartedHook hook)
-    {
-        if (!hook.Processor.Options.GetValueOrDefault<bool>("minimization"))
+        if (!processor.Options.GetValueOrDefault<bool>("minimization"))
         {
             return;
         }
 
         var model = new AppWindowModel(AppWindowAction.Minimize);
-        hook.Processor.GetService<InteractionService>().Push(model);
+        processor.GetService<InteractionService>().Push(model);
     }
 
-    private void OnProcessorEnding(ProcessorEndingHook hook)
+    [MacroHook]
+    public static void OnProcessorCompleted(IMacroProcessorShared processor, ProcessorCompletedHook hook)
     {
-        if (!hook.Processor.Options.GetValueOrDefault<bool>("minimization"))
+        if (!processor.Options.GetValueOrDefault<bool>("minimization"))
         {
             return;
         }
 
         var model = new AppWindowModel(AppWindowAction.Restore);
-        hook.Processor.GetService<InteractionService>().Push(model);
+        processor.GetService<InteractionService>().Push(model);
     }
 
 }

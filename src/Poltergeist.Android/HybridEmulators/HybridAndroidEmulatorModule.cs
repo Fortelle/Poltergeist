@@ -2,13 +2,11 @@
 using Poltergeist.Android.Adb;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Utilities.Maths;
 using Poltergeist.Operations.Capturing;
 using Poltergeist.Operations.Hybrid;
-using Poltergeist.Operations.Inputting;
 using Poltergeist.Operations.Locating;
-using Poltergeist.Operations.Timers;
 
 namespace Poltergeist.Android.HybridEmulators;
 
@@ -21,67 +19,57 @@ public class HybridAndroidEmulatorModule : HybridOperationModule
         MouseModes.AddRange("adb");
     }
 
-    public override void OnMacroInitialize(IInitializableMacro macro)
+    public override void OnMacroInitialized(IMacroInformation macro)
     {
-        base.OnMacroInitialize(macro);
+        base.OnMacroInitialized(macro);
     }
 
-    public override void OnProcessorConfigure(IConfigurableProcessor processor)
+    public override void RegisterServices(IServiceCollection services, RegisterServicesArguments args)
     {
-        base.OnProcessorConfigure(processor);
+        base.RegisterServices(services, args);
 
-        processor.Services.AddSingleton<HybridOperator>();
+        services.AddSingleton<HybridOperator>();
 
-        var capturingMode = processor.Options.Get<string>(CapturingModeKey);
-        var mouseMode = processor.Options.Get<string>(MouseModeKey);
+        var capturingMode = args.Options.Get<string>(CapturingModeKey);
+        var mouseMode = args.Options.Get<string>(MouseModeKey);
 
         if (capturingMode == "adb")
         {
-            processor.Services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<AdbCapturingService>());
+            services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<AdbCapturingService>());
         }
 
         if (mouseMode == "sendinput")
         {
-            processor.Services.AddSingleton<IHybridInputService, ScreenInputWrapper>();
+            services.AddSingleton<IHybridInputService, ScreenInputWrapper>();
         }
         else if (mouseMode == "sendmessage")
         {
-            processor.Services.AddSingleton<IHybridInputService, WindowInputWrapper>();
+            services.AddSingleton<IHybridInputService, WindowInputWrapper>();
         }
         else if(mouseMode == "adb")
         {
-            processor.Services.AddSingleton<IHybridInputService, AdbInputWrapper>();
+            services.AddSingleton<IHybridInputService, AdbInputWrapper>();
         }
 
-        processor.Services.Configure<AdbInputOptions>(options =>
-        {
-            options.SwipeTime = TimeSpanRange.FromMilliseconds(1000, 1500);
-            options.MaxDeviationRadius = 32;
-            options.DeviationDistribution = ShapeDistributionType.Gaussian;
-            options.ShapeDistribution = ShapeDistributionType.Gaussian;
-            options.MovingMotion = MouseMoveMotion.Linear;
-            options.MovingInterval = 15;
-        });
     }
 
-    public override void OnProcessorPrepare(IPreparableProcessor processor)
+    [MacroHook]
+    public static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
     {
-        base.OnProcessorPrepare(processor);
-
         if (processor.Macro.ExtraData.TryGetValue("window_region_config", out RegionConfig? config)) {
             processor.SessionStorage.TryAdd("window_region_config", config);
         }
     }
 
     [MacroHook]
-    public static void OnStart2(HybridOperationStartHook hook)
+    public static void OnHybridOperationStart2(IMacroProcessorShared processor, HybridOperationStartHook hook)
     {
-        var capturingMode = hook.Processor.Options.Get<string>(CapturingModeKey);
-        var mouseMode = hook.Processor.Options.Get<string>(MouseModeKey);
+        var capturingMode = processor.Options.Get<string>(CapturingModeKey);
+        var mouseMode = processor.Options.Get<string>(MouseModeKey);
 
         if (capturingMode == "adb" || mouseMode == "adb")
         {
-            var adb = hook.Processor.GetService<AdbService>();
+            var adb = processor.GetService<AdbService>();
             if (!adb.Connect())
             {
                 throw new Exception("Failed to connect to adb server.");
@@ -90,14 +78,14 @@ public class HybridAndroidEmulatorModule : HybridOperationModule
     }
 
     [MacroHook]
-    public static void OnStop(HybridOperationStopHook hook)
+    public static void OnHybridOperationStop(IMacroProcessorShared processor, HybridOperationStopHook hook)
     {
-        var capturingMode = hook.Processor.Options.Get<string>(CapturingModeKey);
-        var mouseMode = hook.Processor.Options.Get<string>(MouseModeKey);
+        var capturingMode = processor.Options.Get<string>(CapturingModeKey);
+        var mouseMode = processor.Options.Get<string>(MouseModeKey);
 
         if (capturingMode == "adb" || mouseMode == "adb")
         {
-            var adb = hook.Processor.GetService<AdbService>();
+            var adb = processor.GetService<AdbService>();
             adb.Close();
         }
     }

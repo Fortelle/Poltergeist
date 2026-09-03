@@ -3,7 +3,7 @@ using Poltergeist.Modules.Events;
 
 namespace Poltergeist.Modules.Macros;
 
-public class MacroProcessorLaunchedEvent(IFrontProcessor processor) : AppEvent
+public class MacroProcessorLaunchedEvent(IMacroProcessor processor) : AppEvent
 {
-    public IFrontProcessor Processor => processor;
+    public IMacroProcessor Processor => processor;
 }

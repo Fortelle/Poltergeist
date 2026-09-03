@@ -1,5 +1,5 @@
 ﻿using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests.MacroTests;
@@ -11,15 +11,15 @@ public class MacroModuleMacroHookAttributeTests
     {
         [MacroHook]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-        public void OnProcessorStarted_Instance(ProcessorStartedHook hook)
+        public void OnProcessorStartup_Instance(IMacroProcessorShared processor, ProcessorStartupHook hook)
         {
-            hook.Processor.OutputStorage.Add("instance", true);
+            processor.OutputStorage.Add("instance", true);
         }
 
         [MacroHook]
-        public static void OnProcessorStarted_Static(ProcessorStartedHook hook)
+        public static void OnProcessorStartup_Static(IMacroProcessorShared processor, ProcessorStartupHook hook)
         {
-            hook.Processor.OutputStorage.Add("static", true);
+            processor.OutputStorage.Add("static", true);
         }
     }
 
@@ -35,8 +35,8 @@ public class MacroModuleMacroHookAttributeTests
         };
         var result = macro.Test();
 
-        Assert.IsTrue(result.Output.Get<bool>("instance"));
-        Assert.IsTrue(result.Output.Get<bool>("static"));
+        Assert.IsTrue(result.Outputs.Get<bool>("instance"));
+        Assert.IsTrue(result.Outputs.Get<bool>("static"));
     }
 
     private class TestingModule_EmptyParameter : MacroModule
@@ -59,7 +59,7 @@ public class MacroModuleMacroHookAttributeTests
         };
         var result = macro.Test();
 
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreNotEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 
     private class TestingModule_WrongParameterType : MacroModule
@@ -82,6 +82,6 @@ public class MacroModuleMacroHookAttributeTests
         };
         var result = macro.Test();
 
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreNotEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 }

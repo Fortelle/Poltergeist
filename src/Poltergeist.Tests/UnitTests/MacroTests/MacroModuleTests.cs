@@ -1,4 +1,6 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests.MacroTests;
@@ -6,47 +8,104 @@ namespace Poltergeist.Tests.UnitTests.MacroTests;
 [TestClass]
 public class MacroModuleTests
 {
-    private class TestModule : MacroModule
+    private class OnMacroInitializedModule : MacroModule
     {
-        public override void OnMacroInitialize(IInitializableMacro macro)
+        public override void OnMacroInitialized(IMacroInformation macro)
         {
-            macro.OptionDefinitions.Add("test_initialize", true);
-        }
-
-        public override void OnProcessorConfigure(IConfigurableProcessor processor)
-        {
-            processor.Options.Add("test_configure", true);
-        }
-
-        public override void OnProcessorPrepare(IPreparableProcessor processor)
-        {
-            processor.OutputStorage.Add("test_initialize", processor.Options.Get<bool>("test_initialize"));
-            processor.OutputStorage.Add("test_configure", processor.Options.Get<bool>("test_configure"));
-            processor.OutputStorage.Add("test_prepare", true);
+            macro.OptionDefinitions.Add("is_OnMacroInitialized_called", true);
         }
     }
 
     [TestMethod]
-    public void TestInject()
+    public void TestModule_OnMacroInitialized()
     {
         var macro = new TestMacro()
         {
             Modules =
             {
-                new TestModule(),
+                new OnMacroInitializedModule(),
             },
         };
 
-        Assert.IsFalse(macro.OptionDefinitions.Contains("test_initialize"));
+        Assert.IsFalse(macro.OptionDefinitions.Contains("is_OnMacroInitialized_called"));
 
-        ((IFrontBackMacro)macro).Initialize();
+        ((IMacroBase)macro).Initialize();
 
-        Assert.IsTrue(macro.OptionDefinitions.TryGetValue("test_initialize", out var value) && (bool)value.DefaultValue!);
+        Assert.IsTrue(macro.OptionDefinitions.Contains("is_OnMacroInitialized_called"));
+    }
 
-        var result = macro.Test();
 
-        Assert.IsTrue(result.Output.Get<bool>("test_initialize"));
-        Assert.IsTrue(result.Output.Get<bool>("test_configure"));
-        Assert.IsTrue(result.Output.Get<bool>("test_prepare"));
+
+    private class HookModule : MacroModule
+    {
+        [MacroHook]
+        private static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
+        {
+            processor.SessionStorage.Add("is_OnProcessorStartup_called", true);
+        }
+    }
+
+    [TestMethod]
+    public void TestModule_Hook()
+    {
+        var macro = new TestMacro()
+        {
+            Modules =
+            {
+                new HookModule(),
+            },
+        };
+
+        var processor = new MacroProcessor(macro);
+
+        Assert.IsFalse(processor.SessionStorage.ContainsKey("is_OnProcessorStartup_called"));
+
+        processor.Execute();
+
+        Assert.IsTrue(processor.SessionStorage.ContainsKey("is_OnProcessorStartup_called"));
+    }
+
+
+
+
+    private class ValidateModule : MacroModule
+    {
+        public override bool Validate(IMacroProcessorInformation processor)
+        {
+            return false;
+        }
+
+        public override void OnMacroInitialized(IMacroInformation macro)
+        {
+            macro.OptionDefinitions.Add("is_OnMacroInitialized_called", true);
+        }
+
+        [MacroHook]
+        private static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
+        {
+            processor.SessionStorage.Add("is_OnProcessorStartup_called", true);
+        }
+    }
+
+    [TestMethod]
+    public void TestModule_Validate()
+    {
+        var macro = new TestMacro()
+        {
+            Modules =
+            {
+                new ValidateModule(),
+            },
+        };
+
+        Assert.IsFalse(macro.OptionDefinitions.Contains("is_OnMacroInitialized_called"));
+
+        ((IMacroBase)macro).Initialize();
+
+        Assert.IsTrue(macro.OptionDefinitions.Contains("is_OnMacroInitialized_called"));
+
+        var processor = new MacroProcessor(macro);
+
+        Assert.IsFalse(processor.SessionStorage.ContainsKey("is_OnProcessorStartup_called"));
     }
 }

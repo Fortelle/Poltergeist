@@ -41,7 +41,7 @@ public class InteractionService : MacroService
         await Processor.Pause(PauseReason.WaitForInput);
     }
 
-    private void OnMessageReturned(MessageReceivedHook hook)
+    private void OnMessageReturned(IMacroProcessorShared processor, MessageReceivedHook hook)
     {
         if (InteractingModel is null)
         {

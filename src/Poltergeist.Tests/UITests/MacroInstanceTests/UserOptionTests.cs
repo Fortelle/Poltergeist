@@ -139,7 +139,7 @@ public class UserOptionTests
 
         Thread.Sleep(500);
 
-        Assert.AreEqual(200, result.Output.Get<int>(globalKey));
+        Assert.AreEqual(200, result.Outputs.Get<int>(globalKey));
 
         globalOptionsService.GlobalOptions.Remove(globalKey);
     }

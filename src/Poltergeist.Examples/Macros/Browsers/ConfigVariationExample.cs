@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Components.Loops;
+﻿using Poltergeist.Automations.Macros.Loops;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Examples.Macros;
@@ -19,16 +20,18 @@ public class ConfigVariationExample : LoopMacro
             Title = "Loop 5 times",
             Description = "Overrides the user options to force the macro to loop 5 times.",
             Icon = "\uE895",
-            OptionOverrides = new()
-            {
-                { LoopService.ConfigEnableKey, true },
-                { LoopService.ConfigCountKey, 5 },
-            },
+            OptionOverrides =
+            [
+                LoopConfiguralizationModule.PatternDefinition.WithValue(LoopPattern.Multiple),
+                LoopConfiguralizationModule.CountDefinition.WithValue(5),
+            ],
         });
 
-        Iterate = (args) =>
-        {
-            Thread.Sleep(500);
-        };
+        ExecuteAsync = OnIterateAsync;
+    }
+
+    private async Task OnIterateAsync(WorkflowController controller, IterationContext context)
+    {
+        await Task.Delay(500, controller.Processor.CancellationToken);
     }
 };

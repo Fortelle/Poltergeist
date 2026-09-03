@@ -22,7 +22,7 @@ public static class MacroBaseExtensions
         {
             throw result.Exception;
         }
-        Assert.IsTrue(result.IsSucceeded);
+        Assert.AreEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 
     public static void AssertOutput(this MacroBase macro, Func<IReadOnlyParameterValueCollection, bool> func)
@@ -33,7 +33,7 @@ public static class MacroBaseExtensions
             throw result.Exception;
         }
 
-        Assert.IsTrue(func(result.Output));
+        Assert.IsTrue(func(result.Outputs));
     }
 
     public static async Task AssertOutputAsync(this MacroBase macro, Func<IReadOnlyParameterValueCollection, bool> func)
@@ -44,6 +44,6 @@ public static class MacroBaseExtensions
             throw result.Exception;
         }
 
-        Assert.IsTrue(func(result.Output));
+        Assert.IsTrue(func(result.Outputs));
     }
 }

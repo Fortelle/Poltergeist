@@ -1,10 +1,11 @@
 ﻿using Poltergeist.Automations.Components;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class MinimizationExample : BasicMacro
+public class MinimizationExample : CommonOneshotMacroBase
 {
     public MinimizationExample() : base()
     {
@@ -15,11 +16,10 @@ public class MinimizationExample : BasicMacro
         Description = "A macro that minimizes the application window while running.";
 
         Modules.Add(new MinimizationModule(true));
+    }
 
-        Execute = (args) =>
-        {
-            Thread.Sleep(3000);
-        };
-
+    protected override void OnExecute(WorkflowController controller)
+    {
+        Thread.Sleep(3000);
     }
 }

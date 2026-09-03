@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Structures.Parameters;
 
 public class StatisticDefinition<T> : ParameterDefinition<T>, IStatisticDefinition
 {
-    public delegate bool TryUpdateCallback(T? accumulatedValue, ProcessorReport report, [MaybeNullWhen(false)] out T updatedValue);
+    public delegate bool TryUpdateCallback(T? accumulatedValue, IReadOnlyParameterValueCollection report, [MaybeNullWhen(false)] out T updatedValue);
     public delegate T UpdateCallback(T? accumulatedValue, T? currentValue);
 
     public StatisticDefinition(string key) : base(key)
@@ -22,7 +21,7 @@ public class StatisticDefinition<T> : ParameterDefinition<T>, IStatisticDefiniti
 
     public UpdateCallback? Update { get; init; }
 
-    bool IStatisticDefinition.TryUpdate(object? accumulatedValue, ProcessorReport report, [MaybeNullWhen(false)] out object? updatedValue)
+    bool IStatisticDefinition.TryUpdate(object? accumulatedValue, IReadOnlyParameterValueCollection report, [MaybeNullWhen(false)] out object? updatedValue)
     {
         var accumulatedValueT = accumulatedValue is T x ? x : default;
 

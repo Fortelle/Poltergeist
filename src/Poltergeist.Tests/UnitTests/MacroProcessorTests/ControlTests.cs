@@ -1,4 +1,7 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests;
@@ -6,30 +9,27 @@ namespace Poltergeist.Tests.UnitTests;
 [TestClass]
 public class ControlTests
 {
+
+    [ModuleDependency<OneshotModule>]
     private class ControlTestMacro : MacroBase
     {
-        public Action<IUserProcessor>? Execute;
-        public Func<IUserProcessor, Task>? ExecuteAsync;
+        public Action<IMacroProcessorShared>? Execute;
+        public Func<IMacroProcessorShared, Task>? ExecuteAsync;
 
-        protected override void OnPrepare(IPreparableProcessor processor)
+        [MacroHook]
+        public void OnOneshotSetup(IMacroProcessorShared processor, OneshotSetupHook hooks)
         {
-            base.OnPrepare(processor);
-
-            processor.AddStep(new("execution", () =>
+            hooks.ExecuteAsync = async (processor) =>
             {
                 if (Execute is not null)
                 {
-                    Execute((IUserProcessor)processor);
+                    Execute(processor);
                 }
                 else if (ExecuteAsync is not null)
                 {
-                    ExecuteAsync((IUserProcessor)processor).GetAwaiter().GetResult();
+                    await ExecuteAsync(processor);
                 }
-            })
-            {
-                IsDefault = true,
-                IsInterruptable = true,
-            });
+            };
         }
     }
 
@@ -38,14 +38,16 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
             Execute = _ =>
             {
                 Thread.Sleep(1000);
                 value = 1;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
         processor.Start();
         Thread.Sleep(2000);
 
@@ -58,18 +60,20 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
             Execute = p =>
             {
                 Thread.Sleep(1000);
                 value = 1;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
         processor.Start();
         var result = processor.GetResult();
 
-        Assert.AreEqual(EndReason.Complete, result.Reason);
+        Assert.AreEqual(ProcessorConclusion.Success, result.Conclusion);
         Assert.AreEqual(1, value);
     }
 
@@ -78,14 +82,16 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
             Execute = _ =>
             {
                 Thread.Sleep(1000);
                 value = 1;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
         processor.Execute();
 
         Assert.AreEqual(ProcessorStatus.Complete, processor.Status);
@@ -97,14 +103,16 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
             Execute = _ =>
             {
                 Thread.Sleep(1000);
                 value = 1;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
         await processor.ExecuteAsync();
 
         Assert.AreEqual(ProcessorStatus.Complete, processor.Status);
@@ -116,18 +124,21 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
-            Execute = _ =>
+            Execute = p =>
             {
-                Thread.Sleep(1000);
+                p.CancellationToken.WaitHandle.WaitOne(1000);
+                p.ThrowIfCancellationRequested();
                 value = 1;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
 
         processor.Start();
         Thread.Sleep(500);
-        processor.Stop(AbortReason.Unknown);
+        processor.Stop(AbortReason.Test);
         Thread.Sleep(1000);
 
         Assert.AreEqual(ProcessorStatus.Stopped, processor.Status);
@@ -139,22 +150,25 @@ public class ControlTests
     {
         var value = 0;
 
-        var processor = new MacroProcessor(new ControlTestMacro()
+        var macro = new ControlTestMacro()
         {
             ExecuteAsync = async (p) =>
             {
-                await Task.Delay(1000, p.CancellationToken); // interrupt here
-                p.ThrowIfInterrupted();
                 value = 1;
+                await Task.Delay(1000, p.CancellationToken); // interrupt here
+                //p.ThrowIfCancellationRequested();
+                value = 2;
             },
-        });
+        };
+
+        var processor = new MacroProcessor(macro);
 
         processor.Start();
         Thread.Sleep(500);
-        processor.Stop(AbortReason.Unknown);
+        processor.Stop(AbortReason.Test);
         Thread.Sleep(1000);
 
-        Assert.AreEqual(0, value);
+        Assert.AreEqual(1, value);
     }
 
     [TestMethod]
@@ -162,12 +176,12 @@ public class ControlTests
     {
         var isIntervened = false;
 
-        var macro = new BasicMacro
+        var macro = new ControlTestMacro
         {
-            Execute = (args) =>
+            Execute = (p) =>
             {
                 Thread.Sleep(1000);
-                isIntervened = args.Processor.SessionStorage.GetValueOrDefault<string>("test_key") == "test_value";
+                isIntervened = p.SessionStorage.GetValueOrDefault<string>("test_key") == "test_value";
             },
             Interventions =
             {
@@ -186,7 +200,7 @@ public class ControlTests
         var processor = new MacroProcessor(macro);
         processor.Start();
         Thread.Sleep(500);
-        processor.Intervene("test_intervention");
+        processor.TryIntervene("test_intervention");
         processor.GetResult();
 
         Assert.IsTrue(isIntervened);

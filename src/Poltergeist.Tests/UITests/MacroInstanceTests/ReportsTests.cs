@@ -44,6 +44,6 @@ public class ReportsTests
         var reportPath = instance.Reports!.Filepath!;
         var processorId = result.Report.Get<string>("processor_id")!;
         var text = File.ReadAllText(reportPath);
-        Assert.IsTrue(text.Contains(processorId));
+        Assert.Contains(processorId, text);
     }
 }

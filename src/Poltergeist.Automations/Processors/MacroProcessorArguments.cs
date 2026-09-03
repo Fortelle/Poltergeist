@@ -8,5 +8,5 @@ public class MacroProcessorArguments
 
     public Dictionary<string, object?>? Environments { get; set; }
 
-    public Dictionary<string, object?>? SessionStorage { get; set; }
+    public Dictionary<string, object?>? Inputs { get; set; }
 }

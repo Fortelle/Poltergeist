@@ -29,11 +29,18 @@ public class TimerService : MacroService
         var timeout = GetTimeout(token, options);
         if (timeout > 0)
         {
-            Thread.Sleep(timeout);
-            Logger.Debug($"Delayed for {timeout}ms.");
-        }
+            Processor.CancellationToken.WaitHandle.WaitOne(timeout);
 
-        Processor.ThrowIfInterrupted();
+            if (Processor.IsCancellationRequested)
+            {
+                Logger.Debug($"Delay cancelled.");
+                Processor.ThrowIfCancellationRequested();
+            }
+            else
+            {
+                Logger.Debug($"Delayed for {timeout}ms.");
+            }
+        }
 
         Logger.DecreaseIndent();
     }
@@ -46,11 +53,18 @@ public class TimerService : MacroService
         var timeout = GetTimeout(token, options);
         if (timeout > 0)
         {
-            await Task.Delay(timeout);
-            Logger.Debug($"Delayed for {timeout}ms.");
-        }
+            await Task.Delay(timeout, Processor.CancellationToken);
 
-        Processor.ThrowIfInterrupted();
+            if (Processor.IsCancellationRequested)
+            {
+                Logger.Debug($"Delay cancelled.");
+                Processor.ThrowIfCancellationRequested();
+            }
+            else
+            {
+                Logger.Debug($"Delayed for {timeout}ms.");
+            }
+        }
 
         Logger.DecreaseIndent();
     }

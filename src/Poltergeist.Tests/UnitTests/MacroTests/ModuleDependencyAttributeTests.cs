@@ -1,4 +1,6 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests.MacroTests;
@@ -10,10 +12,9 @@ public class ModuleDependencyAttributeTests
     {
         public int Foobar { get; set; } = 100;
 
-        public override void OnProcessorPrepare(IPreparableProcessor processor)
+        [MacroHook]
+        public void OnProcessorCompleted(IMacroProcessorShared processor, ProcessorCompletedHook hook)
         {
-            base.OnProcessorPrepare(processor);
-
             processor.OutputStorage.Add(nameof(Foobar), Foobar);
         }
     }
@@ -33,7 +34,7 @@ public class ModuleDependencyAttributeTests
         var macro = new ModuleTestMacro();
         var result = macro.Test();
 
-        Assert.AreEqual(100, result.Output.Get<int>(nameof(TestModule.Foobar)));
+        Assert.AreEqual(100, result.Outputs.Get<int>(nameof(TestModule.Foobar)));
     }
 
 
@@ -49,6 +50,6 @@ public class ModuleDependencyAttributeTests
         };
         var result = macro.Test();
 
-        Assert.AreEqual(200, result.Output.Get<int>(nameof(TestModule.Foobar)));
+        Assert.AreEqual(200, result.Outputs.Get<int>(nameof(TestModule.Foobar)));
     }
 }

@@ -18,7 +18,7 @@ public class ResultTests
         using var processor = new MacroProcessor(macro);
         var result = processor.Execute();
 
-        Assert.IsTrue(result.IsSucceeded);
+        Assert.AreEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 
     [TestMethod]
@@ -35,7 +35,7 @@ public class ResultTests
         using var processor = new MacroProcessor(macro);
         var result = processor.Execute();
 
-        Assert.AreEqual(EndReason.ErrorOccurred, result.Reason);
+        Assert.AreEqual(ProcessorConclusion.ErrorOccurred, result.Conclusion);
         Assert.IsTrue(result.Exception is TestException);
     }
 
@@ -68,7 +68,7 @@ public class ResultTests
         using var processor = new MacroProcessor(macro);
         var result = processor.Execute();
 
-        Assert.AreEqual("test_value", result.Output.Get<string>("test_key"));
+        Assert.AreEqual("test_value", result.Outputs.Get<string>("test_key"));
     }
 
 }

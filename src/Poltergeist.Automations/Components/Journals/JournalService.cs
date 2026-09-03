@@ -15,7 +15,7 @@ public class JournalService : MacroService
 
     public JournalService(MacroProcessor processor, HookService hookService) : base(processor)
     {
-        hookService.Register<ProcessorEndingHook>(ProcessorEndingHook);
+        hookService.Register<ProcessorCompletedHook>(OnProcessorCompleted);
     }
 
     public void AppendLine(string text)
@@ -71,7 +71,7 @@ public class JournalService : MacroService
         JournalInstrument.Clear();
     }
 
-    private void ProcessorEndingHook(ProcessorEndingHook hook)
+    private void OnProcessorCompleted(IMacroProcessorShared processor, ProcessorCompletedHook hook)
     {
         TrySave(hook.EndTime);
     }

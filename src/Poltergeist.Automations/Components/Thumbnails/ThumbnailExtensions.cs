@@ -7,7 +7,7 @@ public static class ThumbnailExtensions
 {
     public const string ThumbnailFilename = "thumbnail.png";
 
-    public static void SetThumbnailFile(this IServiceProcessor processor, Bitmap image)
+    public static void SetThumbnailFile(this IMacroProcessorInternal processor, Bitmap image)
     {
         if (!processor.Environments.TryGetValue<string>("private_folder", out var privateFolder))
         {

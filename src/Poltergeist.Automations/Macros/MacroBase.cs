@@ -1,17 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Security.Principal;
+using Microsoft.Extensions.DependencyInjection;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
-using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Macros;
 
 /// <summary>
 /// Provides the base class of a macro.
 /// </summary>
-public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigurableMacro, IInitializableMacro, IUserMacro
+public abstract class MacroBase : IMacroBase, IMacroInformation, IMacroExecution
 {
     public string Key { get; }
 
@@ -29,6 +29,9 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
     public StatisticDefinitionCollection StatisticDefinitions { get; } = new();
     public ParameterDefinitionCollection Metadata { get; } = new();
 
+    public ParameterValueCollection? OptionPresets { get; set; }
+    public ParameterValueCollection? EnvironmentPresets { get; set; }
+
     public List<MacroAction> Actions { get; } = new();
     public List<MacroModule> Modules { get; } = new();
     public ParameterValueCollection ExtraData { get; } = new();
@@ -38,11 +41,17 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
     private bool _requiresAdmin;
     public bool RequiresAdmin { get => _requiresAdmin; set => _requiresAdmin |= value; }
 
-    public MacroStatus Status { get; protected set; }
     public Exception? Exception { get; protected set; }
 
-    protected virtual void OnConfigure(IConfigurableProcessor processor) { }
-    protected virtual void OnPrepare(IPreparableProcessor processor) { }
+    protected virtual void OnInitializing() { }
+
+    protected virtual void OnModuleInstalled(MacroModule module) { }
+
+    protected virtual void OnProcessorCreated(IMacroProcessorInformation processor) { }
+
+    protected virtual void RegisterServices(IServiceCollection services, RegisterServicesArguments arguments) { }
+
+    private bool IsInitialized;
 
     private static readonly char[] InvalidKeyChars = [
         ' ',
@@ -68,110 +77,100 @@ public abstract class MacroBase : IMacroBase, IBackMacro, IFrontMacro, IConfigur
         }
     }
 
-    protected virtual bool OnValidating([MaybeNullWhen(true)] out string invalidationMessage)
+    protected virtual bool CanExecute([MaybeNullWhen(true)] out string invalidationMessage)
     {
-        if (Status == MacroStatus.Uninitialized)
-        {
-            ((IBackMacro)this).Initialize();
-        }
-
-        if (Exception is not null)
-        {
-            invalidationMessage = LocalizationUtil.Localize("Validation_ExceptionOccurred", Exception.Message);
-            return false;
-        }
-
-        if (RequiresAdmin)
-        {
-            using var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
-            var isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-            if (!isAdmin)
-            {
-                invalidationMessage = LocalizationUtil.Localize("Validation_RequiresAdmin");
-                return false;
-            }
-        }
-
         invalidationMessage = null;
         return true;
     }
 
-    void IFrontBackMacro.Initialize()
+    protected virtual bool CanExecute(IMacroProcessorInformation processor, [MaybeNullWhen(true)] out string invalidationMessage)
     {
-        if (Status != MacroStatus.Uninitialized)
+        invalidationMessage = null;
+        return true;
+    }
+
+    void IMacroBase.Initialize()
+    {
+        if (IsInitialized)
         {
             return;
         }
 
         if (Exception is not null)
         {
-            Status = MacroStatus.InitializationFailed;
             return;
         }
 
         try
         {
-            var dependentModuleTypes = new List<Type>([
-                GetType(),
-                .. Modules.Select(x => x.GetType())
-                ]);
+            OnInitializing();
 
-            var tempTypes = new HashSet<Type>(dependentModuleTypes);
-            while (tempTypes.Count > 0)
-            {
-                foreach (var type in tempTypes.ToArray())
-                {
-                    var dependencyAttributes = type.GetCustomAttributes(typeof(ModuleDependencyAttribute<>));
-                    foreach (var dependencyAttribute in dependencyAttributes)
-                    {
-                        var moduleType = dependencyAttribute.GetType().GetGenericArguments()[0];
-                        if (!dependentModuleTypes.Contains(moduleType))
-                        {
-                            dependentModuleTypes.Add(moduleType);
-                            tempTypes.Add(moduleType);
-                        }
-                    }
-                    tempTypes.Remove(type);
-                }
-            }
-
-            dependentModuleTypes.Remove(GetType());
-            foreach (var module in Modules)
-            {
-                dependentModuleTypes.Remove(module.GetType());
-            }
-
-            foreach (var moduleType in dependentModuleTypes)
-            {
-                var module = (MacroModule)Activator.CreateInstance(moduleType)!;
-                Modules.Add(module);
-            }
+            LoadModuleDependencies();
 
             foreach (var module in Modules)
             {
-                module.OnMacroInitialize(this);
+                module.OnMacroInitialized(this);
             }
-
-            Status = MacroStatus.Initialized;
         }
         catch (Exception ex)
         {
-            Status = MacroStatus.InitializationFailed;
             Exception = ex;
             if (Debugger.IsAttached)
             {
                 throw;
             }
         }
+
+        IsInitialized = true;
     }
 
-    bool IFrontBackMacro.CheckValidity([MaybeNullWhen(true)] out string invalidationMessage)
+    private void LoadModuleDependencies()
     {
-        return OnValidating(out invalidationMessage);
+        var dependentModuleTypes = new List<Type>([
+            GetType(),
+                .. Modules.Select(x => x.GetType())
+            ]);
+
+        var tempTypes = new HashSet<Type>([
+            GetType(),
+            .. Modules.Select(x => x.GetType())
+        ]);
+
+        while (tempTypes.Count > 0)
+        {
+            foreach (var type in tempTypes.ToArray())
+            {
+                var dependencyAttributes = type.GetCustomAttributes(typeof(ModuleDependencyAttribute<>));
+                foreach (var dependencyAttribute in dependencyAttributes)
+                {
+                    var moduleType = dependencyAttribute.GetType().GetGenericArguments()[0];
+                    if (!dependentModuleTypes.Contains(moduleType))
+                    {
+                        dependentModuleTypes.Add(moduleType);
+                        tempTypes.Add(moduleType);
+                    }
+                }
+                tempTypes.Remove(type);
+            }
+        }
+
+        dependentModuleTypes.Remove(GetType());
+        foreach (var module in Modules)
+        {
+            dependentModuleTypes.Remove(module.GetType());
+        }
+
+        foreach (var moduleType in dependentModuleTypes)
+        {
+            var module = (MacroModule)Activator.CreateInstance(moduleType)!;
+            Modules.Add(module);
+
+            OnModuleInstalled(module);
+        }
     }
 
-    void IBackMacro.Configure(IConfigurableProcessor processor) => OnConfigure(processor);
-    void IBackMacro.Prepare(IPreparableProcessor processor) => OnPrepare(processor);
-
+    void IMacroExecution.OnProcessorCreated(IMacroProcessorInformation processor) => OnProcessorCreated(processor);
+    bool IMacroExecution.CanExecute([MaybeNullWhen(true)] out string invalidationMessage) => CanExecute(out invalidationMessage);
+    bool IMacroExecution.CanExecute(IMacroProcessorInformation processor, [MaybeNullWhen(true)] out string invalidationMessage) => CanExecute(processor, out invalidationMessage);
+    void IMacroExecution.RegisterServices(ServiceCollection services, RegisterServicesArguments arguments) => RegisterServices(services, arguments);
 }

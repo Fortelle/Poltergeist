@@ -1,11 +1,11 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class StatisticExample : BasicMacro
+public class StatisticExample : CommonOneshotMacroBase
 {
     public StatisticExample() : base()
     {
@@ -23,16 +23,16 @@ public class StatisticExample : BasicMacro
 
         StatisticDefinitions.Add(new StatisticDefinition<int>("count2")
         {
-            TryUpdate = (int accumulatedValue, ProcessorReport report, out int currentValue) =>
+            TryUpdate = (int accumulatedValue, IReadOnlyParameterValueCollection report, out int currentValue) =>
             {
                 currentValue = accumulatedValue + report.Get<int>("count");
                 return true;
             },
         });
+    }
 
-        Execute = args =>
-        {
-            args.Processor.Report.Add("count", 1);
-        };
+    protected override void OnExecute(WorkflowController controller)
+    {
+        controller.Processor.Report.Add("count", 1);
     }
 };

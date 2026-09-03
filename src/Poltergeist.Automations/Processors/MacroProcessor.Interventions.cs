@@ -2,10 +2,10 @@
 
 public partial class MacroProcessor
 {
-    public bool Intervene(string interventionKey)
+    public bool TryIntervene(string interventionKey)
     {
         var intervention = Macro.Interventions.FirstOrDefault(x => x.Key == interventionKey);
-        
+
         if (intervention is null)
         {
             Logger?.Warn($"Failed to inject intervention '{interventionKey}': key not found.");
@@ -13,16 +13,21 @@ public partial class MacroProcessor
             return false;
         }
 
+        return TryIntervene(intervention);
+    }
+
+    public bool TryIntervene(ProcessorIntervention intervention)
+    {
         if (intervention.IsDevelopmentOnly && !Environments.GetValueOrDefault<bool>("is_development"))
         {
-            Logger?.Warn($"Failed to inject intervention '{interventionKey}': development only.");
+            Logger?.Warn($"Failed to inject intervention '{intervention.Key}': development only.");
 
             return false;
         }
 
         if (intervention.CanIntervene?.Invoke(this) == false)
         {
-            Logger?.Warn($"Failed to inject intervention '{interventionKey}': cannot handle.");
+            Logger?.Warn($"Failed to inject intervention '{intervention.Key}': cannot handle.");
 
             return false;
         }
@@ -33,7 +38,7 @@ public partial class MacroProcessor
             Logger?.Trace($"Added intervention variable '{key}' = '{value}'.");
         }
 
-        Logger?.Info($"Injected intervention '{interventionKey}'.");
+        Logger?.Info($"Injected intervention '{intervention.Key}'.");
 
         return true;
     }

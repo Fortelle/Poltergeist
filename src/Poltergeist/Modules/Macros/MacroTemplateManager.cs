@@ -9,7 +9,7 @@ public class MacroTemplateManager : ServiceBase
 {
     private const string FilenameFormat = "Poltergeist.Plugin.*.dll";
 
-    public List<IFrontMacro> Templates { get; } = new();
+    public List<IMacroBase> Templates { get; } = new();
 
     private readonly MacroStatisticsService StatisticService;
     private readonly GlobalOptionsService GlobalOptionsService;
@@ -26,12 +26,12 @@ public class MacroTemplateManager : ServiceBase
         eventService.Subscribe<AppContentLoadingEvent>(OnAppContentLoading, new() { Priority = 200 }); // should go before MacroInstanceManager
     }
 
-    public void Register(IFrontMacro macro)
+    public void Register(IMacroBase macro)
     {
         RegisterInternal(macro);
     }
 
-    private void RegisterInternal(IFrontMacro macro)
+    private void RegisterInternal(IMacroBase macro)
     {
         Templates.Add(macro);
 
@@ -64,7 +64,7 @@ public class MacroTemplateManager : ServiceBase
         Logger.Debug($"Added macro template '{macro.Key}'({macro.GetType().Name}).");
     }
 
-    public IFrontMacro? GetTemplate(string macroKey)
+    public IMacroBase? GetTemplate(string macroKey)
     {
         return Templates.FirstOrDefault(x => x.Key == macroKey);
     }

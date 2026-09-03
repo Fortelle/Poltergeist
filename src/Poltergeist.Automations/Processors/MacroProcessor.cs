@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Logging;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Processors;
 
-public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor, IConfigurableProcessor, IUserProcessor, IPreparableProcessor
+public sealed partial class MacroProcessor :
+    IMacroProcessor,
+    IMacroProcessorInternal
 {
     public string ProcessorId { get; }
 
-    public ServiceCollection? ServiceCollection { get; private set; }
-    public ServiceProvider? ServiceProvider { get; private set; }
-    ServiceCollection IConfigurableProcessor.Services => ServiceCollection!;
+    private ServiceProvider? ServiceProvider;
 
     /// <summary>
     /// Gets a collection that contains the options for the macro processor.
@@ -50,23 +50,22 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
 
     public ProcessorStatus Status { get; private set; } = ProcessorStatus.Idle;
 
-    private IBackMacro Macro { get; }
-    IUserMacro IUserProcessor.Macro => (IUserMacro)Macro;
-    IUserMacro IPreparableProcessor.Macro => (IUserMacro)Macro;
-    IFrontMacro IFrontProcessor.Macro => (IFrontMacro)Macro;
+    private readonly IMacroExecution Macro;
+    IMacroInformation IMacroProcessorInformation.Macro => Macro;
 
-    private LoggerWrapper? Logger;
+    public MacroProcessor(IMacroExecution macro) : this(macro, null)
+    {
+    }
 
-    public MacroProcessor(MacroBase macro)
+    public MacroProcessor(IMacroExecution macro, MacroProcessorArguments? arguments)
     {
         Macro = macro;
         ProcessorId = Guid.NewGuid().ToString();
 
-        Macro.Initialize();
+        macro.Initialize();
 
-        if (!Macro.CheckValidity(out var invalidationMessage))
+        if (macro.Exception is not null)
         {
-            Exception = new Exception(invalidationMessage);
             Status = ProcessorStatus.Invalid;
             return;
         }
@@ -78,53 +77,90 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
                 Options.TryAdd(entry.Key, entry.DefaultValue);
             }
         }
-    }
-
-    public MacroProcessor(MacroBase macro, MacroProcessorArguments arguments) : this(macro)
-    {
-        if (Status != ProcessorStatus.Idle)
+        if (macro.OptionPresets?.Count > 0)
         {
+            foreach (var entry in macro.OptionPresets)
+            {
+                Options.TryAdd(entry.Key, entry.Value);
+            }
+        }
+
+        if (macro.EnvironmentPresets?.Count > 0)
+        {
+            foreach (var entry in macro.EnvironmentPresets)
+            {
+                Environments.TryAdd(entry.Key, entry.Value);
+            }
+        }
+
+        if (arguments is not null)
+        {
+            if (arguments.Options?.Count > 0)
+            {
+                foreach (var (key, value) in arguments.Options)
+                {
+                    Options.AddOrUpdate(key, value);
+                }
+            }
+
+            if (arguments.Environments?.Count > 0)
+            {
+                foreach (var (key, value) in arguments.Environments)
+                {
+                    Environments.AddOrUpdate(key, value);
+                }
+            }
+
+            if (arguments.Inputs?.Count > 0)
+            {
+                foreach (var (key, value) in arguments.Inputs)
+                {
+                    SessionStorage.AddOrUpdate(key, value);
+                }
+            }
+
+            if (arguments.LaunchReason != LaunchReason.Unknown)
+            {
+                Report.Add("launch_reason", arguments.LaunchReason);
+            }
+        }
+
+        macro.OnProcessorCreated(this);
+        
+        if (!macro.CanExecute(this, out var invalidationMessage))
+        {
+            Status = ProcessorStatus.Invalid;
+            Exception = new Exception(invalidationMessage);
             return;
-        }
-
-        if (arguments.Options?.Count > 0)
-        {
-            foreach (var (key, value) in arguments.Options)
-            {
-                Options.AddOrUpdate(key, value);
-            }
-        }
-
-        if (arguments.Environments?.Count > 0)
-        {
-            foreach (var (key, value) in arguments.Environments)
-            {
-                Environments.AddOrUpdate(key, value);
-            }
-        }
-
-        if (arguments.SessionStorage?.Count > 0)
-        {
-            foreach (var (key, value) in arguments.SessionStorage)
-            {
-                SessionStorage.AddOrUpdate(key, value);
-            }
-        }
-
-        if (arguments.LaunchReason != LaunchReason.Unknown)
-        {
-            Report.Add("launch_reason", arguments.LaunchReason);
         }
     }
 
     public T GetService<T>() where T : class
     {
-        return (T)GetService(typeof(T))!;
+        return ServiceProvider!.GetRequiredService<T>();
     }
 
-    public object? GetService(Type type)
+    public object GetService(Type type)
     {
-        return ServiceProvider!.GetService(type);
+        return ServiceProvider!.GetRequiredService(type);
+    }
+
+    public bool TryGetService(Type type, [NotNullWhen(true)] out object? service)
+    {
+        service = ServiceProvider!.GetService(type);
+        return service is not null;
+    }
+
+    public bool TryGetService<T>([NotNullWhen(true)] out T? service)
+    {
+        if (!TryGetService(typeof(T), out var obj))
+        {
+            service = default;
+            return false;
+        }
+
+        service = (T)obj!;
+        return true;
     }
 
     public void ReceiveMessage(Dictionary<string, string> paramaters)
@@ -141,9 +177,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     /// <returns>A <see cref="ProcessorResult"/> representing the outcome of the macro execution.</returns>
     public static ProcessorResult Execute(MacroBase macro, MacroProcessorArguments? arguments = null)
     {
-        using var processor = arguments is null
-            ? new MacroProcessor(macro)
-            : new MacroProcessor(macro, arguments);
+        using var processor = new MacroProcessor(macro, arguments);
         var result = processor.Execute();
         return result;
     }
@@ -157,9 +191,7 @@ public sealed partial class MacroProcessor : IFrontProcessor, IServiceProcessor,
     /// <returns>A <see cref="ProcessorResult"/> representing the outcome of the macro execution.</returns>
     public static async Task<ProcessorResult> ExecuteAsync(MacroBase macro, MacroProcessorArguments? arguments = null)
     {
-        using var processor = arguments is null
-            ? new MacroProcessor(macro)
-            : new MacroProcessor(macro, arguments);
+        using var processor = new MacroProcessor(macro, arguments);
         var result = await processor.ExecuteAsync();
         return result;
     }

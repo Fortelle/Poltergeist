@@ -114,7 +114,7 @@ public class FlowBuilderService : MacroService
                 },
             });
 
-            if (Processor.IsCancelled)
+            if (Processor.IsCancellationRequested)
             {
                 break;
             }

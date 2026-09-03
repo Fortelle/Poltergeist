@@ -24,5 +24,5 @@ public abstract class ParameterDefinitionBase
         Key = key;
     }
 
-    public static implicit operator string(ParameterDefinitionBase definition) => new(definition.Key);
+    public static explicit operator string(ParameterDefinitionBase definition) => definition.Key;
 }

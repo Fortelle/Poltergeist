@@ -1,5 +1,5 @@
 ﻿using Poltergeist.Automations.Components.Logging;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests.MacroProcessorTests;
@@ -10,7 +10,7 @@ public class MacroLoggerTests
     [TestMethod]
     public void Test()
     {
-        var macro = new BasicMacro
+        var macro = new OneshotMacro
         {
             Execute = (args) =>
             {

@@ -1,16 +1,19 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
 
 namespace Poltergeist.Automations.Components;
 
+// todo: convert to ui level option
 public class CompleteModule : MacroModule
 {
 
-    public override void OnMacroInitialize(IInitializableMacro macro)
+    public override void OnMacroInitialized(IMacroInformation macro)
     {
-        base.OnMacroInitialize(macro);
+        base.OnMacroInitialized(macro);
 
         macro.OptionDefinitions.Add(new EnumOption<CompletionAction>("aftercompletion.action", CompletionAction.None)
         {
@@ -34,28 +37,26 @@ public class CompleteModule : MacroModule
         });
     }
 
-    public override void OnProcessorPrepare(IPreparableProcessor processor)
+    [MacroHook]
+    public static void OnProcessorCompleted(IMacroProcessorShared processor, ProcessorCompletedHook hook)
     {
-        base.OnProcessorPrepare(processor);
-
-        processor.Hooks.Register<ProcessorEndingHook>(OnProcessorEnding);
-    }
-
-    private void OnProcessorEnding(ProcessorEndingHook hook)
-    {
-        var completeAction = hook.Processor.Options.GetValueOrDefault<CompletionAction>("aftercompletion.action");
-        var completeAllowerror = hook.Processor.Options.GetValueOrDefault<bool>("aftercompletion.allowerror");
-        var completeMinimumTime = hook.Processor.Options.GetValueOrDefault<TimeOnly>("aftercompletion.minimumtime");
+        var completeAction = processor.Options.GetValueOrDefault<CompletionAction>("aftercompletion.action");
+        var completeAllowerror = processor.Options.GetValueOrDefault<bool>("aftercompletion.allowerror");
+        var completeMinimumTime = processor.Options.GetValueOrDefault<TimeOnly>("aftercompletion.minimumtime");
         
-        if (hook.Reason == EndReason.Crushed)
+        if (hook.Conclusion == ProcessorConclusion.Crushed)
         {
             completeAction = CompletionAction.None;
         }
-        else if (hook.Reason == EndReason.Interrupted || hook.Reason == EndReason.Terminated)
+        else if (hook.Conclusion == ProcessorConclusion.Canceled || hook.Conclusion == ProcessorConclusion.Terminated)
         {
             completeAction = CompletionAction.None;
         }
-        else if (hook.Reason == EndReason.ErrorOccurred && !completeAllowerror)
+        else if (hook.Conclusion == ProcessorConclusion.ErrorOccurred && !completeAllowerror)
+        {
+            completeAction = CompletionAction.None;
+        }
+        else if (hook.Conclusion == ProcessorConclusion.Failure)
         {
             completeAction = CompletionAction.None;
         }

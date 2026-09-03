@@ -1,13 +1,16 @@
 ﻿using System.Drawing;
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Automations.Components;
 
-public class BackgroundService : MacroService, IAutoloadable
+public class BackgroundService : MacroService
 {
     private readonly TextInstrument BackgroundInstrument;
 
@@ -22,10 +25,10 @@ public class BackgroundService : MacroService, IAutoloadable
             IsFilled = true,
         });
 
-        hooks.Register<ProcessorStartedHook>(Create);
+        hooks.Register<ProcessorStartupHook>(Create);
     }
 
-    private void Create(ProcessorStartedHook args)
+    private void Create(IMacroProcessorShared _, ProcessorStartupHook e)
     {
         var classes = new List<Type>
         {
@@ -60,7 +63,9 @@ public class BackgroundService : MacroService, IAutoloadable
 
         var processor = (MacroProcessor)Processor;
         var macro = (MacroBase)Processor.Macro;
-
+        var modules = (List<MacroModule>)typeof(MacroProcessor).GetField("Modules", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(Processor)!;
+        var services = (ServiceCollection)typeof(MacroProcessor).GetField("ServiceCollection", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(Processor)!;
+        
         var optionList = processor.Options
             .Select(x => $"{x.Key}({x.Value?.GetType().Name ?? "null"}) = {x.Value}")
             .ToArray();
@@ -70,15 +75,15 @@ public class BackgroundService : MacroService, IAutoloadable
             .ToArray();
 
         var moduleList = macro.Modules
-            .Select(x => $"{x.GetType().Name}")
+            .Select(x => $"{x.GetType().Name}" + (modules.Contains(x) ? "" : " (disabled)"))
             .ToArray();
 
-        var serviceList = processor.ServiceCollection!
+        var serviceList = services
             .Select(x => x.ServiceType.Name)
             .Where(x => !x.StartsWith("IOptions") && !x.StartsWith("IConfigureOptions"))
             .ToArray();
 
-        var serviceOptions = processor.ServiceCollection!
+        var serviceOptions = services
             .Select(x => x.ServiceType.Name)
             .Where(x => x.StartsWith("IOptions") || x.StartsWith("IConfigureOptions"))
             .ToArray();

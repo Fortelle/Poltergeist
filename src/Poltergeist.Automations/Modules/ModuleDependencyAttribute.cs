@@ -1,0 +1,6 @@
+﻿namespace Poltergeist.Automations.Modules;
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class ModuleDependencyAttribute<T> : Attribute where T : MacroModule, new()
+{
+}

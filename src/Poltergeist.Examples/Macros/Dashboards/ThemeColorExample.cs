@@ -1,12 +1,13 @@
 ﻿using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class ThemeColorExample : BasicMacro
+public class ThemeColorExample : CommonOneshotMacroBase
 {
     public ThemeColorExample() : base()
     {
@@ -17,47 +18,53 @@ public class ThemeColorExample : BasicMacro
         Description = "This example shows various ThemeColor patterns.";
 
         ShowStatusBar = false;
+    }
 
-        Execute = (args) =>
+
+    protected override void OnExecute(WorkflowController controller)
+    {
+        var dashboard = controller.Processor.GetService<DashboardService>();
+
+        CreateTiles(dashboard);
+        CreateTexts(dashboard);
+    }
+
+    private static void CreateTiles(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<TileInstrument>(ti =>
         {
-            var dashboard = args.Processor.GetService<DashboardService>();
+            ti.Title = "Tiles:";
+        });
 
+        foreach (var color in Enum.GetValues<ThemeColor>())
+        {
+            instrument.Add(new()
             {
-                var instrument = dashboard.Create<TileInstrument>(ti =>
-                {
-                    ti.Title = "Tiles:";
-                });
+                Icon = IconInfo.FromGlyph("\uE8D2"),
+                Color = color,
+                Tooltip = $"{color}",
+            });
+        }
+    }
 
-                foreach (var color in Enum.GetValues<ThemeColor>())
+    private static void CreateTexts(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<IndicatorInstrument>(ii =>
+        {
+            ii.Title = "Text:";
+        });
+
+        foreach (var color in Enum.GetValues<ThemeColor>())
+        {
+            instrument.Add($"{color}", [
+                new("")
                 {
-                    instrument.Add(new()
-                    {
-                        Icon = IconInfo.FromGlyph("\uE8D2"),
-                        Color = color,
-                        Tooltip = $"{color}",
-                    });
+                    Icon = IconInfo.FromGlyph("\uE8D2"),
+                    Color = color,
+                    Tooltip = $"{color}",
                 }
-            }
-
-            {
-                var instrument = dashboard.Create<IndicatorInstrument>(ii =>
-                {
-                    ii.Title = "Text:";
-                });
-
-                foreach (var color in Enum.GetValues<ThemeColor>())
-                {
-                    instrument.Add($"{color}", [new("")
-                    {
-                        Icon = IconInfo.FromGlyph("\uE8D2"),
-                        Color = color,
-                        Tooltip = $"{color}",
-                    }]);
-                }
-            }
-
-        };
-
+                ]);
+        }
     }
 
 }

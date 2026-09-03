@@ -2,14 +2,19 @@
 
 public partial class MacroProcessor
 {
-    public bool IsCancelled { get; set; }
-
     private PauseProvider? PauseProvider;
 
-    private CancellationTokenSource? Cancellation;
+    private readonly CancellationTokenSource CancellationTokenSource = new ();
 
-    public CancellationToken CancellationToken => Cancellation?.Token ?? CancellationToken.None;
+    public CancellationToken CancellationToken => CancellationTokenSource.Token;
 
+    public bool IsCancellationRequested => CancellationTokenSource.IsCancellationRequested;
+
+    public void ThrowIfCancellationRequested()
+    {
+        WorkflowCanceledException.ThrowIf(IsCancellationRequested);
+    }
+    
     /// <summary>
     /// Runs the processor in a new thread.
     /// </summary>
@@ -18,12 +23,9 @@ public partial class MacroProcessor
     /// </remarks>
     public void Start()
     {
-        if (Status != ProcessorStatus.Idle)
-        {
-            throw new InvalidOperationException();
-        }
+        CheckRunnable();
 
-        InternalStart();
+        WorkflowTask = Task.Run(ProcessAsync);
     }
 
     /// <summary>
@@ -31,23 +33,11 @@ public partial class MacroProcessor
     /// </summary>
     public ProcessorResult Execute()
     {
-        if (Status != ProcessorStatus.Idle)
-        {
-            throw new InvalidOperationException();
-        }
+        CheckRunnable();
 
-        using var mre = new ManualResetEvent(false);
+        WorkflowTask = ProcessAsync();
 
-        Completed += (_, _) =>
-        {
-            mre.Set();
-        };
-        
-        InternalExecute();
-
-        mre.WaitOne();
-
-        return Result!;
+        return WorkflowTask.GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -56,23 +46,11 @@ public partial class MacroProcessor
     /// <returns></returns>
     public async Task<ProcessorResult> ExecuteAsync()
     {
-        if (Status != ProcessorStatus.Idle)
-        {
-            throw new InvalidOperationException();
-        }
+        CheckRunnable();
 
-        var tcs = new TaskCompletionSource();
+        WorkflowTask = ProcessAsync();
 
-        Completed += (_, _) =>
-        {
-            tcs.SetResult();
-        };
-
-        InternalExecute();
-
-        await tcs.Task.ConfigureAwait(false);
-
-        return Result!;
+        return await WorkflowTask;
     }
 
     /// <summary>
@@ -81,26 +59,26 @@ public partial class MacroProcessor
     /// <returns>The result of the processor.</returns>
     public ProcessorResult GetResult()
     {
-        if (Result is not null)
+        if (WorkflowTask is null)
         {
-            return Result;
+            throw new InvalidOperationException("The processor has not been started.");
         }
 
-        using var mre = new ManualResetEvent(false);
+        return WorkflowTask.GetAwaiter().GetResult();
+    }
 
-        Completed += (_, e) =>
+    /// <summary>
+    /// Waits for the processor to complete and returns the result asynchronously.
+    /// </summary>
+    /// <returns>The result of the processor.</returns>
+    public Task<ProcessorResult> GetResultAsync()
+    {
+        if (WorkflowTask is null)
         {
-            mre.Set();
-        };
-
-        mre.WaitOne();
-
-        if (Exception is not null)
-        {
-            throw Exception;
+            throw new InvalidOperationException("The processor has not been started.");
         }
 
-        return Result!;
+        return WorkflowTask;
     }
 
     /// <summary>
@@ -121,11 +99,6 @@ public partial class MacroProcessor
         await PauseProvider.Pause();
 
         PauseProvider = null;
-
-        if (IsCancelled)
-        {
-            throw new UserAbortException();
-        }
     }
 
     public void Resume()
@@ -141,19 +114,8 @@ public partial class MacroProcessor
             PauseProvider.Resume();
             Logger?.Info("The macro is resumed.");
         }
-    }
 
-    public bool IsInterrupted()
-    {
-        return IsCancelled || Cancellation?.Token.IsCancellationRequested == true;
-    }
-
-    public void ThrowIfInterrupted()
-    {
-        if (IsInterrupted())
-        {
-            throw new WorkflowStoppedException();
-        }
+        ThrowIfCancellationRequested();
     }
 
     /// <summary>
@@ -171,14 +133,7 @@ public partial class MacroProcessor
 
         Status = ProcessorStatus.Stopping;
 
-        Cancellation?.Cancel();
-
-        if (CanInterrupt)
-        {
-            WorkflowThread?.Interrupt();
-        }
-
-        IsCancelled = true;
+        CancellationTokenSource.Cancel();
     }
 
     /// <summary>
@@ -189,16 +144,29 @@ public partial class MacroProcessor
     /// </remarks>
     public void Terminate()
     {
-        if (ProcessThread is null)
+        throw new NotImplementedException();
+    }
+
+    private void CheckRunnable()
+    {
+        if (Macro.Exception is not null)
         {
-            throw new InvalidOperationException("The processor is not running.");
+            throw new InvalidOperationException("The macro is not able to run.", Macro.Exception);
         }
 
-        Logger?.Trace("Received a termination request.");
+        if (Exception is not null)
+        {
+            throw new InvalidOperationException("The processor is not initialized correctly.", Exception);
+        }
 
-        Status = ProcessorStatus.Terminating;
+        if (Status != ProcessorStatus.Idle)
+        {
+            throw new InvalidOperationException("The processor is not idle.");
+        }
 
-        WorkflowThread?.Interrupt();
-        ProcessThread.Interrupt();
+        if (IsDisposed)
+        {
+            throw new InvalidOperationException("The processor is disposed.");
+        }
     }
 }

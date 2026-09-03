@@ -1,4 +1,5 @@
-﻿using Poltergeist.Automations.Components.Loops;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros.Loops;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
@@ -16,27 +17,28 @@ public class LoopMacroExample : LoopMacro
 
         Description = $"A macro that can be repeatedly executed.";
 
-        OptionDefinitions.Add(new EnumOption<LoopInstrumentType>("loop-instrument", LoopInstrumentType.List)
+        OptionDefinitions.Add(new EnumOption<LoopInstrumentView>(nameof(LoopInstrumentView), LoopInstrumentView.List)
         {
             DisplayLabel = "Instrument Style",
             Category = LocalizationUtil.Localize("Loops_Category"),
         });
 
-        LoopOptions.DefaultCount = 10;
-
-        LoopOptions.Instrument = LoopInstrumentType.List;
-
-        Iterate = (proc) =>
+        ExecuteAsync = async (args, index) =>
         {
-            Thread.Sleep(1000);
+            await Task.Delay(1000, args.Processor.CancellationToken);
         };
+
+        OptionPresets =
+        [
+            LoopConfiguralizationModule.PatternDefinition.WithValue(LoopPattern.Multiple),
+            LoopConfiguralizationModule.CountDefinition.WithValue(10),
+        ];
     }
 
-    protected override void OnPrepare(IPreparableProcessor processor)
+    [MacroHook]
+    private static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
     {
-        base.OnPrepare(processor);
-
-        LoopOptions.Instrument = processor.Options.Get<LoopInstrumentType>("loop-instrument");
+        var instrumentView = processor.Options.Get<LoopInstrumentView>(nameof(LoopInstrumentView));
+        processor.SessionStorage.AddOrUpdate(LoopVisualizationModule.ViewDefinition, instrumentView);
     }
-
 }

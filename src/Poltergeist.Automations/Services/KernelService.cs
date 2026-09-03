@@ -5,7 +5,7 @@ namespace Poltergeist.Automations.Services;
 
 public abstract class KernelService : IDisposable
 {
-    protected MacroProcessor Processor;
+    protected IMacroProcessorInternal Processor;
 
     protected bool IsDisposed;
 

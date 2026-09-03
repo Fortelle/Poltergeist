@@ -10,7 +10,7 @@ public class MacroStartArguments
 
     public Dictionary<string, object?>? EnvironmentOverrides { get; set; }
 
-    public Dictionary<string, object?>? SessionStorage { get; set; }
+    public Dictionary<string, object?>? Inputs { get; set; }
 
     public Action<ProcessorResult>? Callback { get; set; }
 }

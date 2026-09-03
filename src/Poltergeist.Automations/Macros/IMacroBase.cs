@@ -1,7 +1,6 @@
 ﻿namespace Poltergeist.Automations.Macros;
 
-public interface IMacroBase
+public interface IMacroBase : IMacroInformation
 {
-    string Key { get; }
-    string Title { get; }
+    void Initialize();
 }

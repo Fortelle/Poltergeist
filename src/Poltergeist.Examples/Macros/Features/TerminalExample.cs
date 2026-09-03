@@ -1,12 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Poltergeist.Automations.Components.Logging;
-using Poltergeist.Automations.Components.Terminals;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Terminals;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Services;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public partial class TerminalExample : BasicMacro
+[ServiceDependency<TerminalService>(ServiceLifetime.Singleton)]
+public class TerminalExample : CommonOneshotMacroBase
 {
     public TerminalExample() : base()
     {
@@ -15,21 +16,16 @@ public partial class TerminalExample : BasicMacro
         Category = "Features";
 
         Description = $"This example uses the {nameof(TerminalService)} to execute commands.";
+    }
 
-        Configure = (processor) =>
-        {
-            processor.Services.AddSingleton<TerminalService>();
-        };
-
-        Execute = (args) =>
-        {
-            var cmd = args.Processor.GetService<TerminalService>();
-            cmd.Start();
-            cmd.Execute("cd");
-            cmd.Execute("cd /d c:/");
-            cmd.Execute("cd");
-            cmd.Execute("dir");
-            cmd.Close();
-        };
+    protected override void OnExecute(WorkflowController controller)
+    {
+        var cmd = controller.Processor.GetService<TerminalService>();
+        cmd.Start();
+        cmd.Execute("cd");
+        cmd.Execute("cd /d c:/");
+        cmd.Execute("cd");
+        cmd.Execute("dir");
+        cmd.Close();
     }
 }

@@ -105,7 +105,7 @@ public class MacroStartArgumentsTests
             {
                 {"test_key", "test_value"},
             },
-            SessionStorage = new()
+            Inputs = new()
             {
                 {"test_key", "test_value"},
             },

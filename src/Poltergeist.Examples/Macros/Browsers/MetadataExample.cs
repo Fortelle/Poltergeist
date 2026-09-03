@@ -1,9 +1,9 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Oneshots;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class MetadataExample : BasicMacro
+public class MetadataExample : UnrunnableMacro
 {
     public MetadataExample() : base()
     {

@@ -12,7 +12,7 @@ public sealed partial class MacroProcessor
     public event EventHandler<InteractingEventArgs>? Interacting;
     public event EventHandler<LogWrittenEventArgs>? LogWritten;
 
-    public void RaiseEvent(ProcessorEvent type, EventArgs eventArgs)
+    private void RaiseEvent(ProcessorEvent type, EventArgs eventArgs)
     {
         switch (type)
         {
@@ -35,4 +35,6 @@ public sealed partial class MacroProcessor
                 throw new NotSupportedException();
         }
     }
+
+    void IMacroProcessorInternal.RaiseEvent(ProcessorEvent type, EventArgs eventArgs) => RaiseEvent(type, eventArgs);
 }

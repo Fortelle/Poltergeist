@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.AppNotifications.Builder;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
@@ -63,7 +64,7 @@ public partial class MacroViewModel : ObservableRecipient
 
     private DispatcherTimer? Timer;
 
-    private IFrontProcessor? Processor;
+    private IMacroProcessor? Processor;
 
     private Debouncer? OptionSaveDebouncer;
 
@@ -73,7 +74,18 @@ public partial class MacroViewModel : ObservableRecipient
 
         instance.Load();
 
-        if (instance.Template?.CheckValidity(out var invalidationMessage) == false)
+        if (instance.Template?.RequiresAdmin == true && !PoltergeistApplication.Current.IsAdministrator)
+        {
+            InvalidationMessage = App.Localize("Poltergeist/Macros/Validation_RequiresAdmin");
+        }
+
+        if (instance.Template?.Exception is not null)
+        {
+
+            InvalidationMessage = App.Localize("Poltergeist/Macros/Validation_ExceptionOccurred", instance.Template.Exception.Message);
+        }
+
+        if (instance.Template is IMacroExecution macro && !macro.CanExecute(out var invalidationMessage))
         {
             InvalidationMessage = invalidationMessage;
         }
@@ -137,16 +149,8 @@ public partial class MacroViewModel : ObservableRecipient
             var list = new List<ProcessorHistoryEntry>();
             foreach (var report in Instance.Reports)
             {
-                list.Add(new ProcessorHistoryEntry()
-                {
-                    MacroKey = report.GetValueOrDefault<string>("macro_key"),
-                    ProcessorId = report.GetValueOrDefault<string>("processor_id"),
-                    StartTime = report.GetValueOrDefault<DateTime>("start_time"),
-                    EndTime = report.GetValueOrDefault<DateTime>("end_time"),
-                    Duration = report.GetValueOrDefault<TimeSpan>("run_duration"),
-                    EndReason = report.GetValueOrDefault<EndReason>("end_reason"),
-                    Comment = report.GetValueOrDefault<string>("comment_message"),
-                });
+                var entry = ProcessorHistoryEntry.FromReport(report);
+                list.Add(entry);
             }
             History = list
                 .OrderByDescending(x => x.StartTime)
@@ -300,14 +304,19 @@ public partial class MacroViewModel : ObservableRecipient
             return;
         }
 
-        var intervention = Processor.Macro.Interventions.FirstOrDefault(x => x.Key == interventionKey);
+        if (Instance.Template is null)
+        {
+            return;
+        }
+
+        var intervention = Instance.Template.Interventions.FirstOrDefault(x => x.Key == interventionKey);
 
         if (intervention is null)
         {
             return;
         }
 
-        var isSuccess = Processor.Intervene(intervention.Key);
+        var isSuccess = Processor.TryIntervene(interventionKey);
 
         if (isSuccess)
         {
@@ -338,7 +347,7 @@ public partial class MacroViewModel : ObservableRecipient
     {
         App.TryEnqueue(() =>
         {
-            if (e.Result.Output.TryGetValue("complete_action", out var x) && x is CompletionAction action && action != CompletionAction.None)
+            if (e.Result.Outputs.TryGetValue("complete_action", out var x) && x is CompletionAction action && action != CompletionAction.None)
             {
                 Task.Delay(TimeSpan.FromSeconds(CompleteActionDelaySeconds)).ContinueWith(_ =>
                 {
@@ -354,13 +363,13 @@ public partial class MacroViewModel : ObservableRecipient
                         case CompletionAction.RestartSystem:
                         case CompletionAction.HibernateSystem:
                         case CompletionAction.LogOffSystem:
-                            Shutdown(e.Reason, e.Result, action);
+                            Shutdown(e.Result, action);
                             break;
                         case CompletionAction.RestoreApplication:
                             ApplicationHelper.BringToFront();
                             break;
                         case CompletionAction.NotifyMe:
-                            Notify(e.Reason, e.Result);
+                            Notify(e.Result);
                             break;
                     }
                 });
@@ -375,11 +384,11 @@ public partial class MacroViewModel : ObservableRecipient
         CleanUp();
     }
 
-    private void Shutdown(EndReason reason, ProcessorResult result, CompletionAction action)
+    private void Shutdown(ProcessorResult result, CompletionAction action)
     {
         var conversationId = Guid.NewGuid().ToString();
 
-        var builder = CreateAppNotificationBuilder(reason, result)
+        var builder = CreateAppNotificationBuilder(result)
             .AddArgument(AppNotificationService.ConversationIdKey, conversationId)
             .AddArgument(InstanceIdKey, Instance.InstanceId)
             .AddText(App.Localize($"Poltergeist/Macros/Notification_{action}_message"))
@@ -429,27 +438,27 @@ public partial class MacroViewModel : ObservableRecipient
         delay.Start();
     }
 
-    private void Notify(EndReason reason, ProcessorResult result)
+    private void Notify(ProcessorResult result)
     {
-        var builder = CreateAppNotificationBuilder(reason, result);
+        var builder = CreateAppNotificationBuilder(result);
 
         PoltergeistApplication.GetService<AppNotificationService>().Show(builder);
     }
 
-    private AppNotificationBuilder CreateAppNotificationBuilder(EndReason reason, ProcessorResult result)
+    private AppNotificationBuilder CreateAppNotificationBuilder(ProcessorResult result)
     {
         var builder = new AppNotificationBuilder()
-            .AddText(Instance.Title + ": " + App.Localize($"Poltergeist/Macros/EndReason_{reason}"))
+            .AddText(Instance.Title + ": " + App.Localize($"Poltergeist/Macros/Conclusion_{result.Conclusion}"))
             .SetAppLogoOverride(new Uri(Path.Combine(AppContext.BaseDirectory, "Poltergeist/Assets/macro_48px.png")))
             ;
 
-        var comment = result.Report.GetValueOrDefault<string>("comment_message");
+        var comment = result.Comment;
         if (!string.IsNullOrEmpty(comment))
         {
             builder.AddText(comment);
         }
 
-        if (reason != EndReason.Complete)
+        if (result.Conclusion != ProcessorConclusion.Success)
         {
             builder.SetScenario(AppNotificationScenario.Urgent);
         }

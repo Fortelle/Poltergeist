@@ -11,18 +11,16 @@ namespace Poltergeist.Android.Adb;
 
 public class AdbService : MacroService
 {
-    public const string KeepAliveKey = "adb.keep_alive";
-    public const string IpAddressKey = "adb.ip_address";
-    public const string ExePathKey = "adb.exepath";
-
-    public string? WorkingDirectory { get; set; }
-    public string? Filename { get; set; }
+    public string? ExePath { get; set; }
     public string? Address { get; set; }
+    public bool IsConnected { get; set; }
 
     private readonly TerminalService TerminalService;
 
     private bool IsInitialized;
-    private bool IsClosed;
+
+    private string WorkingDirectory => Path.GetDirectoryName(ExePath)!;
+    private string Filename => Path.GetFileName(ExePath)!;
 
     public AdbService(MacroProcessor processor, TerminalService terminalService) : base(processor)
     {
@@ -38,47 +36,19 @@ public class AdbService : MacroService
 
         Logger.Debug($"Initializing <{nameof(AdbService)}>.");
 
-        if (string.IsNullOrEmpty(WorkingDirectory))
+        if (string.IsNullOrEmpty(ExePath))
         {
-            var path = Processor.Options.GetValueOrDefault(ExePathKey, "");
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException($"{nameof(ExePathKey)} is not set.");
-            }
-            if (!File.Exists(path))
-            {
-                throw new ArgumentException($"File \"{path}\" does not exist.");
-            }
+            throw new ArgumentException($"{nameof(AdbService)}.{nameof(ExePath)} is not set.");
+        }
 
-            WorkingDirectory = Path.GetDirectoryName(path);
-            Filename = Path.GetFileName(path);
+        if (!File.Exists(ExePath))
+        {
+            throw new FileNotFoundException($"File {nameof(ExePath)} does not exist.");
         }
 
         if (string.IsNullOrEmpty(Address))
         {
-            Address = Processor.Options.GetValueOrDefault(IpAddressKey, "");
-        }
-
-        if (string.IsNullOrEmpty(WorkingDirectory))
-        {
-            throw new ArgumentException($"{nameof(WorkingDirectory)} is not set.");
-        }
-        if (!Directory.Exists(WorkingDirectory))
-        {
-            throw new DirectoryNotFoundException($"Directory \"{WorkingDirectory}\" does not exist.");
-        }
-        if (string.IsNullOrEmpty(Filename))
-        {
-            throw new ArgumentException($"{nameof(Filename)} is not set.");
-        }
-        var exePath = Path.Combine(WorkingDirectory, Filename);
-        if (!File.Exists(exePath))
-        {
-            throw new FileNotFoundException($"File {nameof(exePath)} does not exist.");
-        }
-        if (string.IsNullOrEmpty(Address))
-        {
-            throw new ArgumentException($"{nameof(Address)} is not set.");
+            throw new ArgumentException($"{nameof(AdbService)}.{nameof(Address)} is not set.");
         }
 
         TerminalService.WorkingDirectory = WorkingDirectory;
@@ -88,7 +58,7 @@ public class AdbService : MacroService
         TerminalService.Start();
         IsInitialized = true;
 
-        Logger.Debug($"Initialized <{nameof(AdbService)}>.", new { Address, WorkingDirectory, Filename });
+        Logger.Debug($"Initialized <{nameof(AdbService)}>.", new { Address, ExePath });
     }
 
     public bool Connect()
@@ -100,13 +70,6 @@ public class AdbService : MacroService
 
         Logger.Trace($"Connecting to adb server {Address}.");
         Logger.IncreaseIndent();
-
-        var keepalive = Processor.Options.GetValueOrDefault(KeepAliveKey, false);
-
-        if (!keepalive)
-        {
-            Processor.GetService<HookService>().Register<ProcessorEndingHook>(_ => Close());
-        }
 
         var output = Execute($"connect {Address}");
         if (output.Contains("unable to connect to"))
@@ -139,12 +102,14 @@ public class AdbService : MacroService
             AandroidVersion = androidVersion,
         });
 
+        IsConnected = true;
+
         return true;
     }
 
     public void Close()
     {
-        if (IsClosed)
+        if (!IsConnected)
         {
             return;
         }
@@ -162,7 +127,7 @@ public class AdbService : MacroService
         });
 
         Logger.Info($"Closed adb server {Address}.");
-        IsClosed = true;
+        IsConnected = false;
     }
 
     public string Execute(params string[] args)

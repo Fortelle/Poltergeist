@@ -136,7 +136,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
                     IncognitoMode = variation.IncognitoMode,
                     OptionOverrides = variation.OptionOverrides,
                     EnvironmentOverrides = variation.EnvironmentOverrides,
-                    SessionStorage = variation.SessionStorage,
+                    Inputs = variation.Inputs,
                 },
                 Icon = IconInfoHelper.ConvertToIconElement(new IconInfo(variation.Icon ?? "\uE768")),
             };
@@ -159,7 +159,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
             return;
         }
 
-        if (macro.Status != MacroStatus.Initialized)
+        if (macro.Exception is not null)
         {
             App.ShowTeachingTip("The macro has not been initialized correctly.");
             return;

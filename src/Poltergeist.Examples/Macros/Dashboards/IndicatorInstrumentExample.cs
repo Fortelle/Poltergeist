@@ -1,11 +1,12 @@
 ﻿using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class IndicatorInstrumentExample : BasicMacro
+public class IndicatorInstrumentExample : CommonOneshotMacroBase
 {
     public IndicatorInstrumentExample() : base()
     {
@@ -16,101 +17,101 @@ public class IndicatorInstrumentExample : BasicMacro
         Description = "This example shows how to use the IndicatorInstrument.";
 
         ShowStatusBar = false;
+    }
 
-        Execute = (args) =>
+    protected override void OnExecute(WorkflowController controller)
+    {
+        var dashboard = controller.Processor.GetService<DashboardService>();
+
         {
-            var dashboard = args.Processor.GetService<DashboardService>();
-
-
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "No border:";
-                });
+                x.Title = "No border:";
+            });
 
-                foreach (var color in Enum.GetValues<ThemeColor>())
-                {
-                    instrument.Add($"{color}", [new("")
+            foreach (var color in Enum.GetValues<ThemeColor>())
+            {
+                instrument.Add($"{color}", [new("")
                     {
                         Icon = new("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                     }]);
-                }
             }
+        }
 
+        {
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "Bordered:";
-                });
+                x.Title = "Bordered:";
+            });
 
-                foreach (var color in Enum.GetValues<ThemeColor>())
-                {
-                    instrument.Add($"{color}", [new("")
+            foreach (var color in Enum.GetValues<ThemeColor>())
+            {
+                instrument.Add($"{color}", [new("")
                     {
                         Icon = new("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                         Bordered = true,
                     }]);
-                }
             }
+        }
 
+        {
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "Filled:";
-                });
+                x.Title = "Filled:";
+            });
 
-                foreach (var color in Enum.GetValues<ThemeColor>())
-                {
-                    instrument.Add($"{color}", [new("")
+            foreach (var color in Enum.GetValues<ThemeColor>())
+            {
+                instrument.Add($"{color}", [new("")
                     {
                         Icon = new("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                         Filled = true,
                     }]);
-                }
             }
+        }
 
+        {
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "Breathing:";
-                });
+                x.Title = "Breathing:";
+            });
 
-                instrument.Add($"", [new("")
+            instrument.Add($"", [new("")
                 {
                     Icon = new("\uE95E"),
                     Color = ThemeColor.Red,
                     Motion = IndicatorMotion.Breathing,
                 }]);
-            }
+        }
 
+        {
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "Blinking:";
-                });
+                x.Title = "Blinking:";
+            });
 
-                instrument.Add($"", [new("")
+            instrument.Add($"", [new("")
                 {
                     Icon = new("\uE7BA"),
                     Color = ThemeColor.Red,
                     Motion = IndicatorMotion.Blinking,
                 }]);
-            }
+        }
 
+        {
+            var instrument = dashboard.Create<IndicatorInstrument>(x =>
             {
-                var instrument = dashboard.Create<IndicatorInstrument>(x =>
-                {
-                    x.Title = "Switching:";
-                });
+                x.Title = "Switching:";
+            });
 
-                instrument.Add("item1", [
-                    new("pattern1")
+            instrument.Add("item1", [
+                new("pattern1")
                     {
                         Color = ThemeColor.Spring,
                         Icon = new("\uEBAA")
@@ -168,12 +169,11 @@ public class IndicatorInstrumentExample : BasicMacro
                     },
                     ]);
 
-                for (var i = 2; i <= 11; i++)
-                {
-                    Thread.Sleep(1000);
-                    instrument.Switch("item1", $"pattern{i}");
-                }
+            for (var i = 2; i <= 11; i++)
+            {
+                Thread.Sleep(1000);
+                instrument.Switch("item1", $"pattern{i}");
             }
-        };
+        }
     }
 }

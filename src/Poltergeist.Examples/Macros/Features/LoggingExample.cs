@@ -1,11 +1,11 @@
-﻿using Poltergeist.Automations.Components.FlowBuilders;
-using Poltergeist.Automations.Components.Logging;
-using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Logging;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class MacroLoggerExample : BasicMacro
+public class MacroLoggerExample : CommonOneshotMacroBase
 {
     public MacroLoggerExample() : base()
     {
@@ -14,14 +14,15 @@ public class MacroLoggerExample : BasicMacro
         Category = "Features";
 
         Description = "This example writes log messages at different levels.";
+    }
 
-        Execute = (args) =>
+    protected override void OnExecute(WorkflowController controller)
+    {
+        var levels = Enum.GetValues<LogLevel>();
+        var logger = controller.Processor.GetService<MacroLogger>();
+        foreach (var level in levels)
         {
-            var levels = Enum.GetValues<LogLevel>();
-            foreach (var level in levels)
-            {
-                args.Logger.Log(level, $"This is a log message at <{level}> level.");
-            }
-        };
+            logger.Log(level, Title, $"This is a log message at <{level}> level.");
+        }
     }
 }

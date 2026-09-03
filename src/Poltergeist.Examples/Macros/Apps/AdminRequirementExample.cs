@@ -1,9 +1,10 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class AdminRequirementExample : BasicMacro
+public class AdminRequirementExample : CommonOneshotMacroBase
 {
     public AdminRequirementExample() : base()
     {
@@ -14,10 +15,12 @@ public class AdminRequirementExample : BasicMacro
         Description = "A macro that requires administrator privileges to run.";
 
         RequiresAdmin = true;
+    }
 
-        Execute = (args) =>
-        {
-            args.Outputer.Write($"Hello world!");
-        };
+    protected override Task OnExecuteAsync(WorkflowController controller)
+    {
+        controller.Outputer.Write($"Hello world!");
+
+        return Task.CompletedTask;
     }
 }

@@ -1,12 +1,13 @@
 ﻿using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
 
 [ExampleMacro]
-public class ListInstrumentCustomizationExample : BasicMacro
+public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
 {
     public ListInstrumentCustomizationExample() : base()
     {
@@ -17,136 +18,145 @@ public class ListInstrumentCustomizationExample : BasicMacro
         Description = "This example shows how to customize the ListInstrument.";
 
         ShowStatusBar = false;
+    }
 
-        Execute = (args) =>
+    protected override void OnExecute(WorkflowController controller)
+    {
+        var dashboard = controller.Processor.GetService<DashboardService>();
+
+        CreateCustomGlyphs(dashboard);
+        CreateCustomEmojis(dashboard);
+        CreateTemplates(dashboard);
+        CreateProgresses(dashboard);
+        CreateColors(dashboard);
+    }
+
+    private static void CreateCustomGlyphs(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<ListInstrument>(li =>
         {
-            var dashboard = args.Processor.GetService<DashboardService>();
+            li.Title = "Custom Glyph:";
+        });
 
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromGlyph("\uE709"),
+            Text = "Custom Item 1",
+        });
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromGlyph("\uE804"),
+            Text = "Custom Item 2",
+        });
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromGlyph("\uE7E3"),
+            Text = "Custom Item 3",
+        });
+    }
+
+    private static void CreateCustomEmojis(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<ListInstrument>(li =>
+        {
+            li.Title = "Custom Emoji:";
+        });
+
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromEmoji("✈️"),
+            Text = "Custom Item 1",
+        });
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromEmoji("🚍"),
+            Text = "Custom Item 2",
+        });
+        instrument.Add(new()
+        {
+            Icon = IconInfo.FromEmoji("⛴️"),
+            Text = "Custom Item 3",
+        });
+    }
+
+    private static void CreateTemplates(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<ListInstrument>(li =>
+        {
+            li.Title = "Templates:";
+            li.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") });
+            li.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") });
+            li.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uE7BA") });
+        });
+
+        instrument.Add(new()
+        {
+            TemplateKey = "success",
+            Text = "Custom Item 1",
+            Subtext = "success",
+        });
+        instrument.Add(new()
+        {
+            TemplateKey = "failure",
+            Text = "Custom Item 2",
+            Subtext = "failure",
+        });
+        instrument.Add(new()
+        {
+            TemplateKey = "warning",
+            Text = "Custom Item 3",
+            Subtext = "warning",
+        });
+    }
+
+    private static void CreateProgresses(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<ListInstrument>(li =>
+        {
+            li.Title = ":";
+            li.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uEA3A") });
+        });
+
+        instrument.Add(new()
+        {
+            TemplateKey = "busy",
+            Text = "Custom Item 1",
+            Progress = 0.1,
+            Subtext = "10%",
+        });
+        instrument.Add(new()
+        {
+            TemplateKey = "busy",
+            Text = "Custom Item 2",
+            Progress = 0.5,
+            Subtext = "50%",
+        });
+        instrument.Add(new()
+        {
+            TemplateKey = "busy",
+            Text = "Custom Item 3",
+            Progress = 1,
+            Subtext = "100%",
+        });
+    }
+
+    private static void CreateColors(DashboardService dashboard)
+    {
+        var instrument = dashboard.Create<ListInstrument>(li =>
+        {
+            li.Title = "Colors:";
+        });
+
+        var values = Enum.GetValues<ThemeColor>();
+        for (var i = 0; i < values.Length; i++)
+        {
+            instrument.Add(new()
             {
-                var instrument = dashboard.Create<ListInstrument>(li =>
-                {
-                    li.Title = "Custom Glyph:";
-                });
-
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromGlyph("\uE709"),
-                    Text = "Custom Item 1",
-                });
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromGlyph("\uE804"),
-                    Text = "Custom Item 2",
-                });
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromGlyph("\uE7E3"),
-                    Text = "Custom Item 3",
-                });
-            }
-
-            {
-                var instrument = dashboard.Create<ListInstrument>(li =>
-                {
-                    li.Title = "Custom Emoji:";
-                });
-
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromEmoji("✈️"),
-                    Text = "Custom Item 1",
-                });
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromEmoji("🚍"),
-                    Text = "Custom Item 2",
-                });
-                instrument.Add(new()
-                {
-                    Icon = IconInfo.FromEmoji("⛴️"),
-                    Text = "Custom Item 3",
-                });
-            }
-
-            {
-                var instrument = dashboard.Create<ListInstrument>(li =>
-                {
-                    li.Title = "Templates:";
-                    li.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") });
-                    li.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") });
-                    li.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uE7BA") });
-                });
-
-                instrument.Add(new()
-                {
-                    TemplateKey = "success",
-                    Text = "Custom Item 1",
-                    Subtext = "success",
-                });
-                instrument.Add(new()
-                {
-                    TemplateKey = "failure",
-                    Text = "Custom Item 2",
-                    Subtext = "failure",
-                });
-                instrument.Add(new()
-                {
-                    TemplateKey = "warning",
-                    Text = "Custom Item 3",
-                    Subtext = "warning",
-                });
-            }
-
-            {
-                var instrument = dashboard.Create<ListInstrument>(li =>
-                {
-                    li.Title = "Progress:";
-                    li.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uEA3A") });
-                });
-
-                instrument.Add(new()
-                {
-                    TemplateKey = "busy",
-                    Text = "Custom Item 1",
-                    Progress = 0.1,
-                    Subtext = "10%",
-                });
-                instrument.Add(new()
-                {
-                    TemplateKey = "busy",
-                    Text = "Custom Item 2",
-                    Progress = 0.5,
-                    Subtext = "50%",
-                });
-                instrument.Add(new()
-                {
-                    TemplateKey = "busy",
-                    Text = "Custom Item 3",
-                    Progress = 1,
-                    Subtext = "100%",
-                });
-            }
-
-            {
-                var instrument = dashboard.Create<ListInstrument>(li =>
-                {
-                    li.Title = "Colors:";
-                });
-
-                var values = Enum.GetValues<ThemeColor>();
-                for (var i = 0; i < values.Length; i++)
-                {
-                    instrument.Add(new()
-                    {
-                        Color = values[i],
-                        Icon = IconInfo.FromGlyph("\uE734"),
-                        Text = $"Custom Item {i + 1}",
-                        Subtext = $"{values[i]}",
-                    });
-                }
-            }
-
-        };
-
+                Color = values[i],
+                Icon = IconInfo.FromGlyph("\uE734"),
+                Text = $"Custom Item {i + 1}",
+                Subtext = $"{values[i]}",
+            });
+        }
     }
 }

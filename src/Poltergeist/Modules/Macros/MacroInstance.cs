@@ -27,7 +27,7 @@ public class MacroInstance
     /// <summary>
     /// Gets the macro template.
     /// </summary>
-    public IFrontMacro? Template { get; init; }
+    public IMacroBase? Template { get; init; }
 
     /// <summary>
     /// Gets the properties of the macro instance.
@@ -101,11 +101,11 @@ public class MacroInstance
 
     private bool IsLoaded;
 
-    public MacroInstance(IFrontMacro template) : this(template, Guid.NewGuid().ToString())
+    public MacroInstance(IMacroBase template) : this(template, Guid.NewGuid().ToString())
     {
     }
 
-    public MacroInstance(IFrontMacro template, string instanceId)
+    public MacroInstance(IMacroBase template, string instanceId)
     {
         Template = template;
         TemplateKey = template.Key;
@@ -139,7 +139,7 @@ public class MacroInstance
 
         Template.Initialize();
 
-        if (Template.Status != MacroStatus.Initialized)
+        if (Template.Exception is not null)
         {
             IsLoaded = true;
             return;
@@ -154,6 +154,13 @@ public class MacroInstance
             }
 
             Options.AddDefinition(definition);
+        }
+        if (Template.OptionPresets?.Count > 0)
+        {
+            foreach (var keyValuePair in Template.OptionPresets)
+            {
+                Options.Set(keyValuePair.Key, keyValuePair.Value);
+            }
         }
         if (!string.IsNullOrEmpty(PrivateFolder))
         {
@@ -205,7 +212,7 @@ public class MacroInstance
         IsLoaded = true;
     }
 
-    public static MacroInstance CreateStaticInstance(IFrontMacro template)
+    public static MacroInstance CreateStaticInstance(MacroBase template)
     {
         var bytes = Encoding.UTF8.GetBytes(template.Key);
         var hash = MD5.HashData(bytes);

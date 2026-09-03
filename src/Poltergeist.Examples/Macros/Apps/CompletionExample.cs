@@ -1,11 +1,12 @@
 ﻿using Poltergeist.Automations.Components;
-using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Examples.Macros.Apps;
 
 [ExampleMacro]
-public class CompletionExample : BasicMacro
+public class CompletionExample : CommonOneshotMacroBase
 {
     public CompletionExample() : base()
     {
@@ -21,15 +22,15 @@ public class CompletionExample : BasicMacro
         {
             DisplayLabel = $"Throws exception",
         });
+    }
 
-        Execute = (args) =>
+    protected override void OnExecute(WorkflowController controller)
+    {
+        Thread.Sleep(3000);
+
+        if (controller.Processor.Options.Get<bool>($"throws_exception"))
         {
-            Thread.Sleep(3000);
-
-            if (args.Processor.Options.Get<bool>($"throws_exception"))
-            {
-                throw new Exception("This is a test exception from the CompletionExample macro.");
-            }
-        };
+            throw new Exception("This is a test exception from the CompletionExample macro.");
+        }
     }
 }

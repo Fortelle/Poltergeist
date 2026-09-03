@@ -5,9 +5,9 @@ using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Services;
 
-public abstract class MacroService : IExtensionService, IDisposable
+public abstract class MacroService : IMacroServiceShared, IDisposable
 {
-    protected IServiceProcessor Processor { get; }
+    protected IMacroProcessorInternal Processor { get; }
 
     protected LoggerWrapper Logger { get; }
 
@@ -25,8 +25,8 @@ public abstract class MacroService : IExtensionService, IDisposable
         Logger.Debug($"Service '{ServiceName}' is instantiated.");
     }
 
-    IUserProcessor IExtensionService.GetProcessor() => Processor;
-    LoggerWrapper IExtensionService.Logger => Logger;
+    IMacroProcessorShared IMacroServiceShared.GetProcessor() => Processor;
+    LoggerWrapper IMacroServiceShared.Logger => Logger;
 
     protected virtual void Dispose(bool disposing)
     {

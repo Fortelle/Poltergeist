@@ -1,8 +1,8 @@
 ﻿namespace Poltergeist.Automations.Components.Hooks;
 
-public class HookListener(Type type, Delegate callback)
+public class HookListener(string key, Delegate callback)
 {
-    public Type Type => type;
+    public string Key => key;
 
     public Delegate Callback => callback;
 
@@ -11,4 +11,6 @@ public class HookListener(Type type, Delegate callback)
     public int Priority { get; set; }
 
     public string? Subscriber { get; set; }
+
+    public string? MethodName { get; set; }
 }

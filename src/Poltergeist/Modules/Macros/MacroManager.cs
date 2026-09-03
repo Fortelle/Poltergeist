@@ -17,7 +17,7 @@ public class MacroManager : ServiceBase
 
     public Dictionary<string, object?> GlobalEnvironments { get; }
 
-    private ConcurrentDictionary<IFrontProcessor, MacroInstance?> InRunningProcessors { get; set; } = new();
+    private ConcurrentDictionary<IMacroProcessor, MacroInstance?> InRunningProcessors { get; set; } = new();
 
     private readonly NavigationService NavigationService;
 
@@ -139,7 +139,7 @@ public class MacroManager : ServiceBase
         }
         if (args.IncognitoMode)
         {
-            environments[IncognitoModeExtensions.EnvironmentKey] = true;
+            environments[IncognitoModeExtensions.EnvironmentEntry.Key] = true;
         }
 
         foreach (var (key, value) in instance.GetEnvironments())
@@ -160,7 +160,7 @@ public class MacroManager : ServiceBase
             LaunchReason = reason,
             Options = options,
             Environments = environments,
-            SessionStorage = args.SessionStorage,
+            Inputs = args.Inputs,
         };
 
         var processor = new MacroProcessor((MacroBase)instance.Template, processorArguments);
@@ -196,7 +196,7 @@ public class MacroManager : ServiceBase
         return processor;
     }
 
-    public void Launch(IFrontProcessor processor, MacroInstance? instance = null)
+    public void Launch(IMacroProcessor processor, MacroInstance? instance = null)
     {
         Logger.Trace($"Launching macro processor.", new
         {
@@ -225,7 +225,7 @@ public class MacroManager : ServiceBase
 
     private void Processor_Launched(object? sender, ProcessorLaunchedEventArgs e)
     {
-        if (sender is not IFrontProcessor processor)
+        if (sender is not IMacroProcessor processor)
         {
             throw new InvalidOperationException();
         }
@@ -250,7 +250,7 @@ public class MacroManager : ServiceBase
 
     private void Processor_Completed(object? sender, ProcessorCompletedEventArgs e)
     {
-        if (sender is not IFrontProcessor processor)
+        if (sender is not IMacroProcessor processor)
         {
             throw new InvalidOperationException();
         }
@@ -259,30 +259,32 @@ public class MacroManager : ServiceBase
 
         InRunningProcessors.TryRemove(processor, out var instance);
 
-        if (instance is not null)
+        if (instance is null)
         {
-            if (instance.Template is null)
-            {
-                throw new InvalidOperationException();
-            }
+            throw new InvalidOperationException();
+        }
 
-            if (!processor.IsIncognitoMode())
-            {
-                PoltergeistApplication.GetService<MacroStatisticsService>().UpdateStatistics(instance, e.Result.Report);
+        if (instance.Template is null)
+        {
+            throw new InvalidOperationException();
+        }
 
-                if (instance.Reports is not null)
+        if (!processor.IsIncognitoMode())
+        {
+            PoltergeistApplication.GetService<MacroStatisticsService>().UpdateStatistics(instance, e.Result.Report);
+
+            if (instance.Reports is not null && e.Result.Report is ProcessorReport report)
+            {
+                instance.Reports.Add(report);
+                if (instance.IsPersistent)
                 {
-                    instance.Reports.Add(e.Result.Report);
-                    if (instance.IsPersistent)
+                    try
                     {
-                        try
-                        {
-                            instance.Reports.Save();
-                        }
-                        catch (Exception exception)
-                        {
-                            Logger.Warn($"Failed to save macro report: {exception.Message}");
-                        }
+                        instance.Reports.Save();
+                    }
+                    catch (Exception exception)
+                    {
+                        Logger.Warn($"Failed to save macro report: {exception.Message}");
                     }
                 }
             }
@@ -290,13 +292,11 @@ public class MacroManager : ServiceBase
 
         PoltergeistApplication.GetService<AppEventService>().Publish(new MacroProcessorCompletedEvent()
         {
-            Reason = e.Reason,
             Result = e.Result,
-            Macro = processor.Macro,
             Instance = instance,
         });
 
-        Logger.Info($"Macro '{processor.Macro.Key}' ended.");
+        Logger.Info($"Macro '{instance.Template.Key}' ended.");
     }
 
     public void SendMessage(InteractionMessage message)

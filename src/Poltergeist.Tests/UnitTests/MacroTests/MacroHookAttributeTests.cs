@@ -7,30 +7,45 @@ namespace Poltergeist.Tests.UnitTests.MacroTests;
 [TestClass]
 public class MacroHookAttributeTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "IDE0051:Remove unused private members", Justification = "<Pending>")]
     private class TestingMacro : MacroBase
     {
         [MacroHook]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-        public void OnProcessorStarted_Instance(ProcessorStartedHook hook)
+        public void OnProcessorStartup_Instance_Public(IMacroProcessorShared processor, ProcessorStartupHook _)
         {
-            hook.Processor.OutputStorage.Add("instance", true);
+            processor.OutputStorage.Add("instance_public", true);
         }
 
         [MacroHook]
-        public static void OnProcessorStarted_Static(ProcessorStartedHook hook)
+        private void OnProcessorStartup_Instance_Private(IMacroProcessorShared processor, ProcessorStartupHook _)
         {
-            hook.Processor.OutputStorage.Add("static", true);
+            processor.OutputStorage.Add("instance_private", true);
+        }
+
+        [MacroHook]
+        public static void OnProcessorStartup_Static_Public(IMacroProcessorShared processor, ProcessorStartupHook _)
+        {
+            processor.OutputStorage.Add("static_public", true);
+        }
+
+        [MacroHook]
+        private static void OnProcessorStartup_Static_Private(IMacroProcessorShared processor, ProcessorStartupHook _)
+        {
+            processor.OutputStorage.Add("static_private", true);
         }
     }
 
     [TestMethod]
-    public void TestMacroHookAttribute()
+    public void TestInjections()
     {
         var macro = new TestingMacro();
         var result = macro.Test();
 
-        Assert.IsTrue(result.Output.Get<bool>("instance"));
-        Assert.IsTrue(result.Output.Get<bool>("static"));
+        Assert.IsTrue(result.Outputs.Get<bool>("instance_public"));
+        Assert.IsTrue(result.Outputs.Get<bool>("instance_private"));
+        Assert.IsTrue(result.Outputs.Get<bool>("static_public"));
+        Assert.IsTrue(result.Outputs.Get<bool>("static_private"));
     }
 
     private class TestingMacro_EmptyParameter : MacroBase
@@ -47,7 +62,7 @@ public class MacroHookAttributeTests
         var macro = new TestingMacro_EmptyParameter();
         var result = macro.Test();
 
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreNotEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 
     private class TestingMacro_WrongParameterType : MacroBase
@@ -64,6 +79,6 @@ public class MacroHookAttributeTests
         var macro = new TestingMacro_WrongParameterType();
         var result = macro.Test();
 
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreEqual(ProcessorConclusion.Crushed, result.Conclusion);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 
@@ -12,7 +12,7 @@ public class OptionTests
     {
         var value = "";
 
-        var macro = new BasicMacro()
+        var macro = new OneshotMacro()
         {
             OptionDefinitions =
             {
@@ -34,7 +34,7 @@ public class OptionTests
     {
         var value = "";
 
-        var macro = new BasicMacro()
+        var macro = new OneshotMacro()
         {
             OptionDefinitions =
             {

@@ -1,6 +1,6 @@
 ﻿namespace Poltergeist.Automations.Structures.Parameters;
 
-public class ParameterDefinition<T> : ParameterDefinitionBase, IParameterDefinition
+public class ParameterDefinition<T> : ParameterDefinitionBase, IParameterDefinition, IEntryDefinition<T>
 {
     public Type BaseType => typeof(T);
 

@@ -1,14 +1,16 @@
-﻿using Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Components.Hooks;
+using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Macros.Oneshots;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Tests.UnitTests;
 
+[ModuleDependency<OneshotModule>]
 public class TestMacro : MacroBase
 {
-    public Action<IConfigurableProcessor>? Configure { get; set; }
-    public Action<IPreparableProcessor>? Prepare { get; set; }
-    public Action<IUserProcessor>? Execute { get; set; }
-    public Func<IUserProcessor, Task>? ExecuteAsync { get; set; }
+    public Action<IMacroProcessorShared>? Execute { get; set; }
+    public Func<IMacroProcessorShared, Task>? ExecuteAsync { get; set; }
 
     public TestMacro() : base()
     {
@@ -18,32 +20,20 @@ public class TestMacro : MacroBase
     {
     }
 
-    protected override void OnConfigure(IConfigurableProcessor processor)
+    [MacroHook]
+    private void OnOneshotSetup(IMacroProcessorShared processor, OneshotSetupHook hooks)
     {
-        base.OnConfigure(processor);
-
-        Configure?.Invoke(processor);
-    }
-
-    protected override void OnPrepare(IPreparableProcessor processor)
-    {
-        base.OnPrepare(processor);
-
-        processor.AddStep(new("execution", () =>
+        hooks.ExecuteAsync = async (processor) =>
         {
             if (Execute is not null)
             {
-                Execute((IUserProcessor)processor);
+                Execute(processor);
             }
             else if (ExecuteAsync is not null)
             {
-                ExecuteAsync((IUserProcessor)processor).GetAwaiter().GetResult();
+                await ExecuteAsync(processor);
             }
-        })
-        {
-            IsDefault = true,
-        });
-
-        Prepare?.Invoke(processor);
+        };
     }
 }
+

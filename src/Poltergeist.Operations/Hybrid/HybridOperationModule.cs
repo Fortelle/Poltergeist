@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Operations.Capturing;
@@ -26,16 +27,9 @@ public class HybridOperationModule : MacroModule
         KeyboardModes.AddRange("sendinput", "sendmessage");
     }
 
-    public override void OnMacroInitialize(IInitializableMacro macro)
+    public override void OnMacroInitialized(IMacroInformation macro)
     {
-        base.OnMacroInitialize(macro);
-
-        macro.OptionDefinitions.Add(new OptionDefinition<bool>(CapturingProvider.PreviewCaptureKey)
-        {
-            DisplayLabel = "Preview captured image",
-            Category = "Debug",
-            Status = ParameterStatus.DevelopmentOnly,
-        });
+        base.OnMacroInitialized(macro);
 
         macro.OptionDefinitions.Add(new ChoiceOption<string>(CapturingModeKey, [.. CapturingModes])
         {
@@ -56,52 +50,54 @@ public class HybridOperationModule : MacroModule
         });
     }
 
-    public override void OnProcessorConfigure(IConfigurableProcessor processor)
+    public override void RegisterServices(IServiceCollection services, RegisterServicesArguments args)
     {
-        base.OnProcessorConfigure(processor);
+        base.RegisterServices(services, args);
 
-        processor.Services.AddSingleton<HybridOperationService>();
+        services.AddSingleton<HybridOperationService>();
 
-        var capturingMode = processor.Options.Get<string>(CapturingModeKey);
+        var capturingMode = args.Options.Get<string>(CapturingModeKey);
         
         if (capturingMode == "screen")
         {
-            processor.Services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<ScreenCapturingService>());
+            services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<ScreenCapturingService>());
         }
         else if (capturingMode == "printwindow")
         {
-            processor.Services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<PrintWindowCapturingService>());
+            services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<PrintWindowCapturingService>());
         }
         else if (capturingMode == "bitblt")
         {
-            processor.Services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<BitBltCapturingService>());
+            services.AddSingleton<CapturingProvider>(x => x.GetRequiredService<BitBltCapturingService>());
         }
     }
 
     [MacroHook]
-    public static void OnStart(HybridOperationStartHook hook)
+    protected static void OnHybridOperationStart(IMacroProcessorShared processor, HybridOperationStartHook hook)
     {
-        var config = hook.Processor.SessionStorage.GetValueOrDefault<RegionConfig>("window_region_config");
-        var capturingMode = hook.Processor.Options.Get<string>(CapturingModeKey);
-        var mouseMode = hook.Processor.Options.Get<string>(MouseModeKey);
-        var keyboardMode = hook.Processor.Options.Get<string>(KeyboardModeKey);
+        var config = processor.SessionStorage.GetValueOrDefault<RegionConfig>("window_region_config");
+        var capturingMode = processor.Options.Get<string>(CapturingModeKey);
+        var mouseMode = processor.Options.Get<string>(MouseModeKey);
+        var keyboardMode = processor.Options.Get<string>(KeyboardModeKey);
 
         LocatedWindowInfo? info = null; // to avoid duplicate locating
 
         if (capturingMode == "printwindow" || capturingMode == "bitblt" || mouseMode == "sendmessage" || keyboardMode == "sendmessage")
         {
-            var windowLocatingService = hook.Processor.GetService<WindowLocatingService>();
+            var windowLocatingService = processor.GetService<WindowLocatingService>();
             if (config is null || !windowLocatingService.TryLocate(config, out info))
             {
+                processor.ReportComment("Client not found");
                 throw new Exception("Failed to find the requested window.");
             }
         }
 
         if (capturingMode == "screen" || mouseMode == "sendinput")
         {
-            var screenLocatingService = hook.Processor.GetService<ScreenLocatingService>();
+            var screenLocatingService = processor.GetService<ScreenLocatingService>();
             if (config is null || !screenLocatingService.TryLocate(config, info))
             {
+                processor.ReportComment("Client not found");
                 throw new Exception("Failed to locate the screen region.");
             }
         }

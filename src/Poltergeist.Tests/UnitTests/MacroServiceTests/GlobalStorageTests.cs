@@ -26,7 +26,7 @@ public class GlobalStorageTests
         };
 
         var result = MacroProcessor.Execute(macro);
-        Assert.IsFalse(result.IsSucceeded);
+        Assert.AreNotEqual(ProcessorConclusion.Success, result.Conclusion);
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ public class GlobalStorageTests
         Assert.AreEqual("test_value", buffer);
 
         var path = Path.Combine(App.Paths.DocumentDataFolder, "LocalStorage.json");
-        Assert.IsTrue(File.ReadAllText(path).Contains("test_value"));
+        Assert.Contains("test_value", File.ReadAllText(path));
     }
 
     [TestMethod]

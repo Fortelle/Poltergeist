@@ -6,7 +6,7 @@ using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Tests.UnitTests.Components.Operations;
 
-public abstract class OperationModuleTestBase : CommonMacroBase
+public abstract class OperationModuleTestBase
 {
     protected static string className = "test_window";
     protected static string windowName = "Test Window";

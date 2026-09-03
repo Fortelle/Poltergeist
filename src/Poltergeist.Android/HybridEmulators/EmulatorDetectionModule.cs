@@ -1,6 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 using Poltergeist.Android.Adb;
+using Poltergeist.Automations.Components.Hooks;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Automations.Utilities;
@@ -12,7 +14,7 @@ public class EmulatorDetectionModule : MacroModule
 {
     private const string ConfigKey = "autodetect_emulator";
 
-    private static readonly Dictionary<string, Func<IPreparableProcessor, bool>> EmulatorDetections = new()
+    private static readonly Dictionary<string, Func<IMacroProcessorShared, bool>> EmulatorDetections = new()
     {
         { "Android Studio", DetectAndroidStudio },
         { "BlueStacks", DetectBlueStacks },
@@ -21,9 +23,9 @@ public class EmulatorDetectionModule : MacroModule
         { "Nox", DetectNox },
     };
 
-    public override void OnMacroInitialize(IInitializableMacro macro)
+    public override void OnMacroInitialized(IMacroInformation macro)
     {
-        base.OnMacroInitialize(macro);
+        base.OnMacroInitialized(macro);
 
         macro.OptionDefinitions.Add(new ChoiceOption<string>(ConfigKey,
         [
@@ -38,10 +40,9 @@ public class EmulatorDetectionModule : MacroModule
         });
     }
 
-    public override void OnProcessorPrepare(IPreparableProcessor processor)
+    [MacroHook]
+    public static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
     {
-        base.OnProcessorPrepare(processor);
-
         var emulator = processor.Options.GetValueOrDefault<string>(ConfigKey);
         if (string.IsNullOrEmpty(emulator) || emulator == "Custom")
         {
@@ -67,7 +68,7 @@ public class EmulatorDetectionModule : MacroModule
         }
     }
 
-    private static bool DetectAndroidStudio(IPreparableProcessor processor)
+    private static bool DetectAndroidStudio(IMacroProcessorShared processor)
     {
         var adbpath = Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\Android\sdk\platform-tools\adb.exe");
         if (!File.Exists(adbpath))
@@ -93,8 +94,8 @@ public class EmulatorDetectionModule : MacroModule
         }
 
         processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
-        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:5037");
-        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate(AdbModule.IpAddressOption, @"127.0.0.1:5037");
+        processor.Options.AddOrUpdate(AdbModule.AdbPathOption, adbpath);
 
         processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
@@ -105,7 +106,7 @@ public class EmulatorDetectionModule : MacroModule
         return true;
     }
 
-    private static bool DetectBlueStacks(IPreparableProcessor processor)
+    private static bool DetectBlueStacks(IMacroProcessorShared processor)
     {
         var subkey = RegistryUtil.FindInstalledApp("BlueStacks_nxt");
         if (subkey is null)
@@ -132,8 +133,8 @@ public class EmulatorDetectionModule : MacroModule
         }
 
         processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
-        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:5555");
-        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate(AdbModule.IpAddressOption, @"127.0.0.1:5555");
+        processor.Options.AddOrUpdate(AdbModule.AdbPathOption, adbpath);
 
         processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
@@ -145,7 +146,7 @@ public class EmulatorDetectionModule : MacroModule
         return true;
     }
 
-    private static bool DetectLDPlayer(IPreparableProcessor processor)
+    private static bool DetectLDPlayer(IMacroProcessorShared processor)
     {
         var subkey = RegistryUtil.FindInstalledApp("LDPlayer9");
         if (subkey is null)
@@ -172,8 +173,8 @@ public class EmulatorDetectionModule : MacroModule
         }
 
         processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
-        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:16384");
-        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate(AdbModule.IpAddressOption, @"127.0.0.1:16384");
+        processor.Options.AddOrUpdate(AdbModule.AdbPathOption, adbpath);
 
         processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
@@ -184,7 +185,7 @@ public class EmulatorDetectionModule : MacroModule
         return true;
     }
 
-    private static bool DetectMumu(IPreparableProcessor processor)
+    private static bool DetectMumu(IMacroProcessorShared processor)
     {
         var subkey = RegistryUtil.FindInstalledApp("MuMuPlayer");
         if (subkey is null)
@@ -211,8 +212,8 @@ public class EmulatorDetectionModule : MacroModule
         }
 
         processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
-        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:16384");
-        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate(AdbModule.IpAddressOption, @"127.0.0.1:16384");
+        processor.Options.AddOrUpdate(AdbModule.AdbPathOption, adbpath);
 
         processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {
@@ -223,7 +224,7 @@ public class EmulatorDetectionModule : MacroModule
         return true;
     }
 
-    private static bool DetectNox(IPreparableProcessor processor)
+    private static bool DetectNox(IMacroProcessorShared processor)
     {
         var subkey = RegistryUtil.FindInstalledApp("Nox");
         if (subkey is null)
@@ -250,8 +251,8 @@ public class EmulatorDetectionModule : MacroModule
         }
 
         processor.Options.AddOrUpdate("emulator.exepath", emulatorpath);
-        processor.Options.AddOrUpdate(AdbService.IpAddressKey, @"127.0.0.1:62001");
-        processor.Options.AddOrUpdate(AdbService.ExePathKey, adbpath);
+        processor.Options.AddOrUpdate(AdbModule.IpAddressOption, @"127.0.0.1:62001");
+        processor.Options.AddOrUpdate(AdbModule.AdbPathOption, adbpath);
 
         processor.SessionStorage.AddOrUpdate("window_region_config", new RegionConfig()
         {

@@ -25,5 +25,4 @@ public class PanelService : KernelService
 
         return panel;
     }
-
 }

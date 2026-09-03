@@ -1,5 +1,4 @@
-﻿using Poltergeist.Automations.Processors;
-using Poltergeist.Automations.Structures.Parameters;
+﻿using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Modules.Macros;
 
@@ -12,7 +11,7 @@ public class MacroStatisticsService : ServiceBase
         LoadGlobalStatistics();
     }
 
-    public void UpdateStatistics(MacroInstance instance, ProcessorReport report)
+    public void UpdateStatistics(MacroInstance instance, IReadOnlyParameterValueCollection report)
     {
         ArgumentNullException.ThrowIfNull(instance.Template);
 

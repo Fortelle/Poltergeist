@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Processors;
 using Poltergeist.Automations.Services;
 using Poltergeist.Operations.Locating;
@@ -23,23 +22,7 @@ public abstract partial class CapturingProvider : MacroService
     {
         LocatingProvider = locatingProvider;
         HookService = Processor.GetService<HookService>();
-
-        IsPreviewable = Processor.Options.GetValueOrDefault<bool>(PreviewCaptureKey);
-        if (IsPreviewable)
-        {
-            Instrument = processor.GetService<ImageInstrument>();
-            Instrument.Key = PreviewCaptureKey;
-            Instrument.Title = "Client:";
-            processor.GetService<PanelService>().Create(new("capture_preview_panel", "Capture")
-            {
-                Instruments =
-                {
-                    Instrument
                 }
-            });
-            HookService.Register<ClientCapturedHook>(OnClientCaptured);
-        }
-    }
 
     public Bitmap Capture(CapturingOptions? options = null)
     {

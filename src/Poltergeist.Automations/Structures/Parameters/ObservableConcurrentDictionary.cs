@@ -60,6 +60,19 @@ public class ObservableConcurrentDictionary<TKey, TValue> : IDictionary<TKey, TV
     }
 
     /// <summary>
+    /// Adds the specified key-value pair to the dictionary.
+    /// </summary>
+    /// <param name="keyValuePair">The key-value of the element to add.</param>
+    /// <exception cref="ArgumentException">An element with the same key already exists in the dictionary.</exception>
+    public void Add(KeyValuePair<TKey, TValue> keyValuePair)
+    {
+        if (!TryAdd(keyValuePair.Key, keyValuePair.Value))
+        {
+            throw new ArgumentException("An element with the same key already exists.");
+        }
+    }
+    
+    /// <summary>
     /// Adds a new key-value pair to the dictionary if the key does not exist, or updates the value associated with the specified key if the key already exists.
     /// </summary>
     /// <param name="key">The key to be added or whose value should be updated.</param>
