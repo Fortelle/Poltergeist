@@ -74,6 +74,7 @@ public partial class PoltergeistApplication
         services.AddSingleton<AppNotificationService>();
         services.AddSingleton<GlobalOptionsService>();
         services.AddSingleton<MacroStatisticsService>();
+        services.AddSingleton<MacroActionService>();
 
         services.AddSingleton<TextToSpeechService>();
         services.AddSingleton<AudioPlayerService>();
@@ -204,6 +205,7 @@ public partial class PoltergeistApplication
 #endif
 
         navigationService.AddPageInfo(MacroPage.PageInfo);
+        navigationService.AddPageInfo(TerminalActionPage.PageInfo);
     }
 
     private static void ConfigureCommandLineParsers()

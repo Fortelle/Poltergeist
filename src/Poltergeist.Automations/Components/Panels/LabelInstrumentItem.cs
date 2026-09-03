@@ -9,6 +9,7 @@ public class LabelInstrumentItem
 
     public string? Label { get; set; }
     public string? Text { get; set; }
+    public string? Subtext { get; set; }
     public string? Tooltip { get; set; }
 
     public IconInfo? Icon { get; set; }

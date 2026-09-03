@@ -2,7 +2,6 @@ using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers;
@@ -165,102 +164,14 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
             return;
         }
 
-        if (!macro.Actions.Contains(action))
+        var actionIndex = macro.Actions.IndexOf(action);
+        if (actionIndex == -1)
         {
             App.ShowTeachingTip("The action is not owned by the macro.");
             return;
         }
 
-        static void OnMessageReceived(string message)
-        {
-            App.ShowTeachingTip(message);
-        }
-
-        var environments = App.GetService<MacroManager>().GlobalEnvironments;
-        foreach (var (key, value) in ViewModel.Instance.GetEnvironments())
-        {
-            environments[key] = value;
-        }
-
-        var options = PoltergeistApplication.GetService<GlobalOptionsService>().GlobalOptions.GetValueDictionary();
-        foreach (var (key, value) in ViewModel.Instance.GetOptions())
-        {
-            options[key] = value;
-        }
-
-        var args = new MacroActionArguments((IUserMacro)macro)
-        {
-            Options = options,
-            Environments = environments,
-        };
-        args.MessageReceived += OnMessageReceived;
-        await ExecuteAction(action, args);
-        args.MessageReceived -= OnMessageReceived;
-    }
-
-    private static async Task ExecuteAction(MacroAction action, MacroActionArguments arguments)
-    {
-        if (action.Execute is not null)
-        {
-            try
-            {
-                action.Execute(arguments);
-
-                if (!string.IsNullOrEmpty(arguments.Message))
-                {
-                    App.ShowTeachingTip(arguments.Message);
-                }
-            }
-            catch (Exception exception)
-            {
-                App.ShowException(exception);
-            }
-        }
-        else if (action.ExecuteAsync is not null)
-        {
-            CancellationTokenSource? cts = null;
-
-            if (action.IsCancellable)
-            {
-                cts = new();
-                arguments.CancellationToken = cts.Token;
-            }
-
-            _ = InteractionHelper.Interact(new ProgressModel()
-            {
-                IsOn = true,
-                Title = action.ProgressTitle ?? action.Text,
-                CancellationTokenSource = cts,
-            });
-
-            try
-            {
-                await action.ExecuteAsync(arguments);
-
-                if (!string.IsNullOrEmpty(arguments.Message))
-                {
-                    App.ShowTeachingTip(arguments.Message);
-                }
-            }
-            catch (Exception exception)
-            {
-                App.ShowException(exception);
-            }
-
-            _ = InteractionHelper.Interact(new ProgressModel()
-            {
-                IsOn = false,
-            });
-
-            cts?.Dispose();
-        }
-        else
-        {
-            _ = InteractionHelper.Interact(new TipModel()
-            {
-                Text = "The action is empty.",
-            });
-        }
+        App.GetService<MacroActionService>().Execute(ViewModel.Instance, action);
     }
 
     public bool OnPageClosing()

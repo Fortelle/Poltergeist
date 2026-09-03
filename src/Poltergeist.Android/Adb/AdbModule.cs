@@ -14,25 +14,25 @@ public class AdbModule : MacroModule
 {
     public static readonly OptionDefinition<string> IpAddressOption = new("adb.ip_address")
     {
-            DisplayLabel = "IP Address",
-            Category = "ADB",
-            IsGlobal = true,
+        DisplayLabel = "IP Address",
+        Category = "ADB",
+        IsGlobal = true,
     };
 
     public static readonly PathOption AdbPathOption = new("adb.exepath")
-        {
-            DisplayLabel = "Exe file",
-            Category = "ADB",
-            IsGlobal = true,
+    {
+        DisplayLabel = "Exe file",
+        Category = "ADB",
+        IsGlobal = true,
     };
 
     public static readonly OptionDefinition<bool> KeepAliveOption = new("adb.keep_alive")
-        {
-            DisplayLabel = "Keep adb server alive",
-            Description = "Skips killing the adb server when the macro is completed. " +
+    {
+        DisplayLabel = "Keep adb server alive",
+        Description = "Skips killing the adb server when the macro is completed. " +
                 "This helps when you are planning to launch the macro frequently in a short time. " +
                 "You can use the \"kill-server\" action to kill the adb server manually.",
-            Category = "ADB",
+        Category = "ADB",
     };
 
     public override void OnMacroInitialized(IMacroInformation macro)
@@ -98,28 +98,27 @@ public class AdbModule : MacroModule
         }
     }
 
-    // todo: support EmulatorDetectionModule
-    public static readonly MacroAction KillServerAction = new()
+    private static readonly MacroAction KillServerAction = new ExternalProcessAction()
     {
         Text = "Kill ADB server",
         Description = "Runs \"adb kill-server\" via Command Prompt to kill the adb server.",
         Icon = "\uE756",
-        Execute = args =>
+        GetStartInfo = context =>
         {
-            if (!args.Options.TryGetValue(AdbService.ExePathKey, out var value) || value is not string exepath || !File.Exists(exepath))
+            var localStorage = LocalStorageService.Load(context.Environments);
+
+            if (!localStorage.TryGetValue(AdbPathOption, out var exePath))
             {
-                args.Message = $"ADB executable file is not set or does not exist.";
-                return;
+                throw new Exception($"{AdbPathOption.Key} does not found.");
             }
 
-            Process.Start(new ProcessStartInfo()
+            return new ProcessStartInfo()
             {
-                FileName = exepath,
+                FileName = exePath,
                 Arguments = "kill-server",
-            });
+            };
 
-            args.Message = $"Killed adb server.";
         },
-    };
 
+    };
 }
