@@ -22,7 +22,7 @@ public abstract partial class CapturingProvider : MacroService
     {
         LocatingProvider = locatingProvider;
         HookService = Processor.GetService<HookService>();
-                }
+    }
 
     public Bitmap Capture(CapturingOptions? options = null)
     {
@@ -30,25 +30,29 @@ public abstract partial class CapturingProvider : MacroService
         Logger.IncreaseIndent();
 
         var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
+        var keepsClientScale = options?.KeepsClientScale ?? false;
 
-        Bitmap imageOnWorkspace;
+        Bitmap imageOutput;
 
         if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
-            imageOnWorkspace = new(options.WorkspaceSnapshot);
+            var imageOnWorkspace = new Bitmap(options.WorkspaceSnapshot);
             Logger.Trace($"Copied an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.");
+            imageOutput = imageOnWorkspace;
         }
         else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            imageOnWorkspace = new(snapshot);
+            var imageOnWorkspace = new Bitmap(snapshot);
             Logger.Trace($"Copied an image from the cached snapshot \"{options.SnapshotKey}\".");
+            imageOutput = imageOnWorkspace;
         }
         else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            imageOnWorkspace = new(snapshot);
+            var imageOnWorkspace = new Bitmap(snapshot);
             Logger.Trace($"Copied an image from the cached snapshot \"{CurrentSnapshotKey}\".");
+            imageOutput = imageOnWorkspace;
         }
         else if (CaptureClientFullHandler is not null)
         {
@@ -58,7 +62,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClientSize = imageOnClient.Size,
                 FullImage = imageOnClient,
             });
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientPartHandler is not null && LocatingProvider?.ClientSize is not null)
         {
@@ -69,7 +81,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClientSize = clientSize,
                 FullImage = imageOnClient,
             });
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientPartsHandler is not null && LocatingProvider?.ClientSize is not null)
         {
@@ -80,7 +100,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClientSize = clientSize,
                 FullImage = imageOnClient,
             });
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else
         {
@@ -88,7 +116,7 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return imageOnWorkspace;
+        return imageOutput;
     }
 
     public Bitmap Capture(Rectangle rectangleOnWorkspace, CapturingOptions? options = null)
@@ -98,25 +126,29 @@ public abstract partial class CapturingProvider : MacroService
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
         var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
+        var keepsClientScale = options?.KeepsClientScale ?? false;
 
-        Bitmap imageOnWorkspace;
+        Bitmap imageOutput;
 
         if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
-            imageOnWorkspace = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
+            var imageOnWorkspace = CropImage(options.WorkspaceSnapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectangleOnWorkspace);
+            imageOutput = imageOnWorkspace;
         }
         else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
+            var imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
+            imageOutput = imageOnWorkspace;
         }
         else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
+            var imageOnWorkspace = CropImage(snapshot, rectangleOnWorkspace);
             Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
+            imageOutput = imageOnWorkspace;
         }
         else if (CaptureClientPartHandler is not null && !requiresFullSnapshot)
         {
@@ -129,7 +161,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClipAreas = [rectangleOnClient],
                 TargetAreas = [rectangleOnClient],
             });
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient, rectangleOnWorkspace.Size);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientPartsHandler is not null && !requiresFullSnapshot)
         {
@@ -142,7 +182,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClipAreas = [rectangleOnClient],
                 TargetAreas = [rectangleOnClient],
             });
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient, rectangleOnWorkspace.Size);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientFullHandler is not null)
         {
@@ -155,7 +203,15 @@ public abstract partial class CapturingProvider : MacroService
                 TargetAreas = [rectangleOnClient],
             });
             var imageOnClient = CropImage(clientImage, rectangleOnClient);
-            imageOnWorkspace = ClientImageToWorkspace(imageOnClient);
+            if (keepsClientScale)
+            {
+                imageOutput = imageOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = ClientImageToWorkspace(imageOnClient, rectangleOnWorkspace.Size);
+                imageOutput = imageOnWorkspace;
+            }
         }
         else
         {
@@ -163,7 +219,7 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return imageOnWorkspace;
+        return imageOutput;
     }
 
     public Bitmap[] Capture(Rectangle[] rectanglesOnWorkspace, CapturingOptions? options = null)
@@ -173,25 +229,29 @@ public abstract partial class CapturingProvider : MacroService
 
         var requiresFullSnapshot = options?.RequiresFullSnapshot ?? false;
         var ignoresSnapshot = options?.IgnoresSnapshot ?? false;
+        var keepsClientScale = options?.KeepsClientScale ?? false;
 
-        Bitmap[] imagesOnWorkspace;
+        Bitmap[] imagesOutput;
 
         if (options?.WorkspaceSnapshot is not null && !ignoresSnapshot)
         {
-            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect))];
+            var imagesOnWorkspace = rectanglesOnWorkspace.Select(rect => CropImage(options.WorkspaceSnapshot, rect)).ToArray();
             Logger.Trace($"Cropped images from {nameof(options)}.{nameof(options.WorkspaceSnapshot)}.", rectanglesOnWorkspace);
+            imagesOutput = imagesOnWorkspace;
         }
         else if (options?.SnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(options.SnapshotKey);
-            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            var imagesOnWorkspace = rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect)).ToArray();
             Logger.Trace($"Cropped an image from the cached snapshot \"{options.SnapshotKey}\".");
+            imagesOutput = imagesOnWorkspace;
         }
         else if (CurrentSnapshotKey is not null && !ignoresSnapshot)
         {
             var snapshot = GetSnapshot(CurrentSnapshotKey);
-            imagesOnWorkspace = [.. rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect))];
+            var imagesOnWorkspace = rectanglesOnWorkspace.Select(rect => CropImage(snapshot, rect)).ToArray();
             Logger.Trace($"Cropped an image from the cached snapshot \"{CurrentSnapshotKey}\".");
+            imagesOutput = imagesOnWorkspace;
         }
         else if (CaptureClientPartsHandler is not null && !requiresFullSnapshot)
         {
@@ -204,7 +264,15 @@ public abstract partial class CapturingProvider : MacroService
                 ClipAreas = rectanglesOnClient,
                 TargetAreas = rectanglesOnClient,
             });
-            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            if (keepsClientScale)
+            {
+                imagesOutput = imagesOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = imagesOnClient.Zip(rectanglesOnWorkspace.Select(x => x.Size)).Select(x => ClientImageToWorkspace(x.First, x.Second)).ToArray();
+                imagesOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientPartHandler is not null && !requiresFullSnapshot)
         {
@@ -223,7 +291,15 @@ public abstract partial class CapturingProvider : MacroService
                 TargetAreas = rectanglesOnClient,
             });
             var imagesOnClient = rectanglesOnClient.Select(rect => CropImage(imageOnClient, new Rectangle(rect.X - boundsOnClient.X, rect.Y - boundsOnClient.Y, rect.Width, rect.Height))).ToArray();
-            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            if (keepsClientScale)
+            {
+                imagesOutput = imagesOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = imagesOnClient.Zip(rectanglesOnWorkspace.Select(x => x.Size)).Select(x => ClientImageToWorkspace(x.First, x.Second)).ToArray();
+                imagesOutput = imageOnWorkspace;
+            }
         }
         else if (CaptureClientFullHandler is not null)
         {
@@ -236,7 +312,15 @@ public abstract partial class CapturingProvider : MacroService
                 TargetAreas = rectanglesOnClient,
             });
             var imagesOnClient = rectanglesOnClient.Select(rect => CropImage(clientImage, rect)).ToArray();
-            imagesOnWorkspace = [.. imagesOnClient.Select(ClientImageToWorkspace)];
+            if (keepsClientScale)
+            {
+                imagesOutput = imagesOnClient;
+            }
+            else
+            {
+                var imageOnWorkspace = imagesOnClient.Select(ClientImageToWorkspace).ToArray();
+                imagesOutput = imageOnWorkspace;
+            }
         }
         else
         {
@@ -244,7 +328,24 @@ public abstract partial class CapturingProvider : MacroService
         }
 
         Logger.DecreaseIndent();
-        return imagesOnWorkspace;
+        return imagesOutput;
+    }
+
+    private Bitmap ClientImageToWorkspace(Bitmap imageOnClient, Size sizeOnWorkspace)
+    {
+        var sizeOnClient = imageOnClient.Size;
+        if(sizeOnClient == sizeOnWorkspace)
+        {
+            return imageOnClient;
+        }
+
+        var imageOnWorkspace = ResizeImage(imageOnClient, sizeOnWorkspace);
+
+        imageOnClient.Dispose();
+
+        Logger.Trace($"Resized the captured image to match the workspace size: {sizeOnClient} -> {sizeOnWorkspace}.");
+
+        return imageOnWorkspace;
     }
 
     private Bitmap ClientImageToWorkspace(Bitmap imageOnClient)
@@ -265,13 +366,7 @@ public abstract partial class CapturingProvider : MacroService
         var sizeOnClient = imageOnClient.Size;
         var sizeOnWorkspace = LocatingProvider.ClientSizeToWorkspace(sizeOnClient);
 
-        var imageOnWorkspace = ResizeImage(imageOnClient, sizeOnWorkspace);
-
-        imageOnClient.Dispose();
-
-        Logger.Trace($"Resized the captured image to match the workspace size: {sizeOnClient} -> {sizeOnWorkspace}.");
-
-        return imageOnWorkspace;
+        return ClientImageToWorkspace(imageOnClient, sizeOnWorkspace);
     }
 
     private Rectangle WorkspaceRectangleToClient(Rectangle rectangleOnWorkspace)
@@ -291,11 +386,6 @@ public abstract partial class CapturingProvider : MacroService
         if (disposing)
         {
             ReleaseAllSnapshots();
-
-            if (TransparentBackgroundBrush.IsValueCreated)
-            {
-                TransparentBackgroundBrush.Value.Dispose();
-            }
         }
 
         base.Dispose(disposing);

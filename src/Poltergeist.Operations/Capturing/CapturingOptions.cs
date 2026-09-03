@@ -8,4 +8,5 @@ public class CapturingOptions
     public string? SnapshotKey { get; set; }
     public bool? RequiresFullSnapshot { get; set; }
     public bool? IgnoresSnapshot { get; set; }
+    public bool? KeepsClientScale { get; set; }
 }
