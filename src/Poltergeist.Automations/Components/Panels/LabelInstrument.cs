@@ -48,6 +48,7 @@ public class LabelInstrument : InstrumentModel
     {
         item.Tooltip ??= template.Tooltip;
         item.Text ??= template.Text;
+        item.Subtext ??= template.Subtext;
         item.Label ??= template.Label;
         item.Color ??= template.Color;
         item.Icon ??= template.Icon;

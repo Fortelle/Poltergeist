@@ -12,6 +12,8 @@ public class LabelInstrumentItemViewModel
 
     public string? Text { get; set; }
 
+    public string? Subtext { get; set; }
+
     public string? Tooltip { get; set; }
 
     public SolidColorBrush? Foreground { get; set; }
@@ -24,6 +26,7 @@ public class LabelInstrumentItemViewModel
     {
         Tooltip = item.Tooltip;
         Text = item.Text;
+        Subtext = item.Subtext;
         Label = item.Label;
         Icon = item.Icon;
 
