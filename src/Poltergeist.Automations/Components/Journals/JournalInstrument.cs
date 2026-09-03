@@ -17,6 +17,11 @@ public class JournalInstrument : InstrumentModel
         Lines.Add(text);
     }
 
+    public void OverwriteLastLine(string text)
+    {
+        Lines[^1]= text;
+    }
+
     public void Clear()
     {
         Lines.Clear();
