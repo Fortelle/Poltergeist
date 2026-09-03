@@ -9,7 +9,7 @@ using Windows.UI.Text;
 
 namespace Poltergeist.UI.Controls.Instruments;
 
-public class TextInstrumentViewModel : IInstrumentViewModel
+public class TextInstrumentViewModel : IInstrumentViewModel, IDisposable
 {
     public SolidColorBrush? Background { get; set; }
     public SolidColorBrush? Foreground { get; set; }
@@ -125,5 +125,10 @@ public class TextInstrumentViewModel : IInstrumentViewModel
         }
 
         return brush;
+    }
+
+    public void Dispose()
+    {
+        Model.TextCollection.CollectionChanged -= TextCollection_CollectionChanged;
     }
 }

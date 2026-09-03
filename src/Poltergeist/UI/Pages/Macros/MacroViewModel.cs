@@ -168,11 +168,13 @@ public partial class MacroViewModel : ObservableRecipient
 
     private void RefreshMetadata()
     {
-        var assembly = Instance.Template?.GetType().Assembly;
+        var templateType = Instance.Template?.GetType();
+        var assembly = templateType?.Assembly;
         var assemblyName = assembly?.GetName();
 
         var metadata = new Dictionary<string, object?>() {
             { "template_key", Instance.TemplateKey },
+            { "template_classname", templateType?.FullName },
             { "template_version", Instance.Template?.Version },
             { "assembly_name", assemblyName?.Name },
             { "assembly_version", assemblyName?.Version },

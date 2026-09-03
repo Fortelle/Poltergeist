@@ -1,7 +1,4 @@
-﻿using Microsoft.UI.Xaml.Media;
-using Poltergeist.Automations.Components.Panels;
-using Poltergeist.Automations.Structures.Colors;
-using Poltergeist.Helpers;
+﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Models;
 
 namespace Poltergeist.UI.Controls.Instruments;

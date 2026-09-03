@@ -7,22 +7,23 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              >
-    <Border
-        Background="{x:Bind ViewModel.Background, Mode=OneTime}"
-        CornerRadius="4"
+    <ScrollViewer
+        Style="{StaticResource VerticalScrollViewerStyle}"
+        VerticalScrollBarVisibility="Auto"
+        VerticalAnchorRatio="1"
+        HorizontalContentAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
         HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        CornerRadius="4"
         Padding="8, 0"
+        Background="{x:Bind ViewModel.Background, Mode=OneTime}"
         >
-        <ScrollViewer
-            VerticalScrollBarVisibility="Auto"
-            VerticalAnchorRatio="1"
-            HorizontalAlignment="Stretch"
-            >
+        <ContentPresenter>
             <RichTextBlock
                 x:Name="TextPanelBox"
-                TextWrapping="Wrap"
+                TextWrapping="Wrap" 
                 >
-
                 <interactivity:Interaction.Behaviors>
                     <interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Foreground, Mode=OneTime}" ComparisonCondition="NotEqual" Value="{x:Null}">
                         <interactivity:ChangePropertyAction TargetObject="{Binding ElementName=TextPanelBox, Mode=OneTime}" PropertyName="Foreground" Value="{x:Bind ViewModel.Foreground, Mode=OneTime}"/>
@@ -35,6 +36,6 @@
                     </Style>
                 </RichTextBlock.Resources>
             </RichTextBlock>
-        </ScrollViewer>
-    </Border>
+        </ContentPresenter>
+    </ScrollViewer>
 </UserControl>

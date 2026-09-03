@@ -13,17 +13,12 @@
             x:Key="SingleStyleDataTemplate"
             x:DataType="local:InstrumentsWrapper"
             >
-            <ScrollViewer
-                Style="{StaticResource VerticalScrollViewerStyle}"
-                VerticalAnchorRatio="1"
-                >
-                <ContentControl
-                    DataContext="{Binding FirstItem, Mode=OneTime}"
-                    Loaded="ContentControl_Loaded"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    />
-            </ScrollViewer>
+            <ContentControl
+                DataContext="{Binding FirstItem, Mode=OneTime}"
+                Loaded="ContentControl_Loaded"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                />
         </DataTemplate>
         
         <DataTemplate

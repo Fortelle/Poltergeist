@@ -20,7 +20,7 @@
             >
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel>
+                     <StackPanel>
                         <TextBlock
                             FontWeight="SemiBold"
                             Text="{Binding Title, Mode=OneTime}"
@@ -32,7 +32,7 @@
                             >
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid 
+                                     <Grid 
                                         Style="{StaticResource CardGridStyle}"
                                         ColumnSpacing="8"
                                         >
@@ -102,7 +102,7 @@
                                                 </interactivity:DataTriggerBehavior>
                                             </interactivity:Interaction.Behaviors>
                                         </local:OptionControl>
-                                    </Grid>
+                                            </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
