@@ -1,4 +1,3 @@
-using System.Numerics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
@@ -16,16 +15,30 @@ public sealed partial class OptionControl : UserControl
 
     private void UserControl_Loaded(object sender, RoutedEventArgs e)
     {
+        if (DataContext is null)
+        {
+            Content = new TextBlock()
+            {
+                Text = $"(null)"
+            };
+            return;
+        }
+
         if (DataContext is not ObservableParameterItem item)
         {
             Content = new TextBlock()
             {
-                Text = $"Unsupported DataContext: {DataContext?.GetType().Name ?? "(null)"}"
+                Text = $"Unsupported DataContext: {DataContext.GetType().Name}"
             };
             return;
         }
 
         UpdateContent(item);
+
+        if (item.Definition.Status is ParameterStatus.ReadOnly or ParameterStatus.Deprecated)
+        {
+            IsEnabled = false;
+        }
     }
 
     private void UpdateContent(ObservableParameterItem item)

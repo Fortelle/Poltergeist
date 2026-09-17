@@ -6,6 +6,7 @@ using Poltergeist.Automations.Components.Terminals;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Android.Adb;
@@ -102,7 +103,7 @@ public class AdbModule : MacroModule
     {
         Text = "Kill ADB server",
         Description = "Runs \"adb kill-server\" via Command Prompt to kill the adb server.",
-        Icon = "\uE756",
+        Icon = IconInfo.FromGlyph("\uE756"),
         GetStartInfo = context =>
         {
             var localStorage = LocalStorageService.Load(context.Environments);
@@ -117,7 +118,6 @@ public class AdbModule : MacroModule
                 FileName = exePath,
                 Arguments = "kill-server",
             };
-
         },
 
     };

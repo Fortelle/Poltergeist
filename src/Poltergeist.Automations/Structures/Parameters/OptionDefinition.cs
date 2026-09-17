@@ -1,7 +1,11 @@
 ﻿namespace Poltergeist.Automations.Structures.Parameters;
 
-public class OptionDefinition<T> : ParameterDefinition<T>, IParameterDefinition where T : notnull
+public class OptionDefinition<T> : ParameterDefinition<T>, IOptionDefinition where T : notnull
 {
+    public bool IsGlobal { get; set; }
+
+    public string? Parent { get; set; }
+
     public OptionDefinition(string key) : base(key)
     {
     }

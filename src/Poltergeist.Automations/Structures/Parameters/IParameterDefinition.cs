@@ -8,7 +8,6 @@ public interface IParameterDefinition
     string? Category { get; }
     string? Description { get; }
     ParameterStatus Status { get; }
-    bool IsGlobal { get; }
     
     Type BaseType { get; }
 

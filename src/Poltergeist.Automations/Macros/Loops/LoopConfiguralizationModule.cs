@@ -34,12 +34,14 @@ public class LoopConfiguralizationModule : MacroModule
         {
             DisplayLabel = LocalizationUtil.Localize("Loops_Option_Count"),
             Category = LocalizationUtil.Localize("Loops_Category"),
+            Parent = PatternDefinition.Key,
         });
 
         macro.OptionDefinitions.Add(new OptionDefinition<TimeOnly>(DurationDefinition.Key)
         {
             DisplayLabel = LocalizationUtil.Localize("Loops_Option_Duration"),
             Category = LocalizationUtil.Localize("Loops_Category"),
+            Parent = PatternDefinition.Key,
         });
 
         macro.Interventions.Add(new ProcessorIntervention()

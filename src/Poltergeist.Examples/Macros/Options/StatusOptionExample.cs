@@ -16,7 +16,7 @@ public class ParameterDefinitionStatusExample : UnrunnableMacro
 
         foreach (var value in Enum.GetValues<ParameterStatus>())
         {
-            OptionDefinitions.Add(new ParameterDefinition<bool>($"{value}")
+            OptionDefinitions.Add(new OptionDefinition<bool>($"{value}")
             {
                 Description = $"{{ {nameof(ParameterDefinitionBase.Status)} = {value} }}",
                 Status = value,

@@ -16,7 +16,7 @@ public interface IMacroInformation
     Version? Version { get; }
 
     List<MacroAction> Actions { get; }
-    ParameterDefinitionCollection OptionDefinitions { get; }
+    OptionDefinitionCollection OptionDefinitions { get; }
     StatisticDefinitionCollection StatisticDefinitions { get; }
     ParameterDefinitionCollection Metadata { get; }
     ParameterValueCollection? OptionPresets { get; }

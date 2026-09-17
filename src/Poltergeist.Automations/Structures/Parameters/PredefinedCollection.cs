@@ -11,7 +11,7 @@ public class PredefinedCollection
 
     public bool HasChanged { get; private set; }
 
-    protected readonly Dictionary<string, IParameterDefinition> DefinitionCollection = new();
+    protected readonly Dictionary<string, IOptionDefinition> DefinitionCollection = new();
     protected readonly Dictionary<string, object?> ValueCollection = new();
 
     protected readonly Lock _lock = new();
@@ -20,7 +20,7 @@ public class PredefinedCollection
     {
     }
 
-    public PredefinedCollection(KeyedCollection<string, IParameterDefinition> definitions)
+    public PredefinedCollection(KeyedCollection<string, IOptionDefinition> definitions)
     {
         foreach (var definition in definitions)
         {
@@ -28,7 +28,7 @@ public class PredefinedCollection
         }
     }
 
-    public void AddDefinition(IParameterDefinition definition)
+    public void AddDefinition(IOptionDefinition definition)
     {
         lock (_lock)
         {
@@ -36,7 +36,7 @@ public class PredefinedCollection
         }
     }
 
-    public bool TryGetDefinition(string key, [MaybeNullWhen(false)] out IParameterDefinition definition)
+    public bool TryGetDefinition(string key, [MaybeNullWhen(false)] out IOptionDefinition definition)
     {
         return DefinitionCollection.TryGetValue(key, out definition);
     }

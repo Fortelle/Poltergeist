@@ -1,9 +1,12 @@
-﻿namespace Poltergeist.Automations.Macros;
+﻿using Poltergeist.Automations.Structures;
+
+namespace Poltergeist.Automations.Macros;
 
 public abstract class MacroAction
 {
     public string? Key { get; init; }
-    public string? Text { get; init; }
-    public string? Description { get; init; }
-    public string? Icon { get; set; }
+    public string? Text { get; set; }
+    public string? Description { get; set; }
+    public IconInfo? Icon { get; set; }
+    public IconInfo? ActionIcon { get; set; }
 }

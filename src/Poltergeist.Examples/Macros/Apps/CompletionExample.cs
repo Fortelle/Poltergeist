@@ -18,7 +18,7 @@ public class CompletionExample : CommonOneshotMacroBase
 
         Modules.Add(new CompleteModule());
 
-        OptionDefinitions.Add(new ParameterDefinition<bool>($"throws_exception")
+        OptionDefinitions.Add(new OptionDefinition<bool>($"throws_exception")
         {
             DisplayLabel = $"Throws exception",
         });

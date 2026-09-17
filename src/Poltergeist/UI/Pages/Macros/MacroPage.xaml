@@ -10,6 +10,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:Poltergeist.Helpers.Converters"
     xmlns:controls="using:Poltergeist.UI.Controls"
+    xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
     Style="{StaticResource TabPageStyle}"
     mc:Ignorable="d"
     >
@@ -147,53 +148,16 @@
                             >
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid 
-                                        Style="{StaticResource CardGridStyle}"
+                                    <controls1:SettingsCard
+                                        Header="{Binding Text, Mode=OneTime}"
+                                        Description="{Binding Description, Mode=OneTime}"
+                                        HeaderIcon="{Binding Icon, TargetNullValue=&#xE768;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
+                                        ActionIcon="{Binding ActionIcon, TargetNullValue=&#xE974;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
+                                        IsClickEnabled="True"
+                                        Click="ActionExecuteButton_Click"
+                                        Margin="0, 0, 0, 4"
                                         >
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="36" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <controls:IconControl
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center"
-                                            Width="24"
-                                            Height="24"
-                                            FontSize="20"
-                                            Icon="{Binding Icon, Mode=OneTime, TargetNullValue=&#xE90F;}"
-                                            />
-                                        
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            >
-
-                                            <TextBlock
-                                                Text="{Binding Text, Mode=OneTime}"
-                                                />
-
-                                            <TextBlock
-                                                Opacity=".5"
-                                                FontSize="12"
-                                                TextWrapping="Wrap"
-                                                Margin="0, 2, 0, 0"
-                                                Text="{Binding Description, Mode=OneTime}"
-                                                Visibility="{Binding Description, Mode=OneTime, Converter={StaticResource FalsyToCollapsedConverter}}"
-                                                />
-
-                                        </StackPanel>
-
-                                        <Button
-                                            x:Uid="/Poltergeist/Macros/ActionExecuteButton"
-                                            Grid.Column="3"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            Click="ActionExecuteButton_Click"
-                                            />
-                                    </Grid>
+                                    </controls1:SettingsCard>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

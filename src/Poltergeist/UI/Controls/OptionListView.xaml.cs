@@ -18,14 +18,31 @@ public sealed partial class OptionListView : UserControl
         {
             SetValue(OptionsProperty, value);
 
-            Groups = value?
+            if (value is null)
+            {
+                return;
+            }
+
+            var childGroups = value
                 .Where(x => x.Definition.Status != ParameterStatus.Hidden)
+                .Where(x => x.Definition is IOptionDefinition od && od.Parent is not null)
+                .GroupBy(x => ((IOptionDefinition)x.Definition).Parent)
+                .ToDictionary(x => x.Key!, x => x.ToArray())
+                ;
+
+            Groups = value
+                .Where(x => x.Definition.Status != ParameterStatus.Hidden)
+                .Where(x => x.Definition is not IOptionDefinition od || od.Parent is null)
                 .GroupBy(x => x.Definition.Category)
                 .OrderBy(x => x.Key is null ? 0 : 1)
                 .Select(x => new OptionGroup
                 {
                     Title = x.Key ?? UncategorizedGroupLabel,
-                    Options = x.ToArray(),
+                    Options = x.Select(y => new OptionItem()
+                    {
+                        Item = y,
+                        SubItems = childGroups.TryGetValue(y.Definition.Key, out var children) ? children : null,
+                    }),
                 })
                 .ToArray();
         }
@@ -45,12 +62,6 @@ public sealed partial class OptionListView : UserControl
     public OptionListView()
     {
         InitializeComponent();
-    }
-
-    public class OptionGroup
-    {
-        public required string Title { get; set; }
-        public required IEnumerable<ObservableParameterItem> Options { get; set; }
     }
 
 }

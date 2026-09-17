@@ -25,7 +25,7 @@ public abstract class MacroBase : IMacroBase, IMacroInformation, IMacroExecution
     public string? Icon { get; set; }
     public Version? Version { get; set; }
 
-    public ParameterDefinitionCollection OptionDefinitions { get; } = new();
+    public OptionDefinitionCollection OptionDefinitions { get; } = new();
     public StatisticDefinitionCollection StatisticDefinitions { get; } = new();
     public ParameterDefinitionCollection Metadata { get; } = new();
 

@@ -8,19 +8,74 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:options="using:Poltergeist.UI.Controls.Options"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:parameters="using:Poltergeist.Automations.Structures.Parameters"
     mc:Ignorable="d"
     x:Name="Root"
     >
+    <UserControl.Resources>
+        <DataTemplate
+            x:Key="CardTemplate"
+            x:DataType="local:OptionItem"
+            >
+            <controls:SettingsCard
+                DataContext="{Binding Item, Mode=OneTime}"
+                Header="{Binding Definition.DisplayLabel, Mode=OneTime}"
+                Description="{Binding Definition.Description, Mode=OneTime}"
+                >
+                <local:OptionControl
+                    IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+                    >
+                </local:OptionControl>
+            </controls:SettingsCard>
+        </DataTemplate>
 
-    <ScrollViewer
-        Style="{StaticResource VerticalScrollViewerStyle}"
-        >
+        <DataTemplate
+            x:Key="ExpanderTemplate"
+            x:DataType="local:OptionItem"
+            >
+            <controls:SettingsExpander
+                Header="{Binding Item.Definition.DisplayLabel, Mode=OneTime}"
+                Description="{Binding Item.Definition.Description, Mode=OneTime}"
+                ItemsSource="{Binding SubItems, Mode=OneTime}"
+                IsExpanded="True"
+                >
+                <controls:SettingsExpander.ItemTemplate>
+                    <DataTemplate>
+                        <controls:SettingsCard
+                            Header="{Binding Definition.DisplayLabel, Mode=OneTime}"
+                            Description="{Binding Definition.Description, Mode=OneTime}"
+                            >
+                            <local:OptionControl
+                                IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+                                >
+                            </local:OptionControl>
+                        </controls:SettingsCard>
+                    </DataTemplate>
+                </controls:SettingsExpander.ItemTemplate>
+                <local:OptionControl
+                    DataContext="{Binding Item, Mode=OneTime}"
+                    IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
+                    >
+                </local:OptionControl>
+            </controls:SettingsExpander>
+        </DataTemplate>
+
+        <local:OptionTemplateSelector
+            x:Key="OptionTemplateSelector"
+            CardTemplate="{StaticResource CardTemplate}"
+            ExpanderTemplate="{StaticResource ExpanderTemplate}"
+            />
+        
+    </UserControl.Resources>
+
+    <ScrollViewer>
         <ItemsControl
             ItemsSource="{x:Bind Groups, Mode=OneTime}"
             >
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                     <StackPanel>
+                    <StackPanel>
                         <TextBlock
                             FontWeight="SemiBold"
                             Text="{Binding Title, Mode=OneTime}"
@@ -28,88 +83,18 @@
                             />
                         <ItemsControl
                             ItemsSource="{Binding Options, Mode=OneTime}"
-                            Margin="0, 8, 0, 16"
+                            Margin="0, 8, 16, 16"
+                            ItemTemplateSelector="{StaticResource OptionTemplateSelector}"
                             >
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                     <Grid 
-                                        Style="{StaticResource CardGridStyle}"
-                                        ColumnSpacing="8"
-                                        >
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="14" />
-                                            <ColumnDefinition Width="240" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel
-                                            Grid.Column="0"
-                                            VerticalAlignment="Center"
-                                            >
-                                            <TextBlock 
-                                                Grid.Column="0"
-                                                Text="{Binding Definition.DisplayLabel}"
-                                                />
-                                            <TextBlock
-                                                Opacity=".5"
-                                                FontSize="12"
-                                                Margin="0, 2, 0, 0"
-                                                TextWrapping="Wrap"
-                                                Text="{Binding Definition.Description}"
-                                                Visibility="{Binding Definition.Description, Converter={StaticResource FalsyToCollapsedConverter}}"
-                                                />
-                                        </StackPanel>
-
-                                        <FontIcon
-                                            Grid.Column="1"
-                                            FontSize="14"
-                                            ToolTipService.ToolTip="{Binding Definition.Status, Mode=OneTime}"
-                                            >
-                                            <interactivity:Interaction.Behaviors>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Normal">
-                                                    <interactivity:ChangePropertyAction PropertyName="Visibility" Value="Collapsed"/>
-                                                </interactivity:DataTriggerBehavior>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Experimental">
-                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE724;"/>
-                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#0000FF"/>
-                                                </interactivity:DataTriggerBehavior>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
-                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE72E;"/>
-                                                </interactivity:DataTriggerBehavior>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="DevelopmentOnly">
-                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xEBE8;"/>
-                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#FF6600"/>
-                                                </interactivity:DataTriggerBehavior>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
-                                                    <interactivity:ChangePropertyAction PropertyName="Glyph" Value="&#xE74D;"/>
-                                                    <interactivity:ChangePropertyAction PropertyName="Foreground" Value="#FF0000"/>
-                                                </interactivity:DataTriggerBehavior>
-                                            </interactivity:Interaction.Behaviors>
-                                        </FontIcon>
-
-                                        <local:OptionControl
-                                            Grid.Column="2"
-                                            HorizontalContentAlignment="Right"
-                                            VerticalAlignment="Center"
-                                            IsEnabled="{Binding IsLocked, ElementName=Root, Converter={StaticResource NotConverter}, Mode=OneWay}"
-                                            >
-                                            <interactivity:Interaction.Behaviors>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="ReadOnly">
-                                                    <interactivity:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
-                                                </interactivity:DataTriggerBehavior>
-                                                <interactivity:DataTriggerBehavior Binding="{Binding Definition.Status, Converter={StaticResource EnumToStringConverter}, Mode=OneTime}" ComparisonCondition="Equal" Value="Deprecated">
-                                                    <interactivity:ChangePropertyAction PropertyName="IsEnabled" Value="False"/>
-                                                </interactivity:DataTriggerBehavior>
-                                            </interactivity:Interaction.Behaviors>
-                                        </local:OptionControl>
-                                            </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Margin" Value="0, 0, 0, 4" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
                         </ItemsControl>
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
     </ScrollViewer>
-    
 </UserControl>

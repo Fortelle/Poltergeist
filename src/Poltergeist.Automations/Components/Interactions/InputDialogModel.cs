@@ -4,7 +4,7 @@ namespace Poltergeist.Automations.Components.Interactions;
 
 public class InputDialogModel : DialogModel
 {
-    public required IParameterDefinition[] Inputs { get; init; }
+    public required IOptionDefinition[] Inputs { get; init; }
 
     public InputDialogLabelLayout LabelLayout { get; set; }
 

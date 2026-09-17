@@ -21,6 +21,8 @@ public class StatisticDefinition<T> : ParameterDefinition<T>, IStatisticDefiniti
 
     public UpdateCallback? Update { get; init; }
 
+    public bool IsGlobal { get; set; }
+
     bool IStatisticDefinition.TryUpdate(object? accumulatedValue, IReadOnlyParameterValueCollection report, [MaybeNullWhen(false)] out object? updatedValue)
     {
         var accumulatedValueT = accumulatedValue is T x ? x : default;

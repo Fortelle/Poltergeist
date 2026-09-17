@@ -10,7 +10,8 @@
     <local:NotConverter x:Key="NotConverter" />
     <local:IsTruthyConverter x:Key="IsTruthyConverter" />
     <local:IsFalsyConverter x:Key="IsFalsyConverter" />
-    
+
     <local:BitmapToImageSourceConverter x:Key="BitmapToImageSourceConverter" />
+    <local:ToIconElementConverter x:Key="ToIconElementConverter" />
 
 </ResourceDictionary>
