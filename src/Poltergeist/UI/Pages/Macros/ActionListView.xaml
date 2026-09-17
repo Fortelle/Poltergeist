@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Poltergeist.UI.Pages.Macros.ActionListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Poltergeist.UI.Pages.Macros"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d"
+    >
+
+    <ScrollViewer
+        Padding="0, 0, 16, 0"
+        >
+        <ItemsControl
+            ItemsSource="{x:Bind MacroInstance.Template.Actions, Mode=OneTime}"
+            IsEnabled="{x:Bind MacroInstance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
+            >
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <controls:SettingsCard
+                        Header="{Binding Text, Mode=OneTime}"
+                        Description="{Binding Description, Mode=OneTime}"
+                        HeaderIcon="{Binding Icon, TargetNullValue=&#xE768;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
+                        ActionIcon="{Binding ActionIcon, TargetNullValue=&#xE974;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
+                        IsClickEnabled="True"
+                        Click="ActionExecuteButton_Click"
+                        Margin="0, 0, 0, 4"
+                        >
+                    </controls:SettingsCard>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

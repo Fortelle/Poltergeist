@@ -1,8 +1,6 @@
-using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers;
 using Poltergeist.Helpers.Converters;
@@ -143,37 +141,6 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
         }
     }
     
-    private async void ActionExecuteButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (((FrameworkElement)sender).DataContext is not MacroAction action)
-        {
-            return;
-        }
-
-        var macro = ViewModel.Instance.Template;
-
-        if (macro is null)
-        {
-            App.ShowTeachingTip("The macro does not exist.");
-            return;
-        }
-
-        if (macro.Exception is not null)
-        {
-            App.ShowTeachingTip("The macro has not been initialized correctly.");
-            return;
-        }
-
-        var actionIndex = macro.Actions.IndexOf(action);
-        if (actionIndex == -1)
-        {
-            App.ShowTeachingTip("The action is not owned by the macro.");
-            return;
-        }
-
-        App.GetService<MacroActionService>().Execute(ViewModel.Instance, action);
-    }
-
     public bool OnPageClosing()
     {
         if (ViewModel is null)
@@ -192,35 +159,6 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
     public void OnPageClosed()
     {
         ViewModel.SaveOptions(true);
-    }
-
-    private void HistoryListView_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
-    {
-        if (ViewModel.Instance.PrivateFolder is null)
-        {
-            return;
-        }
-
-        if (((FrameworkElement)e.OriginalSource).DataContext is not ProcessorHistoryEntry historyEntry)
-        {
-            return;
-        }
-
-        var logFile = Path.Combine(ViewModel.Instance.PrivateFolder, "Logs", historyEntry.ProcessorId + ".log");
-        if (!File.Exists(logFile))
-        {
-            App.ShowTeachingTip(App.Localize($"Poltergeist/Macros/LogNotExist"));
-            return;
-        }
-
-        var process = new Process
-        {
-            StartInfo = new(logFile)
-            {
-                UseShellExecute = true
-            }
-        };
-        process.Start();
     }
 
     private void StopMenuFlyout_Opening(object sender, object e)

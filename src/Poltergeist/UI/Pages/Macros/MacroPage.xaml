@@ -10,17 +10,10 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:converters="using:Poltergeist.Helpers.Converters"
     xmlns:controls="using:Poltergeist.UI.Controls"
-    xmlns:controls1="using:CommunityToolkit.WinUI.Controls"
     Style="{StaticResource TabPageStyle}"
     mc:Ignorable="d"
     >
 
-    <Page.Resources>
-        <converters:TypeNameConverter x:Key="TypeNameConverter"/>
-        <converters:TimeSpanToHhhmmssConverter x:Key="TimeSpanToHhhmmssConverter"/>
-        <local:ConclusionToTextConverter x:Key="ConclusionToTextConverter"/>
-    </Page.Resources>
-    
     <Grid
         ColumnSpacing="{StaticResource TabPageColumnSpacing}"
         >
@@ -74,56 +67,10 @@
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/InformationPivotItem"
                     >
-                    <ScrollViewer
-                        Style="{StaticResource VerticalScrollViewerStyle}"
+                    <local:InformationView
+                        ViewModel="{x:Bind ViewModel, Mode=OneTime}"
                         >
-                        <StackPanel>
-                        
-                            <Image
-                                Source="{x:Bind ViewModel.Thumbnail, Mode=OneWay}"
-                                Stretch="UniformToFill"
-                                />
-
-                            <TextBlock
-                                Text="{x:Bind ViewModel.Instance.Template.Description, Mode=OneTime}"
-                                Style="{StaticResource DetailBodyBaseMediumStyle}"
-                                Margin="0, 0, 0, 16"
-                                TextWrapping="Wrap" 
-                                />
-
-                            <ItemsControl
-                                ItemsSource="{x:Bind ViewModel.Instance.Template.Details, Mode=OneTime}"
-                                Margin="0, 0, 0, 16"
-                                >
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="36" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <FontIcon
-                                                Glyph="&#xEDB0;"
-                                                FontSize="10"
-                                                VerticalAlignment="Top"
-                                                Margin="8"
-                                                HorizontalAlignment="Right"
-                                                />
-
-                                            <TextBlock
-                                                Grid.Column="1"
-                                                Text="{Binding Mode=OneWay}"
-                                                TextWrapping="Wrap" 
-                                                Margin="0, 2"
-                                                />
-
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </ScrollViewer>
+                    </local:InformationView>
                 </PivotItem>
 
                 <PivotItem
@@ -138,190 +85,40 @@
 
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/ActionsPivotItem"
-                    IsEnabled="{x:Bind ViewModel.Instance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
                     >
-                    <ScrollViewer
-                        Style="{StaticResource VerticalScrollViewerStyle}"
+                    <local:ActionListView
+                        MacroInstance="{x:Bind ViewModel.Instance, Mode=OneTime}"
+                        IsEnabled="{x:Bind ViewModel.Instance.IsLocked, Mode=OneTime, Converter={StaticResource NotConverter}}"
                         >
-                        <ItemsControl
-                            ItemsSource="{x:Bind ViewModel.Instance.Template.Actions, Mode=OneTime}"
-                            >
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <controls1:SettingsCard
-                                        Header="{Binding Text, Mode=OneTime}"
-                                        Description="{Binding Description, Mode=OneTime}"
-                                        HeaderIcon="{Binding Icon, TargetNullValue=&#xE768;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
-                                        ActionIcon="{Binding ActionIcon, TargetNullValue=&#xE974;, Converter={StaticResource ToIconElementConverter}, Mode=OneTime}"
-                                        IsClickEnabled="True"
-                                        Click="ActionExecuteButton_Click"
-                                        Margin="0, 0, 0, 4"
-                                        >
-                                    </controls1:SettingsCard>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    </local:ActionListView>
                 </PivotItem>
 
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/StatisticsPivotItem"
                     >
-                    <ListView
-                        ItemsSource="{x:Bind ViewModel.Statistics, Mode=OneWay}"
-                        Margin="0"
+                    <local:MetadataListView
+                        DataContext="{x:Bind ViewModel.Statistics, Mode=OneWay}"
                         >
-                        <ListView.Resources>
-                            <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
-                        </ListView.Resources>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid 
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0, 16"
-                                    >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="4*" />
-                                        <ColumnDefinition Width="6*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Key, Mode=OneTime}" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Value, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ListView>
+                    </local:MetadataListView>
                 </PivotItem>
-                
+
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/HistoryPivotItem"
                     >
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid
-                            Margin="{StaticResource ListViewHeaderMargin}"
-                            Padding="0, 0, 0, 8"
-                            >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width=".3*" />
-                                <ColumnDefinition Width=".2*" />
-                                <ColumnDefinition Width=".2*" />
-                                <ColumnDefinition Width=".3*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                x:Uid="/Poltergeist/Macros/HistoryStartTimeTextBlock"
-                                Grid.Column="0"
-                                FontWeight="SemiBold"
-                                TextAlignment="Center"
-                                />
-                            <TextBlock
-                                x:Uid="/Poltergeist/Macros/HistoryDurationTextBlock"
-                                Grid.Column="1"
-                                TextAlignment="Center"
-                                FontWeight="SemiBold"
-                                />
-                            <TextBlock
-                                x:Uid="/Poltergeist/Macros/HistoryResultTextBlock"
-                                Grid.Column="2"
-                                TextAlignment="Center"
-                                FontWeight="SemiBold"
-                                />
-                            <TextBlock
-                                x:Uid="/Poltergeist/Macros/HistoryCommentTextBlock"
-                                Grid.Column="3"
-                                TextAlignment="Center"
-                                FontWeight="SemiBold"
-                                />
-                        </Grid>
-                        <ListView
-                            Grid.Row="1"
-                            ItemsSource="{x:Bind ViewModel.History, Mode=OneWay}"
-                            DoubleTapped="HistoryListView_DoubleTapped"
-                            >
-                            <ListView.Resources>
-                                <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
-                            </ListView.Resources>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid
-                                        Margin="0, 16"
-                                        >
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width=".3*" />
-                                            <ColumnDefinition Width=".2*" />
-                                            <ColumnDefinition Width=".2*" />
-                                            <ColumnDefinition Width=".3*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            TextAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding StartTime, Mode=OneTime}"
-                                            />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            TextAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Duration, Converter={StaticResource TimeSpanToHhhmmssConverter}, Mode=OneTime}"
-                                            />
-                                        <TextBlock
-                                            Grid.Column="2"
-                                            TextAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Conclusion, Converter={StaticResource ConclusionToTextConverter}, Mode=OneTime}"
-                                            />
-                                        <TextBlock
-                                            Grid.Column="3"
-                                            TextAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Text="{Binding Comment, Mode=OneTime}"
-                                            />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ListView>
-                    </Grid>
+                    <local:HistoryListView
+                        History="{x:Bind ViewModel.History, Mode=OneWay}"
+                        PrivateFolder="{x:Bind ViewModel.Instance.PrivateFolder, Mode=OneTime}"
+                        >
+                    </local:HistoryListView>
                 </PivotItem>
-                
+
                 <PivotItem
                     x:Uid="/Poltergeist/Macros/MetadataPivotItem"
                     >
-                    <ListView
-                        ItemsSource="{x:Bind ViewModel.Metadata, Mode=OneWay}"
-                        Margin="0"
+                    <local:MetadataListView
+                        DataContext="{x:Bind ViewModel.Metadata, Mode=OneWay}"
                         >
-                        <ListView.Resources>
-                            <Style TargetType="ScrollViewer" BasedOn="{StaticResource VerticalScrollViewerStyle}" />
-                        </ListView.Resources>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid 
-                                    HorizontalAlignment="Stretch"
-                                    Margin="0, 16"
-                                    >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="4*" />
-                                        <ColumnDefinition Width="6*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock
-                                        Grid.Column="0"
-                                        Text="{Binding Key, Mode=OneTime}"
-                                        FontWeight="SemiBold"
-                                        VerticalAlignment="Center"
-                                        />
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        Text="{Binding Value, Mode=OneTime}"
-                                        TextWrapping="Wrap"
-                                        TextTrimming="CharacterEllipsis"
-                                        ToolTipService.ToolTip="{Binding Value, Mode=OneTime}"
-                                        />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ListView>
+                    </local:MetadataListView>
                 </PivotItem>
 
             </Pivot>
