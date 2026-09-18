@@ -1,4 +1,5 @@
-﻿using Poltergeist.Examples.UI;
+﻿using Poltergeist.Automations.Structures;
+using Poltergeist.Examples.UI;
 using Poltergeist.Modules.Navigation;
 
 namespace Poltergeist.Examples;
@@ -19,14 +20,14 @@ public partial class App : PoltergeistApplication
         navigationService.AddSidebarItemInfo(new()
         {
             Text = "Example",
-            Icon = new("\ue74c"),
+            Icon = new GlyphIcon("\ue74c"),
             Position = SidebarItemPosition.Top,
             Navigation = new("example"),
         });
         navigationService.AddPageInfo(new("example")
         {
             Header = "Example",
-            Icon = new("\ue74c"),
+            Icon = new GlyphIcon("\ue74c"),
             CreateContent = (_, _) => new ExamplePage(),
         });
     }

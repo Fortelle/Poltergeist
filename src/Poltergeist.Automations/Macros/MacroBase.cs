@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
@@ -22,7 +23,7 @@ public abstract class MacroBase : IMacroBase, IMacroInformation, IMacroExecution
     public string? Description { get; set; }
     public string[]? Details { get; set; }
     public string[]? Tags { get; set; }
-    public string? Icon { get; set; }
+    public IconInfo? Icon { get; set; }
     public Version? Version { get; set; }
 
     public OptionDefinitionCollection OptionDefinitions { get; } = new();

@@ -10,6 +10,6 @@ public class AsyncAction : MacroAction
 
     public AsyncAction()
     {
-        Icon = IconInfo.FromGlyph("\uE768");
+        Icon = new GlyphIcon("\uE768");
     }
 }

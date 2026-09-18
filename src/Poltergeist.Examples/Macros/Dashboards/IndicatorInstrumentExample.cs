@@ -1,6 +1,7 @@
 ﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
@@ -33,7 +34,7 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
             {
                 instrument.Add($"{color}", [new("")
                     {
-                        Icon = new("\uE945"),
+                        Icon = new GlyphIcon("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                     }]);
@@ -50,7 +51,7 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
             {
                 instrument.Add($"{color}", [new("")
                     {
-                        Icon = new("\uE945"),
+                        Icon = new GlyphIcon("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                         Bordered = true,
@@ -68,7 +69,7 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
             {
                 instrument.Add($"{color}", [new("")
                     {
-                        Icon = new("\uE945"),
+                        Icon = new GlyphIcon("\uE945"),
                         Color = color,
                         Tooltip = $"{color}",
                         Filled = true,
@@ -84,7 +85,7 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
 
             instrument.Add($"", [new("")
                 {
-                    Icon = new("\uE95E"),
+                    Icon = new GlyphIcon("\uE95E"),
                     Color = ThemeColor.Red,
                     Motion = IndicatorMotion.Breathing,
                 }]);
@@ -98,7 +99,7 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
 
             instrument.Add($"", [new("")
                 {
-                    Icon = new("\uE7BA"),
+                    Icon = new GlyphIcon("\uE7BA"),
                     Color = ThemeColor.Red,
                     Motion = IndicatorMotion.Blinking,
                 }]);
@@ -114,57 +115,57 @@ public class IndicatorInstrumentExample : CommonOneshotMacroBase
                 new("pattern1")
                     {
                         Color = ThemeColor.Spring,
-                        Icon = new("\uEBAA")
+                        Icon = new GlyphIcon("\uEBAA")
                     },
                     new("pattern2")
                     {
                         Color = ThemeColor.Spring,
-                        Icon = new("\uEBA9")
+                        Icon = new GlyphIcon("\uEBA9")
                     },
                     new("pattern3")
                     {
                         Color = ThemeColor.Green,
-                        Icon = new("\uEBA8")
+                        Icon = new GlyphIcon("\uEBA8")
                     },
                     new("pattern4")
                     {
                         Color = ThemeColor.Green,
-                        Icon = new("\uEBA7")
+                        Icon = new GlyphIcon("\uEBA7")
                     },
                     new("pattern5")
                     {
                         Color = ThemeColor.Chartreuse,
-                        Icon = new("\uEBA6")
+                        Icon = new GlyphIcon("\uEBA6")
                     },
                     new("pattern6")
                     {
                         Color = ThemeColor.Chartreuse,
-                        Icon = new("\uEBA5")
+                        Icon = new GlyphIcon("\uEBA5")
                     },
                     new("pattern7")
                     {
                         Color = ThemeColor.Yellow,
-                        Icon = new("\uEBA4")
+                        Icon = new GlyphIcon("\uEBA4")
                     },
                     new("pattern8")
                     {
                         Color = ThemeColor.Yellow,
-                        Icon = new("\uEBA3")
+                        Icon = new GlyphIcon("\uEBA3")
                     },
                     new("pattern9")
                     {
                         Color = ThemeColor.Orange,
-                        Icon = new("\uEBA2")
+                        Icon = new GlyphIcon("\uEBA2")
                     },
                     new("pattern10")
                     {
                         Color = ThemeColor.Orange,
-                        Icon = new("\uEBA1")
+                        Icon = new GlyphIcon("\uEBA1")
                     },
                     new("pattern11")
                     {
                         Color = ThemeColor.Red,
-                        Icon = new("\uEBA0"),
+                        Icon = new GlyphIcon("\uEBA0"),
                         Motion = IndicatorMotion.Blinking
                     },
                     ]);

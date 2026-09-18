@@ -9,7 +9,7 @@ public class ToIconElementConverter : IValueConverter
     {
         if (value is string str)
         {
-            var iconinfo = new IconInfo(str);
+            var iconinfo = IconInfo.FromString(str);
             return IconInfoHelper.ConvertToIconElement(iconinfo);
         }
         else if (value is IconInfo iconinfo)

@@ -1,6 +1,7 @@
 ﻿using Poltergeist.Automations.Components.Panels;
 using Poltergeist.Automations.Macros.Oneshots;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Examples.Macros;
@@ -34,7 +35,7 @@ public class LabelInstrumentExample : CommonOneshotMacroBase
             Color = ThemeColor.Red,
             Label = "Year",
             Text = DateTime.Now.Year.ToString(),
-            Icon = new("\uE787"),
+            Icon = new GlyphIcon("\uE787"),
         });
 
         instrument.Add(new()

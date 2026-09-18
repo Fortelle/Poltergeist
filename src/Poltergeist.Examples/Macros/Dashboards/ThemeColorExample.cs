@@ -40,7 +40,7 @@ public class ThemeColorExample : CommonOneshotMacroBase
         {
             instrument.Add(new()
             {
-                Icon = IconInfo.FromGlyph("\uE8D2"),
+                Icon = new GlyphIcon("\uE8D2"),
                 Color = color,
                 Tooltip = $"{color}",
             });
@@ -59,7 +59,7 @@ public class ThemeColorExample : CommonOneshotMacroBase
             instrument.Add($"{color}", [
                 new("")
                 {
-                    Icon = IconInfo.FromGlyph("\uE8D2"),
+                    Icon = new GlyphIcon("\uE8D2"),
                     Color = color,
                     Tooltip = $"{color}",
                 }

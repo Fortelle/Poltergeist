@@ -10,7 +10,7 @@ public class UriAction : MacroAction
 
     public UriAction()
     {
-        Icon = IconInfo.FromGlyph("\uE71B");
-        ActionIcon = IconInfo.FromGlyph("\uE8A7");
+        Icon = new GlyphIcon("\uE71B");
+        ActionIcon = new GlyphIcon("\uE8A7");
     }
 }

@@ -9,7 +9,7 @@ public class ExternalProcessAction : MacroAction
 
     public ExternalProcessAction()
     {
-        Icon = IconInfo.FromGlyph("\uE756");
-        ActionIcon = IconInfo.FromGlyph("\uE8A7");
+        Icon = new GlyphIcon("\uE756");
+        ActionIcon = new GlyphIcon("\uE8A7");
     }
 }

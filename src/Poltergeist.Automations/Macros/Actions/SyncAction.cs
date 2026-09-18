@@ -8,6 +8,6 @@ public class SyncAction : MacroAction
 
     public SyncAction()
     {
-        Icon = IconInfo.FromGlyph("\uE768");
+        Icon = new GlyphIcon("\uE768");
     }
 }

@@ -12,10 +12,10 @@ public class OutputService : MacroService
     private readonly Dictionary<OutputLevel, ListInstrumentItem> Templates = new()
     {
         [OutputLevel.None] = new() { Color = ThemeColor.Gray },
-        [OutputLevel.Information] = new() { Color = ThemeColor.Azure, Icon = IconInfo.FromGlyph("\uE946") },
-        [OutputLevel.Success] = new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") },
-        [OutputLevel.Failure] = new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") },
-        [OutputLevel.Attention] = new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uE7BA") },
+        [OutputLevel.Information] = new() { Color = ThemeColor.Azure, Icon = new GlyphIcon("\uE946") },
+        [OutputLevel.Success] = new() { Color = ThemeColor.Green, Icon = new GlyphIcon("\uE930") },
+        [OutputLevel.Failure] = new() { Color = ThemeColor.Red, Icon = new GlyphIcon("\uEA39") },
+        [OutputLevel.Attention] = new() { Color = ThemeColor.Orange, Icon = new GlyphIcon("\uE7BA") },
     };
 
     private ListInstrument? OutputInstrument;

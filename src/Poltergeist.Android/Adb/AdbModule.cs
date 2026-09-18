@@ -103,7 +103,7 @@ public class AdbModule : MacroModule
     {
         Text = "Kill ADB server",
         Description = "Runs \"adb kill-server\" via Command Prompt to kill the adb server.",
-        Icon = IconInfo.FromGlyph("\uE756"),
+        Icon = new GlyphIcon("\uE756"),
         GetStartInfo = context =>
         {
             var localStorage = LocalStorageService.Load(context.Environments);

@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Helpers;
 using Poltergeist.Helpers.Converters;
 using Poltergeist.Modules.Macros;
 using Poltergeist.Modules.Navigation;
@@ -79,7 +80,7 @@ public sealed partial class TerminalActionPage : Page, IPageClosing
         CreateIcon = page =>
         {
             var macroPage = (TerminalActionPage)page;
-            return macroPage.ViewModel.Instance.GetIconSource();
+            return IconInfoHelper.ConvertToIconSource(macroPage.ViewModel?.Instance.Icon);
         },
     };
 

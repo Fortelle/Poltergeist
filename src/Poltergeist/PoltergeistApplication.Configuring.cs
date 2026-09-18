@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Components.Journals;
 using Poltergeist.Automations.Components.Panels;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
@@ -141,56 +142,56 @@ public partial class PoltergeistApplication
         navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
             Text = Localize($"Poltergeist/Resources/TabHeader_Home"),
-            Icon = new("\uE80F"),
+            Icon = new GlyphIcon("\uE80F"),
             Position = SidebarItemPosition.Top,
             Navigation = new("home"),
         });
         navigationService.AddPageInfo(new PageInfo("home")
         {
             Header = Localize($"Poltergeist/Resources/TabHeader_Home"),
-            Icon = new("\uE80F"),
+            Icon = new GlyphIcon("\uE80F"),
             CreateContent = (_, _) => App.GetService<MainPage>(),
         });
 
         navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
             Text = Localize($"Poltergeist/Resources/TabHeader_About"),
-            Icon = new("\uE9CE"),
+            Icon = new GlyphIcon("\uE9CE"),
             Position = SidebarItemPosition.Bottom,
             Navigation = new("about"),
         });
         navigationService.AddPageInfo(new PageInfo("about")
         {
             Header = Localize($"Poltergeist/Resources/TabHeader_About"),
-            Icon = new("\uE9CE"),
+            Icon = new GlyphIcon("\uE9CE"),
             CreateContent = (_, _) => App.GetService<AboutPage>(),
         });
 
         navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
             Text = Localize($"Poltergeist/Resources/TabHeader_Settings"),
-            Icon = new("\uE713"),
+            Icon = new GlyphIcon("\uE713"),
             Position = SidebarItemPosition.Bottom,
             Navigation = new("settings"),
         });
         navigationService.AddPageInfo(new PageInfo("settings")
         {
             Header = Localize($"Poltergeist/Resources/TabHeader_Settings"),
-            Icon = new("\uE713"),
+            Icon = new GlyphIcon("\uE713"),
             CreateContent = (_, _) => App.GetService<SettingsPage>(),
         });
 
         navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
             Text = Localize($"Poltergeist/Resources/TabHeader_Log"),
-            Icon = new("\uF0E3"),
+            Icon = new GlyphIcon("\uF0E3"),
             Navigation = new("log"),
             Position = SidebarItemPosition.Bottom,
         });
         navigationService.AddPageInfo(new PageInfo("log")
         {
             Header = Localize($"Poltergeist/Resources/TabHeader_Log"),
-            Icon = new("\uF0E3"),
+            Icon = new GlyphIcon("\uF0E3"),
             CreateContent = (_, _) => App.GetService<LoggingPage>(),
         });
 
@@ -198,7 +199,7 @@ public partial class PoltergeistApplication
         navigationService.AddSidebarItemInfo(new SidebarItemInfo()
         {
             Text = "Debug",
-            Icon = new("\uEBE8"),
+            Icon = new GlyphIcon("\uEBE8"),
             Action = DebugHelper.Do,
             Position = SidebarItemPosition.Bottom,
         });

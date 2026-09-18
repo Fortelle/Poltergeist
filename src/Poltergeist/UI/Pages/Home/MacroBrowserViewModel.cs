@@ -127,7 +127,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
                 },
                 new TextOption("icon", properties.Icon ?? "") {
                     DisplayLabel = App.Localize($"Poltergeist/Home/MacroPropertyLabel_Icon"),
-                    Placeholder = instance?.Template?.Icon,
+                    Placeholder = instance?.Template?.Icon?.ToString(),
                 },
                 new BoolOption("is_favourite", properties.IsFavorite) {
                     DisplayLabel = App.Localize($"Poltergeist/Home/MacroPropertyLabel_IsFavorite"),

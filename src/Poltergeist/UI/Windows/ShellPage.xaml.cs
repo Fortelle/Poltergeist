@@ -91,7 +91,7 @@ public sealed partial class ShellPage : Page
             {
                 Content = instance.Title,
                 Tag = new NavigationInfo(instance.GetPageKey()),
-                Icon = instance.GetIconElement(),
+                Icon = IconInfoHelper.ConvertToIconElement(instance.Icon),
             };
             NavigationViewControl.MenuItems.Add(nvi);
             if (nvi.Name == selectedItem)
@@ -150,7 +150,7 @@ public sealed partial class ShellPage : Page
             }
 
             nvi.Content = instance.Title;
-            nvi.Icon = instance.GetIconElement();
+            nvi.Icon = IconInfoHelper.ConvertToIconElement(instance.Icon);
         });
     }
     

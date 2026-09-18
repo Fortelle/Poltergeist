@@ -1,8 +1,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Poltergeist.Automations.Structures;
+using Poltergeist.Helpers;
 
 namespace Poltergeist.UI.Controls;
 
@@ -25,7 +25,7 @@ public sealed partial class IconControl : UserControl
         var iconInfo = e.NewValue switch
         {
             IconInfo ii => ii,
-            string s => new IconInfo(s),
+            string s => IconInfo.FromString(s),
             _ => null,
         };
 
@@ -35,76 +35,20 @@ public sealed partial class IconControl : UserControl
         }
 
         var control = (UserControl)d;
-        control.Content = ToFrameworkElement(control, iconInfo);
-    }
 
-    private static FrameworkElement ToFrameworkElement(UserControl control, IconInfo iconInfo)
-    {
-        if (iconInfo.Glyph is not null)
+        var iconElement = IconInfoHelper.ConvertToIconElement(iconInfo);
+        if (iconElement is FontIcon fontIcon)
         {
-            var fi = new FontIcon()
-            {
-                Glyph = iconInfo.Glyph,
-                FontSize = control.FontSize,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
+            fontIcon.FontSize = control.FontSize;
             var binding = new Binding()
             {
-                Path = new PropertyPath("FontSize"),
+                Path = new PropertyPath(nameof(FontIcon.FontSize)),
                 ElementName = control.Name,
                 Mode = BindingMode.OneWay,
             };
-            fi.SetBinding(FontIcon.FontSizeProperty, binding);
-            return fi;
+            fontIcon.SetBinding(FontIcon.FontSizeProperty, binding);
         }
-        else if (iconInfo.Uri is not null)
-        {
-            return new ImageIcon()
-            {
-                Source = new BitmapImage(new Uri(iconInfo.Uri)),
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-        }
-        else if (iconInfo.Emoji is not null)
-        {
-            var fi = new FontIcon()
-            {
-                FontFamily = new("Segoe UI Emoji"),
-                Glyph = iconInfo.Emoji,
-                FontSize = control.FontSize,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var binding = new Binding()
-            {
-                Path = new PropertyPath("FontSize"),
-                ElementName = control.Name,
-                Mode = BindingMode.OneWay,
-            };
-            fi.SetBinding(FontIcon.FontSizeProperty, binding);
-            return fi;
-        }
-        else if (iconInfo.Text is not null)
-        {
-            var tb = new TextBlock()
-            {
-                Text = iconInfo.Text,
-                FontSize = control.FontSize,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
-            };
-            var binding = new Binding()
-            {
-                Path = new PropertyPath("FontSize"),
-                ElementName = control.Name,
-                Mode = BindingMode.OneWay,
-            };
-            tb.SetBinding(TextBlock.FontSizeProperty, binding);
-            return tb;
-        }
-        throw new NotSupportedException();
-    }
 
+        control.Content = iconElement;
+    }
 }

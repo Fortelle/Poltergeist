@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Poltergeist.Automations.Macros;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Modules.Macros;
@@ -92,7 +93,17 @@ public class MacroInstance
     /// <summary>
     /// Gets the icon of the macro instance.
     /// </summary>
-    public string? Icon => Properties?.Icon ?? Template?.Icon;
+    public IconInfo? Icon
+    {
+        get
+        {
+            if (Properties?.Icon is not null)
+            {
+                return IconInfo.FromString(Properties.Icon);
+            }
+            return Template?.Icon;
+        }
+    }
 
     /// <summary>
     /// Gets a value indicating whether the current template is valid.

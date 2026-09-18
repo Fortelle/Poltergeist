@@ -87,10 +87,14 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
         CreateIcon = page =>
         {
             var macroPage = (MacroPage)page;
-            return macroPage.ViewModel.Instance.GetIconSource();
+            if (macroPage.ViewModel.Instance.Icon is not null)
+            {
+                return IconInfoHelper.ConvertToIconSource(macroPage.ViewModel.Instance.Icon);
+            }
+            return IconInfoHelper.ConvertToIconSource(new UriIcon(MacroInstanceManager.DefaultIconUri));
         },
     };
-
+    
     public MacroViewModel ViewModel { get; }
 
     public MacroPage(MacroViewModel viewModel)
@@ -135,7 +139,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
                     EnvironmentOverrides = variation.EnvironmentOverrides,
                     Inputs = variation.Inputs,
                 },
-                Icon = IconInfoHelper.ConvertToIconElement(new IconInfo(variation.Icon ?? "\uE768")),
+                Icon = IconInfoHelper.ConvertToIconElement(variation.Icon is not null ? IconInfo.FromString(variation.Icon) : new GlyphIcon("\uE768")),
             };
             RunMenuFlyout.Items.Add(mfi);
         }
@@ -185,7 +189,7 @@ public sealed partial class MacroPage : Page, IPageClosing, IPageClosed
                     Text = intervention.Title,
                     Command = ViewModel.InterveneCommand,
                     CommandParameter = intervention.Key,
-                    Icon = IconInfoHelper.ConvertToIconElement(intervention.Icon ?? new IconInfo("\uE835")),
+                    Icon = IconInfoHelper.ConvertToIconElement(intervention.Icon ?? new GlyphIcon("\uE835")),
                 };
                 if (intervention.Description is not null)
                 {

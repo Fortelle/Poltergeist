@@ -39,13 +39,16 @@ public class TileInstrumentExample : CommonOneshotMacroBase
                 instrument.Update(i, new()
                 {
                     Color = ThemeColor.Yellow,
-                    Icon = IconInfo.FromGlyph("\uF16A")
+                    Icon = new GlyphIcon("\uF16A")
+                    {
+                        Animation = new SpinAnimation(),
+                    }
                 });
                 Thread.Sleep(duration);
                 instrument.Update(i, new()
                 {
                     Color = ThemeColor.Green,
-                    Icon = IconInfo.FromGlyph("\uE73E")
+                    Icon = new GlyphIcon("\uE73E")
                 });
             }
         }
@@ -55,10 +58,10 @@ public class TileInstrumentExample : CommonOneshotMacroBase
             {
                 gi.Title = "Using templates:";
                 gi.Templates.Add("idle", new() { Color = ThemeColor.Gray });
-                gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uF16A") });
-                gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE73E") });
-                gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEDAE") });
-                gi.Templates.Add("warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uEDB1") });
+                gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = new GlyphIcon("\uF16A") { Animation = new SpinAnimation() } });
+                gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = new GlyphIcon("\uE73E") });
+                gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = new GlyphIcon("\uEDAE") });
+                gi.Templates.Add("warning", new() { Color = ThemeColor.Orange, Icon = new GlyphIcon("\uEDB1") });
                 gi.AddPlaceholders(updateCount, new("idle"));
             });
 

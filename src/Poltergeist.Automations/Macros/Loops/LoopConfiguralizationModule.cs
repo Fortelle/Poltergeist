@@ -48,7 +48,7 @@ public class LoopConfiguralizationModule : MacroModule
         {
             Key = "stop_after_current",
             Title = LocalizationUtil.Localize("Loops_StopAfterCurrent_Title"),
-            Icon = IconInfo.FromGlyph("\uE71A"),
+            Icon = new GlyphIcon("\uE71A"),
             Description = LocalizationUtil.Localize("Loops_StopAfterCurrent_Description"),
             Message = LocalizationUtil.Localize("Loops_StopAfterCurrent_Message"),
             Variables =

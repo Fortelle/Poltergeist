@@ -1,4 +1,5 @@
-﻿using Poltergeist.Helpers.Converters;
+﻿using Poltergeist.Automations.Structures;
+using Poltergeist.Helpers.Converters;
 using Poltergeist.Modules.Macros;
 
 namespace Poltergeist.UI.Pages.Home;
@@ -11,7 +12,7 @@ public class MacroInstanceViewModel(MacroInstance instance)
 
     public string? Description => instance.Description;
 
-    public string? Icon => instance.Icon;
+    public IconInfo? Icon => instance.Icon;
 
     public double Opacity => CanOpen ? 1 : .5;
 

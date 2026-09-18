@@ -40,7 +40,7 @@ public class ListInstrumentExample : CommonOneshotMacroBase
             instrument.Add(new()
             {
                 Color = ThemeColor.Gray,
-                Icon = IconInfo.FromGlyph("\uE9AE"),
+                Icon = new GlyphIcon("\uE9AE"),
                 Text = $"Step {i + 1}"
             });
         }
@@ -50,13 +50,13 @@ public class ListInstrumentExample : CommonOneshotMacroBase
             instrument.Update(i, new()
             {
                 Color = ThemeColor.Yellow,
-                Icon = IconInfo.FromGlyph("\uF16A")
+                Icon = new GlyphIcon("\uF16A")
             });
             Thread.Sleep(duration);
             instrument.Update(i, new()
             {
                 Color = ThemeColor.Green,
-                Icon = IconInfo.FromGlyph("\uE930")
+                Icon = new GlyphIcon("\uE930")
             });
         }
     }
@@ -66,10 +66,10 @@ public class ListInstrumentExample : CommonOneshotMacroBase
         var instrument = dashboard.Create<ListInstrument>(gi =>
         {
             gi.Title = "Using templates:";
-            gi.Templates.Add("idle", new() { Color = ThemeColor.Gray, Icon = IconInfo.FromGlyph("\uE9AE") });
-            gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uF16A") });
-            gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") });
-            gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") });
+            gi.Templates.Add("idle", new() { Color = ThemeColor.Gray, Icon = new GlyphIcon("\uE9AE") });
+            gi.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = new GlyphIcon("\uF16A") });
+            gi.Templates.Add("success", new() { Color = ThemeColor.Green, Icon = new GlyphIcon("\uE930") });
+            gi.Templates.Add("failure", new() { Color = ThemeColor.Red, Icon = new GlyphIcon("\uEA39") });
         });
 
         for (var i = 0; i < count; i++)

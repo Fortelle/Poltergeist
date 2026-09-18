@@ -40,17 +40,17 @@ public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE709"),
+            Icon = new GlyphIcon("\uE709"),
             Text = "Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE804"),
+            Icon = new GlyphIcon("\uE804"),
             Text = "Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE7E3"),
+            Icon = new GlyphIcon("\uE7E3"),
             Text = "Custom Item 3",
         });
     }
@@ -64,17 +64,17 @@ public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("✈️"),
+            Icon = new EmojiIcon("✈️"),
             Text = "Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("🚍"),
+            Icon = new EmojiIcon("🚍"),
             Text = "Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("⛴️"),
+            Icon = new EmojiIcon("⛴️"),
             Text = "Custom Item 3",
         });
     }
@@ -84,9 +84,9 @@ public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
         var instrument = dashboard.Create<ListInstrument>(li =>
         {
             li.Title = "Templates:";
-            li.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE930") });
-            li.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEA39") });
-            li.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uE7BA") });
+            li.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = new GlyphIcon("\uE930") });
+            li.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = new GlyphIcon("\uEA39") });
+            li.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = new GlyphIcon("\uE7BA") });
         });
 
         instrument.Add(new()
@@ -113,8 +113,8 @@ public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
     {
         var instrument = dashboard.Create<ListInstrument>(li =>
         {
-            li.Title = ":";
-            li.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = IconInfo.FromGlyph("\uEA3A") });
+            li.Title = "Progress:";
+            li.Templates.Add("busy", new() { Color = ThemeColor.Yellow, Icon = new GlyphIcon("\uEA3A") });
         });
 
         instrument.Add(new()
@@ -153,7 +153,7 @@ public class ListInstrumentCustomizationExample : CommonOneshotMacroBase
             instrument.Add(new()
             {
                 Color = values[i],
-                Icon = IconInfo.FromGlyph("\uE734"),
+                Icon = new GlyphIcon("\uE734"),
                 Text = $"Custom Item {i + 1}",
                 Subtext = $"{values[i]}",
             });

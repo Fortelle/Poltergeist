@@ -1,4 +1,5 @@
 ﻿using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Automations.Macros;
@@ -12,7 +13,7 @@ public interface IMacroInformation
     string? Description { get; }
     string[]? Details { get; }
     string[]? Tags { get; }
-    string? Icon { get; }
+    IconInfo? Icon { get; }
     Version? Version { get; }
 
     List<MacroAction> Actions { get; }

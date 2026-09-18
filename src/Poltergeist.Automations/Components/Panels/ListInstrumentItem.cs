@@ -3,10 +3,6 @@ using Poltergeist.Automations.Structures.Colors;
 
 namespace Poltergeist.Automations.Components.Panels;
 
-// todo: merge glyph and emoji to a single property and support 3rd icons (eg "fa-flag")
-// todo: implement the dynamic icon effect and duration timer in ui layer
-// var icons = new[] { "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛" };
-
 public class ListInstrumentItem
 {
     public string? Text { get; set; }

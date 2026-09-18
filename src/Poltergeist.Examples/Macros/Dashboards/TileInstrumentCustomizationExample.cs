@@ -40,17 +40,17 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE709"),
+            Icon = new GlyphIcon("\uE709"),
             Tooltip = $"Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE806"),
+            Icon = new GlyphIcon("\uE806"),
             Tooltip = $"Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromGlyph("\uE7E3"),
+            Icon = new GlyphIcon("\uE7E3"),
             Tooltip = $"Custom Item 3",
         });
     }
@@ -64,17 +64,17 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("✈️"),
+            Icon = new EmojiIcon("✈️"),
             Tooltip = $"Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("🚍"),
+            Icon = new EmojiIcon("🚍"),
             Tooltip = $"Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromEmoji("⛴️"),
+            Icon = new EmojiIcon("⛴️"),
             Tooltip = $"Custom Item 3",
         });
     }
@@ -88,17 +88,17 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("A"),
+            Icon = new TextIcon("A"),
             Tooltip = $"Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("B"),
+            Icon = new TextIcon("B"),
             Tooltip = $"Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("C"),
+            Icon = new TextIcon("C"),
             Tooltip = $"Custom Item 3",
         });
     }
@@ -114,17 +114,17 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
 
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("Item 1"),
+            Icon = new TextIcon("Item 1"),
             Tooltip = $"Custom Item 1",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("Item 2"),
+            Icon = new TextIcon("Item 2"),
             Tooltip = $"Custom Item 2",
         });
         instrument.Add(new()
         {
-            Icon = IconInfo.FromText("Item 3"),
+            Icon = new TextIcon("Item 3"),
             Tooltip = $"Custom Item 3",
         });
     }
@@ -134,9 +134,9 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
         var instrument = dashboard.Create<TileInstrument>(gi =>
         {
             gi.Title = "Templates:";
-            gi.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = IconInfo.FromGlyph("\uE73E") });
-            gi.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = IconInfo.FromGlyph("\uEDAE") });
-            gi.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = IconInfo.FromGlyph("\uEDB1") });
+            gi.Templates.Add($"success", new() { Color = ThemeColor.Green, Icon = new GlyphIcon("\uE73E") });
+            gi.Templates.Add($"failure", new() { Color = ThemeColor.Red, Icon = new GlyphIcon("\uEDAE") });
+            gi.Templates.Add($"warning", new() { Color = ThemeColor.Orange, Icon = new GlyphIcon("\uEDB1") });
         });
 
         instrument.Add(new()
@@ -169,7 +169,7 @@ public class TileInstrumentCustomizationExample : CommonOneshotMacroBase
             instrument.Add(new()
             {
                 Color = values[i],
-                Icon = IconInfo.FromGlyph("\uE734"),
+                Icon = new GlyphIcon("\uE734"),
                 Tooltip = $"Custom Item {i + 1}",
             });
         }
