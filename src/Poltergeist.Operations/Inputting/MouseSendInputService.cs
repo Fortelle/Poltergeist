@@ -17,6 +17,7 @@ public class MouseSendInputService : MacroService
     private readonly DeviationService DeviationService;
     private readonly TimerService TimerService;
     private readonly MouseInputOptions DefaultOptions;
+    private readonly HookService HookService;
 
     private WCSPoint? LastPosition;
 
@@ -25,12 +26,14 @@ public class MouseSendInputService : MacroService
         ScreenLocatingService screenLocatingService,
         TimerService timerService,
         DeviationService deviationService,
+        HookService hookService,
         IOptions<MouseInputOptions> options
         ) : base(processor)
     {
         ScreenLocatingService = screenLocatingService;
         DeviationService = deviationService;
         TimerService = timerService;
+        HookService = hookService;
         DefaultOptions = options.Value;
     }
 
@@ -245,6 +248,16 @@ public class MouseSendInputService : MacroService
                     pointOnWorkspace = ScreenLocatingService.ScreenPointToWorkspace(SendInputHelper.Cursor);
                 }
                 break;
+            case NamedPosition namedPosition:
+                {
+                    var parseNamedPositionHook = new ParseNamedPositionHook(namedPosition);
+                    HookService.Raise(parseNamedPositionHook);
+                    if (parseNamedPositionHook.Output is null or NamedPosition)
+                    {
+                        throw new KeyNotFoundException($"Named position \"{namedPosition.Name}\" is not found.");
+                    }
+                    return GetTargetPoint(parseNamedPositionHook.Output, options);
+                }
             default:
                 throw new NotImplementedException();
         }

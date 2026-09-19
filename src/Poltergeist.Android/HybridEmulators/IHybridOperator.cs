@@ -6,7 +6,7 @@ namespace Poltergeist.Android.HybridEmulators;
 
 public interface IHybridOperator
 {
-    CapturingProvider Capturing { get; }
+    CapturingProvider Capturer { get; }
     IHybridInputService Hand { get; }
     TimerService Timer { get; }
     RandomEx Random { get; }

@@ -18,6 +18,7 @@ public class AdbInputService : MacroService
     private readonly DeviationService DeviationService;
     private readonly TimerService TimerService;
     private readonly AdbInputOptions DefaultOptions;
+    private readonly HookService HookService;
 
     private WCPoint? LastPosition;
 
@@ -26,6 +27,7 @@ public class AdbInputService : MacroService
         AdbLocatingService adbLocatingService,
         DeviationService deviationService,
         TimerService timerService,
+        HookService hookService,
         IOptions<AdbInputOptions> options
         ) : base(processor)
     {
@@ -33,6 +35,7 @@ public class AdbInputService : MacroService
         AdbLocatingService = adbLocatingService;
         DeviationService = deviationService;
         TimerService = timerService;
+        HookService = hookService;
         DefaultOptions = options.Value;
     }
 
@@ -203,6 +206,16 @@ public class AdbInputService : MacroService
             case LastPoint when LastPosition is not null:
                 {
                     return LastPosition;
+                }
+            case NamedPosition namedPosition:
+                {
+                    var parseNamedPositionHook = new ParseNamedPositionHook(namedPosition);
+                    HookService.Raise(parseNamedPositionHook);
+                    if (parseNamedPositionHook.Output is null or NamedPosition)
+                    {
+                        throw new KeyNotFoundException($"Named position \"{namedPosition.Name}\" is not found.");
+                    }
+                    return GetTargetPoint(parseNamedPositionHook.Output, options);
                 }
             default:
                 throw new NotImplementedException();

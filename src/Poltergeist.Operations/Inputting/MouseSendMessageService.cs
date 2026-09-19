@@ -17,6 +17,7 @@ public class MouseSendMessageService : MacroService
     private readonly TimerService TimerService;
     private readonly DeviationService DeviationService;
     private readonly MouseInputOptions DefaultOptions;
+    private readonly HookService HookService;
 
     private WCPoint? LastPosition;
 
@@ -25,12 +26,14 @@ public class MouseSendMessageService : MacroService
         WindowLocatingService windowLocatingService,
         TimerService timerService,
         DeviationService deviationService,
+        HookService hookService,
         IOptions<MouseInputOptions> options
         ) : base(processor)
     {
         WindowLocatingService = windowLocatingService;
         TimerService = timerService;
         DeviationService = deviationService;
+        HookService = hookService;
         DefaultOptions = options.Value;
     }
 
@@ -264,6 +267,16 @@ public class MouseSendMessageService : MacroService
             case LastPoint when LastPosition is not null:
                 {
                     return LastPosition;
+                }
+            case NamedPosition namedPosition:
+                {
+                    var parseNamedPositionHook = new ParseNamedPositionHook(namedPosition);
+                    HookService.Raise(parseNamedPositionHook);
+                    if (parseNamedPositionHook.Output is null or NamedPosition)
+                    {
+                        throw new KeyNotFoundException($"Named position \"{namedPosition.Name}\" is not found.");
+                    }
+                    return GetTargetPoint(parseNamedPositionHook.Output, options);
                 }
             default:
                 throw new NotImplementedException();

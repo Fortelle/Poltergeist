@@ -8,19 +8,19 @@ namespace Poltergeist.Android.HybridEmulators;
 
 public class HybridOperator : MacroService, IHybridOperator
 {
-    public CapturingProvider Capturing { get; }
+    public CapturingProvider Capturer { get; }
     public IHybridInputService Hand { get; }
     public TimerService Timer { get; }
     public RandomEx Random { get; }
 
     public HybridOperator(MacroProcessor processor,
-        CapturingProvider capturing,
+        CapturingProvider capturer,
         IHybridInputService hand,
         TimerService timer,
         RandomEx random
         ) : base(processor)
     {
-        Capturing = capturing;
+        Capturer = capturer;
         Hand = hand;
         Timer = timer;
         Random = random;
