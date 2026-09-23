@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
@@ -7,12 +6,9 @@ using Poltergeist.Modules.Interactions;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<string>("Text")]
 public sealed partial class MultilineTextOptionControl : UserControl
 {
-    [ObservableProperty]
-    public partial string? Text { get; set; }
-
     private const int MaxLength = 100;
 
     private ObservableParameterItem Item { get; }

@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 using System.Text;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Structures;
@@ -78,7 +79,7 @@ public class MacroInstance
     /// <summary>
     /// Gets the title of the macro instance.
     /// </summary>
-    public string? Title => Properties?.Title ?? Template?.Title ?? Template?.Key ?? TemplateKey;
+    public string Title => Properties?.Title ?? Template?.Title ?? Template?.Key ?? TemplateKey;
 
     /// <summary>
     /// Gets the description of the macro instance.
@@ -108,6 +109,7 @@ public class MacroInstance
     /// <summary>
     /// Gets a value indicating whether the current template is valid.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Template))]
     public bool IsValid => Template is not null;
 
     private bool IsLoaded;

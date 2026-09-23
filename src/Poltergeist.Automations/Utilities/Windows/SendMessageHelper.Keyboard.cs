@@ -3,6 +3,7 @@
 // Warning: SendMessage and PostMessage do not support modifier keys.
 public partial class SendMessageHelper
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0007:Use implicit type", Justification = "<Pending>")]
     public SendMessageHelper KeyDown(VirtualKey key)
     {
         uint repeatCount = 0; // 0-15, todo
@@ -26,7 +27,8 @@ public partial class SendMessageHelper
 
         return this;
     }
-
+    
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0007:Use implicit type", Justification = "<Pending>")]
     public SendMessageHelper KeyUp(VirtualKey key)
     {
         uint repeatCount = 1; // 0-15, always 1

@@ -1,15 +1,11 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<string>("Text")]
 public sealed partial class SliderOptionControl : UserControl
 {
-    [ObservableProperty]
-    public partial string? Text { get; set; }
-
     private ObservableParameterItem Item { get; }
 
     private double Minimum { get; } = double.MinValue;

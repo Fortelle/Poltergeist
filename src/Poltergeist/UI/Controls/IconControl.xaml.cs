@@ -6,49 +6,42 @@ using Poltergeist.Helpers;
 
 namespace Poltergeist.UI.Controls;
 
+[DependencyProperty<object>("Icon")]
 public sealed partial class IconControl : UserControl
 {
-    public static readonly DependencyProperty IconProperty = DependencyProperty.RegisterAttached(nameof(Icon), typeof(object), typeof(IconControl), new PropertyMetadata(null, OnIconChanged));
-    public object? Icon
-    {
-        get => (object?)GetValue(IconProperty);
-        set => SetValue(IconProperty, value);
-    }
-
     public IconControl()
     {
         InitializeComponent();
     }
 
-    private static void OnIconChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    partial void OnIconChanged(object? newValue)
     {
-        var iconInfo = e.NewValue switch
+        if (newValue is null)
         {
-            IconInfo ii => ii,
-            string s => IconInfo.FromString(s),
-            _ => null,
-        };
-
-        if (iconInfo is null)
-        {
+            Content = null;
             return;
         }
 
-        var control = (UserControl)d;
+        var iconInfo = newValue switch
+        {
+            IconInfo ii => ii,
+            string s => IconInfo.FromString(s),
+            _ => throw new NotImplementedException(),
+        };
 
         var iconElement = IconInfoHelper.ConvertToIconElement(iconInfo);
         if (iconElement is FontIcon fontIcon)
         {
-            fontIcon.FontSize = control.FontSize;
+            fontIcon.FontSize = FontSize;
             var binding = new Binding()
             {
                 Path = new PropertyPath(nameof(FontIcon.FontSize)),
-                ElementName = control.Name,
+                ElementName = Name,
                 Mode = BindingMode.OneWay,
             };
             fontIcon.SetBinding(FontIcon.FontSizeProperty, binding);
         }
 
-        control.Content = iconElement;
+        Content = iconElement;
     }
 }

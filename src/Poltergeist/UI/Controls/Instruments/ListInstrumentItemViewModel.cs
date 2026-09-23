@@ -44,8 +44,8 @@ public class ListInstrumentItemViewModel : IDisposable
 
         if (item.Color is not null && ThemeColors.Colors.TryGetValue(item.Color.Value, out var colorset))
         {
-            Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
-            Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
+            Foreground = new SolidColorBrush(ColorHelper.ToColor(colorset.Foreground));
+            Background = new SolidColorBrush(ColorHelper.ToColor(colorset.Background));
         }
 
         var progress = item.Progress.HasValue ? Math.Clamp(item.Progress.Value, 0, 1) : 1;

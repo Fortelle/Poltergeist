@@ -36,7 +36,7 @@ public sealed partial class ComboBoxOptionControl : UserControl
         Choices = item.Definition switch
         {
             IChoiceOption choiceoption => choiceoption.GetChoices(),
-            { BaseType.IsEnum: true } => GetEnumChoices(item.Definition.BaseType),
+            { ValueType.IsEnum: true } => GetEnumChoices(item.Definition.ValueType),
             _ => throw new NotSupportedException(),
         };
 

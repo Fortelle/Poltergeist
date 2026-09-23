@@ -82,19 +82,19 @@ public class HookServiceTests
     {
         var value = 0;
 
+        void handler(IMacroProcessorShared _1, TestHook _2)
+        {
+            value++;
+        }
+
         var macro = new TestMacro()
         {
             Execute = processor =>
             {
                 var hookService = processor.GetService<HookService>();
-                var handler = (IMacroProcessorShared _, TestHook _) =>
-                {
-                    value++;
-                };
-
-                hookService.Register(handler);
+                hookService.Register<TestHook>(handler);
                 hookService.Raise<TestHook>();
-                hookService.Unregister(handler);
+                hookService.Unregister<TestHook>(handler);
                 hookService.Raise<TestHook>();
             }
         };

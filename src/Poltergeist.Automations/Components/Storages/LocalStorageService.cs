@@ -6,7 +6,7 @@ namespace Poltergeist.Automations.Components.Storages;
 
 public class LocalStorageService : FileStorageService
 {
-    public static EntryDefinition<string> FolderDefinition = new("private_folder");
+    public static readonly EntryDefinition<string> FolderDefinition = new("private_folder");
 
     public LocalStorageService(MacroProcessor processor) : base(processor, FolderDefinition.Key)
     {

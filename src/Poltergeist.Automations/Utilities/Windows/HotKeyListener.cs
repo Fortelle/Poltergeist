@@ -26,7 +26,7 @@ public partial class HotKeyListener : IDisposable
 
         var wndClassEx = new NativeMethods.WNDCLASSEX
         {
-            cbSize = Marshal.SizeOf(typeof(NativeMethods.WNDCLASSEX)),
+            cbSize = Marshal.SizeOf<NativeMethods.WNDCLASSEX>(),
             style = 0,
             cbClsExtra = 0,
             cbWndExtra = 0,

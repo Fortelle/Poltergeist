@@ -86,14 +86,12 @@ public class CircleShape : IShape
 
     public Point Location
     {
-        get
-        {
-            return new(
-            (int)Math.Floor(Origin.X - Radius),
-            (int)Math.Floor(Origin.Y - Radius)
-            );
-        }
-        set => Origin = value;
+        get => new(
+              (int)Math.Floor(Origin.X - Radius),
+              (int)Math.Floor(Origin.Y - Radius)
+              );
+
+        set => Origin = new(value.X + (float)Radius, value.Y + (float)Radius);
     }
 
     public PointF Centroid => Origin;

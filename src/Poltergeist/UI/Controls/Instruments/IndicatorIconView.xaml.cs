@@ -3,16 +3,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Poltergeist.UI.Controls.Instruments;
 
+[DependencyProperty<IndicatorInstrumentItemViewModel>("ViewModel")]
 public sealed partial class IndicatorIconView : UserControl
 {
-    public static readonly DependencyProperty ViewModelProperty = DependencyProperty.RegisterAttached(nameof(ViewModel), typeof(IndicatorInstrumentItemViewModel), typeof(IndicatorIconView), new PropertyMetadata(null));
-
-    public IndicatorInstrumentItemViewModel ViewModel
-    {
-        get => (IndicatorInstrumentItemViewModel)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
-    }
-
     public IndicatorIconView()
     {
         InitializeComponent();
@@ -20,11 +13,14 @@ public sealed partial class IndicatorIconView : UserControl
 
     private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
     {
-        if (DataContext is IndicatorInstrumentItemViewModel viewModel)
+        if (DataContext is not IndicatorInstrumentItemViewModel viewModel)
         {
-            ViewModel = viewModel;
+            return;
         }
-        switch (ViewModel?.Motion)
+
+        ViewModel = viewModel;
+
+        switch (viewModel.Motion)
         {
             case Automations.Components.Panels.IndicatorMotion.Fadeout:
                 FadeoutStoryboard.Begin();

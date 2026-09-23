@@ -205,7 +205,7 @@ public class NavigationService : ServiceBase
         return true;
     }
 
-    private bool CanCreateTab(string pageKey)
+    private static bool CanCreateTab(string pageKey)
     {
         var exclusiveMacroMode = PoltergeistApplication.Current.ExclusiveMacroMode;
         if (!string.IsNullOrEmpty(exclusiveMacroMode) && pageKey != MacroManager.GetPageKey(exclusiveMacroMode))

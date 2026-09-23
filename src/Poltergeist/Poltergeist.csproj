@@ -23,6 +23,7 @@
     <LicenseUrl>https://github.com/Fortelle/Poltergeist/blob/master/LICENSE.txt</LicenseUrl>
     <GitHub>Poltergeist</GitHub>
     <GitHubUrl>https://github.com/Fortelle/Poltergeist</GitHubUrl>
+    <UserSecretsId>61ee5fa8-bc81-430c-8d2b-c31d7e669949</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,6 +64,10 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
+    <PackageReference Include="DependencyPropertyGenerator" Version="1.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />

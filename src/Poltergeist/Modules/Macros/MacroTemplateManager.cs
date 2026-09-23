@@ -41,7 +41,7 @@ public class MacroTemplateManager : ServiceBase
         {
             if (StatisticService.GlobalStatistics.TryGetDefinition(definition.Key, out var oldDefinition))
             {
-                if (oldDefinition.BaseType != definition.BaseType)
+                if (oldDefinition.ValueType != definition.ValueType)
                 {
                     Logger.Warn($"Added macro template '{macro.Key}'({macro.GetType().Name}).");
                 }

@@ -211,8 +211,7 @@ public partial class PoltergeistApplication
 
     private static void ConfigureCommandLineParsers()
     {
-        var commandLineService = GetService<CommandLineService>();
-        commandLineService.AddParser<MacroCommandLineParser>();
+        CommandLineService.AddParser<MacroCommandLineParser>();
     }
 
     private static void ConfigureHotKeys()

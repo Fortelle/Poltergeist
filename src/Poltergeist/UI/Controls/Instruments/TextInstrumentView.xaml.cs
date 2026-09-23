@@ -20,9 +20,6 @@ public partial class TextInstrumentView : UserControl
     {
         base.OnApplyTemplate();
 
-        if (ViewModel is not null)
-        {
-            ViewModel.Dispose();
-        }
+        ViewModel?.Dispose();
     }
 }

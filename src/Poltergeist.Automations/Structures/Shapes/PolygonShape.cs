@@ -18,7 +18,7 @@ public class PolygonShape : IShape
 
     public PolygonShape()
     {
-        Points = Array.Empty<Point>();
+        Points = [];
     }
 
     public PolygonShape(params Point[] points)
@@ -188,10 +188,10 @@ public class PolygonShape : IShape
             var bounds = Bounds;
             var vertexes = new Point[]
             {
-                new Point(bounds.X, bounds.Y),
-                new Point(bounds.X + bounds.Width, bounds.Y),
-                new Point(bounds.X + bounds.Width, bounds.Y + bounds.Height),
-                new Point(bounds.X, bounds.Y + bounds.Height),
+                new(bounds.X, bounds.Y),
+                new(bounds.X + bounds.Width, bounds.Y),
+                new(bounds.X + bounds.Width, bounds.Y + bounds.Height),
+                new(bounds.X, bounds.Y + bounds.Height),
             };
             var vertexRadians = vertexes.Select(pt => Math.Atan((pt.Y - meansure.Y) / (pt.X - meansure.X))).ToArray();
             while (true)

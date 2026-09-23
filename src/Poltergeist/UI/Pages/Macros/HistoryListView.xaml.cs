@@ -7,22 +7,10 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Poltergeist.UI.Pages.Macros;
 
+[DependencyProperty<string>("PrivateFolder")]
+[DependencyProperty<ProcessorHistoryEntry[]>("History")]
 public sealed partial class HistoryListView : UserControl
 {
-    public static readonly DependencyProperty PrivateFolderProperty = DependencyProperty.RegisterAttached(nameof(PrivateFolder), typeof(object), typeof(HistoryListView), new PropertyMetadata(null));
-    public string? PrivateFolder
-    {
-        get => (string?)GetValue(PrivateFolderProperty);
-        set => SetValue(PrivateFolderProperty, value);
-    }
-
-    public static readonly DependencyProperty HistoryProperty = DependencyProperty.RegisterAttached(nameof(History), typeof(object), typeof(HistoryListView), new PropertyMetadata(null));
-    public ProcessorHistoryEntry[]? History
-    {
-        get => (ProcessorHistoryEntry[]?)GetValue(HistoryProperty);
-        set => SetValue(HistoryProperty, value);
-    }
-
     public HistoryListView()
     {
         InitializeComponent();

@@ -1,19 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<double>("SelectedIndex")]
+[DependencyProperty<string>("SelectedValue")]
 public sealed partial class SliderChoiceOptionControl : UserControl
 {
-    [ObservableProperty]
-    public partial double SelectedIndex { get; set; }
-
-    [ObservableProperty]
-    public partial string SelectedValue { get; set; }
-
     private ObservableParameterItem Item { get; }
 
     private ChoiceEntry[] Choices { get; set; }

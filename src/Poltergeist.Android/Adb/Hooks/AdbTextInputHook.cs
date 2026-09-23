@@ -4,5 +4,5 @@ namespace Poltergeist.Android.Adb;
 
 public class AdbTextInputHook : MacroHook
 {
-    public string Text { get; init; }
+    public required string Text { get; init; }
 }

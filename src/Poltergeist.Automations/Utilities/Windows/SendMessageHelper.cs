@@ -6,7 +6,7 @@ public partial class SendMessageHelper
 {
     public nint Hwnd { get; }
 
-    private LoggerWrapper? Logger;
+    private readonly LoggerWrapper? Logger;
 
     public SendMessageHelper(nint hwnd)
     {

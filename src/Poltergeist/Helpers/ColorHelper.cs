@@ -2,7 +2,7 @@
 
 namespace Poltergeist.Helpers;
 
-public static class ColorUtil
+public static class ColorHelper
 {
     public static Color ToColor(System.Drawing.Color color)
     {

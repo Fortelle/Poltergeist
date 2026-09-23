@@ -1,8 +1,8 @@
 ﻿using Poltergeist.Automations.Components.Hooks;
-using Poltergeist.Automations.Macros;
-using Poltergeist.Automations.Macros.Loops;
 using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
+
+namespace Poltergeist.Automations.Macros.Loops;
 
 [ModuleDependency<LoopModule>]
 [ModuleDependency<LoopConfiguralizationModule>]

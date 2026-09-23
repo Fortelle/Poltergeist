@@ -2,7 +2,7 @@
 
 public class ParameterDefinition<T> : ParameterDefinitionBase, IParameterDefinition, IEntryDefinition<T>
 {
-    public Type BaseType => typeof(T);
+    public Type ValueType => typeof(T);
 
     public Func<T, string>? Format { get; set; }
 
@@ -30,7 +30,7 @@ public class ParameterDefinition<T> : ParameterDefinitionBase, IParameterDefinit
             return ie.Equals(DefaultValue);
         }
 
-        if (BaseType.IsClass)
+        if (ValueType.IsClass)
         {
             return false;
         }

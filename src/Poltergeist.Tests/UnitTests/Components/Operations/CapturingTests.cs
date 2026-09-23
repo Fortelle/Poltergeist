@@ -105,8 +105,8 @@ public class CapturingTests : OperationModuleTestBase
                     using var sampleImage3 = BitmapUtil.Crop(sampleImage, pieceAreas[i]);
                     if (!AreEqual(sampleImage3, pieceImages[i]))
                     {
-                        pieceImages[i].Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_piece{i}.png"));
-                        sampleImage3.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"], $"{nameof(CapturingProvider)}_{width}x{height}_piece{i}_sample.png"));
+                        pieceImages[i].Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_piece{i}.png"));
+                        sampleImage3.Save(Path.Combine((string)TestContext.Properties["DeploymentDirectory"]!, $"{nameof(CapturingProvider)}_{width}x{height}_piece{i}_sample.png"));
                         pieceImages[i].Dispose();
                         Assert.Fail($"Failed to capture piece{i}");
                     }

@@ -13,7 +13,7 @@ public class UserOptionTests
     {
         OptionDefinitions =
         {
-            {"test_key", ""},
+            new OptionDefinition<string>("test_key"),
         },
         Execute = processor =>
         {

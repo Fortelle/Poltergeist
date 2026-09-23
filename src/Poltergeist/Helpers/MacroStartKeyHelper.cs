@@ -9,7 +9,7 @@ namespace Poltergeist.Helpers;
 
 public static class MacroStartKeyHelper
 {
-    public static HotKeyInformation HotKeyInformation = new("macrostartkey")
+    public static HotKeyInformation HotKeyInformation { get; } = new("macrostartkey")
     {
         SettingDefinition = new("macro.startkey")
         {

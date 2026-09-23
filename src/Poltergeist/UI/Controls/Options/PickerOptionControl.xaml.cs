@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
 using Windows.Storage.Pickers;
@@ -7,15 +6,10 @@ namespace Poltergeist.UI.Controls.Options;
 
 // bug: https://github.com/files-community/Files/issues/11440
 // warn: FileSavePicker must have at least one file type choice and does not support wildcard.
-[ObservableObject]
+[DependencyProperty<string>("Filepath")]
+[DependencyProperty<string>("Filename")]
 public sealed partial class PickerOptionControl : UserControl
 {
-    [ObservableProperty]
-    public partial string? Filepath { get; set; }
-
-    [ObservableProperty]
-    public partial string? Filename { get; set; }
-
     private ObservableParameterItem Item { get; }
 
     public PickerOptionControl(ObservableParameterItem item)

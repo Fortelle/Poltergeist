@@ -36,7 +36,7 @@ public class PixelData
         return color;
     }
 
-    public IEnumerable<int> Iterator(Rectangle rect)
+    public static IEnumerable<int> Iterator(Rectangle rect)
     {
         for (var y = rect.Top; y < rect.Bottom; y++)
         {

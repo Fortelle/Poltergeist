@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
@@ -7,16 +6,11 @@ using Poltergeist.Modules.Interactions;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<string>("Text")]
+[DependencyProperty<string>("Tooltip")]
 public sealed partial class StringArrayOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
-
-    [ObservableProperty]
-    public partial string? Text { get; set; }
-
-    [ObservableProperty]
-    public partial string? Tooltip { get; set; }
 
     public StringArrayOptionControl(ObservableParameterItem item)
     {
@@ -39,10 +33,10 @@ public sealed partial class StringArrayOptionControl : UserControl
             Text = "(null)";
             Tooltip = null;
         }
-        else
+        else if (Item.Value is string lines)
         {
-            Text = string.Join(", ", Item.Value);
-            Tooltip = string.Join("\n", Item.Value);
+            Text = string.Join(", ", lines);
+            Tooltip = string.Join("\n", lines);
         }
     }
 

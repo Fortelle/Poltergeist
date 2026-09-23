@@ -89,7 +89,7 @@ public class SavablePredefinedCollection
 
         if (definition is not null)
         {
-            value ??= GetJsonValue(key, definition.BaseType);
+            value ??= GetJsonValue(key, definition.ValueType);
         }
 
         value ??= definition?.DefaultValue;
@@ -109,7 +109,7 @@ public class SavablePredefinedCollection
 
         ValueCollection.TryGetValue(key, out var value);
 
-        value ??= GetJsonValue(key, definition?.BaseType ?? typeof(T));
+        value ??= GetJsonValue(key, definition?.ValueType ?? typeof(T));
 
         value ??= definition?.DefaultValue;
 

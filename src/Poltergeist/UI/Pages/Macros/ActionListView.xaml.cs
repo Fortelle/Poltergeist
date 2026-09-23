@@ -8,15 +8,9 @@ using Poltergeist.Modules.Macros;
 
 namespace Poltergeist.UI.Pages.Macros;
 
+[DependencyProperty<MacroInstance>("MacroInstance")]
 public sealed partial class ActionListView : UserControl
 {
-    public static readonly DependencyProperty MacroInstanceProperty = DependencyProperty.RegisterAttached(nameof(MacroInstance), typeof(MacroInstance), typeof(ActionListView), new PropertyMetadata(null));
-    public MacroInstance? MacroInstance
-    {
-        get => (MacroInstance?)GetValue(MacroInstanceProperty);
-        set => SetValue(MacroInstanceProperty, value);
-    }
-
     public ActionListView()
     {
         InitializeComponent();

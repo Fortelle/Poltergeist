@@ -11,17 +11,17 @@ namespace Poltergeist.Helpers;
 
 // just for fun
 // should be improved later
-public static class MarkdownRenderer
+public static partial class MarkdownRenderer
 {
-    private static readonly Dictionary<Regex, Func<Match, FrameworkElement>> LineHandlers = new();
-    private static readonly Regex TextPattern = new Regex(@"(\*\*\*.+?\*\*\*|___.+?___|\*\*.+?\*\*|__.+?__|\*.+?\*|_.+?_|`.+?`|~~.+~~|~.+~|<sub>.+</sub>|<sup>.+</sup>|<ins>.+</ins>)");
+    [GeneratedRegex(@"(\*\*\*.+?\*\*\*|___.+?___|\*\*.+?\*\*|__.+?__|\*.+?\*|_.+?_|`.+?`|~~.+~~|~.+~|<sub>.+</sub>|<sup>.+</sup>|<ins>.+</ins>)")]
+    private static partial Regex TextRegex();
 
-    static MarkdownRenderer()
+    private static readonly Dictionary<Regex, Func<Match, FrameworkElement>> LineHandlers = new()
     {
-        LineHandlers.Add(new(@"^[\*\-_]{3,}$"), RenderHorizontalRule);
-        LineHandlers.Add(new("^(#+) (.+)$"), RenderHeader);
-        LineHandlers.Add(new(@"^((?:\*|\-|\+|\>|\d+.)+) (.+)$"), RenderList);
-    }
+        { new(@"^[\*\-_]{3,}$"), RenderHorizontalRule },
+        { new(@"^(#+) (.+)$"), RenderHeader },
+        { new(@"^((?:\*|\-|\+|\>|\d+.)+) (.+)$"), RenderList },
+    };
 
     public static FrameworkElement RenderLine(string? line)
     {
@@ -42,7 +42,7 @@ public static class MarkdownRenderer
         return RenderTextLine(line);
     }
 
-    private static FrameworkElement RenderTextLine(string text)
+    private static Grid RenderTextLine(string text)
     {
         var textBlock = new TextBlock()
         {
@@ -67,7 +67,7 @@ public static class MarkdownRenderer
 
     private static void RenderText(TextBlock textBlock, string text)
     {
-        var phrases = TextPattern.Split(text);
+        var phrases = TextRegex().Split(text);
 
         foreach (var phrase in phrases)
         {

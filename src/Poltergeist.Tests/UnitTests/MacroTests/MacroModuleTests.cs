@@ -2,6 +2,7 @@
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Modules;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.Tests.UnitTests.MacroTests;
 
@@ -12,7 +13,7 @@ public class MacroModuleTests
     {
         public override void OnMacroInitialized(IMacroInformation macro)
         {
-            macro.OptionDefinitions.Add("is_OnMacroInitialized_called", true);
+            macro.OptionDefinitions.Add(new BoolOption("is_OnMacroInitialized_called", true));
         }
     }
 
@@ -39,7 +40,7 @@ public class MacroModuleTests
     private class HookModule : MacroModule
     {
         [MacroHook]
-        private static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
+        public static void OnProcessorStartup(IMacroProcessorShared processor, ProcessorStartupHook hook)
         {
             processor.SessionStorage.Add("is_OnProcessorStartup_called", true);
         }
@@ -77,7 +78,7 @@ public class MacroModuleTests
 
         public override void OnMacroInitialized(IMacroInformation macro)
         {
-            macro.OptionDefinitions.Add("is_OnMacroInitialized_called", true);
+            macro.OptionDefinitions.Add(new BoolOption("is_OnMacroInitialized_called", true));
         }
 
         [MacroHook]

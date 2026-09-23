@@ -10,14 +10,13 @@ public unsafe partial class BitBltHelper : IDisposable
 
     public IntPtr Hwnd { get; }
 
-    //public IntPtr HdcSrc { get; private set; }
     public IntPtr HdcDest { get; private set; }
     public IntPtr HBitmap { get; private set; }
     public IntPtr HOldBmp { get; private set; }
 
-    private byte* pixelPtr;   // 指向位图的原始像素
+    private readonly byte* pixelPtr;
 
-    private int strideBytes;  // 每行的字节数
+    private readonly int strideBytes;
 
     public BitBltHelper(IntPtr hwnd)
     {
@@ -33,12 +32,11 @@ public unsafe partial class BitBltHelper : IDisposable
         HBitmap = NativeMethods.CreateCompatibleBitmap(hdcSrc, Width, Height);
         HOldBmp = NativeMethods.SelectObject(HdcDest, HBitmap);
 
-        // 获取 HBITMAP 信息
-        NativeMethods.BITMAP bmpInfo = new NativeMethods.BITMAP();
-        NativeMethods.GetObject(HBitmap, Marshal.SizeOf(bmpInfo), ref bmpInfo);
+        var bmpInfo = new NativeMethods.BITMAP();
+        _ = NativeMethods.GetObject(HBitmap, Marshal.SizeOf(bmpInfo), ref bmpInfo);
 
-        pixelPtr = (byte*)bmpInfo.bmBits;          // 原始像素指针
-        strideBytes = bmpInfo.bmWidthBytes;        // 每行字节数（通常=Width*4）
+        pixelPtr = (byte*)bmpInfo.bmBits;
+        strideBytes = bmpInfo.bmWidthBytes;
 
         _ = NativeMethods.ReleaseDC(hwnd, hdcSrc);
     }

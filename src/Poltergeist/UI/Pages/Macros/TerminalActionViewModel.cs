@@ -121,7 +121,7 @@ public partial class TerminalActionViewModel : ObservableRecipient
         };
         if (line.Foreground.HasValue)
         {
-            run.Foreground = GetBrush(ColorUtil.ToColor(line.Foreground.Value));
+            run.Foreground = GetBrush(ColorHelper.ToColor(line.Foreground.Value));
         }
         if (line.IsBold.HasValue && line.IsBold == true)
         {

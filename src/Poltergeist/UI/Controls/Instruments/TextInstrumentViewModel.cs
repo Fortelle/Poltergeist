@@ -27,12 +27,12 @@ public class TextInstrumentViewModel : IInstrumentViewModel, IDisposable
 
         if (model.BackgroundColor.HasValue)
         {
-            Background = new SolidColorBrush(ColorUtil.ToColor(model.BackgroundColor.Value));
+            Background = new SolidColorBrush(ColorHelper.ToColor(model.BackgroundColor.Value));
         }
 
         if (model.ForegroundColor.HasValue)
         {
-            Foreground = new SolidColorBrush(ColorUtil.ToColor(model.ForegroundColor.Value));
+            Foreground = new SolidColorBrush(ColorHelper.ToColor(model.ForegroundColor.Value));
         }
     }
 
@@ -87,7 +87,7 @@ public class TextInstrumentViewModel : IInstrumentViewModel, IDisposable
         };
         if (line.Foreground.HasValue)
         {
-            run.Foreground = GetBrush(ColorUtil.ToColor(line.Foreground.Value));
+            run.Foreground = GetBrush(ColorHelper.ToColor(line.Foreground.Value));
         }
         if (line.IsBold.HasValue && line.IsBold == true)
         {

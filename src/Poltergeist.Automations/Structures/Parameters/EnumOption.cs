@@ -16,6 +16,6 @@ public class EnumOption<T> : OptionDefinition<T>, IChoiceOption where T : struct
 
     public ChoiceEntry[] GetChoices()
     {
-        return Enum.GetValues(typeof(T)).OfType<T>().Select(x => new ChoiceEntry(x, GetText?.Invoke(x) ?? x.ToString())).ToArray();
+        return Enum.GetValues<T>().OfType<T>().Select(x => new ChoiceEntry(x, GetText?.Invoke(x) ?? x.ToString())).ToArray();
     }
 }

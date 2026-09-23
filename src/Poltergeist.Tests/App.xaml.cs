@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Modules.Navigation;
 using Poltergeist.Tests.UI;
 
@@ -31,14 +32,14 @@ public partial class App : PoltergeistApplication
         GetService<NavigationService>().AddSidebarItemInfo(new()
         {
             Text = "Tests",
-            Icon = new("\uE99A"),
+            Icon = new GlyphIcon("\uE99A"),
             Position = SidebarItemPosition.Top,
             Navigation = new("tests"),
         });
         GetService<NavigationService>().AddPageInfo(new("tests")
         {
             Header = "Tests",
-            Icon = new("\uE99A"),
+            Icon = new GlyphIcon("\uE99A"),
             CreateContent = (_, _) => new TestPage(),
         });
     }

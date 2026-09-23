@@ -2,21 +2,20 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using Poltergeist.Automations.Macros;
 
 namespace Poltergeist.Tests.UnitTests.Components.Operations;
 
 public abstract class OperationModuleTestBase
 {
-    protected static string className = "test_window";
-    protected static string windowName = "Test Window";
+    protected const string className = "test_window";
+    protected const string windowName = "Test Window";
     protected const int WindowLeft = 100;
     protected const int WindowTop = 100;
     protected const int WindowWidth = 400;
     protected const int WindowHeight = 300;
-    protected static nint windowHandle = nint.Zero;
+    protected static readonly nint windowHandle = nint.Zero;
 
-    protected static TestWindowHelper? TestWindow;
+    protected static TestWindowHelper? TestWindow { get; set; }
 
     [ClassInitialize(InheritanceBehavior.BeforeEachDerivedClass)]
     public static void Initialize(TestContext testContext)

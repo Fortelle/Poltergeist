@@ -13,7 +13,7 @@ public static class MacroBaseExtensions
 
     public static async Task<ProcessorResult> TestAsync(this MacroBase macro, MacroProcessorArguments? arguments = null)
     {
-        return await MacroProcessor.ExecuteAsync(macro);
+        return await MacroProcessor.ExecuteAsync(macro, arguments);
     }
 
     public static void AssertSuccess(this ProcessorResult result)

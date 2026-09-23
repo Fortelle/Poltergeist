@@ -1,4 +1,3 @@
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -6,15 +5,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Poltergeist.UI.Pages.Macros;
 
+[DependencyProperty<MacroViewModel>("ViewModel")]
 public sealed partial class InformationView : UserControl
 {
-    public static readonly DependencyProperty ViewModelProperty = DependencyProperty.RegisterAttached(nameof(ViewModel), typeof(MacroViewModel), typeof(HistoryListView), new PropertyMetadata(null));
-    public MacroViewModel? ViewModel
-    {
-        get => (MacroViewModel?)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
-    }
-
     public InformationView()
     {
         InitializeComponent();

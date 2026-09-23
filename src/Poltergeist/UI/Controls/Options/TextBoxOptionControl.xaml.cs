@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<bool>("HasError")]
 public sealed partial class TextBoxOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
@@ -26,9 +25,6 @@ public sealed partial class TextBoxOptionControl : UserControl
             }
         }
     }
-
-    [ObservableProperty]
-    public partial bool HasError { get; set; }
 
     public TextBoxOptionControl(ObservableParameterItem item)
     {

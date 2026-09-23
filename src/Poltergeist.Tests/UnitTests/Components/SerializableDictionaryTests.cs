@@ -40,7 +40,8 @@ public class SerializableParameterValueCollectionTests
         Check(newDict);
     }
 
-    private void Check(SerializableParameterValueCollection dict)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0037:Use proper 'Assert' methods", Justification = "<Pending>")]
+    private static void Check(SerializableParameterValueCollection dict)
     {
         Assert.IsTrue(dict.Get<bool>("bool") is true);
         Assert.IsTrue(dict.Get<int>("int") is 1);

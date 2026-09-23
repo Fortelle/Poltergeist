@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Poltergeist.Automations.Components.Logging;
-using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
 
 namespace Poltergeist.Automations.Services;
@@ -49,9 +48,4 @@ public abstract class MacroService : IMacroServiceShared, IDisposable
         Debug.WriteLine($"Disposed {ServiceName}.");
         GC.SuppressFinalize(this);
     }
-}
-
-public abstract class MacroService<T>(MacroProcessor processor) : MacroService(processor) where T : MacroBase
-{
-    public T Macro => (T)Processor.Macro;
 }

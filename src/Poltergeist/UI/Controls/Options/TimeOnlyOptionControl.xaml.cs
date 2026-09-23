@@ -5,7 +5,7 @@ namespace Poltergeist.UI.Controls.Options;
 
 public sealed partial class TimeOnlyOptionControl : UserControl
 {
-    private ObservableParameterItem Item { get; }
+    private readonly ObservableParameterItem Item;
 
     private TimeOnly Value
     {

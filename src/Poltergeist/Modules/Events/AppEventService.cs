@@ -47,7 +47,7 @@ public class AppEventService : ServiceBase
         });
     }
 
-    private void ExecuteSubscription(AppEventSubscription subscription, AppEvent? @event)
+    private static void ExecuteSubscription(AppEventSubscription subscription, AppEvent? @event)
     {
         subscription.Callback.DynamicInvoke(@event);
     }

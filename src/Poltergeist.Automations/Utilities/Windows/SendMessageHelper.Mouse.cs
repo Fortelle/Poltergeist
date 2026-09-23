@@ -16,7 +16,7 @@ public partial class SendMessageHelper
 
     public SendMessageHelper MouseDoubleClick(int x, int y, MouseButtons button, KeyModifiers modifier)
     {
-        DoMouseDoubleClick(x, y, button, false, modifier);
+        DoMouseDoubleClick(x, y, button, modifier);
         return this;
     }
 
@@ -47,7 +47,7 @@ public partial class SendMessageHelper
         Logger?.Trace($"SendMessage(0x{Hwnd:X8}, 0x{wm:X8}, 0x{wParam:X8}, 0x{lParam:X8})");
     }
 
-    private void DoMouseDoubleClick(int x, int y, MouseButtons button, bool isUp, KeyModifiers modifier)
+    private void DoMouseDoubleClick(int x, int y, MouseButtons button, KeyModifiers modifier)
     {
         var wm = button switch
         {

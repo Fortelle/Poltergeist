@@ -18,7 +18,7 @@ public class CommandLineService : ServiceBase
         eventService.Subscribe<PipeMessageReceivedEvent>(OnPipeMessageReceived);
     }
 
-    public void AddParser<T>() where T : CommandLineParser
+    public static void AddParser<T>() where T : CommandLineParser
     {
         ParserTypes.Add(typeof(T));
     }

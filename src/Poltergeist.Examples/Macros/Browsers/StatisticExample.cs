@@ -23,7 +23,7 @@ public class StatisticExample : CommonOneshotMacroBase
 
         StatisticDefinitions.Add(new StatisticDefinition<int>("count2")
         {
-            TryUpdate = (int accumulatedValue, IReadOnlyParameterValueCollection report, out int currentValue) =>
+            TryUpdate = (accumulatedValue, report, out currentValue) =>
             {
                 currentValue = accumulatedValue + report.Get<int>("count");
                 return true;

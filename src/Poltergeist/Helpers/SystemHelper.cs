@@ -24,7 +24,6 @@ public static class SystemHelper
         });
     }
 
-    // todo: toast notification (cancellable)
     public static void Restart()
     {
         Process.Start(new ProcessStartInfo()

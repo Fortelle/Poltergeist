@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using Poltergeist.Automations.Structures.Parameters;
-using Poltergeist.Automations.Utilities.Windows;
 
 namespace Poltergeist.Examples.Macros;
 

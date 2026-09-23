@@ -8,7 +8,7 @@ public partial class CapturingProvider
 
     public bool IsUsingSnapshot => string.IsNullOrEmpty(CurrentSnapshotKey);
 
-    private Dictionary<string, Bitmap> CachedSnapshots = new();
+    private readonly Dictionary<string, Bitmap> CachedSnapshots = new();
 
     public string TakeSnapshot()
     {

@@ -1,11 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
 public sealed partial class ToggleButtonOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }

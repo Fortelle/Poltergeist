@@ -29,18 +29,18 @@ public class IndicatorInstrumentItemViewModel
         {
             if (item.Filled == true)
             {
-                Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Foreground));
-                Background = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
-                BorderColor = new SolidColorBrush(ColorUtil.ToColor(colorset.Background));
+                Foreground = new SolidColorBrush(ColorHelper.ToColor(colorset.Foreground));
+                Background = new SolidColorBrush(ColorHelper.ToColor(colorset.Background));
+                BorderColor = new SolidColorBrush(ColorHelper.ToColor(colorset.Background));
             }
             else if (item.Bordered == true)
             {
-                Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Color));
-                BorderColor = new SolidColorBrush(ColorUtil.ToColor(colorset.Color));
+                Foreground = new SolidColorBrush(ColorHelper.ToColor(colorset.Color));
+                BorderColor = new SolidColorBrush(ColorHelper.ToColor(colorset.Color));
             }
             else
             {
-                Foreground = new SolidColorBrush(ColorUtil.ToColor(colorset.Color));
+                Foreground = new SolidColorBrush(ColorHelper.ToColor(colorset.Color));
             }
         }
     }

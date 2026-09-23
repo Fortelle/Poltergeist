@@ -4,16 +4,9 @@ using Poltergeist.Modules.Instruments;
 
 namespace Poltergeist.UI.Controls.Instruments;
 
+[DependencyProperty<InstrumentsWrapper>("Instruments")]
 public sealed partial class MacroPanelControl : UserControl
 {
-    public static readonly DependencyProperty InstrumentsProperty = DependencyProperty.RegisterAttached("Instruments", typeof(InstrumentsWrapper), typeof(MacroPanelControl), new PropertyMetadata(null));
-
-    public InstrumentsWrapper Instruments
-    {
-        get => (InstrumentsWrapper)GetValue(InstrumentsProperty);
-        set => SetValue(InstrumentsProperty, value);
-    }
-
     public MacroPanelControl()
     {
         InitializeComponent();

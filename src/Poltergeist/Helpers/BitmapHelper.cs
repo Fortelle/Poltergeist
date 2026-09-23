@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Poltergeist.Helpers;
 
-public class BitmapHelper
+public static class BitmapHelper
 {
     public static ImageSource ToImageSource(Bitmap bitmap)
     {

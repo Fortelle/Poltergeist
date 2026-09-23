@@ -187,7 +187,7 @@ public static partial class WindowUtil
             DoNotRedraw = 0x0008,
             DoNotActivate = 0x0010,
             DrawFrame = 0x0020,
-            FrameChanged = 0x0020,
+            FrameChanged = DrawFrame,
             ShowWindow = 0x0040,
             HideWindow = 0x0080,
             DoNotCopyBits = 0x0100,

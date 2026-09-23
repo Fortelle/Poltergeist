@@ -53,7 +53,7 @@ public sealed partial class OptionControl : UserControl
 
             RatingOption => new RatingOptionControl(item),
 
-            { BaseType.IsEnum: true } => new ComboBoxOptionControl(item),
+            { ValueType.IsEnum: true } => new ComboBoxOptionControl(item),
 
             BoolOption { Mode: BoolOptionMode.ToggleSwitch } => new SwitchOptionControl(item),
             BoolOption { Mode: BoolOptionMode.CheckBox } => new CheckBoxOptionControl(item),

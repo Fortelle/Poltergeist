@@ -9,7 +9,7 @@ public interface IParameterDefinition
     string? Description { get; }
     ParameterStatus Status { get; }
     
-    Type BaseType { get; }
+    Type ValueType { get; }
 
     object? DefaultValue { get; }
 

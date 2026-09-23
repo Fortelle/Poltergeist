@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
 
 namespace Poltergeist.UI.Controls.Options;
 
-[ObservableObject]
+[DependencyProperty<bool>("IsChecked")]
 public sealed partial class LeftRightSwitchOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; }
@@ -12,21 +11,6 @@ public sealed partial class LeftRightSwitchOptionControl : UserControl
     private string? LeftContent { get; }
 
     private string? RightContent { get; }
-
-    private bool IsChecked
-    {
-        get => Item.Value is bool b && b;
-        set
-        {
-            if (value == IsChecked)
-            {
-                return;
-            }
-
-            Item.Value = value;
-            OnPropertyChanged(nameof(IsChecked));
-        }
-    }
 
     public LeftRightSwitchOptionControl(ObservableParameterItem entry)
     {
@@ -41,6 +25,7 @@ public sealed partial class LeftRightSwitchOptionControl : UserControl
         }
 
         Item = entry;
+        IsChecked = entry.Value is bool b && b;
 
         InitializeComponent();
     }
@@ -66,5 +51,10 @@ public sealed partial class LeftRightSwitchOptionControl : UserControl
     private void TextBlock_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         e.Handled = true;
+    }
+
+    partial void OnIsCheckedChanged(bool newValue)
+    {
+        Item.Value = newValue;
     }
 }
