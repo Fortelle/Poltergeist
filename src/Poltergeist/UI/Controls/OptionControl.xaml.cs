@@ -54,6 +54,8 @@ public sealed partial class OptionControl : UserControl
             RatingOption => new RatingOptionControl(item),
 
             { ValueType.IsEnum: true } => new ComboBoxOptionControl(item),
+            IMacroChoiceOption => new ComboBoxOptionControl(item),
+            IDynamicChoiceOption => new ComboBoxOptionControl(item),
 
             BoolOption { Mode: BoolOptionMode.ToggleSwitch } => new SwitchOptionControl(item),
             BoolOption { Mode: BoolOptionMode.CheckBox } => new CheckBoxOptionControl(item),

@@ -41,5 +41,16 @@ public class ComboBoxOptionControlExample : UnrunnableMacro
             DisplayLabel = $"IndexChoiceOption<string>",
             Mode = ChoiceOptionMode.ComboBox,
         });
+
+        OptionDefinitions.Add(new DynamicChoiceOption<int>("DynamicChoiceOption<int>")
+        {
+            DisplayLabel = $"DynamicChoiceOption<int>",
+            Description = "Updates the choices each time the dropdown is opened.",
+            GetChoices = () => Enumerable.Range(0, 100)
+                .Shuffle()
+                .Take(10)
+                .Select(x => new ChoiceEntry(x))
+                .ToArray(),
+        });
     }
 }

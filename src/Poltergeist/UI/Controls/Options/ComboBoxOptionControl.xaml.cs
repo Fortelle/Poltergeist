@@ -1,14 +1,14 @@
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Structures.Parameters;
+using Poltergeist.Modules.Macros;
 
 namespace Poltergeist.UI.Controls.Options;
 
+[DependencyProperty<ChoiceEntry[]>("Choices")]
 public sealed partial class ComboBoxOptionControl : UserControl
 {
     private ObservableParameterItem Item { get; set; }
-
-    private ChoiceEntry[]? Choices { get; set; }
 
     private object? SelectedValue
     {
@@ -37,6 +37,8 @@ public sealed partial class ComboBoxOptionControl : UserControl
         {
             IChoiceOption choiceoption => choiceoption.GetChoices(),
             { ValueType.IsEnum: true } => GetEnumChoices(item.Definition.ValueType),
+            IMacroChoiceOption => null,
+            IDynamicChoiceOption => null,
             _ => throw new NotSupportedException(),
         };
 
@@ -45,4 +47,19 @@ public sealed partial class ComboBoxOptionControl : UserControl
         InitializeComponent();
     }
 
+    private void ComboBox_DropDownOpened(object sender, object e)
+    {
+        if (Item.Definition is IMacroChoiceOption mco)
+        {
+            Choices = App.GetService<MacroInstanceManager>()
+                .GetInstances()
+                .Where(x => x.IsValid && mco.Predicate(x.Template))
+                .Select(x => new ChoiceEntry(x.InstanceId, x.Title))
+                .ToArray();
+        }
+        else if (Item.Definition is IDynamicChoiceOption dco)
+        {
+            Choices = dco.GetChoices();
+        }
+    }
 }

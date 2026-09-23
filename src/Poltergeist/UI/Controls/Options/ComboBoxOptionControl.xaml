@@ -10,10 +10,11 @@
 
     <ComboBox
         HorizontalAlignment="Stretch"
-        ItemsSource="{x:Bind Choices, Mode=OneTime}"
+        ItemsSource="{x:Bind Choices, Mode=OneWay}"
         SelectedValue="{x:Bind SelectedValue, Mode=TwoWay}"
         SelectedValuePath="Value"
         DisplayMemberPath="Text"
+        DropDownOpened="ComboBox_DropDownOpened"
         >
     </ComboBox>
 </UserControl>
