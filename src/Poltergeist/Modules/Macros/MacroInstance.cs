@@ -12,6 +12,8 @@ namespace Poltergeist.Modules.Macros;
 /// </summary>
 public class MacroInstance
 {
+    public static readonly IconInfo DefaultIcon = new UriIcon("ms-appx:///Poltergeist/Assets/macro_32px.png");
+
     /// <summary>
     /// Gets the unique identifier for the instance.
     /// </summary>

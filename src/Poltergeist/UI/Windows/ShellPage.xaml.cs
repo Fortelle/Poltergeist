@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Poltergeist.Automations.Structures;
 using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
@@ -12,6 +13,8 @@ namespace Poltergeist.UI.Windows;
 
 public sealed partial class ShellPage : Page
 {
+    private static readonly IconInfo DefaultIcon = new GlyphIcon("\uEA3A");
+
     public ShellViewModel ViewModel { get; }
 
     private readonly NavigationService Navigation;
@@ -68,7 +71,7 @@ public sealed partial class ShellPage : Page
                 Name = item.Navigation?.PageKey,
                 Content = item.Text,
                 Tag = item.Navigation,
-                Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
+                Icon = IconInfoHelper.ConvertToIconElement(item.Icon ?? DefaultIcon),
                 SelectsOnInvoked = item.Navigation is not null,
             };
             NavigationViewControl.MenuItems.Add(nvi);
@@ -91,7 +94,7 @@ public sealed partial class ShellPage : Page
             {
                 Content = instance.Title,
                 Tag = new NavigationInfo(instance.GetPageKey()),
-                Icon = IconInfoHelper.ConvertToIconElement(instance.Icon),
+                Icon = IconInfoHelper.ConvertToIconElement(instance.Icon ?? MacroInstance.DefaultIcon),
             };
             NavigationViewControl.MenuItems.Add(nvi);
             if (nvi.Name == selectedItem)
@@ -115,7 +118,7 @@ public sealed partial class ShellPage : Page
             {
                 Content = item.Text ?? item.Text,
                 Tag = (object?)item.Navigation ?? (object?)item.Action,
-                Icon = IconInfoHelper.ConvertToIconElement(item.Icon),
+                Icon = IconInfoHelper.ConvertToIconElement(item.Icon ?? DefaultIcon),
                 SelectsOnInvoked = item.Navigation is not null,
             };
             NavigationViewControl.FooterMenuItems.Add(nvi);
@@ -150,7 +153,7 @@ public sealed partial class ShellPage : Page
             }
 
             nvi.Content = instance.Title;
-            nvi.Icon = IconInfoHelper.ConvertToIconElement(instance.Icon);
+            nvi.Icon = IconInfoHelper.ConvertToIconElement(instance.Icon ?? MacroInstance.DefaultIcon);
         });
     }
     
