@@ -287,7 +287,7 @@ public partial class MacroBrowserViewModel : ObservableRecipient, IDisposable
             arguments += " --exclusivemode";
         }
 
-        var runAsAdmin = instance.Template is MacroBase mb && mb.RequiresAdmin == true;
+        var runAsAdmin = instance.Template?.RequiresAdmin == true;
         var iconLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, new Uri(@"ms-appx:///Poltergeist/Assets/macro.ico").LocalPath.TrimStart('/'));
 
         var wshShell = new WshShell();

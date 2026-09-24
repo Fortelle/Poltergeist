@@ -25,7 +25,10 @@ public interface IMacroInformation
     ParameterValueCollection ExtraData { get; }
     List<ConfigVariation> ConfigVariations { get; }
     List<ProcessorIntervention> Interventions { get; }
+
     bool RequiresAdmin { get; }
+    bool PreventsSystemSleep { get; }
+    bool PreventsDisplaySleep { get; }
 
     Exception? Exception { get; }
 }

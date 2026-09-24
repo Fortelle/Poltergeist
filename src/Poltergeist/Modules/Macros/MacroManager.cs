@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Poltergeist.Automations.Components.Interactions;
 using Poltergeist.Automations.Macros;
 using Poltergeist.Automations.Processors;
+using Poltergeist.Helpers;
 using Poltergeist.Modules.App;
 using Poltergeist.Modules.Events;
 using Poltergeist.Modules.Navigation;
@@ -22,6 +23,8 @@ public class MacroManager : ServiceBase
     private readonly NavigationService NavigationService;
 
     private readonly MacroInstanceManager InstanceManager;
+
+    private int PreventingSleepCount;
 
     public MacroManager(
         AppEventService eventService,
@@ -232,17 +235,42 @@ public class MacroManager : ServiceBase
 
         processor.Launched -= Processor_Launched;
 
+        InRunningProcessors.TryGetValue(processor, out var instance);
+        if (instance?.Template is null)
+        {
+            throw new InvalidOperationException();
+        }
+
         if (!processor.IsIncognitoMode())
         {
-            InRunningProcessors.TryGetValue(processor, out var instance);
-            if (instance is not null)
+            InstanceManager.UpdateProperties(instance, settings =>
             {
-                InstanceManager.UpdateProperties(instance, settings =>
+                settings.LastRunTime = DateTime.Now;
+                settings.RunCount += 1;
+            });
+        }
+
+        if (instance.Template.PreventsDisplaySleep)
+        {
+            if (PreventingSleepCount == 0)
+            {
+                PoltergeistApplication.TryEnqueue(() =>
                 {
-                    settings.LastRunTime = DateTime.Now;
-                    settings.RunCount += 1;
+                    SystemHelper.PreventSleep(continuous: true, keepDisplayOn: true);
                 });
             }
+            PreventingSleepCount++;
+        }
+        else if (instance.Template.PreventsSystemSleep)
+        {
+            if (PreventingSleepCount == 0)
+            {
+                PoltergeistApplication.TryEnqueue(() =>
+                {
+                    SystemHelper.PreventSleep(continuous: true, keepDisplayOn: false);
+                });
+            }
+            PreventingSleepCount++;
         }
 
         PoltergeistApplication.GetService<AppEventService>().Publish(new MacroProcessorLaunchedEvent(processor));
@@ -258,13 +286,7 @@ public class MacroManager : ServiceBase
         processor.Completed -= Processor_Completed;
 
         InRunningProcessors.TryRemove(processor, out var instance);
-
-        if (instance is null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (instance.Template is null)
+        if (instance?.Template is null)
         {
             throw new InvalidOperationException();
         }
@@ -290,13 +312,25 @@ public class MacroManager : ServiceBase
             }
         }
 
+        if (instance.Template.PreventsDisplaySleep || instance.Template.PreventsSystemSleep)
+        {
+            PreventingSleepCount--;
+            if (PreventingSleepCount == 0)
+            {
+                PoltergeistApplication.TryEnqueue(() =>
+                {
+                    SystemHelper.AllowSleep();
+                });
+            }
+        }
+
         PoltergeistApplication.GetService<AppEventService>().Publish(new MacroProcessorCompletedEvent()
         {
             Result = e.Result,
             Instance = instance,
         });
 
-        Logger.Info($"Macro '{instance.Template.Key}' ended.");
+        Logger.Info($"Macro '{instance?.TemplateKey}' ended.");
     }
 
     public void SendMessage(InteractionMessage message)

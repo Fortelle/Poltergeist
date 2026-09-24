@@ -41,6 +41,8 @@ public abstract class MacroBase : IMacroBase, IMacroInformation, IMacroExecution
 
     private bool _requiresAdmin;
     public bool RequiresAdmin { get => _requiresAdmin; set => _requiresAdmin |= value; }
+    public bool PreventsSystemSleep { get; set; }
+    public bool PreventsDisplaySleep { get; set; }
 
     public Exception? Exception { get; protected set; }
 

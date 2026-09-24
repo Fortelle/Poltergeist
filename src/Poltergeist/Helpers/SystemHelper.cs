@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Poltergeist.Helpers;
 
-public static class SystemHelper
+public static partial class SystemHelper
 {
     public static void LockScreen()
     {
@@ -60,4 +61,38 @@ public static class SystemHelper
         });
     }
 
+    public static void PreventSleep(bool continuous, bool keepDisplayOn)
+    {
+        var flags = NativeMethods.ExecutionStates.SystemRequired;
+        if (continuous)
+        {
+            flags |= NativeMethods.ExecutionStates.Continuous;
+            // Only works on current thread. The prevention will end when the thread exits.
+        }
+        if (keepDisplayOn)
+        {
+            flags |= NativeMethods.ExecutionStates.DisplayRequired;
+        }
+        NativeMethods.SetThreadExecutionState(flags);
+    }
+
+    public static void AllowSleep()
+    {
+        NativeMethods.SetThreadExecutionState(NativeMethods.ExecutionStates.Continuous);
+    }
+
+    private static partial class NativeMethods
+    {
+        [LibraryImport("kernel32.dll", SetLastError = true)]
+        public static partial ExecutionStates SetThreadExecutionState(ExecutionStates esFlags);
+
+        [Flags]
+        public enum ExecutionStates : uint
+        {
+            Continuous = 0x80000000,
+            SystemRequired = 0x00000001,
+            DisplayRequired = 0x00000002,
+            AwaymodeRequired = 0x00000040,
+        }
+    }
 }
