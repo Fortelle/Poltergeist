@@ -24,31 +24,119 @@ public class LabelInstrumentExample : CommonOneshotMacroBase
     {
         var dashboard = controller.Processor.GetService<DashboardService>();
 
-        var instrument = dashboard.Create<LabelInstrument>(gi =>
         {
-            gi.Title = "Basic:";
-            gi.MaximumColumns = 4;
-        });
+            var instrument = dashboard.Create<LabelInstrument>(li =>
+            {
+                li.Title = "Basic:";
+                li.MaximumColumns = 4;
+                li.HeaderPosition = LabelHeaderPosition.TopLeft;
+                li.TextPosition = LabelTextPosition.Right;
+            });
 
-        instrument.Add(new()
-        {
-            Color = ThemeColor.Red,
-            Label = "Year",
-            Text = DateTime.Now.Year.ToString(),
-            Icon = new GlyphIcon("\uE787"),
-        });
+            instrument.Add(new()
+            {
+                Color = ThemeColor.Red,
+                Header = "Year",
+                Text = DateTime.Now.Year.ToString(),
+                HeaderIcon = new GlyphIcon("\uE787"),
+            });
 
-        instrument.Add(new()
-        {
-            Color = ThemeColor.Green,
-            Label = "Month",
-            Text = DateTime.Now.Month.ToString(),
-        });
+            instrument.Add(new()
+            {
+                Color = ThemeColor.Green,
+                Header = "Battery",
+                Text = "100",
+                Subtext = "%",
+                HeaderIcon = new GlyphIcon("\uEBA0"),
+            });
 
-        instrument.Add(new()
+            instrument.Add(new()
+            {
+                Header = "Header",
+                Text = "Text",
+                Subtext = "Subtext",
+            });
+        }
+
         {
-            Label = "Day",
-            Text = DateTime.Now.Day.ToString(),
-        });
+            var instrument = dashboard.Create<LabelInstrument>(li =>
+            {
+                li.Title = "Icons:";
+                li.MaximumColumns = 4;
+                li.HeaderPosition = LabelHeaderPosition.Hidden;
+                li.TextPosition = LabelTextPosition.Center;
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Left",
+                LeftIcon = new GlyphIcon("\uE8E1"),
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Right",
+                RightIcon = new GlyphIcon("\uE8E0"),
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Both",
+                LeftIcon = new GlyphIcon("\uE8E1"),
+                RightIcon = new GlyphIcon("\uE8E0"),
+            });
+        }
+
+        {
+            var instrument = dashboard.Create<LabelInstrument>(li =>
+            {
+                li.Title = "Side text:";
+                li.MaximumColumns = 4;
+                li.HeaderPosition = LabelHeaderPosition.Hidden;
+                li.TextPosition = LabelTextPosition.Center;
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Text",
+                LeftText = "Left",
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Text",
+                RightText = "Right",
+            });
+
+            instrument.Add(new()
+            {
+                Text = "Both",
+                LeftText = "Left",
+                RightText = "Right",
+            });
+        }
+
+        {
+            dashboard.Create<LabelInstrument>(li =>
+            {
+                li.Title = nameof(LabelHeaderPosition) + ":";
+            });
+            foreach (var style in Enum.GetValues<LabelHeaderPosition>())
+            {
+                var instrument = dashboard.Create<LabelInstrument>(li =>
+                {
+                    li.HeaderPosition = style;
+                    li.TextPosition = LabelTextPosition.Center;
+                    li.MaximumColumns = 4;
+                });
+                instrument.Add(new()
+                {
+                    Color = ThemeColor.Blue,
+                    Header = style.ToString(),
+                    Text = "Text",
+                    HeaderIcon = new GlyphIcon("\uE787"),
+                });
+            }
+        }
     }
 }

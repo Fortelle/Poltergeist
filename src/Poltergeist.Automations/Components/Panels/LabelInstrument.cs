@@ -10,6 +10,9 @@ public class LabelInstrument : InstrumentModel
 
     public int? MaximumColumns { get; set; }
 
+    public LabelHeaderPosition HeaderPosition { get; set; } = LabelHeaderPosition.TopCenter;
+    public LabelTextPosition TextPosition { get; set; } = LabelTextPosition.Left;
+
     private readonly List<LabelInstrumentItem> Buffer = new();
 
     public LabelInstrument(MacroProcessor processor) : base(processor)
@@ -49,8 +52,12 @@ public class LabelInstrument : InstrumentModel
         item.Tooltip ??= template.Tooltip;
         item.Text ??= template.Text;
         item.Subtext ??= template.Subtext;
-        item.Label ??= template.Label;
+        item.LeftIcon ??= template.LeftIcon;
+        item.RightIcon ??= template.RightIcon;
+        item.LeftText ??= template.LeftText;
+        item.RightText ??= template.RightText;
+        item.Header ??= template.Header;
+        item.HeaderIcon ??= template.HeaderIcon;
         item.Color ??= template.Color;
-        item.Icon ??= template.Icon;
     }
 }

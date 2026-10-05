@@ -7,12 +7,17 @@ public class LabelInstrumentItem
 {
     public string? Key { get; set; }
 
-    public string? Label { get; set; }
-    public string? Text { get; set; }
-    public string? Subtext { get; set; }
     public string? Tooltip { get; set; }
 
-    public IconInfo? Icon { get; set; }
+    public IconInfo? HeaderIcon { get; set; }
+    public string? Header { get; set; }
+
+    public string? Text { get; set; }
+    public string? Subtext { get; set; }
+    public IconInfo? LeftIcon { get; set; }
+    public IconInfo? RightIcon { get; set; }
+    public string? LeftText { get; set; }
+    public string? RightText { get; set; }
 
     public string? TemplateKey { get; set; }
 
