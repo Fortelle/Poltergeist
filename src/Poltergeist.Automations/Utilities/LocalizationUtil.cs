@@ -1,27 +1,33 @@
-﻿using Windows.ApplicationModel.Resources;
+﻿using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.ApplicationModel.Resources;
 
 namespace Poltergeist.Automations.Utilities;
 
 public static class LocalizationUtil
 {
-    private static readonly ResourceLoader ResourceLoader;
-
-    static LocalizationUtil()
-    {
-        ResourceLoader = ResourceLoader.GetForViewIndependentUse("Poltergeist.Automations/Resources");
-    }
+    private static readonly ResourceManager ResourceManager = new();
 
     public static string Localize(string key, params object?[] args)
     {
-        var resource = ResourceLoader.GetString(key);
+        key = "Poltergeist.Automations/Resources/" + key;
+        var value = ResourceManager.MainResourceMap.TryGetValue(key);
 
-        if (resource is not null && args.Length > 0)
+        if (value is null)
         {
-            resource = string.Format(resource, args);
+#if DEBUG
+            return '{' + key + '}';
+#else
+            return "";
+#endif
         }
 
-        resource ??= '{' + key + '}';
+        var text = value.ValueAsString;
 
-        return resource;
+        if (args.Length > 0)
+        {
+            text = string.Format(text, args);
+        }
+
+        return text;
     }
 }

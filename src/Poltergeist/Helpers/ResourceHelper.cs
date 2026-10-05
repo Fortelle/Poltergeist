@@ -1,4 +1,4 @@
-﻿using Windows.ApplicationModel.Resources;
+﻿using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Poltergeist.Helpers;
 
@@ -6,28 +6,28 @@ namespace Poltergeist.Helpers;
 // https://github.com/microsoft/WindowsAppSDK/issues/5832
 public static class ResourceHelper
 {
-    private static readonly Dictionary<string, ResourceLoader> ResourceLoaders = new();
+    private static readonly ResourceManager ResourceManager = new();
 
     public static string Localize(string key, params object?[] args)
     {
-        var parts = key.Split('/');
-        var mapKey = string.Join('/', parts[..^1]);
-        var resourceKey = parts[^1];
+        var value = ResourceManager.MainResourceMap.TryGetValue(key);
 
-        if (!ResourceLoaders.TryGetValue(mapKey, out var resourceLoader))
+        if (value is null)
         {
-            resourceLoader = ResourceLoader.GetForViewIndependentUse(mapKey);
-            ResourceLoaders[mapKey] = resourceLoader;
-        }
-        var resource = resourceLoader.GetString(resourceKey);
-
-        if (resource is not null && args.Length > 0)
-        {
-            resource = string.Format(resource, args);
+#if DEBUG
+            return '{' + key + '}';
+#else
+            return "";
+#endif
         }
 
-        resource ??= '{' + resourceKey + '}';
+        var text = value.ValueAsString;
 
-        return resource;
+        if (args.Length > 0)
+        {
+            text = string.Format(text, args);
+        }
+
+        return text;
     }
 }
